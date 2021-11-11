@@ -8,6 +8,7 @@ import (
 	"github.com/KscSDK/ksc-sdk-go/service/eip"
 	"github.com/KscSDK/ksc-sdk-go/service/epc"
 	"github.com/KscSDK/ksc-sdk-go/service/iam"
+	"github.com/KscSDK/ksc-sdk-go/service/kce"
 	"github.com/KscSDK/ksc-sdk-go/service/kcm"
 	"github.com/KscSDK/ksc-sdk-go/service/kcsv1"
 	"github.com/KscSDK/ksc-sdk-go/service/kcsv2"
@@ -67,6 +68,7 @@ func (c *Config) Client() (*KsyunClient, error) {
 	client.iamconn = iam.SdkNew(cli, cfg, url)
 	client.rabbitmqconn = rabbitmq.SdkNew(cli, cfg, url)
 	client.bwsconn = bws.SdkNew(cli, cfg, url)
+	client.kceconn = kce.SdkNew(cli, cfg, url)
 
 	credentials := credentials.NewStaticCredentials(c.AccessKey, c.SecretKey, "")
 	client.ks3conn = s3.New(&aws.Config{

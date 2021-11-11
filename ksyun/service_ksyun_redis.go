@@ -86,7 +86,7 @@ func resourceRedisInstanceParamRead(d *schema.ResourceData, meta interface{}) er
 			}
 		}
 	} else {
-		for k, _ := range localParams {
+		for k := range localParams {
 			if v, ok := result[k]; ok {
 				parameter[k] = v
 			}

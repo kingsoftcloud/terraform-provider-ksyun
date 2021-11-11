@@ -106,5 +106,5 @@ func dataSourceKsyunRoutes() *schema.Resource {
 
 func dataSourceKsyunRoutesRead(d *schema.ResourceData, meta interface{}) error {
 	vpcService := VpcService{meta.(*KsyunClient)}
-	return vpcService.ReadAndSetRoutes(d,dataSourceKsyunRoutes())
+	return vpcService.ReadAndSetRoutes(d, dataSourceKsyunRoutes())
 }

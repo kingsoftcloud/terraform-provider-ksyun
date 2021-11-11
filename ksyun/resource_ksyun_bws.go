@@ -28,9 +28,9 @@ func resourceKsyunBandWidthShare() *schema.Resource {
 				Computed: true,
 			},
 			"band_width": {
-				Type:     schema.TypeInt,
-				Required: true,
-				ValidateFunc: validation.IntBetween(1,15000),
+				Type:         schema.TypeInt,
+				Required:     true,
+				ValidateFunc: validation.IntBetween(1, 15000),
 			},
 			"charge_type": {
 				Type:     schema.TypeString,

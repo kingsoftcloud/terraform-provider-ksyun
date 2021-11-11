@@ -123,5 +123,5 @@ func dataSourceKsyunVpnGateways() *schema.Resource {
 }
 func dataSourceKsyunVpnGatewaysRead(d *schema.ResourceData, meta interface{}) error {
 	vpcService := VpcService{meta.(*KsyunClient)}
-	return vpcService.ReadAndSetVpnGateways(d,dataSourceKsyunVpnGateways())
+	return vpcService.ReadAndSetVpnGateways(d, dataSourceKsyunVpnGateways())
 }

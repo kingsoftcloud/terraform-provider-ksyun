@@ -53,19 +53,19 @@ func resourceKsyunMongodbShardInstanceNode() *schema.Resource {
 					"8C32G",
 					"16C64G",
 				}, false),
-				Default:  "1C2G",
+				Default: "1C2G",
 			},
 			"node_storage": {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				ValidateFunc: validation.IntBetween(5, 1000),
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					if d.Get("node_type").(string) == "mongos"{
+					if d.Get("node_type").(string) == "mongos" {
 						return true
 					}
 					return false
 				},
-				Default:      50,
+				Default: 50,
 			},
 			"node_id": {
 				Type:     schema.TypeString,
@@ -75,23 +75,23 @@ func resourceKsyunMongodbShardInstanceNode() *schema.Resource {
 	}
 }
 
-func resourceMongodbShardInstanceNodeCreate(d *schema.ResourceData,meta interface{})(err error){
-	err = createMongodbShardInstanceNode(d,meta)
+func resourceMongodbShardInstanceNodeCreate(d *schema.ResourceData, meta interface{}) (err error) {
+	err = createMongodbShardInstanceNode(d, meta)
 	if err != nil {
 		return fmt.Errorf("create shard instance node error %s ", err)
 	}
-	return resourceMongodbShardInstanceNodeRead(d,meta)
+	return resourceMongodbShardInstanceNodeRead(d, meta)
 }
 
-func resourceMongodbShardInstanceNodeUpdate(d *schema.ResourceData,meta interface{})(err error){
-	err = modifyMongodbShardInstanceNode(d,meta)
+func resourceMongodbShardInstanceNodeUpdate(d *schema.ResourceData, meta interface{}) (err error) {
+	err = modifyMongodbShardInstanceNode(d, meta)
 	if err != nil {
 		return fmt.Errorf("update shard instance node error %s ", err)
 	}
-	return resourceMongodbShardInstanceNodeRead(d,meta)
+	return resourceMongodbShardInstanceNodeRead(d, meta)
 }
 
-func resourceMongodbShardInstanceNodeDelete(d *schema.ResourceData,meta interface{})(err error){
+func resourceMongodbShardInstanceNodeDelete(d *schema.ResourceData, meta interface{}) (err error) {
 	if d.Get("node_type").(string) == "shard" {
 		return fmt.Errorf("can not support remove shard node from instance")
 	}
@@ -100,7 +100,7 @@ func resourceMongodbShardInstanceNodeDelete(d *schema.ResourceData,meta interfac
 		if err == nil {
 			return nil
 		} else {
-			_,_,err = readMongodbShardInstanceNode(d, meta)
+			_, _, err = readMongodbShardInstanceNode(d, meta)
 			if err != nil && canNotFoundMongodbError(err) {
 				return nil
 			}
@@ -109,11 +109,11 @@ func resourceMongodbShardInstanceNodeDelete(d *schema.ResourceData,meta interfac
 	})
 }
 
-func resourceMongodbShardInstanceNodeRead(d *schema.ResourceData,meta interface{})(err error){
-	v,extra,err := readMongodbShardInstanceNode(d,meta)
+func resourceMongodbShardInstanceNodeRead(d *schema.ResourceData, meta interface{}) (err error) {
+	v, extra, err := readMongodbShardInstanceNode(d, meta)
 	if err != nil {
 		return fmt.Errorf("read shard instance node error %s ", err)
 	}
-	SdkResponseAutoResourceData(d,resourceKsyunMongodbShardInstanceNode(),v,extra)
+	SdkResponseAutoResourceData(d, resourceKsyunMongodbShardInstanceNode(), v, extra)
 	return err
 }

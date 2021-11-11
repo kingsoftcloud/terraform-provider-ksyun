@@ -411,7 +411,7 @@ func SdkRequestAutoExtra(r map[string]SdkReqTransform, d *schema.ResourceData, f
 	var extra map[string]SdkRequestMapping
 	extra = make(map[string]SdkRequestMapping)
 	index := 1
-	for k, _ := range r {
+	for k := range r {
 		extra[k] = SdkRequestMapping{
 			FieldReqFunc: func(item interface{}, field string, source string, m *map[string]interface{}) error {
 				var err error
@@ -462,7 +462,7 @@ func SdkRequestAutoMapping(d *schema.ResourceData, resource *schema.Resource, is
 			}
 		}
 	} else {
-		for k, _ := range resource.Schema {
+		for k := range resource.Schema {
 			if v, ok := transform[k]; ok {
 				if isUpdate {
 					count, err = requestUpdateMapping(d, k, v, count, nil, &req)

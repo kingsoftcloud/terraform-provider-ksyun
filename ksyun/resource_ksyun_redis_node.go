@@ -21,16 +21,16 @@ func resourceRedisInstanceNode() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, i interface{}) ([]*schema.ResourceData, error) {
 				var err error
-				importParts := strings.Split(d.Id(),":")
-				if len(importParts) < 2{
+				importParts := strings.Split(d.Id(), ":")
+				if len(importParts) < 2 {
 					return nil, fmt.Errorf("import too few parts,must CacheId:NodeId")
 				}
 				d.SetId(importParts[1])
-				err = d.Set("cache_id",importParts[0])
-				if err !=nil {
-					return nil,err
+				err = d.Set("cache_id", importParts[0])
+				if err != nil {
+					return nil, err
 				}
-				return []*schema.ResourceData{d},err
+				return []*schema.ResourceData{d}, err
 			},
 		},
 		Timeouts: &schema.ResourceTimeout{
@@ -87,12 +87,12 @@ func resourceRedisInstanceNodeCreate(d *schema.ResourceData, meta interface{}) e
 		err  error
 	)
 	//read cluster
-	_,err = readRedisInstanceNodeCluster(d,meta)
+	_, err = readRedisInstanceNodeCluster(d, meta)
 	if err != nil {
 		return fmt.Errorf("error on add Instance node: %s", err)
 	}
 	// create
-	resp, err = createRedisInstanceNode(d,meta)
+	resp, err = createRedisInstanceNode(d, meta)
 	if err != nil {
 		return fmt.Errorf("error on add instance node: %s", err)
 	}
@@ -101,7 +101,7 @@ func resourceRedisInstanceNodeCreate(d *schema.ResourceData, meta interface{}) e
 	}
 	d.SetId(d.Get("instance_id").(string))
 
-	err = checkRedisInstanceStatus(d,meta, d.Timeout(schema.TimeoutCreate),d.Get("cache_id").(string))
+	err = checkRedisInstanceStatus(d, meta, d.Timeout(schema.TimeoutCreate), d.Get("cache_id").(string))
 	if err != nil {
 		return fmt.Errorf("error on add Instance node: %s", err)
 	}
@@ -118,7 +118,7 @@ func resourceRedisInstanceNodeDelete(d *schema.ResourceData, meta interface{}) e
 	return resource.Retry(20*time.Minute, func() *resource.RetryError {
 		var (
 			resp *map[string]interface{}
-			err error
+			err  error
 		)
 		integrationAzConf := &IntegrationRedisAzConf{
 			resourceData: d,
@@ -153,7 +153,7 @@ func validateRedisNodeExists(err error) bool {
 	return strings.Contains(strings.ToLower(err.Error()), "not exist")
 }
 
-func readRedisInstanceNodeCluster(d *schema.ResourceData, meta interface{}) (*map[string]interface{},error) {
+func readRedisInstanceNodeCluster(d *schema.ResourceData, meta interface{}) (*map[string]interface{}, error) {
 	var (
 		resp *map[string]interface{}
 		err  error
@@ -173,18 +173,18 @@ func readRedisInstanceNodeCluster(d *schema.ResourceData, meta interface{}) (*ma
 	}
 	resp, err = integrationAzConf.integrationRedisAz()
 	if err != nil {
-		return resp,fmt.Errorf("error on reading instance node Cluster %q, %s", d.Id(), err)
+		return resp, fmt.Errorf("error on reading instance node Cluster %q, %s", d.Id(), err)
 	}
-	return resp,err
+	return resp, err
 }
 
-func createRedisInstanceNode(d *schema.ResourceData, meta interface{}) (*map[string]interface{},error){
+func createRedisInstanceNode(d *schema.ResourceData, meta interface{}) (*map[string]interface{}, error) {
 	var (
 		createNodeReq map[string]interface{}
-		resp *map[string]interface{}
-		err error
+		resp          *map[string]interface{}
+		err           error
 	)
-	createNodeReq,err =  SdkRequestAutoMapping(d, resourceRedisInstanceNode(), false, nil, nil)
+	createNodeReq, err = SdkRequestAutoMapping(d, resourceRedisInstanceNode(), false, nil, nil)
 	integrationAzConf := &IntegrationRedisAzConf{
 		resourceData: d,
 		client:       meta.(*KsyunClient),
@@ -197,11 +197,11 @@ func createRedisInstanceNode(d *schema.ResourceData, meta interface{}) (*map[str
 	}
 	action := "AddCacheSlaveNode"
 	logger.Debug(logger.ReqFormat, action, createNodeReq)
-	resp ,err = integrationAzConf.integrationRedisAz()
+	resp, err = integrationAzConf.integrationRedisAz()
 	return resp, err
 }
 
-func readRedisInstanceNode(d *schema.ResourceData, meta interface{}) (*map[string]interface{},error) {
+func readRedisInstanceNode(d *schema.ResourceData, meta interface{}) (*map[string]interface{}, error) {
 	var (
 		item interface{}
 		resp *map[string]interface{}
@@ -225,22 +225,22 @@ func readRedisInstanceNode(d *schema.ResourceData, meta interface{}) (*map[strin
 	logger.Debug(logger.ReqFormat, action, readReq)
 	resp, err = integrationAzConf.integrationRedisAz()
 	if err != nil {
-		return resp,fmt.Errorf("error on reading instance node %q, %s", d.Id(), err)
+		return resp, fmt.Errorf("error on reading instance node %q, %s", d.Id(), err)
 	}
 	if item, ok = (*resp)["Data"]; !ok {
-		return resp,fmt.Errorf("error on reading instance node %s not exist", d.Id())
+		return resp, fmt.Errorf("error on reading instance node %s not exist", d.Id())
 	}
 	items, ok := item.([]interface{})
 	if !ok || len(items) == 0 {
-		return resp,fmt.Errorf("error on reading instance node %s not exist", d.Id())
+		return resp, fmt.Errorf("error on reading instance node %s not exist", d.Id())
 	}
 	for _, v := range items {
 		vMap := v.(map[string]interface{})
 		if d.Id() == vMap["instanceId"] {
-			return &vMap ,err
+			return &vMap, err
 		}
 	}
-	return resp,fmt.Errorf("error on reading instance node %s not exist", d.Id())
+	return resp, fmt.Errorf("error on reading instance node %s not exist", d.Id())
 }
 
 func resourceRedisInstanceNodeRead(d *schema.ResourceData, meta interface{}) error {
@@ -248,12 +248,12 @@ func resourceRedisInstanceNodeRead(d *schema.ResourceData, meta interface{}) err
 		resp *map[string]interface{}
 		err  error
 	)
-	_,err = readRedisInstanceNodeCluster(d,meta)
+	_, err = readRedisInstanceNodeCluster(d, meta)
 	if err != nil {
 		return err
 	}
 
-	resp,err = readRedisInstanceNode(d,meta)
+	resp, err = readRedisInstanceNode(d, meta)
 	if err != nil {
 		return err
 	}

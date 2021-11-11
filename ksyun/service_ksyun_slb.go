@@ -1626,7 +1626,7 @@ func (s *SlbService) CreateLoadBalancerAclEntryWithAclCall(d *schema.ResourceDat
 			)
 			transform := make(map[string]SdkReqTransform)
 			key := strconv.Itoa(loadBalancerAclEntryHash(entry))
-			for k, _ := range entry.(map[string]interface{}) {
+			for k := range entry.(map[string]interface{}) {
 				key := "load_balancer_acl_entry_set." + key + "." + k
 				transform[key] = SdkReqTransform{mapping: Downline2Hump(k)}
 			}
@@ -1857,7 +1857,7 @@ func (s *SlbService) ModifyLoadBalancerAclEntryWithAclCall(d *schema.ResourceDat
 				)
 				index := loadBalancerAclEntryHash(entry)
 				transform := make(map[string]SdkReqTransform)
-				for k, _ := range entry.(map[string]interface{}) {
+				for k := range entry.(map[string]interface{}) {
 					key := "load_balancer_acl_entry_set." + strconv.Itoa(index) + "." + k
 					transform[key] = SdkReqTransform{mapping: Downline2Hump(k)}
 				}

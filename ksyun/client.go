@@ -6,6 +6,7 @@ import (
 	"github.com/KscSDK/ksc-sdk-go/service/eip"
 	"github.com/KscSDK/ksc-sdk-go/service/epc"
 	"github.com/KscSDK/ksc-sdk-go/service/iam"
+	"github.com/KscSDK/ksc-sdk-go/service/kce"
 	"github.com/KscSDK/ksc-sdk-go/service/kcm"
 	"github.com/KscSDK/ksc-sdk-go/service/kcsv1"
 	"github.com/KscSDK/ksc-sdk-go/service/kcsv2"
@@ -40,4 +41,5 @@ type KsyunClient struct {
 	iamconn       *iam.Iam
 	rabbitmqconn  *rabbitmq.Rabbitmq
 	bwsconn       *bws.Bws
+	kceconn       *kce.Kce
 }

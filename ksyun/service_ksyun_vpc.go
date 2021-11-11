@@ -1459,7 +1459,7 @@ func (s *VpcService) CreateNetworkAclEntryWithAclCall(d *schema.ResourceData, r 
 			)
 			key := networkAclEntryHash(entry)
 			transform := make(map[string]SdkReqTransform)
-			for k, _ := range entry.(map[string]interface{}) {
+			for k := range entry.(map[string]interface{}) {
 				key := "network_acl_entries." + strconv.Itoa(key) + "." + k
 				if k == "icmp_type" || k == "icmp_code" {
 					transform[key] = SdkReqTransform{
@@ -1721,7 +1721,7 @@ func (s *VpcService) ModifyNetworkAclEntryWithAclCall(d *schema.ResourceData, r 
 				)
 				index := networkAclEntryHash(entry)
 				transform := make(map[string]SdkReqTransform)
-				for k, _ := range entry.(map[string]interface{}) {
+				for k := range entry.(map[string]interface{}) {
 					key := "network_acl_entries." + strconv.Itoa(index) + "." + k
 					transform[key] = SdkReqTransform{mapping: Downline2Hump(k)}
 				}
@@ -2115,7 +2115,7 @@ func (s *VpcService) CreateSecurityGroupEntryWithSgCall(d *schema.ResourceData, 
 			)
 			index := securityGroupEntryHash(entry)
 			transform := make(map[string]SdkReqTransform)
-			for k, _ := range entry.(map[string]interface{}) {
+			for k := range entry.(map[string]interface{}) {
 				key := "security_group_entries." + strconv.Itoa(index) + "." + k
 				if k == "icmp_type" || k == "icmp_code" {
 					transform[key] = SdkReqTransform{
@@ -2350,7 +2350,7 @@ func (s *VpcService) ModifySecurityGroupEntryWithSgCall(d *schema.ResourceData, 
 				)
 				index := securityGroupEntryHash(entry)
 				transform := make(map[string]SdkReqTransform)
-				for k, _ := range entry.(map[string]interface{}) {
+				for k := range entry.(map[string]interface{}) {
 					key := "security_group_entries." + strconv.Itoa(index) + "." + k
 					transform[key] = SdkReqTransform{mapping: Downline2Hump(k)}
 				}

@@ -76,6 +76,5 @@ func dataSourceKsyunVpcs() *schema.Resource {
 }
 func dataSourceKsyunVpcsRead(d *schema.ResourceData, meta interface{}) error {
 	vpcService := VpcService{meta.(*KsyunClient)}
-	return vpcService.ReadAndSetVpcs(d,dataSourceKsyunVpcs())
+	return vpcService.ReadAndSetVpcs(d, dataSourceKsyunVpcs())
 }
-

@@ -351,7 +351,7 @@ func checkAndProcessKrdsParameters(d *schema.ResourceData, meta interface{}) (re
 			}
 		}
 		//compare add or remove
-		for k, _ := range oldKv {
+		for k := range oldKv {
 			if _, ok := newKv[k]; !ok {
 				needToDefault = append(needToDefault, k)
 			}
@@ -1235,7 +1235,7 @@ func krdsInstanceCustomizeDiff() schema.CustomizeDiffFunc {
 			for _, v := range n.(*schema.Set).List() {
 				key := v.(map[string]interface{})["name"]
 				exist := false
-				for k, _ := range data {
+				for k := range data {
 					if k == key.(string) {
 						exist = true
 						break
@@ -1493,7 +1493,7 @@ func checkAndProcessKrdsSgRules(d *schema.ResourceData, meta interface{}) (reqAt
 			}
 		}
 		//compare add or remove
-		for k, _ := range oldKv {
+		for k := range oldKv {
 			if _, ok := newKv[k]; !ok {
 				needToRemove = append(needToRemove, k)
 			}

@@ -426,10 +426,10 @@ func resourceRabbitmqInstanceRead(d *schema.ResourceData, meta interface{}) erro
 	}
 	for _, plugin := range plugins {
 		if int64(plugin.(map[string]interface{})["PluginStatus"].(float64)) == 1 {
-			currentPlugins = append(currentPlugins,plugin.(map[string]interface{})["PluginName"].(string))
+			currentPlugins = append(currentPlugins, plugin.(map[string]interface{})["PluginName"].(string))
 		}
 	}
-	pluginStr = stringSplitRead(",","enable_plugins",currentPlugins,d)
+	pluginStr = stringSplitRead(",", "enable_plugins", currentPlugins, d)
 	if pluginStr != "" {
 		item["EnablePlugins"] = pluginStr
 	}
@@ -458,9 +458,9 @@ func resourceRabbitmqInstanceRead(d *schema.ResourceData, meta interface{}) erro
 	}
 	for _, rule := range rules {
 		r := rule.(map[string]interface{})["Cidr"].(string)
-		currentRules = append(currentRules,r)
+		currentRules = append(currentRules, r)
 	}
-	ruleStr = stringSplitRead(",","cidrs",currentRules,d)
+	ruleStr = stringSplitRead(",", "cidrs", currentRules, d)
 	if ruleStr != "" {
 		item["Cidrs"] = ruleStr
 	}

@@ -247,7 +247,7 @@ func checkMongodbState(d *schema.ResourceData, meta interface{}, instanceId stri
 	return err
 }
 
-func checkMongodbSecurityGroupRulesDel(d *schema.ResourceData, meta interface{}, instanceId string,del string)(err error,delV4 string,delV6 string){
+func checkMongodbSecurityGroupRulesDel(d *schema.ResourceData, meta interface{}, instanceId string, del string) (err error, delV4 string, delV6 string) {
 	var (
 		cidrs    []string
 		delCidrs []string
@@ -256,16 +256,16 @@ func checkMongodbSecurityGroupRulesDel(d *schema.ResourceData, meta interface{},
 	if err != nil {
 		return err, delV4, delV6
 	}
-	delCidrs = strings.Split(del,",")
+	delCidrs = strings.Split(del, ",")
 	for _, cidr := range delCidrs {
 		exist := false
-		for _,current := range cidrs{
+		for _, current := range cidrs {
 			if current == cidr {
-				exist=true
+				exist = true
 				break
 			}
 		}
-		if exist{
+		if exist {
 			if strings.Contains(cidr, ":") {
 				delV6 = delV6 + cidr + ","
 			} else {
@@ -276,7 +276,7 @@ func checkMongodbSecurityGroupRulesDel(d *schema.ResourceData, meta interface{},
 	return err, delV4, delV6
 }
 
-func checkMongodbSecurityGroupRulesChange(d *schema.ResourceData, meta interface{}, field string,instanceId string) (err error, addV4 string, delV4 string, addV6 string, delV6 string) {
+func checkMongodbSecurityGroupRulesChange(d *schema.ResourceData, meta interface{}, field string, instanceId string) (err error, addV4 string, delV4 string, addV6 string, delV6 string) {
 	if d.HasChange(field) && !d.IsNewResource() {
 		var (
 			cidrs    []string
@@ -501,7 +501,7 @@ func modifyMongodbInstanceNodeNum(d *schema.ResourceData, meta interface{}, r *s
 
 func modifyMongodbInstanceCommon(d *schema.ResourceData, meta interface{}, r *schema.Resource) (err error) {
 	//valid cidrs
-	err, addV4, delV4, addV6, delV6 := checkMongodbSecurityGroupRulesChange(d, meta, "cidrs","")
+	err, addV4, delV4, addV6, delV6 := checkMongodbSecurityGroupRulesChange(d, meta, "cidrs", "")
 	if err != nil {
 		return fmt.Errorf("error on update instance %q, %s", d.Id(), err)
 	}
@@ -550,7 +550,7 @@ func createMongodbInstanceCommon(d *schema.ResourceData, meta interface{}, r *sc
 		return fmt.Errorf("error on creating instance: %s", err)
 	}
 	//valid cidrs
-	err, addV4, _, addV6, _ := checkMongodbSecurityGroupRulesChange(d, meta, "cidrs","")
+	err, addV4, _, addV6, _ := checkMongodbSecurityGroupRulesChange(d, meta, "cidrs", "")
 	if err != nil {
 		return fmt.Errorf("error on creating instance: %s", err)
 	}
@@ -600,11 +600,11 @@ func readMongodbInstanceCommon(d *schema.ResourceData, meta interface{}, r *sche
 		},
 	}
 	//rules
-	cidrs,err = readMongodbSecurityGroupCidrs(d,meta,"cidrs","")
+	cidrs, err = readMongodbSecurityGroupCidrs(d, meta, "cidrs", "")
 	if err != nil {
 		return err
 	}
-	if cidrs != ""{
+	if cidrs != "" {
 		data["Cidrs"] = cidrs
 	}
 	//special
@@ -701,7 +701,7 @@ func readMongodbShardInstanceNodes(d *schema.ResourceData, meta interface{}) (mo
 	if err != nil {
 		return mongosNodeResult, shardNodeResult, err
 	}
-	if shardNodeResult ==nil || mongosNodeResult == nil{
+	if shardNodeResult == nil || mongosNodeResult == nil {
 		err = fmt.Errorf("read shard mongo instance error")
 	}
 	return mongosNodeResult, shardNodeResult, err
@@ -868,22 +868,22 @@ func createMongodbShardInstanceNode(d *schema.ResourceData, meta interface{}) (e
 	return err
 }
 
-func readMongodbSecurityGroupCidrs(d *schema.ResourceData,meta interface{},field string,instanceId string)(cidrs string,err error){
+func readMongodbSecurityGroupCidrs(d *schema.ResourceData, meta interface{}, field string, instanceId string) (cidrs string, err error) {
 	var (
-		rules []string
+		rules        []string
 		currentRules []string
-		ruleStr string
+		ruleStr      string
 	)
 	rules, err = readMongodbSecurityGroupRules(d, meta, instanceId)
 	if err != nil {
-		return cidrs,err
+		return cidrs, err
 	}
 	for _, rule := range rules {
-		currentRules = append(currentRules,rule)
+		currentRules = append(currentRules, rule)
 	}
-	ruleStr = stringSplitRead(",",field,currentRules,d)
+	ruleStr = stringSplitRead(",", field, currentRules, d)
 	if ruleStr != "" {
 		cidrs = ruleStr
 	}
-	return cidrs,err
+	return cidrs, err
 }

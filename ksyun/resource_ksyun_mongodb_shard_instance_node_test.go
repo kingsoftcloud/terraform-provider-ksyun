@@ -40,7 +40,7 @@ func testAccCheckMongodbShardInstanceNodeExists(n string) resource.TestCheckFunc
 
 		client := testAccProvider.Meta().(*KsyunClient)
 		readReq := make(map[string]interface{})
-		item := strings.Split(rs.Primary.ID,":")
+		item := strings.Split(rs.Primary.ID, ":")
 		readReq["InstanceId"] = item[0]
 
 		logger.Debug(logger.ReqFormat, "DescribeMongoDBInstanceNode", readReq)
@@ -48,11 +48,11 @@ func testAccCheckMongodbShardInstanceNodeExists(n string) resource.TestCheckFunc
 		if err != nil {
 			return fmt.Errorf("error on reading instance node %q, %s", rs.Primary.ID, err)
 		}
-		mongosNodeResult,err := getSdkValue("MongosNodeResult",*resp)
+		mongosNodeResult, err := getSdkValue("MongosNodeResult", *resp)
 		exist := false
-		for _ ,v := range mongosNodeResult.([]interface{}) {
+		for _, v := range mongosNodeResult.([]interface{}) {
 			nodeId := v.(map[string]interface{})["NodeId"].(string)
-			if nodeId == item[1]{
+			if nodeId == item[1] {
 				exist = true
 				break
 			}
@@ -70,7 +70,7 @@ func testAccCheckMongodbShardInstanceNodeDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type == "ksyun_mongodb_shard_instance" {
 			instanceCheck := make(map[string]interface{})
-			item := strings.Split(rs.Primary.ID,":")
+			item := strings.Split(rs.Primary.ID, ":")
 			instanceCheck["InstanceId"] = item[0]
 			instanceCheck["NodeId"] = item[1]
 			_, err := client.mongodbconn.DeleteClusterNode(&instanceCheck)

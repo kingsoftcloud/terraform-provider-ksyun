@@ -119,5 +119,5 @@ func dataSourceKsyunSecurityGroups() *schema.Resource {
 
 func dataSourceKsyunSecurityGroupsRead(d *schema.ResourceData, meta interface{}) error {
 	vpcService := VpcService{meta.(*KsyunClient)}
-	return vpcService.ReadAndSetSecurityGroups(d,dataSourceKsyunSecurityGroups())
+	return vpcService.ReadAndSetSecurityGroups(d, dataSourceKsyunSecurityGroups())
 }

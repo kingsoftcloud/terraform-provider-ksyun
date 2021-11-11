@@ -102,8 +102,8 @@ func resourceRabbitmqSecurityRuleCreate(d *schema.ResourceData, meta interface{}
 
 func resourceRabbitmqSecurityRuleDelete(d *schema.ResourceData, meta interface{}) error {
 	var (
-		err  error
-		del  string
+		err error
+		del string
 	)
 	if checkMultipleExist("cidrs", d) {
 		del = d.Get("cidrs").(string)

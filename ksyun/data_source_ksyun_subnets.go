@@ -170,5 +170,5 @@ func dataSourceKsyunSubnets() *schema.Resource {
 
 func dataSourceKsyunSubnetsRead(d *schema.ResourceData, meta interface{}) error {
 	vpcService := VpcService{meta.(*KsyunClient)}
-	return vpcService.ReadAndSetSubnets(d,dataSourceKsyunSubnets())
+	return vpcService.ReadAndSetSubnets(d, dataSourceKsyunSubnets())
 }

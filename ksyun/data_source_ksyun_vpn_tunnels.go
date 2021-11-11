@@ -174,5 +174,5 @@ func dataSourceKsyunVpnTunnels() *schema.Resource {
 }
 func dataSourceKsyunVpnTunnelsRead(d *schema.ResourceData, meta interface{}) error {
 	vpcService := VpcService{meta.(*KsyunClient)}
-	return vpcService.ReadAndSetVpnTunnels(d,dataSourceKsyunVpnTunnels())
+	return vpcService.ReadAndSetVpnTunnels(d, dataSourceKsyunVpnTunnels())
 }

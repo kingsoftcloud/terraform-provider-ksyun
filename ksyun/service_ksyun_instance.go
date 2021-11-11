@@ -57,7 +57,7 @@ func (s *KecService) readAndSetKecInstance(d *schema.ResourceData, r *schema.Res
 					if err != nil {
 						return resource.NonRetryableError(err)
 					}
-					for k, _ := range networkInterface {
+					for k := range networkInterface {
 						if k == "DNS1" || k == "DNS2" {
 							continue
 						}

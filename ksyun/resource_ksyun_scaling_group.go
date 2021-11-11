@@ -393,7 +393,7 @@ func resourceKsyunScalingGroupDelete(d *schema.ResourceData, meta interface{}) e
 	if err != nil {
 		return fmt.Errorf("error on deleting ScalingGroup, %s", err)
 	}
-	for k, _ := range req {
+	for k := range req {
 		delete(req, k)
 	}
 	req["ScalingGroupId.1"] = d.Id()

@@ -23,7 +23,7 @@ var krdsRrNotSupport = []string{
 
 func resourceKsyunKrdsRr() *schema.Resource {
 	rrSchema := resourceKsyunKrds().Schema
-	for key, _ := range rrSchema {
+	for key := range rrSchema {
 		for _, n := range krdsRrNotSupport {
 			if key == n {
 				delete(rrSchema, key)
@@ -37,9 +37,9 @@ func resourceKsyunKrdsRr() *schema.Resource {
 		ForceNew:    true,
 	}
 	rrSchema["db_instance_class"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Required:    true,
-		ForceNew:    true,
+		Type:         schema.TypeString,
+		Required:     true,
+		ForceNew:     true,
 		ValidateFunc: validDbInstanceClass(),
 	}
 	rrSchema["db_instance_type"] = &schema.Schema{
@@ -103,7 +103,7 @@ func resourceKsyunKrdsRrUpdate(d *schema.ResourceData, meta interface{}) (err er
 	return err
 }
 func resourceKsyunKrdsRrRead(d *schema.ResourceData, meta interface{}) (err error) {
-	err = readAndSetKrdsInstance(d, meta,true)
+	err = readAndSetKrdsInstance(d, meta, true)
 	if err != nil {
 		return fmt.Errorf("error on reading rr instance , error is %s", err)
 	}

@@ -141,5 +141,5 @@ func dataSourceKsyunNats() *schema.Resource {
 
 func dataSourceKsyunNatsRead(d *schema.ResourceData, meta interface{}) error {
 	vpcService := VpcService{meta.(*KsyunClient)}
-	return vpcService.ReadAndSetNats(d,dataSourceKsyunNats())
+	return vpcService.ReadAndSetNats(d, dataSourceKsyunNats())
 }
