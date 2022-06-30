@@ -46,16 +46,18 @@ func resourceKsyunSubnet() *schema.Resource {
 				}, false),
 			},
 
+			// openapi已经不支持dhcp的参数，保留这两个值兼容老用户，实际不起作用
 			"dhcp_ip_to": {
 				Type:         schema.TypeString,
+				Deprecated:   "This attribute is deprecated and will be removed in a future version.",
 				Optional:     true,
 				ForceNew:     true,
 				Computed:     true,
 				ValidateFunc: validateIpAddress,
 			},
-
 			"dhcp_ip_from": {
 				Type:         schema.TypeString,
+				Deprecated:   "This attribute is deprecated and will be removed in a future version.",
 				Optional:     true,
 				ForceNew:     true,
 				Computed:     true,

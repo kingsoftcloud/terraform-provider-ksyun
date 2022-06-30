@@ -245,10 +245,11 @@ func resourceKsyunInstance() *schema.Resource {
 				Optional: true,
 				Computed: true,
 			},
-			"has_init_info": {
-				Type:     schema.TypeBool,
-				Computed: true,
-			},
+			"tags": tagsSchema(),
+			//"has_init_info": {
+			//	Type:     schema.TypeBool,
+			//	Computed: true,
+			//},
 			//some control
 			"has_modify_system_disk": {
 				Type:     schema.TypeBool,
@@ -274,6 +275,11 @@ func resourceKsyunInstance() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+
+			"instance_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -284,7 +290,7 @@ func resourceKsyunInstanceCreate(d *schema.ResourceData, meta interface{}) (err 
 	if err != nil {
 		return fmt.Errorf("error on creating Instance: %s", err)
 	}
-	return err
+	return resourceKsyunInstanceRead(d, meta)
 }
 
 func resourceKsyunInstanceRead(d *schema.ResourceData, meta interface{}) (err error) {

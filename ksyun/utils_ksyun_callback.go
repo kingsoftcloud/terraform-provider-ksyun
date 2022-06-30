@@ -6,12 +6,13 @@ import (
 )
 
 type ApiCall struct {
-	param       *map[string]interface{}
-	action      string
-	beforeCall  beforeCallFunc
-	executeCall executeCallFunc
-	callError   callErrorFunc
-	afterCall   afterCallFunc
+	param         *map[string]interface{}
+	action        string
+	beforeCall    beforeCallFunc
+	executeCall   executeCallFunc
+	callError     callErrorFunc
+	afterCall     afterCallFunc
+	disableDryRun bool
 }
 
 type ksyunApiCallFunc func(d *schema.ResourceData, meta interface{}) error
@@ -55,6 +56,9 @@ func ksyunApiCallProcess(api []ApiCall, d *schema.ResourceData, client *KsyunCli
 				)
 				doExecute := true
 				if isDryRun {
+					if f.disableDryRun {
+						continue
+					}
 					(*(f.param))["DryRun"] = true
 				} else if f.beforeCall != nil {
 					doExecute, err = f.beforeCall(d, client, f)
@@ -82,6 +86,9 @@ func ksyunApiCallProcess(api []ApiCall, d *schema.ResourceData, client *KsyunCli
 						err = f.afterCall(d, client, resp, f)
 					}
 				}
+			}
+			if err != nil {
+				return err
 			}
 		}
 	}

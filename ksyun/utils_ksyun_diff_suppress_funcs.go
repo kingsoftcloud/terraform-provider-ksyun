@@ -6,6 +6,10 @@ import (
 	"strings"
 )
 
+//重要提示
+//拦截器 返回false代表不拦截变更 反正则拦截变更
+// 不要使用isNewResource() 判断是否是新建资源还是更新资源，因为这是内置机制，新建资源时候isNewResource()也是false 需要用d.id()替代
+
 func purchaseTimeDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bool {
 	if v, ok := d.GetOk("charge_type"); ok && (v.(string) == "Monthly" || v.(string) == "PrePaidByMonth") {
 		return false
@@ -35,17 +39,15 @@ func chargeSchemaDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bo
 
 func kecImportDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
 	//由于一些字段暂时无法支持从查询中返回 所以现在设立做特殊处理拦截变更 用来适配导入的场景 后续支持后在对导入场景做优化
-	if !d.IsNewResource() {
-		if !d.Get("has_init_info").(bool) {
-			if k == "local_volume_snapshot_id" {
-				return true
-			}
-			if k == "user_data" {
-				return true
-			}
+	if d.Id() != "" {
+		if k == "local_volume_snapshot_id" {
+			return true
+		}
+		if k == "user_data" {
+			return true
 		}
 	}
-	if (k == "keep_image_login" || k == "key_id") && !d.IsNewResource() && !d.HasChange("image_id") {
+	if (k == "keep_image_login" || k == "key_id") && d.Id() != "" && !d.HasChange("image_id") {
 		return true
 	}
 
@@ -189,7 +191,7 @@ func lbBackendServerDiffSuppressFunc(k, old, new string, d *schema.ResourceData)
 }
 
 func volumeDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bool {
-	if !d.IsNewResource() && d.HasChange("size") && k == "online_resize" {
+	if d.Id() != "" && d.HasChange("size") && k == "online_resize" {
 		return false
 	}
 	return true
@@ -202,10 +204,10 @@ func bareMetalDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bool 
 	if d.Get("network_interface_mode") != "bond4" && k == "bond_attribute" {
 		return true
 	}
-	if (d.IsNewResource() || d.Get("host_type") != "COLO") && (k == "server_ip" || k == "path") {
+	if (d.Id() == "" || d.Get("host_type") != "COLO") && (k == "server_ip" || k == "path") {
 		return true
 	}
-	if d.IsNewResource() && (k == "host_status" || k == "force_re_install") {
+	if d.Id() == "" && (k == "host_status" || k == "force_re_install") {
 		return true
 	}
 	return false

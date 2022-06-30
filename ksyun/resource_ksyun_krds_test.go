@@ -139,6 +139,12 @@ resource "ksyun_krds" "rds_terraform_3"{
 
 }
 
+resource "ksyun_tag" "test_tag" {
+    key = "exist_tag"
+    value = "exist_tag_value3"
+    resource_type = "kcs-instance"
+    resource_id = "${ksyun_krds.rds_terraform_3.id}"
+}
 
 `
 const testAccKrdsEipConfig = `
@@ -187,4 +193,10 @@ resource "ksyun_krds" "rds_terraform_3"{
 
 }
 
+resource "ksyun_tag" "test_tag" {
+    key = "exist_tag"
+    value = "exist_tag_value4"
+    resource_type = "kcs-instance"
+    resource_id = "${ksyun_krds.rds_terraform_3.id}"
+}
 `

@@ -9,8 +9,10 @@
 
 # Create an eip
 resource "ksyun_eip" "default1" {
-  band_width =4
+  band_width =1
   charge_type = "Daily"
   project_id = 0
-  purchase_time = 0
+  tags = {
+    "xym-test" ="123",
+  }
 }

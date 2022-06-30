@@ -84,6 +84,10 @@ func (s *SlbService) ReadAndSetLoadBalancer(d *schema.ResourceData, r *schema.Re
 				return resource.NonRetryableError(fmt.Errorf("error on  reading lb %q, %s", d.Id(), callErr))
 			}
 		} else {
+			err = mergeTagsData(d, &data, s.client, "slb")
+			if err != nil {
+				return resource.NonRetryableError(err)
+			}
 			extra := map[string]SdkResponseMapping{
 				"ProjectId": {
 					Field: "project_id",
@@ -144,6 +148,7 @@ func (s *SlbService) CreateLoadBalancerCall(d *schema.ResourceData, r *schema.Re
 				}
 			},
 		},
+		"tags": {Ignore: true},
 	}
 	req, err := SdkRequestAutoMapping(d, r, false, transform, nil, SdkReqParameter{
 		onlyTransform: false,
@@ -183,12 +188,18 @@ func (s *SlbService) CreateLoadBalancer(d *schema.ResourceData, r *schema.Resour
 	if err != nil {
 		return err
 	}
-	return ksyunApiCallNew([]ApiCall{call}, d, s.client, true)
+	tagService := TagService{s.client}
+	tagCall, err := tagService.ReplaceResourcesTagsWithResourceCall(d, r, "slb", false, true)
+	if err != nil {
+		return err
+	}
+	return ksyunApiCallNew([]ApiCall{call, tagCall}, d, s.client, true)
 }
 
 func (s *SlbService) ModifyLoadBalancerCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
 	transform := map[string]SdkReqTransform{
 		"project_id": {Ignore: true},
+		"tags":       {Ignore: true},
 	}
 	req, err := SdkRequestAutoMapping(d, r, true, transform, nil, SdkReqParameter{
 		onlyTransform: false,
@@ -247,7 +258,12 @@ func (s *SlbService) ModifyLoadBalancer(d *schema.ResourceData, r *schema.Resour
 	if err != nil {
 		return err
 	}
-	return ksyunApiCallNew([]ApiCall{projectCall, call}, d, s.client, true)
+	tagService := TagService{s.client}
+	tagCall, err := tagService.ReplaceResourcesTagsWithResourceCall(d, r, "slb", true, false)
+	if err != nil {
+		return err
+	}
+	return ksyunApiCallNew([]ApiCall{projectCall, call, tagCall}, d, s.client, true)
 }
 
 func (s *SlbService) RemoveLoadBalancerCall(d *schema.ResourceData) (callback ApiCall, err error) {

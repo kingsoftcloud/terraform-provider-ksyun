@@ -174,6 +174,7 @@ func resourceKsyunListener() *schema.Resource {
 			"load_balancer_acl_id": {
 				Type:     schema.TypeString,
 				Optional: true,
+				//Computed: true,
 			},
 
 			"listener_id": {

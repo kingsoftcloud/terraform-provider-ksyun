@@ -16,6 +16,10 @@ func resourceKsyunNat() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 		Schema: map[string]*schema.Schema{
+			"nat_line_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			"project_id": {
 				Type:     schema.TypeString,
 				Optional: true,

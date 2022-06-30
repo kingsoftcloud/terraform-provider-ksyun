@@ -78,7 +78,20 @@ $  go test -test.run TestAccKsyunEip_basic -v
 该介绍包括三部分：
 ##### terraform-provider-ksyun开发
 
-_各产品线开发人员参考。_
+本地开发调试方法
+
+针对terraform v0.12版本：
+
+1、在项目根目录下执行 `make dev_v0.12`，会编译provider到$HOME/.terraform.d/plugins
+
+2、到tf文件所在目录执行`terraform init`会获 取到 该本地版本的provider
+
+针对terraform v0.13及以上版本：
+
+1、在项目根目录下执行 `make dev version=1.3.4`，会编译provider到$HOME/.terraform.d/plugin-cache（**注意**:调命令的时候需要给编译的provider传入一个x.y.z的版本号，以便terraform可以加载到该文件）
+
+2、 到tf文件所在目录执行`terraform init --plugin-dir ~/.terraform.d/plugin-cache/`会获取到本地版本的provider(**注意**:高版本的terraform需要指定provider所在路径，这里通过参数形式指定，其他指定方式可以参考官方开发文档：https://www.terraform.io/cli/config/config-file)
+
 
 ##### terraform-provider-ksyun使用
 
@@ -283,41 +296,42 @@ _例：官网openapi里主机创建的接口里，可以同时创建eip和主机
 
 # 金山云业务对应Terraform的Resource和DataSource
 
-|  资源名  | terraform(Resource)    | terraform(Data) | 资源分类
-|  ----  | -------  | ---- | ----
-| 弹性IP  | ksyun_eip | ksyun_eips | eip
-| 链路  | Not_Support | ksyun_lines | eip
-| 弹性IP绑定和解绑  | ksyun_eip\_associate | Not_Support | eip
-| 云物理机  | ksyun_epc | ksyun_epcs | epc
-| 证书  | ksyun_certificate | ksyun_certificates | kcm
-| 健康检查  | ksyun_lb\_healthcheck | ksyun_lb\_healthchecks | slb
-| 负载均衡 | ksyun_lb | ksyun_lbs | slb
-| 负载均衡访问控制列表  | ksyun_lb\_acl | ksyun_lb\_acls | slb
-| 负载均衡访问控制列表规则  | ksyun_lb\_acl\_entry| Not_Support | slb
-| 健康检查  | ksyun_healthcheck | ksyun_healthchecks | slb
-| 监听器  | ksyun_lb\_listener | ksyun_lb\_listeners | slb
-| 真实服务器  | ksyun_lb\_listener\_server | ksyun_lb\_listener\_servers | slb
+| 资源名          | terraform(Resource)    | terraform(Data) | 资源分类
+|--------------| -------  | ---- | ----
+| 弹性IP         | ksyun_eip | ksyun_eips | eip
+| 链路           | Not_Support | ksyun_lines | eip
+| 弹性IP绑定和解绑    | ksyun_eip\_associate | Not_Support | eip
+| 云物理机         | ksyun_epc | ksyun_epcs | epc
+| 证书           | ksyun_certificate | ksyun_certificates | kcm
+| 健康检查         | ksyun_lb\_healthcheck | ksyun_lb\_healthchecks | slb
+| 负载均衡         | ksyun_lb | ksyun_lbs | slb
+| 负载均衡访问控制列表   | ksyun_lb\_acl | ksyun_lb\_acls | slb
+| 负载均衡访问控制列表规则 | ksyun_lb\_acl\_entry| Not_Support | slb
+| 健康检查         | ksyun_healthcheck | ksyun_healthchecks | slb
+| 监听器          | ksyun_lb\_listener | ksyun_lb\_listeners | slb
+| 真实服务器        | ksyun_lb\_listener\_server | ksyun_lb\_listener\_servers | slb
 | 监听器绑定访问控制列表  | ksyun_lb\_listener\_associate\_acl | Not_Support | slb
-| 云主机  | ksyun_instance | ksyun_instances | kec
-| 云主机镜像  | Not_Support | ksyun_images | kec
-| 云盘 | ksyun_volume | ksyun_volumes | ebs
-| 云盘绑定 | ksyun_volume_attach | Not_Support | ebs
-| RDS  | ksyun_krds | ksyun_krds | krds
-| RDS只读实例  | ksyun_krds\_read\_replica | ksyun_krds | krds
-| RDS安全组  | ksyun_krds\_security\_group | ksyun_krds\_security\_groups | krds
-| SqlServer  | ksyun_sqlserver | ksyun_sqlservers | krds
-| MongoDB实例  | ksyun_mongodb\_instance | ksyun_mongodb | mongodb
-| MongoDB安全组  | ksyun_mongodb\_security\_rule | ksyun_mongodb | mongodb
+| 云主机          | ksyun_instance | ksyun_instances | kec
+| 云主机镜像        | Not_Support | ksyun_images | kec
+| 云盘           | ksyun_volume | ksyun_volumes | ebs
+| 云盘绑定         | ksyun_volume_attach | Not_Support | ebs
+| RDS          | ksyun_krds | ksyun_krds | krds
+| RDS只读实例      | ksyun_krds\_read\_replica | ksyun_krds | krds
+| RDS安全组       | ksyun_krds\_security\_group | ksyun_krds\_security\_groups | krds
+| SqlServer    | ksyun_sqlserver | ksyun_sqlservers | krds
+| MongoDB实例    | ksyun_mongodb\_instance | ksyun_mongodb | mongodb
+| MongoDB安全组   | ksyun_mongodb\_security\_rule | ksyun_mongodb | mongodb
 | MongoDB实例分片  | ksyun_mongodb\_shard\_instance | ksyun_mongodb | mongodb
-| Redis实例  | ksyun_redis\_instance | ksyun_redis | kcs
-| Redis节点  | ksyun_redis\_instance\_node | ksyun_redis | kcs
-| Redis安全组规则  | ksyun_redis\_sec\_rule | ksyun_redis | kcs
-| 安全组  | ksyun_security\_group | ksyun_security\_groups | vpc
-| 安全组规则  | ksyun_security\_group\_entry | ksyun_security\_groups | vpc
-| 虚拟网卡  | Not_Support | ksyun_network\_interface | vpc
-| 子网 | ksyun_subnet | ksyun_subnets | vpc
-| 子网已用IP | Not_Support | ksyun_subnet\_allocated\_ip\_addresses | vpc
-| 子网可用IP | Not_Support | ksyun_subnet\_available\_addresses | vpc
-| 虚拟私有网络 | ksyun_vpc | ksyun_vpcs | vpc
-| 登录SSHKEY  | ksyun_ssh\_key | ksyun_ssh\_keys | sks
-| 对象存储  | ksyun_ks3 | Not_Support | ks3
+| Redis实例      | ksyun_redis\_instance | ksyun_redis | kcs
+| Redis节点      | ksyun_redis\_instance\_node | ksyun_redis | kcs
+| Redis安全组规则   | ksyun_redis\_sec\_rule | ksyun_redis | kcs
+| 安全组          | ksyun_security\_group | ksyun_security\_groups | vpc
+| 安全组规则        | ksyun_security\_group\_entry | ksyun_security\_groups | vpc
+| 虚拟网卡         | Not_Support | ksyun_network\_interface | vpc
+| 子网           | ksyun_subnet | ksyun_subnets | vpc
+| 子网已用IP       | Not_Support | ksyun_subnet\_allocated\_ip\_addresses | vpc
+| 子网可用IP       | Not_Support | ksyun_subnet\_available\_addresses | vpc
+| 虚拟私有网络       | ksyun_vpc | ksyun_vpcs | vpc
+| 登录SSHKEY     | ksyun_ssh\_key | ksyun_ssh\_keys | sks
+| 对象存储         | ksyun_ks3 | Not_Support | ks3
+|  标签管理        | ksyun_tag | ksyun_tags | tag

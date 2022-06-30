@@ -21,7 +21,7 @@ resource "ksyun_instance" "default" {
 //  }
 //  data_disk_gb=0
   #only support part type
-  subnet_id="81530211-2785-47a8-b2a0-ae13120fa97d"
+  subnet_id="05c45fcf-405e-441a-8842-a26809595a3e"
 //  instance_password="Aa123456"
   keep_image_login=false
   charge_type="Daily"
@@ -39,4 +39,7 @@ resource "ksyun_instance" "default" {
   instance_status = "active"
 //  dns1 = "198.18.254.30"
 //  dns2 = "198.18.254.31"
+  tags = {
+    "xym-test" ="sdsds",
+  }
 }

@@ -83,6 +83,10 @@ func (s *EipService) ReadAndSetAddress(d *schema.ResourceData, r *schema.Resourc
 				return resource.NonRetryableError(fmt.Errorf("error on  reading address %q, %s", d.Id(), callErr))
 			}
 		} else {
+			err = mergeTagsData(d, &data, s.client, "eip")
+			if err != nil {
+				return resource.NonRetryableError(err)
+			}
 			SdkResponseAutoResourceData(d, r, data, chargeExtraForVpc(data))
 			return nil
 		}
@@ -147,7 +151,12 @@ func (s *EipService) ReadAndSetAddresses(d *schema.ResourceData, r *schema.Resou
 }
 
 func (s *EipService) CreateAddressCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
-	req, err := SdkRequestAutoMapping(d, r, false, nil, nil)
+	transform := map[string]SdkReqTransform{
+		"tags": {Ignore: true},
+	}
+	req, err := SdkRequestAutoMapping(d, r, false, transform, nil, SdkReqParameter{
+		onlyTransform: false,
+	})
 	if err != nil {
 		return callback, err
 	}
@@ -178,7 +187,12 @@ func (s *EipService) CreateAddress(d *schema.ResourceData, r *schema.Resource) (
 	if err != nil {
 		return err
 	}
-	return ksyunApiCallNew([]ApiCall{call}, d, s.client, true)
+	tagService := TagService{s.client}
+	tagCall, err := tagService.ReplaceResourcesTagsWithResourceCall(d, r, "eip", false, true)
+	if err != nil {
+		return err
+	}
+	return ksyunApiCallNew([]ApiCall{call, tagCall}, d, s.client, true)
 }
 
 func (s *EipService) ModifyAddressProjectCall(d *schema.ResourceData, resource *schema.Resource) (callback ApiCall, err error) {
@@ -206,6 +220,7 @@ func (s *EipService) ModifyAddressProjectCall(d *schema.ResourceData, resource *
 func (s *EipService) ModifyAddressCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
 	transform := map[string]SdkReqTransform{
 		"project_id": {Ignore: true},
+		"tags":       {Ignore: true},
 	}
 	req, err := SdkRequestAutoMapping(d, r, true, transform, nil, SdkReqParameter{
 		false,
@@ -242,7 +257,12 @@ func (s *EipService) ModifyAddress(d *schema.ResourceData, r *schema.Resource) (
 	if err != nil {
 		return err
 	}
-	return ksyunApiCallNew([]ApiCall{projectCall, call}, d, s.client, true)
+	tagService := TagService{s.client}
+	tagCall, err := tagService.ReplaceResourcesTagsWithResourceCall(d, r, "eip", true, false)
+	if err != nil {
+		return err
+	}
+	return ksyunApiCallNew([]ApiCall{projectCall, call, tagCall}, d, s.client, true)
 }
 
 func (s *EipService) RemoveAddressCall(d *schema.ResourceData) (callback ApiCall, err error) {

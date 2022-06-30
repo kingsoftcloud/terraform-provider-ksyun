@@ -43,11 +43,13 @@ func resourceRedisInstance() *schema.Resource {
 				Optional:     true,
 				ForceNew:     true,
 				Default:      2,
-				ValidateFunc: validation.IntBetween(1, 2),
+				ValidateFunc: validation.IntBetween(1, 4),
+				Description:  "1-quickSelect;2-HA;3-selfDefineCluster",
 			},
 			"capacity": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				Description: "mem of redis, if mode is selfDefineCluster(mode=3) then capacity = shard_size * shard_num",
 			},
 			"slave_num": {
 				Type:         schema.TypeInt,
@@ -99,10 +101,9 @@ func resourceRedisInstance() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 				ValidateFunc: validation.StringInSlice([]string{
-					"2.8",
-					"3.0",
 					"4.0",
 					"5.0",
+					"6.0",
 				}, false),
 			},
 			"backup_time_zone": {
@@ -148,7 +149,41 @@ func resourceRedisInstance() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
+			"timing_switch": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     false,
+				Description: "auto backup On or Off.",
+			},
+			"timezone": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  false,
+			},
+			"shard_size": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ValidateFunc: validation.IntBetween(0, 1024),
+				Description:  "each shard mem size GB.",
+			},
+			"shard_num": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ValidateFunc: validation.IntBetween(0, 1024),
+				Description:  "shard number.",
+			},
+			"prepare_az_name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "assign standby instance area.",
+			},
+			"rr_az_name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "assign read only instance area.",
+			},
 			"engine": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -174,14 +209,6 @@ func resourceRedisInstance() *schema.Resource {
 				Computed: true,
 			},
 			"create_time": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"timing_switch": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"timezone": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -294,6 +321,23 @@ func resourceRedisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 			return fmt.Errorf("error on create Instance: %s", err)
 		}
 	}
+	if timingSwitch, ok := d.GetOk("timing_switch"); ok && strings.ToLower(timingSwitch.(string)) == "on" {
+		autoBackupReq := make(map[string]interface{})
+		autoBackupReq["CacheId"] = d.Id()
+		autoBackupReq["TimingSwitch"] = "On"
+		if timezone, ok := d.GetOk("timezone"); ok {
+			autoBackupReq["Timezone"] = timezone
+		} else {
+			return fmt.Errorf("error, timing_switch=on, but timezone is null. Timezone: %s", timezone)
+		}
+		backupAction := "SetTimingSnapshot"
+		logger.Debug(logger.ReqFormat, backupAction, autoBackupReq)
+		resp, err = conn.SetTimingSnapshot(&autoBackupReq)
+		if err != nil {
+			return fmt.Errorf("error on creating instance: %s", err)
+		}
+		logger.Debug(logger.RespFormat, action, autoBackupReq, *resp)
+	}
 
 	return resourceRedisInstanceRead(d, meta)
 }
@@ -301,6 +345,7 @@ func resourceRedisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 func resourceRedisInstanceDelete(d *schema.ResourceData, meta interface{}) error {
 	deleteReq := make(map[string]interface{})
 	deleteReq["CacheId"] = d.Id()
+	deleteReq["AvailableZone"] = d.Get("az")
 
 	return resource.Retry(20*time.Minute, func() *resource.RetryError {
 		var (
@@ -374,6 +419,11 @@ func resourceRedisInstanceUpdate(d *schema.ResourceData, meta interface{}) (err 
 	if err != nil {
 		return fmt.Errorf("error on update instance: %s", err)
 	}
+	// auto backup time
+	err = modifyRedisInstanceAutoBackup(d, meta)
+	if err != nil {
+		return fmt.Errorf("error on update instance: %s", err)
+	}
 
 	// update parameter
 	if len(*createParam) > 0 {
@@ -404,7 +454,7 @@ func resourceRedisInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	add := make(map[string]interface{})
 	for k, v := range item {
 		if k == "az" {
-			add["AvailableZone"] = v
+			add["availableZone"] = v
 		}
 	}
 	if _, ok = item["slaveNum"]; !ok {

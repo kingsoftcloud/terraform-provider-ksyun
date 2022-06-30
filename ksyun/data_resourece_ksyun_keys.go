@@ -361,6 +361,10 @@ var redisInstanceKeys = map[string]bool{
 	"readonlyNode":     true,
 	//"rules":            true,
 	"parameters": true,
+	"shardSize":  true,
+	"shardNum":   true,
+	"eip":        true,
+	"eipRo":      true,
 }
 
 /*

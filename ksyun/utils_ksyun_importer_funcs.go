@@ -213,6 +213,40 @@ func importSecurityGroupEntry(d *schema.ResourceData, meta interface{}) ([]*sche
 	return []*schema.ResourceData{d}, nil
 }
 
+func importTagV1Resource(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	var err error
+	// ID => t_key + ":" + t_value + "," + r_type + ":" + r_id
+	items := strings.Split(d.Id(), ",")
+	if len(items) != 2 {
+		return []*schema.ResourceData{d}, fmt.Errorf("ID example: 'tag_key:tag_value,resource_type:resource_id'")
+	}
+	tag := strings.Split(items[0], ":")
+	resource := strings.Split(items[1], ":")
+	if len(tag) != 2 || len(resource) != 2 {
+		return []*schema.ResourceData{d}, fmt.Errorf("ID example: 'tag_key:tag_value,resource_type:resource_id'")
+	}
+
+	err = d.Set("key", tag[0])
+	if err != nil {
+		return []*schema.ResourceData{d}, err
+	}
+	err = d.Set("value", tag[1])
+	if err != nil {
+		return []*schema.ResourceData{d}, err
+	}
+	err = d.Set("resource_type", resource[0])
+	if err != nil {
+		return []*schema.ResourceData{d}, err
+	}
+	err = d.Set("resource_id", resource[1])
+	if err != nil {
+		return []*schema.ResourceData{d}, err
+	}
+
+	return []*schema.ResourceData{d}, nil
+
+}
+
 func importAddressAssociate(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	var err error
 	items := strings.Split(d.Id(), ":")

@@ -43,7 +43,7 @@ func (s *BareMetalService) ReadBareMetals(condition map[string]interface{}) (dat
 	})
 }
 
-func (s *BareMetalService) ReadBareMetal(d *schema.ResourceData, hostId string) (data map[string]interface{}, err error) {
+func (s *BareMetalService) ReadBareMetal(d *schema.ResourceData, hostId string, allProject bool) (data map[string]interface{}, err error) {
 	var (
 		results []interface{}
 	)
@@ -53,10 +53,18 @@ func (s *BareMetalService) ReadBareMetal(d *schema.ResourceData, hostId string) 
 	req := map[string]interface{}{
 		"HostId.1": hostId,
 	}
-	err = addProjectInfo(d, &req, s.client)
-	if err != nil {
-		return data, err
+	if allProject {
+		err = addProjectInfoAll(d, &req, s.client)
+		if err != nil {
+			return data, err
+		}
+	} else {
+		err = addProjectInfo(d, &req, s.client)
+		if err != nil {
+			return data, err
+		}
 	}
+
 	results, err = s.ReadBareMetals(req)
 	if err != nil {
 		return data, err
@@ -72,7 +80,7 @@ func (s *BareMetalService) ReadBareMetal(d *schema.ResourceData, hostId string) 
 
 func (s *BareMetalService) ReadAndSetBareMetal(d *schema.ResourceData, r *schema.Resource) (err error) {
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
-		data, callErr := s.ReadBareMetal(d, "")
+		data, callErr := s.ReadBareMetal(d, "", false)
 		if callErr != nil {
 			if !d.IsNewResource() {
 				return resource.NonRetryableError(callErr)
@@ -211,7 +219,7 @@ func (s *BareMetalService) BareMetalStateRefreshFunc(d *schema.ResourceData, hos
 		var (
 			err error
 		)
-		data, err := s.ReadBareMetal(d, hostId)
+		data, err := s.ReadBareMetal(d, hostId, true)
 		if err != nil {
 			return nil, "", err
 		}
@@ -731,7 +739,7 @@ func (s *BareMetalService) RemoveBareMetalCall(d *schema.ResourceData) (callback
 		},
 		callError: func(d *schema.ResourceData, client *KsyunClient, call ApiCall, baseErr error) error {
 			return resource.Retry(15*time.Minute, func() *resource.RetryError {
-				_, callErr := s.ReadBareMetal(d, "")
+				_, callErr := s.ReadBareMetal(d, "", false)
 				if callErr != nil {
 					if notFoundError(callErr) {
 						return nil

@@ -142,6 +142,16 @@ func SetResourceDataByResp(d *schema.ResourceData, item interface{}, keys map[st
 	return nil
 }
 
+func addProjectInfoAll(d *schema.ResourceData, req *map[string]interface{}, client *KsyunClient, key ...string) error {
+	var project string
+	if key != nil && len(key) == 1 {
+		project = key[0]
+	} else {
+		project = "project_id"
+	}
+	return getProjectInfo(req, client, project)
+}
+
 func addProjectInfo(d *schema.ResourceData, req *map[string]interface{}, client *KsyunClient, key ...string) error {
 	var project string
 	if key != nil && len(key) == 1 {

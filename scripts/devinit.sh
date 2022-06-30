@@ -2,35 +2,44 @@
 
 set -e
 
+version=$1
+
 # Detech current os category
 unameOut="$(uname -s)"
 case "${unameOut}" in
-    Linux*)     OS_TYPE=Linux;;
-    Darwin*)    OS_TYPE=Mac;;
-    CYGWIN*)    OS_TYPE=Windows;;
-    MINGW*)     OS_TYPE=Windows;;
+    Linux*)     OS_TYPE=linux;;
+    Darwin*)    OS_TYPE=darwin;;
+    CYGWIN*)    OS_TYPE=windows;;
+    MINGW*)     OS_TYPE=windows;;
     *)          OS_TYPE="UNKNOWN:${unameOut}"
 esac
 
-echo "OS ${OS_TYPE} is deteched."
+unameOut="$(uname -m)"
+case "${unameOut}" in
+    x86_64*)     OS_ARCH=amd64;;
+    arm64*)      OS_ARCH=arm64;;
+    *)          OS_ARCH="UNKNOWN:${unameOut}"
+esac
+
+echo "OS ${OS_TYPE}-${OS_ARCH} is deteched."
 echo "Compiling ..."
 
-# Choice file path/name by os category
-if [ $OS_TYPE == "Linux" ]; then
-	GOOS=linux GOARCH=amd64 go build -o bin/terraform-provider-ksyun
+plugin_path=$HOME/.terraform.d/plugin-cache/registry.terraform.io/kingsoftcloud/ksyun/${version}/${OS_TYPE}_${OS_ARCH}
+plugin_path_win=$HO$APPDATAME/terraform.d/plugin-cache/registry.terraform.io/kingsoftcloud/ksyun/${version}/${OS_TYPE}_${OS_ARCH}
+
+echo $plugin_path
+
+if [ $OS_TYPE == "linux" -o $OS_TYPE == "darwin" ]; then
+	GOOS=$OS_TYPE GOARCH=$OS_ARCH go build -o bin/terraform-provider-ksyun
 	chmod +x bin/terraform-provider-ksyun
-    mkdir -p $HOME/.terraform.d/plugins
-    mv bin/terraform-provider-ksyun $HOME/.terraform.d/plugins
-elif [ $OS_TYPE == "Mac" ]; then
-	GOOS=darwin GOARCH=amd64 go build -o bin/terraform-provider-ksyun
-	chmod +x bin/terraform-provider-ksyun
-    mkdir -p $HOME/.terraform.d/plugins
-    mv bin/terraform-provider-ksyun $HOME/.terraform.d/plugins
+    mkdir -p $plugin_path
+    mv bin/terraform-provider-ksyun $plugin_path/terraform-provider-ksyun_v${version}
 elif [ $OS_TYPE == "Windows" ]; then
-	GOOS=windows GOARCH=amd64 go build -o bin/terraform-provider-ksyun.exe
+	GOOS=$OS_TYPE GOARCH=$OS_ARCH go build -o bin/terraform-provider-ksyun
 	chmod +x bin/terraform-provider-ksyun.exe
-    mkdir -p $APPDATA/terraform.d/plugins
-    mv bin/terraform-provider-ksyun.exe $APPDATA/terraform.d/plugins
+#    mkdir -p $APPDATA/terraform.d/plugins
+    mkdir -p $plugin_path_win
+    mv bin/terraform-provider-ksyun.exe $plugin_path_win/terraform-provider-ksyun_v${version}.exe
 else
     echo "Invalid OS"
     exit 1

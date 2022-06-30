@@ -5,6 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
+	"strings"
 	"time"
 )
 
@@ -42,7 +43,7 @@ func (s *EbsService) ReadVolumes(condition map[string]interface{}) (data []inter
 	})
 }
 
-func (s *EbsService) ReadVolume(d *schema.ResourceData, volumeId string) (data map[string]interface{}, err error) {
+func (s *EbsService) ReadVolume(d *schema.ResourceData, volumeId string, allProject bool) (data map[string]interface{}, err error) {
 	var (
 		results []interface{}
 	)
@@ -52,10 +53,18 @@ func (s *EbsService) ReadVolume(d *schema.ResourceData, volumeId string) (data m
 	req := map[string]interface{}{
 		"VolumeId.1": volumeId,
 	}
-	err = addProjectInfo(d, &req, s.client)
-	if err != nil {
-		return data, err
+	if allProject {
+		err = addProjectInfoAll(d, &req, s.client)
+		if err != nil {
+			return data, err
+		}
+	} else {
+		err = addProjectInfo(d, &req, s.client)
+		if err != nil {
+			return data, err
+		}
 	}
+
 	results, err = s.ReadVolumes(req)
 	if err != nil {
 		return data, err
@@ -74,7 +83,7 @@ func (s *EbsService) volumeStateRefreshFunc(d *schema.ResourceData, volumeId str
 		var (
 			err error
 		)
-		data, err := s.ReadVolume(d, volumeId)
+		data, err := s.ReadVolume(d, volumeId, true)
 		if err != nil {
 			return nil, "", err
 		}
@@ -107,7 +116,7 @@ func (s *EbsService) checkVolumeState(d *schema.ResourceData, volumeId string, t
 
 func (s *EbsService) ReadAndSetVolume(d *schema.ResourceData, r *schema.Resource) (err error) {
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
-		data, callErr := s.ReadVolume(d, "")
+		data, callErr := s.ReadVolume(d, "", false)
 		if callErr != nil {
 			if !d.IsNewResource() {
 				return resource.NonRetryableError(callErr)
@@ -321,7 +330,7 @@ func (s *EbsService) RemoveVolumeCall(d *schema.ResourceData) (callback ApiCall,
 		},
 		callError: func(d *schema.ResourceData, client *KsyunClient, call ApiCall, baseErr error) error {
 			return resource.Retry(15*time.Minute, func() *resource.RetryError {
-				_, callErr := s.ReadVolume(d, "")
+				_, callErr := s.ReadVolume(d, "", false)
 				if callErr != nil {
 					if notFoundError(callErr) {
 						return nil
@@ -355,7 +364,7 @@ func (s *EbsService) RemoveVolume(d *schema.ResourceData) (err error) {
 // start attach
 
 func (s *EbsService) ReadVolumeAttach(d *schema.ResourceData, volumeId string, instanceId string) (data map[string]interface{}, err error) {
-	data, err = s.ReadVolume(d, volumeId)
+	data, err = s.ReadVolume(d, volumeId, false)
 	if id, ok := data["InstanceId"]; ok {
 		if id != instanceId {
 			return data, fmt.Errorf("InstanceId %s not attach in Volume %s ", instanceId, volumeId)
@@ -400,6 +409,20 @@ func (s *EbsService) CreateVolumeAttachCall(d *schema.ResourceData, r *schema.Re
 			logger.Debug(logger.RespFormat, call.action, *(call.param))
 			resp, err = conn.AttachVolume(call.param)
 			return resp, err
+		},
+		callError: func(d *schema.ResourceData, client *KsyunClient, call ApiCall, baseErr error) error {
+			return resource.Retry(5*time.Minute, func() *resource.RetryError {
+				errMessage := strings.ToLower(baseErr.Error())
+				if strings.Contains(errMessage, "OperationFailedWithTradeInstanceError") {
+					_, callErr := call.executeCall(d, client, call)
+					if callErr == nil {
+						return nil
+					}
+					return resource.RetryableError(callErr)
+				} else {
+					return resource.NonRetryableError(baseErr)
+				}
+			})
 		},
 		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
 			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)

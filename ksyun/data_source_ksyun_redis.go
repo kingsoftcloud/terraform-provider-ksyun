@@ -148,6 +148,30 @@ func dataSourceRedisInstances() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"timing_switch": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"timezone": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"shard_size": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"shard_num": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"eip": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"eip_ro": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"parameters": {
 							Type:     schema.TypeMap,
 							Computed: true,
@@ -198,13 +222,13 @@ func dataSourceRedisInstances() *schema.Resource {
 func dataSourceRedisInstancesRead(d *schema.ResourceData, meta interface{}) error {
 	var (
 		allInstances []interface{}
-		az           map[string]string
-		item         interface{}
-		resp         *map[string]interface{}
-		ok           bool
-		limit        = 100
-		nextToken    string
-		err          error
+		//az           map[string]string
+		item      interface{}
+		resp      *map[string]interface{}
+		ok        bool
+		limit     = 100
+		nextToken string
+		err       error
 	)
 
 	action := "DescribeCacheClusters"
@@ -231,43 +255,40 @@ func dataSourceRedisInstancesRead(d *schema.ResourceData, meta interface{}) erro
 	if v, ok := d.GetOk("vip"); ok {
 		readReq["Vip"] = v
 	}
-	if az, err = queryAz(conn); err != nil {
-		return fmt.Errorf("error on reading instances, because there is no available area in the region")
-	}
-	for k := range az {
-		readReq["AvailableZone"] = k
-		for {
-			readReq["Limit"] = fmt.Sprintf("%v", limit)
-			if nextToken != "" {
-				readReq["Offset"] = nextToken
-			}
-			logger.Debug(logger.ReqFormat, action, readReq)
-			resp, err := conn.DescribeCacheClusters(&readReq)
-			if err != nil {
-				return fmt.Errorf("error on reading instance list req(%v):%s", readReq, err)
-			}
-			logger.Debug(logger.RespFormat, action, readReq, *resp)
-			result, ok := (*resp)["Data"]
-			if !ok {
-				break
-			}
-			item, ok := result.(map[string]interface{})
-			if !ok {
-				break
-			}
-			items, ok := item["list"].([]interface{})
-			if !ok {
-				break
-			}
-			if items == nil || len(items) < 1 {
-				break
-			}
-			allInstances = append(allInstances, items...)
-			if len(items) < limit {
-				break
-			}
-			nextToken = strconv.Itoa(int(item["limit"].(float64)) + int(item["offset"].(float64)))
+	//if az, err = queryAz(conn); err != nil {
+	//	return fmt.Errorf("error on reading instances, because there is no available area in the region")
+	//}
+	for {
+		readReq["Limit"] = fmt.Sprintf("%v", limit)
+		if nextToken != "" {
+			readReq["Offset"] = nextToken
 		}
+		logger.Debug(logger.ReqFormat, action, readReq)
+		resp, err := conn.DescribeCacheClusters(&readReq)
+		if err != nil {
+			return fmt.Errorf("error on reading instance list req(%v):%s", readReq, err)
+		}
+		logger.Debug(logger.RespFormat, action, readReq, *resp)
+		result, ok := (*resp)["Data"]
+		if !ok {
+			break
+		}
+		item, ok := result.(map[string]interface{})
+		if !ok {
+			break
+		}
+		items, ok := item["list"].([]interface{})
+		if !ok {
+			break
+		}
+		if items == nil || len(items) < 1 {
+			break
+		}
+		allInstances = append(allInstances, items...)
+		if len(items) < limit {
+			break
+		}
+		nextToken = strconv.Itoa(int(item["limit"].(float64)) + int(item["offset"].(float64)))
 	}
 
 	readOnlyAction := "DescribeCacheReadonlyNode"
@@ -301,7 +322,7 @@ func dataSourceRedisInstancesRead(d *schema.ResourceData, meta interface{}) erro
 		}
 
 		// query instance node
-		if int(instance["mode"].(float64)) == 1 {
+		if int(instance["mode"].(float64)) != 2 {
 			continue
 		}
 		readOnlyReq["CacheId"] = instance["cacheId"]

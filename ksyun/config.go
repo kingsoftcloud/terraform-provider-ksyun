@@ -19,6 +19,8 @@ import (
 	"github.com/KscSDK/ksc-sdk-go/service/sks"
 	"github.com/KscSDK/ksc-sdk-go/service/slb"
 	"github.com/KscSDK/ksc-sdk-go/service/sqlserver"
+	"github.com/KscSDK/ksc-sdk-go/service/tag"
+	"github.com/KscSDK/ksc-sdk-go/service/tagv2"
 	"github.com/KscSDK/ksc-sdk-go/service/vpc"
 	"github.com/ks3sdklib/aws-sdk-go/aws"
 	"github.com/ks3sdklib/aws-sdk-go/aws/credentials"
@@ -68,6 +70,8 @@ func (c *Config) Client() (*KsyunClient, error) {
 	client.iamconn = iam.SdkNew(cli, cfg, url)
 	client.rabbitmqconn = rabbitmq.SdkNew(cli, cfg, url)
 	client.bwsconn = bws.SdkNew(cli, cfg, url)
+	client.tagconn = tagv2.SdkNew(cli, cfg, url)
+	client.tagv1conn = tag.SdkNew(cli, cfg, url)
 	client.kceconn = kce.SdkNew(cli, cfg, url)
 
 	credentials := credentials.NewStaticCredentials(c.AccessKey, c.SecretKey, "")

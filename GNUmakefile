@@ -62,8 +62,13 @@ endif
 
 .PHONY: build test testacc vet fmt fmtcheck errcheck lint tools test-compile website website-lint website-test
 
+dev_v0.12: clean fmt
+	@chmod +x scripts/devinit_v0.12.sh
+	@bash ./scripts/devinit_v0.12.sh
+
 dev: clean fmt
 	@chmod +x scripts/devinit.sh
-	@bash ./scripts/devinit.sh
+	@bash ./scripts/devinit.sh $(version)
+
 clean:
 	rm -rf bin/*

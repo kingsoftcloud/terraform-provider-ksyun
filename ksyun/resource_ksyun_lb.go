@@ -80,6 +80,8 @@ func resourceKsyunLb() *schema.Resource {
 				ForceNew: true,
 			},
 
+			"tags": tagsSchema(),
+
 			"public_ip": {
 				Type:     schema.TypeString,
 				Computed: true,

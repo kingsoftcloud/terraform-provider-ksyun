@@ -104,6 +104,7 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_bare_metal_images":             dataSourceKsyunBareMetalImages(),
 			"ksyun_bare_metal_raid_attributes":    dataSourceKsyunBareMetalRaidAttributes(),
 			"ksyun_kce_clusters":                  dataSourceKsyunKceClusters(),
+			"ksyun_tags":                          dataSourceKsyunTags(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"ksyun_eip":                              resourceKsyunEip(),
@@ -164,6 +165,7 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_bws":                              resourceKsyunBandWidthShare(),
 			"ksyun_bws_associate":                    resourceKsyunBandWidthShareAssociate(),
 			"ksyun_bare_metal":                       resourceKsyunBareMetal(),
+			"ksyun_tag":                              resourceKsyunTag(),
 		},
 		ConfigureFunc: providerConfigure,
 	}
