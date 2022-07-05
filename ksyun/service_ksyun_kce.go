@@ -14,27 +14,32 @@ func (s *KceService) readKceClusters(condition map[string]interface{}) (data []i
 		resp           *map[string]interface{}
 		clusterResults interface{}
 	)
-	conn := s.client.kceconn
-	//action := "DescribeCluster"
 
-	if condition == nil {
-		resp, err = conn.DescribeCluster(nil)
+	return pageQuery(condition, "MaxResults", "Marker", 10, 0, func(condition map[string]interface{}) ([]interface{}, error) {
+		conn := s.client.kceconn
+		//action := "DescribeCluster"
+
+		if condition == nil {
+			resp, err = conn.DescribeCluster(nil)
+			if err != nil {
+				return data, err
+			}
+		} else {
+			resp, err = conn.DescribeCluster(&condition)
+			if err != nil {
+				return data, err
+			}
+		}
+		logger.Debug("resp", "DescribeCluster", resp)
+		clusterResults, err = getSdkValue("ClusterSet", *resp)
 		if err != nil {
 			return data, err
 		}
-	} else {
-		resp, err = conn.DescribeCluster(&condition)
-		if err != nil {
-			return data, err
-		}
-	}
-	clusterResults, err = getSdkValue("ClusterSet", *resp)
-	if err != nil {
+		data = clusterResults.([]interface{})
+		logger.Debug("kce list", "123", data)
 		return data, err
-	}
-	data = clusterResults.([]interface{})
-	logger.Debug("kce list", "123", data)
-	return data, err
+	})
+
 }
 
 func (s *KceService) ReadAndSetKceClusters(d *schema.ResourceData, r *schema.Resource) (err error) {
@@ -42,6 +47,10 @@ func (s *KceService) ReadAndSetKceClusters(d *schema.ResourceData, r *schema.Res
 	transform := map[string]SdkReqTransform{
 		"cluster_id": {
 			mapping: "ClusterId",
+			Type:    TransformDefault,
+		},
+		"search": {
+			mapping: "Search",
 			Type:    TransformDefault,
 		},
 	}
