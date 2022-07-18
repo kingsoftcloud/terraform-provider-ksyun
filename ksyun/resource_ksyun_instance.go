@@ -89,6 +89,10 @@ func resourceKsyunInstance() *schema.Resource {
 							ValidateFunc: validation.StringInSlice([]string{
 								"SSD3.0",
 								"EHDD",
+								"Local_SSD",
+								"ESSD_PL1",
+								"ESSD_PL2",
+								"ESSD_PL3",
 							}, false),
 						},
 						"disk_size": {
