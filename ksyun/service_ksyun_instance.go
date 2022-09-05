@@ -422,7 +422,8 @@ func (s *KecService) modifyKecInstance(d *schema.ResourceData, resource *schema.
 	return ksyunApiCallNew(callbacks, d, s.client, true)
 }
 
-func (s *KecService) createKecInstanceCommon(d *schema.ResourceData, resource *schema.Resource) (callback ApiCall, err error) {
+func transKecInstanceParams(d *schema.ResourceData, resource *schema.Resource) (map[string]interface{}, error) {
+
 	transform := map[string]SdkReqTransform{
 		"key_id": {
 			Type: TransformWithN,
@@ -445,9 +446,38 @@ func (s *KecService) createKecInstanceCommon(d *schema.ResourceData, resource *s
 		"force_reinstall_system": {Ignore: true},
 		"tags":                   {Ignore: true},
 	}
-	createReq, err := SdkRequestAutoMapping(d, resource, false, transform, nil, SdkReqParameter{
+	return SdkRequestAutoMapping(d, resource, false, transform, nil, SdkReqParameter{
 		onlyTransform: false,
 	})
+}
+
+func (s *KecService) createKecInstanceCommon(d *schema.ResourceData, resource *schema.Resource) (callback ApiCall, err error) {
+	//transform := map[string]SdkReqTransform{
+	//	"key_id": {
+	//		Type: TransformWithN,
+	//	},
+	//	"system_disk": {
+	//		Type: TransformListUnique,
+	//	},
+	//	"security_group_id": {
+	//		Type: TransformWithN,
+	//	},
+	//	"data_disks": {
+	//		mappings: map[string]string{
+	//			"data_disks": "DataDisk",
+	//			"disk_size":  "Size",
+	//			"disk_type":  "Type",
+	//		}, Type: TransformListN,
+	//	},
+	//	"instance_status":        {Ignore: true},
+	//	"force_delete":           {Ignore: true},
+	//	"force_reinstall_system": {Ignore: true},
+	//	"tags":                   {Ignore: true},
+	//}
+	//createReq, err := SdkRequestAutoMapping(d, resource, false, transform, nil, SdkReqParameter{
+	//	onlyTransform: false,
+	//})
+	createReq, err := transKecInstanceParams(d, resource)
 	if err != nil {
 		return callback, err
 	}

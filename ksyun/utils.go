@@ -634,7 +634,6 @@ func SdkResponseAutoResourceData(d *schema.ResourceData, resource *schema.Resour
 					log.Println(err.Error())
 					panic("ERROR: " + err.Error())
 				}
-
 			} else {
 				result[target] = value
 			}

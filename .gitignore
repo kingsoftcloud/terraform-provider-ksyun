@@ -7,3 +7,4 @@ terraform-provider-ksyun
 *.tfstate.*
 output_result
 *.log
+vendor_bk/

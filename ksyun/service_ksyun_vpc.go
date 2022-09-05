@@ -466,6 +466,8 @@ func (s *VpcService) ReadSubnet(d *schema.ResourceData, subnetId string) (data m
 	}
 	for _, v := range results {
 		data = v.(map[string]interface{})
+		//data["AvailabilityZone"] = data["AvailabilityZoneName"]
+		//logger.Debug("%s %s", "test1111", data["AvailabilityZoneName"])
 	}
 	if len(data) == 0 {
 		return data, fmt.Errorf("Subnet %s not exist ", subnetId)

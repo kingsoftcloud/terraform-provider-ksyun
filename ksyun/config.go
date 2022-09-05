@@ -9,6 +9,7 @@ import (
 	"github.com/KscSDK/ksc-sdk-go/service/epc"
 	"github.com/KscSDK/ksc-sdk-go/service/iam"
 	"github.com/KscSDK/ksc-sdk-go/service/kce"
+	"github.com/KscSDK/ksc-sdk-go/service/kcev2"
 	"github.com/KscSDK/ksc-sdk-go/service/kcm"
 	"github.com/KscSDK/ksc-sdk-go/service/kcsv1"
 	"github.com/KscSDK/ksc-sdk-go/service/kcsv2"
@@ -44,6 +45,10 @@ func (c *Config) Client() (*KsyunClient, error) {
 	//init ksc client info
 	client.region = c.Region
 	cli := ksc.NewClient(c.AccessKey, c.SecretKey)
+
+	// 重试去掉
+	var MaxRetries int = 0
+	cli.Config.MaxRetries = &MaxRetries
 	cfg := &ksc.Config{
 		Region: &c.Region,
 	}
@@ -53,6 +58,7 @@ func (c *Config) Client() (*KsyunClient, error) {
 		CustomerDomain:              c.Domain,
 		CustomerDomainIgnoreService: c.IgnoreService,
 	}
+
 	client.dryRun = c.DryRun
 	client.vpcconn = vpc.SdkNew(cli, cfg, url)
 	client.eipconn = eip.SdkNew(cli, cfg, url)
@@ -73,6 +79,7 @@ func (c *Config) Client() (*KsyunClient, error) {
 	client.tagconn = tagv2.SdkNew(cli, cfg, url)
 	client.tagv1conn = tag.SdkNew(cli, cfg, url)
 	client.kceconn = kce.SdkNew(cli, cfg, url)
+	client.kcev2conn = kcev2.SdkNew(cli, cfg, url)
 
 	credentials := credentials.NewStaticCredentials(c.AccessKey, c.SecretKey, "")
 	client.ks3conn = s3.New(&aws.Config{

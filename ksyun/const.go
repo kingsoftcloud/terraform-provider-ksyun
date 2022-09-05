@@ -5,15 +5,14 @@ const (
 	statusPending = "pending"
 
 /*
-	// statusInitialized is the general status when remote resource is completed
-	statusInitialized = "initialized"
+// statusInitialized is the general status when remote resource is completed
+statusInitialized = "initialized"
 
-	// statusRunning is the general status when remote resource is running
-	statusRunning = "running"
+// statusRunning is the general status when remote resource is running
+statusRunning = "running"
 
-	// statusStopped is the general status when remote resource is stopped
-	statusStopped = "stopped"
-
+// statusStopped is the general status when remote resource is stopped
+statusStopped = "stopped"
 */
 )
 
