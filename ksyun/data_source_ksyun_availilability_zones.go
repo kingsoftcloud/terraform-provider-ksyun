@@ -1,3 +1,17 @@
+/*
+This data source provides a list of available zones in the current region.
+
+# Example Usage
+
+```hcl
+
+	data "ksyun_availability_zones" "default" {
+	  output_file=""
+	  ids=[]
+	}
+
+```
+*/
 package ksyun
 
 import (
@@ -24,8 +38,9 @@ func dataSourceKsyunAvailabilityZones() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"availability_zone_name": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Name of the zone",
 						},
 					},
 				},
