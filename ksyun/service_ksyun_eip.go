@@ -53,7 +53,7 @@ func (s *EipService) ReadAddress(d *schema.ResourceData, allocationId string) (d
 	req := map[string]interface{}{
 		"AllocationId.1": allocationId,
 	}
-	err = addProjectInfo(d, &req, s.client)
+	err = addProjectInfoAll(d, &req, s.client)
 	if err != nil {
 		return data, err
 	}
