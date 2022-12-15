@@ -36,7 +36,7 @@ resource "ksyun_instance" "default" {
   project_id             = 0
   //  data_guard_id=""
   //  force_delete =true
-  //  user_data=""
+  user_data="IyEvYmluL2Jhc2gKCmVjaG8gIjEyMyIKClRGX0xPRz1kZWJ1ZyB0ZXJyYWZvcm0gaW1wb3J0IGtzeXVuX3RhZy5pbXBvcnRfZXhhbXBsZSAyMjI6cnJlcix2cGM6N2ZmNTcyMjItMjdkZi00MmY0LTg5Y2QtODI0ODZhZjQwZTZk"
   //  iam_role_name = "KsyunKECImageImportDefaultRole"
   force_reinstall_system = false
   instance_status        = "active"

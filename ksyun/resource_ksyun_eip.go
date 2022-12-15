@@ -58,7 +58,8 @@ func resourceKsyunEip() *schema.Resource {
 			"project_id": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Default:  0,
+				Computed: true,
+				//Default:  0,
 			},
 			"tags": tagsSchema(),
 
