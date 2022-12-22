@@ -366,6 +366,7 @@ func checkAndProcessKrdsParameters(d *schema.ResourceData, meta interface{}) (re
 			}
 
 		}
+
 		//check and prepare if value equals default ,the param will ignore
 		needRestart, index, err = prepareModifyDbParameterParams(d, meta, needToDefault, &req, oldKv, index, true)
 		if err != nil {
@@ -428,6 +429,7 @@ func prepareModifyDbParameterParams(d *schema.ResourceData, meta interface{}, ke
 				dMin := defaultObj.(map[string]interface{})["Min"].(float64)
 				dMax := defaultObj.(map[string]interface{})["Max"].(float64)
 				valueNum, err := strconv.ParseFloat(kv[key], 64)
+
 				if err != nil {
 					return needRestart, num, err
 				}
@@ -440,7 +442,7 @@ func prepareModifyDbParameterParams(d *schema.ResourceData, meta interface{}, ke
 				if valueNum < dMin || valueNum > dMax {
 					return needRestart, num, fmt.Errorf("parameter %s must in [%f , %f]", key, dMin, dMax)
 				}
-				continue
+				//continue
 			case "expression":
 				if defaultObj.(map[string]interface{})["Variable"] == "instance_memory" {
 					dMin := int64(defaultObj.(map[string]interface{})["Min"].(float64))
@@ -575,6 +577,7 @@ func removeKrdsParameterGroup(d *schema.ResourceData, meta interface{}) (err err
 
 func modifyKrdsParameterGroup(d *schema.ResourceData, meta interface{}, onCreate bool) (call ksyunApiCallFunc, err error) {
 	paramsReq, restart, err := checkAndProcessKrdsParameters(d, meta)
+	//logger.Debug("test", "test", paramsReq, restart, err)
 	if err != nil {
 
 		return call, err
@@ -712,6 +715,9 @@ func createKrdsDbInstance(d *schema.ResourceData, meta interface{}) (call ksyunA
 	call = func(d *schema.ResourceData, meta interface{}) (err error) {
 		conn := meta.(*KsyunClient).krdsconn
 		action := "CreateDBInstance"
+		if d.Get("db_parameter_group_id") != nil && d.Get("db_parameter_group_id").(string) != "" {
+			createReq["DBParameterGroupId"] = d.Get("db_parameter_group_id")
+		}
 		logger.Debug(logger.RespFormat, action, createReq)
 		resp, err := conn.CreateDBInstance(&createReq)
 		if err != nil {
