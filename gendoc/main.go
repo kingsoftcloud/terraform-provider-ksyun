@@ -23,7 +23,7 @@ const (
 	cloudMark      = "ksyun"
 	cloudTitle     = "ksyun"
 	cloudPrefix    = cloudMark + "_"
-	cloudMarkShort = "tc"
+	cloudMarkShort = "ksyun"
 	docRoot        = "../website/docs"
 )
 
@@ -58,6 +58,7 @@ func main() {
 
 // genIdx generating index for resource
 func genIdx(filePath string) (prods []Product) {
+
 	filename := "provider.go"
 
 	message("[START]get description from file: %s\n", filename)
@@ -74,7 +75,8 @@ func genIdx(filePath string) (prods []Product) {
 		return
 	}
 
-	pos := strings.Index(description, "\nResources List\n")
+	pos := strings.Index(description, "Resources List")
+	//fmt.Println(description, pos, 123)
 	if pos == -1 {
 		message("[SKIP!]resource list missing, skip: %s\n", filename)
 		return
@@ -176,7 +178,7 @@ func genDoc(product, dtype, fpath, name string, resource *schema.Resource) {
 		subStruct    []string
 	)
 
-	if _, ok := resource.Schema["result_output_file"]; dtype == "data_source" && !ok {
+	if _, ok := resource.Schema["output_file"]; dtype == "data_source" && !ok {
 		if resource.DeprecationMessage != "" {
 			message("[SKIP!]argument 'result_output_file' is missing, skip: %s", filename)
 		} else {
@@ -323,8 +325,17 @@ func getFileDescription(fname string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	if parsedAst.Doc != nil {
+		return parsedAst.Doc.Text(), nil
+	}
 
-	return parsedAst.Doc.Text(), nil
+	lines := ""
+	for _, c := range parsedAst.Comments {
+		//fmt.Println(c.Text())
+		lines += c.Text()
+	}
+	return lines, nil
+
 }
 
 // getSubStruct get sub structure from go file

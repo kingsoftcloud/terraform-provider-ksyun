@@ -1,3 +1,44 @@
+/**
+The Ksyun provider is used to interact with many resources supported by Ksyun.
+The provider needs to be configured with the proper credentials before it can be used.
+
+~> **NOTE:** This guide requires an available Ksyun account or sub-account with project to create resources.
+
+The Ksyun provider is used to interact with the
+resources supported by Ksyun. The provider needs to be configured
+with the proper credentials before it can be used.
+
+Use the navigation to the left to read about the available resources.
+
+Example Usage
+
+```hcl
+terraform {
+  required_providers {
+    ksyun = {
+      source  = "kingsoftcloud/ksyun"
+    }
+  }
+}
+
+# Configure the TencentCloud Provider
+provider "ksyun" {
+   access_key = "your ak"
+   secret_key = "your sk"
+   region = "cn-beijing-6"
+}
+```
+
+Resources List
+
+EIP
+	Data Source
+		ksyun_eips
+
+	Resource
+		ksyun_eip
+
+*/
 package ksyun
 
 import (

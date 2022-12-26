@@ -26,6 +26,8 @@ func GetIndex(doc string) ([]Product, error) {
 	for scanner.Scan() {
 		text := strings.TrimSpace(scanner.Text())
 
+		fmt.Println(text, 3, currentType, 234)
+
 		if text == "" {
 			continue
 		}
@@ -57,6 +59,7 @@ func GetIndex(doc string) ([]Product, error) {
 				}
 			}
 		} else {
+			fmt.Println("123123123", currentType)
 			switch currentType {
 			case "Data Source":
 				prod.DataSources = append(prod.DataSources, text)
@@ -80,9 +83,9 @@ func GetIndex(doc string) ([]Product, error) {
 		return nil, err
 	}
 
-	if len(prods) == 0 {
-		return nil, errors.New("no product found")
-	}
+	//if len(prods) == 0 {
+	//	return nil, errors.New("no product found")
+	//}
 
 	if len(prod.DataSources) == 0 && len(prod.Resources) == 0 {
 		return nil, fmt.Errorf("product %s has no data source and resource", prod.Name)
