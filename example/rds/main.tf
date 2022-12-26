@@ -61,6 +61,10 @@ resource "ksyun_krds" "houbin_terraform_4"{
     value = "ROW"
   }
 
+  # 部分parameters的更新，需要重启才能生效
+  # 将force_restart设置为true，会在修改参数后自动执行重启
+  # force_restart = true
+
 }
 
 
