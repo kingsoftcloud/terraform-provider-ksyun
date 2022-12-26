@@ -1,8 +1,15 @@
+## 1.3.61 ()
+
+BUG FIXES:
+
+- 修复KRDS修改parameters，float类型参数不生效的问题
+- 修复KRDS新建实例，parameters不生效，必须创建完成后再modify一次的问题
+
 ## 1.3.60 (Dec 15, 2022)
 
 BUG FIXES:
 
-- 修复EIP通过其他方式修改项目制后，无法从tf获取EIP数据到问题。
+- 修复EIP通过其他方式修改项目制后，无法从tf获取EIP数据的问题。
 
 
 ## 1.3.59 (Dec 2, 2022)
