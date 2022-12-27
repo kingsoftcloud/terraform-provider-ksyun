@@ -1,9 +1,10 @@
-## 1.3.61 ()
+## 1.3.61 (Dec 27, 2022)
 
 BUG FIXES:
 
 - 修复KRDS修改parameters，float类型参数不生效的问题
 - 修复KRDS新建实例，parameters不生效，必须创建完成后再modify一次的问题
+- 增加KRDS的force_restart参数说明
 
 ## 1.3.60 (Dec 15, 2022)
 
