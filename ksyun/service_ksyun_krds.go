@@ -715,12 +715,20 @@ func createKrdsDbInstance(d *schema.ResourceData, meta interface{}) (call ksyunA
 	call = func(d *schema.ResourceData, meta interface{}) (err error) {
 		conn := meta.(*KsyunClient).krdsconn
 		action := "CreateDBInstance"
+
+		// 如果创建了临时参数组，创建实例的时候使用该参数组
 		if d.Get("db_parameter_group_id") != nil && d.Get("db_parameter_group_id").(string) != "" {
 			createReq["DBParameterGroupId"] = d.Get("db_parameter_group_id")
 		}
 		logger.Debug(logger.RespFormat, action, createReq)
 		resp, err := conn.CreateDBInstance(&createReq)
 		if err != nil {
+
+			// 由于临时参数组不被tf管理，创建实例失败，需要手动回收
+			if d.Get("db_parameter_group_id") != nil && d.Get("db_parameter_group_id").(string) != "" {
+				removeKrdsParameterGroup(d, meta)
+			}
+
 			return err
 		}
 		logger.Debug(logger.AllFormat, action, createReq, *resp, err)
