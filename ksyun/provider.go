@@ -1,4 +1,5 @@
-/**
+/*
+*
 The Ksyun provider is used to interact with many resources supported by Ksyun.
 The provider needs to be configured with the proper credentials before it can be used.
 
@@ -10,34 +11,49 @@ with the proper credentials before it can be used.
 
 Use the navigation to the left to read about the available resources.
 
-Example Usage
+# Example Usage
 
 ```hcl
-terraform {
-  required_providers {
-    ksyun = {
-      source  = "kingsoftcloud/ksyun"
-    }
-  }
-}
 
-# Configure the TencentCloud Provider
-provider "ksyun" {
-   access_key = "your ak"
-   secret_key = "your sk"
-   region = "cn-beijing-6"
-}
+	terraform {
+	  required_providers {
+	    ksyun = {
+	      source  = "kingsoftcloud/ksyun"
+	    }
+	  }
+	}
+
+# Configure the ksyun Provider
+
+	provider "ksyun" {
+	   access_key = "your ak"
+	   secret_key = "your sk"
+	   region = "cn-beijing-6"
+	}
+
 ```
 
-Resources List
+# Resources List
+
+Provider Data Sources
+
+	ksyun_availability_zones
 
 EIP
+
 	Data Source
 		ksyun_eips
 
 	Resource
 		ksyun_eip
 
+VPC
+
+	Data Source
+		ksyun_vpcs
+
+	Resource
+		ksyun_vpc
 */
 package ksyun
 

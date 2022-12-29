@@ -155,6 +155,9 @@ func genDoc(product, dtype, fpath, name string, resource *schema.Resource) {
 	}
 
 	pos := strings.Index(description, "\nExample Usage\n")
+	if pos == -1 {
+		pos = strings.Index(description, "\n# Example Usage\n")
+	}
 	if pos != -1 {
 		data["example"] = formatHCL(description[pos+15:])
 		description = strings.TrimSpace(description[:pos])

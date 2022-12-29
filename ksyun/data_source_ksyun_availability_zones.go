@@ -7,7 +7,6 @@ This data source provides a list of available zones in the current region.
 
 	data "ksyun_availability_zones" "default" {
 	  output_file=""
-	  ids=[]
 	}
 
 ```
@@ -23,24 +22,27 @@ func dataSourceKsyunAvailabilityZones() *schema.Resource {
 		Read: dataSourceKsyunAvailabilityZonesRead,
 		Schema: map[string]*schema.Schema{
 			"output_file": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "File name where to save data source results (after running `terraform plan`).",
 			},
 
 			"total_count": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "Total number of AvailabilityZones that satisfy the condition.",
 			},
 
 			"availability_zones": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "An information list of AvailabilityZone. Each element contains the following attributes:",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"availability_zone_name": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Name of the zone",
+							Description: "Name of the zone.",
 						},
 					},
 				},

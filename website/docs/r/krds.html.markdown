@@ -178,6 +178,7 @@ db engine version only support 5.5|5.6|5.7|8.0
 * `parameters`- (Optional) database parameters
 * `port `-(Optional) port number
 * `instance_has_eip` -(Optional) attach eip for instance
+* `force_restart` - (Optional) Set it to true to make some parameter efficient when modifying them. Default to false.
 
 ## Attributes Reference
 In addition to all arguments above, the following attributes are exported:
