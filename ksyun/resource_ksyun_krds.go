@@ -114,6 +114,10 @@ func resourceKsyunKrds() *schema.Resource {
 				Optional: true,
 				Computed: true,
 			},
+
+			// 参数组不能手动指定
+			// 创建时如果有parameters，会创建一个临时的参数组，创建实例时传入，实例创建完毕删除
+			// ！！！如果有指定的需求，需要注意改动清理临时参数组的逻辑，避免误删
 			"db_parameter_group_id": {
 				Type:     schema.TypeString,
 				Computed: true,
