@@ -36,7 +36,7 @@ func dataSourceKsyunAvailabilityZones() *schema.Resource {
 			"availability_zones": {
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "An information list of AvailabilityZone. Each element contains the following attributes:",
+				Description: "An information list of AvailabilityZones. Each element contains the following attributes:",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"availability_zone_name": {

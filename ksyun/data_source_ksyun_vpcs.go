@@ -91,7 +91,7 @@ func dataSourceKsyunVpcs() *schema.Resource {
 						"create_time": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The time of creation for VPC, formatted in RFC3339 time string.",
+							Description: "The time of creation for VPC.",
 						},
 					},
 				},

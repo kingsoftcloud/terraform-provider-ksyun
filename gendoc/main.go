@@ -183,9 +183,9 @@ func genDoc(product, dtype, fpath, name string, resource *schema.Resource) {
 
 	if _, ok := resource.Schema["output_file"]; dtype == "data_source" && !ok {
 		if resource.DeprecationMessage != "" {
-			message("[SKIP!]argument 'result_output_file' is missing, skip: %s", filename)
+			message("[SKIP!]argument 'output_file' is missing, skip: %s", filename)
 		} else {
-			message("[FAIL!]argument 'result_output_file' is missing: %s", filename)
+			message("[FAIL!]argument 'output_file' is missing: %s", filename)
 			os.Exit(1)
 		}
 	}

@@ -31,7 +31,7 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-* `availability_zones` - An information list of AvailabilityZone. Each element contains the following attributes:
+* `availability_zones` - An information list of AvailabilityZones. Each element contains the following attributes:
   * `availability_zone_name` - Name of the zone.
 * `total_count` - Total number of AvailabilityZones that satisfy the condition.
 

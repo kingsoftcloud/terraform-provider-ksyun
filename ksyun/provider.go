@@ -54,6 +54,17 @@ VPC
 
 	Resource
 		ksyun_vpc
+
+SLB
+
+	Data Source
+		ksyun_lb_backend_server_groups
+
+Bare Metal
+
+	Data Source
+		ksyun_bare_metal_images
+		ksyun_bare_metal_raid_attributes
 */
 package ksyun
 
