@@ -37,7 +37,7 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 * `images` - It is a nested type which documented below.
-  * `create_time` - The time of creation for Bera Metal Image, formatted in RFC3339 time string.
+  * `create_time` - The time of creation for Bera Metal Image.
   * `image_id` - ID of the Image.
   * `image_name` - name of the Image.
   * `image_type` - type of the Image.

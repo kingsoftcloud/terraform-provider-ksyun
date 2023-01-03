@@ -15,7 +15,7 @@ resource "ksyun_eip" "default" {
   purchase_time =1
   project_id=0
 }
-``
+```
 
 Import
 
@@ -77,7 +77,7 @@ func resourceKsyunEip() *schema.Resource {
 					"PostpaidByTime",
 				}, false),
 				DiffSuppressFunc: chargeSchemaDiffSuppressFunc,
-				Description:      "The charge type of the Elastic IP address.Valid Values:",
+				Description:      "The charge type of the Elastic IP address.Valid Values:'PrePaidByMonth','Monthly','PostPaidByPeak','Peak','PostPaidByDay','Daily','PostPaidByTransfer','TrafficMonthly','DailyPaidByTransfer','HourlySettlement','PostPaidByHour','HourlyInstantSettlement','PostpaidByTime'.",
 			},
 			"purchase_time": {
 				Type:             schema.TypeInt,

@@ -37,7 +37,7 @@ In addition to all arguments above, the following attributes are exported:
 * `total_count` - Total number of VPC resources that satisfy the condition.
 * `vpcs` - It is a nested type which documented below.
   * `cidr_block` - The CIDR blocks of VPC.
-  * `create_time` - The time of creation for VPC, formatted in RFC3339 time string.
+  * `create_time` - The time of creation for VPC.
   * `id` - The ID of VPC.
   * `name` - The name of VPC.
   * `vpc_id` - The ID of VPC.

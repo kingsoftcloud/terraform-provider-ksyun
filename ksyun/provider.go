@@ -43,9 +43,13 @@ EIP
 
 	Data Source
 		ksyun_eips
+		ksyun_bwses
 
 	Resource
 		ksyun_eip
+		ksyun_eip_associate
+		ksyun_bws
+		ksyun_bws_associate
 
 VPC
 
@@ -65,6 +69,18 @@ Bare Metal
 	Data Source
 		ksyun_bare_metal_images
 		ksyun_bare_metal_raid_attributes
+		ksyun_bare_metals
+
+	Resource
+		ksyun_bare_metal
+
+KCM
+
+	Data Source
+		ksyun_certificates
+
+	Resource
+		ksyun_certificate
 */
 package ksyun
 

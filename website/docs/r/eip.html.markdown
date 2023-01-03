@@ -13,14 +13,26 @@ Provides an Elastic IP resource.
 
 ## Example Usage
 
-
+```hcl
+data "ksyun_lines" "default" {
+  output_file = "output_result1"
+  line_name   = "BGP"
+}
+resource "ksyun_eip" "default" {
+  line_id       = "${data.ksyun_lines.default.lines.0.line_id}"
+  band_width    = 1
+  charge_type   = "PrePaidByMonth"
+  purchase_time = 1
+  project_id    = 0
+}
+```
 
 ## Argument Reference
 
 The following arguments are supported:
 
 * `band_width` - (Required) The band width of the public address.
-* `charge_type` - (Required, ForceNew) The charge type of the Elastic IP address.Valid Values:
+* `charge_type` - (Required, ForceNew) The charge type of the Elastic IP address.Valid Values:'PrePaidByMonth','Monthly','PostPaidByPeak','Peak','PostPaidByDay','Daily','PostPaidByTransfer','TrafficMonthly','DailyPaidByTransfer','HourlySettlement','PostPaidByHour','HourlyInstantSettlement','PostpaidByTime'.
 * `line_id` - (Optional, ForceNew) The id of the line.
 * `project_id` - (Optional) The id of the project.
 * `purchase_time` - (Optional, ForceNew) Purchase time. If charge_type is Monthly or PrePaidByMonth, this is Required.

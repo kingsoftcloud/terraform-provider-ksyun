@@ -1,3 +1,26 @@
+/*
+Provides a BandWidthShare resource.
+
+Example Usage
+
+hcl```
+resource "ksyun_bws" "default" {
+  line_id = "5fc2595f-1bfd-481b-bf64-2d08f116d800"
+  charge_type = "PostPaidByPeak"
+  band_width = 12
+}
+```
+
+Import
+
+BWS can be imported using the id, e.g.
+
+```
+$ terraform import ksyun_bws.default 67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
+```
+
+*/
+
 package ksyun
 
 import (
@@ -18,19 +41,22 @@ func resourceKsyunBandWidthShare() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"line_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The id of the line.",
 			},
 			"band_width_share_name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "name of the BWS.",
 			},
 			"band_width": {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: validation.IntBetween(1, 15000),
+				Description:  "bandwidth value, value range: [1, 15000].",
 			},
 			"charge_type": {
 				Type:     schema.TypeString,
@@ -42,11 +68,13 @@ func resourceKsyunBandWidthShare() *schema.Resource {
 					"PostPaidByTransfer",
 				}, false),
 				DiffSuppressFunc: chargeSchemaDiffSuppressFunc,
+				Description:      "The charge type of the BWS.",
 			},
 			"project_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  0,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     0,
+				Description: "ID of the project.",
 			},
 		},
 	}

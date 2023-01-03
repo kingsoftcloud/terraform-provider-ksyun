@@ -36,7 +36,7 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 * `raid_attributes` - Total number of Bare Metal Raid Attributes that satisfy the condition.
-  * `create_time` - The time of creation for Bare Metal Raid template, formatted in RFC3339 time string.
+  * `create_time` - The time of creation for Bare Metal Raid template.
   * `disk_set` - list of disks that used raid template.
     * `disk_attribute` - attribute of the disk.
     * `disk_count` - count of disks.
