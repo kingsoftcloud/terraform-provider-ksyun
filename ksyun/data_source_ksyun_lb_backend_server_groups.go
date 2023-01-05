@@ -4,8 +4,6 @@ Provides a list of lb backend server groups in the current region.
 # Example Usage
 
 ```hcl
-provider "ksyun" {
-}
 # Get availability zones
 data "ksyun_lb_backend_server_groups" "default" {
 output_file="out_file"

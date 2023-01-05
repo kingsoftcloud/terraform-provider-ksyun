@@ -1,3 +1,18 @@
+/*
+Query security group information
+
+# Example Usage
+
+```hcl
+# Get  krds_security_groups
+
+	data "ksyun_krds_security_groups" "security_groups"{
+	  output_file = "output_file"
+	  security_group_id = 123
+	}
+
+```
+*/
 package ksyun
 
 import (
@@ -21,106 +36,125 @@ func dataSourceKsyunKrdsSecurityGroup() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"output_file": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The filename of the content store will be returned.",
 			},
 			"total_count": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "Total number of resources that satisfy the condition.",
 			},
 			"security_group_id": {
-				Type:     schema.TypeInt,
-				Required: false,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Required:    false,
+				Optional:    true,
+				Description: "Security group ID.",
 			},
 
 			// 与存入数据一致datakey
 			"security_groups": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Computed: true,
+				Type: schema.TypeList,
+				//Optional:    true,
+				Computed:    true,
+				Description: "An information list of KRDS security groups.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 
 						"security_group_id": {
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "Security group ID.",
 						},
 						"security_group_name": {
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "Security group name.",
 						},
 						"security_group_description": {
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "Security group description.",
 						},
 						"created": {
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The time of creation.",
 						},
 						"instances": {
-							Type:     schema.TypeSet,
-							Optional: true,
-							Computed: true,
+							Type:        schema.TypeSet,
+							Optional:    true,
+							Computed:    true,
+							Description: "corresponding instance.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"db_instance_identifier": {
-										Type:     schema.TypeString,
-										Optional: true,
-										Computed: true,
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "instance ID.",
 									},
 									"db_instance_name": {
-										Type:     schema.TypeString,
-										Optional: true,
-										Computed: true,
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "instance name.",
 									},
 									"vip": {
-										Type:     schema.TypeString,
-										Optional: true,
-										Computed: true,
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "instance virtual IP.",
 									},
 									"created": {
-										Type:     schema.TypeString,
-										Optional: true,
-										Computed: true,
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "The time of creation.",
 									},
 									"db_instance_type": {
-										Type:     schema.TypeString,
-										Optional: true,
-										Computed: true,
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "instance type.",
 									},
 								},
 							},
 						},
 						"security_group_rules": {
-							Type:     schema.TypeSet,
-							Optional: true,
-							Computed: true,
+							Type:        schema.TypeSet,
+							Optional:    true,
+							Computed:    true,
+							Description: "security group rules.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"security_group_rule_id": {
-										Type:     schema.TypeString,
-										Optional: true,
-										Computed: true,
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "rule ID.",
 									},
 									"security_group_rule_name": {
-										Type:     schema.TypeString,
-										Optional: true,
-										Computed: true,
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "rule name.",
 									},
 									"security_group_rule_protocol": {
-										Type:     schema.TypeString,
-										Optional: true,
-										Computed: true,
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "rule protocol.",
 									},
 									"created": {
-										Type:     schema.TypeString,
-										Optional: true,
-										Computed: true,
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "The time of creation.",
 									},
 								},
 							},

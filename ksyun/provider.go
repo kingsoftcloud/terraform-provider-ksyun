@@ -64,6 +64,9 @@ SLB
 	Data Source
 		ksyun_lb_backend_server_groups
 		ksyun_health_checks
+		ksyun_lb_acls
+		ksyun_lb_host_headers
+		ksyun_lb_listener_servers
 
 	Resource
 		ksyun_healthcheck
@@ -99,6 +102,7 @@ KRDS
 
 	Data Source
 		ksyun_krds
+		ksyun_krds_security_groups
 
 	Resource
 		ksyun_krds
@@ -159,12 +163,13 @@ func Provider() terraform.ResourceProvider {
 			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"ksyun_lines":                         dataSourceKsyunLines(),
-			"ksyun_eips":                          dataSourceKsyunEips(),
-			"ksyun_slbs":                          dataSourceKsyunLbs(),
-			"ksyun_lbs":                           dataSourceKsyunLbs(),
-			"ksyun_listeners":                     dataSourceKsyunListeners(),
-			"ksyun_health_checks":                 dataSourceKsyunHealthChecks(),
+			"ksyun_lines":         dataSourceKsyunLines(),
+			"ksyun_eips":          dataSourceKsyunEips(),
+			"ksyun_slbs":          dataSourceKsyunLbs(),
+			"ksyun_lbs":           dataSourceKsyunLbs(),
+			"ksyun_listeners":     dataSourceKsyunListeners(),
+			"ksyun_health_checks": dataSourceKsyunHealthChecks(),
+			// 注册两个同样的data，应该去掉一个。。。文档保留ksyun_lb_listener_servers
 			"ksyun_listener_servers":              dataSourceKsyunLbListenerServers(),
 			"ksyun_lb_listener_servers":           dataSourceKsyunLbListenerServers(),
 			"ksyun_lb_acls":                       dataSourceKsyunSlbAcls(),
