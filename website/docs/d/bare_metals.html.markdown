@@ -11,9 +11,9 @@ description: |-
 
 This data source provides a list of Bare Metal resources according to their Bare Metal ID.
 
-## Example Usage
+#
 
-e
+## Example Usage
 
 ```hcl
 # Get  bare metals

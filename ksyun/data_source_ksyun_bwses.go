@@ -2,6 +2,7 @@
 This data source provides a list of BWS resources (BandWidthShare) according to their BWS ID.
 
 Example Usage
+
 ```hcl
 data "ksyun_bwses" "default" {
   output_file="output_result"

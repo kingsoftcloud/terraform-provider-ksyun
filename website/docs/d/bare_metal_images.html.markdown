@@ -11,9 +11,9 @@ description: |-
 
 This data source provides a list of Bare Metal Image resources according to their Bare Metal Image ID.
 
-## Example Usage
+#
 
-e
+## Example Usage
 
 ```hcl
 # Get  bare metal_images

@@ -3,7 +3,7 @@ Provides a BWS Association resource for associating EIP with a BWS instance.
 
 # Example Usage
 
-hcl```
+```hcl
 
 	resource "ksyun_bws_associate" "default" {
 	  band_width_share_id = "2af77683-b47e-4634-88ce-fcb95cb65e86"
@@ -14,7 +14,7 @@ hcl```
 
 # Import
 
-BWS can be imported using the id, e.g.
+# BWS can be imported using the id
 
 ```
 $ terraform import ksyun_bws_associate.default ${band_width_share_id}:${allocation_id}

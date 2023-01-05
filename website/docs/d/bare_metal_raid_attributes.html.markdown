@@ -11,9 +11,9 @@ description: |-
 
 This data source provides a list of Bare Metal Raid Attributes resources according to their Bare Metal Raid Attribute ID.
 
-## Example Usage
+#
 
-e
+## Example Usage
 
 ```hcl
 # Get  bare metal_raid_attributes

@@ -2,6 +2,7 @@
 This data source provides a list of Certificate resources (KCM) according to their ID.
 
 Example Usage
+
 ```hcl
 data "ksyun_certificates" "default" {
   output_file="output_result"

@@ -63,6 +63,19 @@ SLB
 
 	Data Source
 		ksyun_lb_backend_server_groups
+		ksyun_health_checks
+
+	Resource
+		ksyun_healthcheck
+
+Instance(KEC)
+
+	Data Source
+		ksyun_images
+		ksyun_instances
+
+	Resource
+		ksyun_instance
 
 Bare Metal
 
@@ -81,6 +94,14 @@ KCM
 
 	Resource
 		ksyun_certificate
+
+KRDS
+
+	Data Source
+		ksyun_krds
+
+	Resource
+		ksyun_krds
 */
 package ksyun
 

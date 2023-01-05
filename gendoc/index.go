@@ -26,7 +26,7 @@ func GetIndex(doc string) ([]Product, error) {
 	for scanner.Scan() {
 		text := strings.TrimSpace(scanner.Text())
 
-		fmt.Println(text, 3, currentType, 234)
+		//fmt.Println(text, 3, currentType, 234)
 
 		if text == "" {
 			continue
@@ -59,7 +59,7 @@ func GetIndex(doc string) ([]Product, error) {
 				}
 			}
 		} else {
-			fmt.Println("123123123", currentType)
+			//fmt.Println("123123123", currentType)
 			switch currentType {
 			case "Data Source":
 				prod.DataSources = append(prod.DataSources, text)

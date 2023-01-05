@@ -11,9 +11,9 @@ description: |-
 
 Provides a Bare Metal resource.
 
-## Example Usage
+#
 
-e
+## Example Usage
 
 ```hcl
 resource "ksyun_bare_metal" "default" {
@@ -32,14 +32,6 @@ resource "ksyun_bare_metal" "default" {
   container_agent        = "supported"
   force_re_install       = false
 }
-```
-
-# Import
-
-Bare Metal can be imported using the id, e.g.
-
-```hcl
-$ terraform import ksyun_bera_metal.default 67 b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
 ```
 
 ## Argument Reference
@@ -91,4 +83,12 @@ In addition to all arguments above, the following attributes are exported:
 * `extension_network_interface_id` - ID of the extension network interface.
 * `network_interface_id` - ID of the primary network interface.
 
+
+## Import
+
+Bare Metal can be imported using the id, e.g.
+
+```
+$ terraform import ksyun_bera_metal.default 67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
+```
 

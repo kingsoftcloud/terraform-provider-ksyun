@@ -1,11 +1,11 @@
 ---
+subcategory: "Instance(KEC)"
 layout: "ksyun"
-page_title: "Ksyun: ksyun_instance"
+page_title: "ksyun: ksyun_instance"
 sidebar_current: "docs-ksyun-resource-instance"
 description: |-
-  Provides an Host Instance resource.
+  Provides a KEC instance resource.
 ---
-
 
 # ksyun_instance
 
@@ -15,79 +15,29 @@ Provides a KEC instance resource.
 
 ## Example Usage
 
-```h
-data "ksyun_availability_zones" "default" {
-  output_file=""
-  ids=[]
-}
-
-data "ksyun_lines" "default" {
-  output_file=""
-  line_name="BGP"
-}
-
-resource "ksyun_vpc" "default" {
-  vpc_name   = "${var.vpc_name}"
-  cidr_block = "${var.vpc_cidr}"
-}
-
-resource "ksyun_subnet" "default" {
-  subnet_name      = "${var.subnet_name}"
-  cidr_block = "10.1.0.0/21"
-  subnet_type = "Normal"
-  dhcp_ip_from = "10.1.0.2"
-  dhcp_ip_to = "10.1.0.253"
-  vpc_id  = "${ksyun_vpc.default.id}"
-  gateway_ip = "10.1.0.1"
-  dns1 = "198.18.254.41"
-  dns2 = "198.18.254.40"
-  availability_zone = "${data.ksyun_availability_zones.default.availability_zones.0.availability_zone_name}"
-}
-
-resource "ksyun_security_group" "default" {
-  vpc_id = "${ksyun_vpc.default.id}"
-  security_group_name="${var.security_group_name}"
-}
-
-resource "ksyun_security_group_entry" "default" {
-  description = "test1"
-  security_group_id="${ksyun_security_group.default.id}"
-  cidr_block="10.0.1.1/32"
-  direction="in"
-  protocol="ip"
-  icmp_type=0
-  icmp_code=0
-  port_range_from=0
-  port_range_to=0
-}
-
-resource "ksyun_ssh_key" "default" {
-  key_name="ssh_key_tf"
-  public_key=""
-}
-
+```hcl
 resource "ksyun_instance" "default" {
-  image_id="${data.ksyun_images.centos-7_5.images.0.image_id}"
-  instance_type="S4.1A"
-  system_disk{
-    disk_type="SSD3.0"
-    disk_size=30
+  image_id      = "${data.ksyun_images.centos-7_5.images.0.image_id}"
+  instance_type = "S4.1A"
+  system_disk {
+    disk_type = "SSD3.0"
+    disk_size = 30
   }
-  data_disk_gb=0
-  subnet_id="${ksyun_subnet.default.id}"
-  instance_password="Xuan663222"
-  keep_image_login=false
-  charge_type="Daily"
-  purchase_time=1
-  security_group_id=["${ksyun_security_group.default.id}"]
-  private_ip_address=""
-  instance_name="xuan-tf-combine"
-  instance_name_suffix=""
-  sriov_net_support=false
-  project_id=0
-  data_guard_id=""
-  key_id=["${ksyun_ssh_key.default.id}"]
-  force_delete=true
+  data_disk_gb         = 0
+  subnet_id            = "${ksyun_subnet.default.id}"
+  instance_password    = "Xuan663222"
+  keep_image_login     = false
+  charge_type          = "Daily"
+  purchase_time        = 1
+  security_group_id    = ["${ksyun_security_group.default.id}"]
+  private_ip_address   = ""
+  instance_name        = "xuan-tf-combine"
+  instance_name_suffix = ""
+  sriov_net_support    = false
+  project_id           = 0
+  data_guard_id        = ""
+  key_id               = ["${ksyun_ssh_key.default.id}"]
+  force_delete         = true
 }
 ```
 
@@ -95,43 +45,66 @@ resource "ksyun_instance" "default" {
 
 The following arguments are supported:
 
+* `charge_type` - (Required, ForceNew) charge type of the instance.
 * `image_id` - (Required) The ID for the image to use for the instance.
-* `instance_type` -  (Required) The type of instance to start.
-* `system_disk` - (Required) System disk parameters.
-    - `disk_type` - System disk type. `Local_SSD`, Local SSD disk. `SSD3.0`, The SSD cloud disk. `EHDD`, The EHDD cloud disk.
-    - `disk_size` - The size of the data disk.
-* `data_disk_gb` - (Optional) The local SSD disk.
-* `data_disk` - (Optional) The list of data disks created with instance.
-    - `type` - Data disk type. `SSD3.0`, The SSD cloud disk. `EHDD`, The EHDD cloud disk.
-    - `size` - Data disk type size.
-    - `disk_snapshot_id` - When the cloud disk snapshot opens, the snapshot id is entered
-    - `delete_with_instance` -  Delete this data disk when the instance is destroyed. It only works on SSD3.0, EHDD, disk.
-* `subnet_id` - (Required) The ID of subnet. the instance will use the subnet in the current region.
 * `security_group_id` - (Required) Security Group to associate with.
-* `instance_password` - (Optional) Password to an instance is a string of 8 to 32 characters. 
+* `subnet_id` - (Required) The ID of subnet. the instance will use the subnet in the current region.
+* `auto_create_ebs` - (Optional) Whether to create EBS volumes from snapshots in the custom image, default is false.
+* `data_disk_gb` - (Optional) The size of the local SSD disk.
+* `data_disks` - (Optional) The list of data disks created with instance.
+* `data_guard_id` - (Optional, ForceNew) Add instance being created to a disaster tolerance group.
+* `dns1` - (Optional) DNS1 of the primary network interface.
+* `dns2` - (Optional) DNS2 of the primary network interface.
+* `force_delete` - (Optional, **Deprecated**) this field is Deprecated and no effect for change Indicate whether to delete instance directly or not.
+* `force_reinstall_system` - (Optional) Indicate whether to reinstall system.
+* `host_name` - (Optional) The hostname of the instance. only effective when image support cloud-init.
+* `iam_role_name` - (Optional) name of iam role.
 * `instance_name` - (Optional) The name of instance, which contains 2-64 characters and only support Chinese, English, numbers.
+* `instance_password` - (Optional) Password to an instance is a string of 8 to 32 characters.
+* `instance_status` - (Optional) The state of instance.
+* `instance_type` - (Optional) The type of instance to start.
 * `keep_image_login` - (Optional) Keep the initial settings of the custom image.
-* `charge_type` - (Required, ForceNew) Valid values are Monthly, Daily, HourlyInstantSettlement.
-* `purchase_time` - (Optional, ForceNew) The duration that you will buy the resource.
+* `key_id` - (Optional) The certificate id of the instance.
+* `local_volume_snapshot_id` - (Optional, ForceNew) When the local data disk opens, the snapshot id is entered.
 * `private_ip_address` - (Optional) Instance private IP address can be specified when you creating new instance.
-* `sriov_net_support` (Optional, ForceNew) Network enhancement.
-* `data_guard_id` (Optional, ForceNew) Add instance being created to a disaster tolerance group
 * `project_id` - (Optional) The project instance belongs to.
-* `user_data` - (Optional, ForceNew) The user data to be specified into this instance. Must be encrypted in base64 format and limited in 16 KB.
-* `auto_create_ebs` - (Optional) Create volumes from snapshots in the custom image, default is false.
+* `purchase_time` - (Optional, ForceNew) The duration that you will buy the resource.
+* `sriov_net_support` - (Optional, ForceNew) whether support networking enhancement.
+* `system_disk` - (Optional) System disk parameters.
+* `tags` - (Optional) the tags of the resource.
+* `user_data` - (Optional, ForceNew) The user data to be specified into this instance. Must be encrypted in base64 format and limited in 16 KB. only effective when image support cloud-init.
+
+The `data_disks` object supports the following:
+
+* `delete_with_instance` - (Optional, ForceNew) Delete this data disk when the instance is destroyed. It only works on EBS disk.
+* `disk_size` - (Optional, ForceNew) Data disk size. value range: [10, 16000].
+* `disk_snapshot_id` - (Optional, ForceNew) When the cloud disk opens, the snapshot id is entered.
+* `disk_type` - (Optional, ForceNew) Data disk type.
+
+The `system_disk` object supports the following:
+
+* `disk_size` - (Optional) The size of the data disk. value range: [20, 500].
+* `disk_type` - (Optional, ForceNew) System disk type. `Local_SSD`, Local SSD disk. `SSD3.0`, The SSD cloud disk. `EHDD`, The EHDD cloud disk.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-* `creation_date` - The time of creation for instance, formatted in ISO8601 time string.
-* `instance_state` - Instance current status. Possible values are `active`, `building`, `stopped`, `deleting`.
+* `id` - ID of the resource.
+* `extension_network_interface` - extension network interface information.
+  * `network_interface_id` - ID of the extension network interface.
+* `has_modify_keys` - whether the certificate key has modified.
+* `has_modify_password` - whether the password has modified.
+* `has_modify_system_disk` - whether the system disk has modified.
+* `instance_id` - ID of the instance.
+* `network_interface_id` - ID of the network interface.
 
 
 ## Import
 
-Instance can be imported using the `id`, e.g.
+Instance can be imported using the id, e.g.
 
 ```
-$ terraform import 
+$ terraform import ksyun_instance.default 67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
 ```
+

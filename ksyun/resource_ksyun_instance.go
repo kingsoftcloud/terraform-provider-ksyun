@@ -1,3 +1,46 @@
+/*
+Provides a KEC instance resource.
+
+**Note**  At present, 'Monthly' instance cannot be deleted and must wait it to be outdated and released automatically.
+
+Example Usage
+
+```hcl
+
+resource "ksyun_instance" "default" {
+  image_id="${data.ksyun_images.centos-7_5.images.0.image_id}"
+  instance_type="S4.1A"
+  system_disk{
+    disk_type="SSD3.0"
+    disk_size=30
+  }
+  data_disk_gb=0
+  subnet_id="${ksyun_subnet.default.id}"
+  instance_password="Xuan663222"
+  keep_image_login=false
+  charge_type="Daily"
+  purchase_time=1
+  security_group_id=["${ksyun_security_group.default.id}"]
+  private_ip_address=""
+  instance_name="xuan-tf-combine"
+  instance_name_suffix=""
+  sriov_net_support=false
+  project_id=0
+  data_guard_id=""
+  key_id=["${ksyun_ssh_key.default.id}"]
+  force_delete=true
+}
+```
+
+Import
+
+Instance can be imported using the id, e.g.
+
+```
+$ terraform import ksyun_instance.default 67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
+```
+*/
+
 package ksyun
 
 import (
@@ -23,8 +66,9 @@ func resourceKsyunInstance() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"image_id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The ID for the image to use for the instance.",
 			},
 			"instance_status": {
 				Type:     schema.TypeString,
@@ -34,17 +78,20 @@ func resourceKsyunInstance() *schema.Resource {
 					"active",
 					"stopped",
 				}, false),
+				Description: "The state of instance.",
 			},
 			"instance_type": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The type of instance to start.",
 			},
 			"system_disk": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Computed: true,
-				MaxItems: 1,
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				MaxItems:    1,
+				Description: "System disk parameters.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"disk_type": {
@@ -57,12 +104,14 @@ func resourceKsyunInstance() *schema.Resource {
 								"EHDD",
 								"Local_SSD",
 							}, false),
+							Description: "System disk type. `Local_SSD`, Local SSD disk. `SSD3.0`, The SSD cloud disk. `EHDD`, The EHDD cloud disk.",
 						},
 						"disk_size": {
 							Type:         schema.TypeInt,
 							Optional:     true,
 							Computed:     true,
 							ValidateFunc: validation.IntBetween(20, 500),
+							Description:  "The size of the data disk. value range: [20, 500].",
 						},
 					},
 				},
@@ -72,13 +121,15 @@ func resourceKsyunInstance() *schema.Resource {
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.IntBetween(1, 16000),
+				Description:  "The size of the local SSD disk.",
 			},
 			"data_disks": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MinItems: 1,
-				MaxItems: 8,
-				Computed: true,
+				Type:        schema.TypeList,
+				Optional:    true,
+				MinItems:    1,
+				MaxItems:    8,
+				Computed:    true,
+				Description: "The list of data disks created with instance.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"disk_type": {
@@ -94,6 +145,7 @@ func resourceKsyunInstance() *schema.Resource {
 								"ESSD_PL2",
 								"ESSD_PL3",
 							}, false),
+							Description: "Data disk type.",
 						},
 						"disk_size": {
 							Type:         schema.TypeInt,
@@ -101,6 +153,7 @@ func resourceKsyunInstance() *schema.Resource {
 							Computed:     true,
 							ForceNew:     true,
 							ValidateFunc: validation.IntBetween(10, 16000),
+							Description:  "Data disk size. value range: [10, 16000].",
 						},
 						// 快照建盘（API不返回这个值，所以diff时忽略这个值）
 						"disk_snapshot_id": {
@@ -108,32 +161,38 @@ func resourceKsyunInstance() *schema.Resource {
 							Optional:         true,
 							ForceNew:         true,
 							DiffSuppressFunc: kecDiskSnapshotIdDiffSuppress,
+							Description:      "When the cloud disk opens, the snapshot id is entered.",
 						},
 						"delete_with_instance": {
-							Type:     schema.TypeBool,
-							Optional: true,
-							Default:  false,
-							ForceNew: true,
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							ForceNew:    true,
+							Description: "Delete this data disk when the instance is destroyed. It only works on EBS disk.",
 						},
 						"disk_id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "ID of the disk.",
 						},
 					},
 				},
 			},
 			"subnet_id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The ID of subnet. the instance will use the subnet in the current region.",
 			},
 			"extension_network_interface": {
-				Type:     schema.TypeSet,
-				Computed: true,
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Description: "extension network interface information.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"network_interface_id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "ID of the extension network interface.",
 						},
 					},
 				},
@@ -146,18 +205,21 @@ func resourceKsyunInstance() *schema.Resource {
 				Computed:         true,
 				ForceNew:         true,
 				DiffSuppressFunc: kecImportDiffSuppress,
+				Description:      "When the local data disk opens, the snapshot id is entered.",
 			},
 
 			"instance_password": {
-				Type:      schema.TypeString,
-				Optional:  true,
-				Computed:  true,
-				Sensitive: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Sensitive:   true,
+				Description: "Password to an instance is a string of 8 to 32 characters.",
 			},
 			"keep_image_login": {
 				Type:             schema.TypeBool,
 				Optional:         true,
 				DiffSuppressFunc: kecImportDiffSuppress,
+				Description:      "Keep the initial settings of the custom image.",
 			},
 
 			"key_id": {
@@ -166,7 +228,8 @@ func resourceKsyunInstance() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Set: schema.HashString,
+				Set:         schema.HashString,
+				Description: "The certificate id of the instance.",
 			},
 
 			"charge_type": {
@@ -177,6 +240,7 @@ func resourceKsyunInstance() *schema.Resource {
 					"Daily",
 					"HourlyInstantSettlement",
 				}, false),
+				Description: "charge type of the instance.",
 			},
 			"purchase_time": {
 				Type:             schema.TypeInt,
@@ -184,18 +248,21 @@ func resourceKsyunInstance() *schema.Resource {
 				ForceNew:         true,
 				DiffSuppressFunc: purchaseTimeDiffSuppressFunc,
 				ValidateFunc:     validation.IntBetween(0, 36),
+				Description:      "The duration that you will buy the resource.",
 			},
 			"security_group_id": {
-				Type:     schema.TypeSet,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Required: true,
-				Set:      schema.HashString,
-				MinItems: 1,
+				Type:        schema.TypeSet,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Required:    true,
+				Set:         schema.HashString,
+				MinItems:    1,
+				Description: "Security Group to associate with.",
 			},
 			"private_ip_address": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "Instance private IP address can be specified when you creating new instance.",
 			},
 			// eip和主机的绑定关系，放在绑定的resource里描述，不在vm的结构里提供这个字段
 			// 否则后绑定，资源创建完成时这个字段为空
@@ -204,9 +271,10 @@ func resourceKsyunInstance() *schema.Resource {
 			//	Computed: true,
 			//},
 			"instance_name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The name of instance, which contains 2-64 characters and only support Chinese, English, numbers.",
 			},
 			"sriov_net_support": {
 				Type:     schema.TypeString,
@@ -217,46 +285,55 @@ func resourceKsyunInstance() *schema.Resource {
 					"true",
 					"false",
 				}, false),
+				Description: "whether support networking enhancement.",
 			},
 			"project_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "The project instance belongs to.",
 			},
 			"data_guard_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Add instance being created to a disaster tolerance group.",
 			},
 			"host_name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The hostname of the instance. only effective when image support cloud-init.",
 			},
 			"user_data": {
 				Type:             schema.TypeString,
 				Optional:         true,
 				ForceNew:         true,
 				DiffSuppressFunc: kecImportDiffSuppress,
+				Description:      "The user data to be specified into this instance. Must be encrypted in base64 format and limited in 16 KB. only effective when image support cloud-init.",
 			},
 			"iam_role_name": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "name of iam role.",
 			},
 			"force_reinstall_system": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Indicate whether to reinstall system.",
 			},
 			"dns1": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "DNS1 of the primary network interface.",
 			},
 			"dns2": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "DNS2 of the primary network interface.",
 			},
 			"tags": tagsSchema(),
 			//"has_init_info": {
@@ -265,33 +342,39 @@ func resourceKsyunInstance() *schema.Resource {
 			//},
 			//some control
 			"has_modify_system_disk": {
-				Type:     schema.TypeBool,
-				Computed: true,
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "whether the system disk has modified.",
 			},
 			"has_modify_password": {
-				Type:     schema.TypeBool,
-				Computed: true,
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "whether the password has modified.",
 			},
 			"has_modify_keys": {
-				Type:     schema.TypeBool,
-				Computed: true,
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "whether the certificate key has modified.",
 			},
 
 			"force_delete": {
-				Type:       schema.TypeBool,
-				Optional:   true,
-				Default:    false,
-				Deprecated: "this field is Deprecated and no effect for change",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Deprecated:  "this field is Deprecated and no effect for change",
+				Description: "Indicate whether to delete instance directly or not.",
 			},
 
 			"network_interface_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ID of the network interface.",
 			},
 
 			"instance_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ID of the instance.",
 			},
 
 			// AutoCreateEbs: 是否自动创建数据盘；
@@ -302,6 +385,7 @@ func resourceKsyunInstance() *schema.Resource {
 				Default:  false,
 				//ForceNew:         true,
 				DiffSuppressFunc: kecImportDiffSuppress,
+				Description:      "Whether to create EBS volumes from snapshots in the custom image, default is false.",
 			},
 		},
 	}

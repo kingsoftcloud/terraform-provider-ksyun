@@ -148,16 +148,20 @@ func genDoc(product, dtype, fpath, name string, resource *schema.Resource) {
 		os.Exit(1)
 	}
 
-	importPos := strings.Index(description, "\nImport\n")
+	importPos := strings.Index(description, "Import\n")
+
+	//if importPos != -1 {
+	//	importPos = strings.Index(description, "\n# Import\n")
+	//}
 	if importPos != -1 {
 		data["import"] = strings.TrimSpace(description[importPos+8:])
 		description = strings.TrimSpace(description[:importPos])
 	}
 
-	pos := strings.Index(description, "\nExample Usage\n")
-	if pos == -1 {
-		pos = strings.Index(description, "\n# Example Usage\n")
-	}
+	pos := strings.Index(description, "Example Usage\n")
+	//if pos == -1 {
+	//	pos = strings.Index(description, "\n# Example Usage\n")
+	//}
 	if pos != -1 {
 		data["example"] = formatHCL(description[pos+15:])
 		description = strings.TrimSpace(description[:pos])
@@ -333,9 +337,11 @@ func getFileDescription(fname string) (string, error) {
 	}
 
 	lines := ""
-	for _, c := range parsedAst.Comments {
-		//fmt.Println(c.Text())
-		lines += c.Text()
+	for idx, c := range parsedAst.Comments {
+		//fmt.Println(c.Pos())
+		if idx == 0 {
+			lines += c.Text()
+		}
 	}
 	return lines, nil
 

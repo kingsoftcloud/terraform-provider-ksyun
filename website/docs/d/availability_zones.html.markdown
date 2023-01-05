@@ -13,13 +13,7 @@ This data source provides a list of available zones in the current region.
 
 ## Example Usage
 
-e
 
-```hcl
-data "ksyun_availability_zones" "default" {
-  output_file = ""
-}
-```
 
 ## Argument Reference
 
