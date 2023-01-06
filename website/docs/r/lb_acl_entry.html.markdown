@@ -1,7 +1,8 @@
 ---
+subcategory: "SLB"
 layout: "ksyun"
-page_title: "Ksyun: ksyun_lb_acl_entry"
-sidebar_current: "docs-ksyun-resource-lb-acl"
+page_title: "ksyun: ksyun_lb_acl_entry"
+sidebar_current: "docs-ksyun-resource-lb_acl_entry"
 description: |-
   Provides a Load Balancer acl entry resource to add content forwarding policies for Load Balancer backend resource.
 ---
@@ -10,15 +11,17 @@ description: |-
 
 Provides a Load Balancer acl entry resource to add content forwarding policies for Load Balancer backend resource.
 
+#
+
 ## Example Usage
 
 ```hcl
 resource "ksyun_lb_acl_entry" "default" {
   load_balancer_acl_id = "8e6d0871-da8a-481e-8bee-b3343e2a6166"
-  cidr_block = "192.168.11.2/32"
-  rule_number = 10
-  rule_action = "allow"
-  protocol = "ip"
+  cidr_block           = "192.168.11.2/32"
+  rule_number          = 10
+  rule_action          = "allow"
+  protocol             = "ip"
 }
 ```
 
@@ -26,9 +29,25 @@ resource "ksyun_lb_acl_entry" "default" {
 
 The following arguments are supported:
 
-* `load_balancer_acl_id` - (Required) The ID of a load balancer acl.
-* `load_balancer_acl_id` - (Required) The id of the load balancer acl.
-* `cidr_block` - (Required) The information of  load balancer Acl's cidr block.
-* `rule_number` - (Required) The information of  load balancer Acl's rule priority.Valid Values:1-32766.
-* `rule_action` - (Required) The action of load balancer Acl rule.Valid Values:'allow', 'deny'.
-* `protocol` - (Required) protocol.Valid Values:'ip'.
+* `cidr_block` - (Required, ForceNew) The information of the load balancer Acl's cidr block.
+* `load_balancer_acl_id` - (Required, ForceNew) The ID of the load balancer acl.
+* `protocol` - (Optional, ForceNew) protocol.Valid Values:'ip'.
+* `rule_action` - (Optional) The action of load balancer Acl rule. Valid Values:'allow', 'deny'. Default is 'allow'.
+* `rule_number` - (Optional) The information of the load balancer Acl's rule priority. value range:[1-32766].
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `id` - ID of the resource.
+* `load_balancer_acl_entry_id` - ID of the LB ACL entry.
+
+
+## Import
+
+LB ACL entry can be imported using the `id`, e.g.
+
+```
+$ terraform import ksyun_lb_acl_entry.example fdeba8ca-8aa6-4cd0-8ffa-52ca9e9fef42
+```
+

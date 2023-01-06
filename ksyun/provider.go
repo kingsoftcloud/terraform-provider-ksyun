@@ -44,6 +44,7 @@ EIP
 	Data Source
 		ksyun_eips
 		ksyun_bwses
+		ksyun_lines
 
 	Resource
 		ksyun_eip
@@ -55,9 +56,13 @@ VPC
 
 	Data Source
 		ksyun_vpcs
+		ksyun_nats
+		ksyun_network_acls
+		ksyun_subnets
 
 	Resource
 		ksyun_vpc
+		ksyun_subnet
 
 SLB
 
@@ -67,9 +72,16 @@ SLB
 		ksyun_lb_acls
 		ksyun_lb_host_headers
 		ksyun_lb_listener_servers
+		ksyun_lb_rules
+		ksyun_lbs
+		ksyun_listeners
 
 	Resource
 		ksyun_healthcheck
+		ksyun_lb
+		ksyun_lb_acl
+		ksyun_lb_acl_entry
+		ksyun_lb_backend_server_group
 
 Instance(KEC)
 
@@ -106,6 +118,11 @@ KRDS
 
 	Resource
 		ksyun_krds
+
+MongoDB
+
+	Data Source
+		ksyun_mongodbs
 */
 package ksyun
 

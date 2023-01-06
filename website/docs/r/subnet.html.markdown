@@ -1,6 +1,7 @@
 ---
+subcategory: "VPC"
 layout: "ksyun"
-page_title: "Ksyun: ksyun_subnet"
+page_title: "ksyun: ksyun_subnet"
 sidebar_current: "docs-ksyun-resource-subnet"
 description: |-
   Provides a Subnet resource under VPC resource.
@@ -9,6 +10,8 @@ description: |-
 # ksyun_subnet
 
 Provides a Subnet resource under VPC resource.
+
+#
 
 ## Example Usage
 
@@ -19,16 +22,16 @@ resource "ksyun_vpc" "example" {
 }
 
 resource "ksyun_subnet" "example" {
-  subnet_name      = "tf-acc-subnet1"
-  	cidr_block = "10.0.5.0/24"
-      subnet_type = "Normal"
-      dhcp_ip_from = "10.0.5.2"
-      dhcp_ip_to = "10.0.5.253"
-      vpc_id  = "${ksyun_vpc.test.id}"
-      gateway_ip = "10.0.5.1"
-      dns1 = "198.18.254.41"
-      dns2 = "198.18.254.40"
-      availability_zone = "cn-shanghai-2a"
+  subnet_name       = "tf-acc-subnet1"
+  cidr_block        = "10.0.5.0/24"
+  subnet_type       = "Normal"
+  dhcp_ip_from      = "10.0.5.2"
+  dhcp_ip_to        = "10.0.5.253"
+  vpc_id            = "${ksyun_vpc.test.id}"
+  gateway_ip        = "10.0.5.1"
+  dns1              = "198.18.254.41"
+  dns2              = "198.18.254.40"
+  availability_zone = "cn-shanghai-2a"
 }
 ```
 
@@ -36,27 +39,35 @@ resource "ksyun_subnet" "example" {
 
 The following arguments are supported:
 
-* `subnet_name` - (Optional) The name of the subnet.
 * `cidr_block` - (Required, ForceNew) The CIDR block assigned to the subnet.
-* `subnet_type ` - (Required, ForceNew) The type of subnet.Valid Values:'Reserve', 'Normal', 'Physical'.
-* `dhcp_ip_from` - (Optional, ForceNew) DHCP start IP.
-* `dhcp_ip_to` - (Optional, ForceNew) DHCP end IP.
-* `gateway_ip` - (Optional, ForceNew) The IP of gateway.
+* `subnet_type` - (Required, ForceNew) The type of subnet. Valid Values:'Reserve', 'Normal', 'Physical'.
 * `vpc_id` - (Required, ForceNew) The id of the vpc.
+* `availability_zone` - (Optional, ForceNew) The name of the availability zone.
+* `dhcp_ip_from` - (Optional, ForceNew, **Deprecated**) This attribute is deprecated and will be removed in a future version. DHCP start IP.
+* `dhcp_ip_to` - (Optional, ForceNew, **Deprecated**) This attribute is deprecated and will be removed in a future version. DHCP end IP.
 * `dns1` - (Optional) The dns of the subnet.
 * `dns2` - (Optional) The dns of the subnet.
-* `availability_zone` - (Optional, ForceNew) The name of the availability zone. 
+* `gateway_ip` - (Optional, ForceNew) The IP of gateway.
+* `subnet_name` - (Optional) The name of the subnet.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-* `create_time` - The time of creation of subnet, formatted in RFC3339 time string.
+* `id` - ID of the resource.
+* `availability_zone_name` - The name of the availability zone.
+* `available_ip_number` - number of available IPs.
+* `create_time` - creation time of the subnet.
+* `nat_id` - The id of the NAT that the desired Subnet associated to.
+* `network_acl_id` - The id of the ACL that the desired Subnet associated to.
+* `subnet_id` - ID of the subnet.
+
 
 ## Import
 
 Subnet can be imported using the `id`, e.g.
 
 ```
-$ terraform import ksyun_subnet.example subnet-abc123456
+$ terraform import ksyun_subnet.example fdeba8ca-8aa6-4cd0-8ffa-52ca9e9fef42
 ```
+
