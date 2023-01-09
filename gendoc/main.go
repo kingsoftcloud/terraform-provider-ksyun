@@ -30,6 +30,7 @@ const (
 var (
 	hclMatch  = regexp.MustCompile("(?si)([^`]+)?```(hcl)?(.*?)```")
 	bigSymbol = regexp.MustCompile("([\u007F-\uffff])")
+	totalDone = 0
 )
 
 func main() {
@@ -54,6 +55,7 @@ func main() {
 			genDoc(product.Name, "resource", filePath, resource, provider.ResourcesMap[resource])
 		}
 	}
+	message("num of docs: %d", totalDone)
 }
 
 // genIdx generating index for resource
@@ -464,6 +466,7 @@ func message(msg string, v ...interface{}) {
 	if strings.Contains(msg, "FAIL") {
 		color.Red(fmt.Sprintf(msg, v...))
 	} else if strings.Contains(msg, "SUCC") {
+		totalDone += 1
 		color.Green(fmt.Sprintf(msg, v...))
 	} else if strings.Contains(msg, "SKIP") {
 		color.Yellow(fmt.Sprintf(msg, v...))

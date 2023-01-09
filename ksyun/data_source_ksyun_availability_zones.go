@@ -1,7 +1,8 @@
 /*
 This data source provides a list of available zones in the current region.
 
-Example Usage
+# Example Usage
+
 ```hcl
 
 	data "ksyun_availability_zones" "default" {

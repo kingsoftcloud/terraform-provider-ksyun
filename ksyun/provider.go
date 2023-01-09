@@ -1,5 +1,4 @@
 /*
-*
 The Ksyun provider is used to interact with many resources supported by Ksyun.
 The provider needs to be configured with the proper credentials before it can be used.
 
@@ -59,10 +58,18 @@ VPC
 		ksyun_nats
 		ksyun_network_acls
 		ksyun_subnets
+		ksyun_network_interfaces
+		ksyun_routes
 
 	Resource
 		ksyun_vpc
 		ksyun_subnet
+		ksyun_nat
+		ksyun_nat_associate
+		ksyun_network_acl
+		ksyun_network_acl_entry
+		ksyun_network_acl_associate
+		ksyun_route
 
 SLB
 
@@ -91,6 +98,15 @@ Instance(KEC)
 
 	Resource
 		ksyun_instance
+
+Volume(EBS)
+
+	Data Source
+		ksyun_volumes
+
+	Resource
+		ksyun_volume
+		ksyun_volume_attach
 
 Bare Metal
 
