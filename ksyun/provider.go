@@ -60,6 +60,7 @@ VPC
 		ksyun_subnets
 		ksyun_network_interfaces
 		ksyun_routes
+		ksyun_security_groups
 
 	Resource
 		ksyun_vpc
@@ -70,6 +71,8 @@ VPC
 		ksyun_network_acl_entry
 		ksyun_network_acl_associate
 		ksyun_route
+		ksyun_security_group
+		ksyun_security_group_entry
 
 SLB
 
