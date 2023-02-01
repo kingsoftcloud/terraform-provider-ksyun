@@ -93,6 +93,14 @@ SLB
 		ksyun_lb_acl_entry
 		ksyun_lb_backend_server_group
 
+SSH key
+
+	Data Source
+		ksyun_ssh_keys
+
+	Resource
+		ksyun_ssh_key
+
 Instance(KEC)
 
 	Data Source
@@ -142,6 +150,16 @@ MongoDB
 
 	Data Source
 		ksyun_mongodbs
+
+RabbitMQ
+
+	Data Source
+		ksyun_rabbitmqs
+
+Redis
+
+	Data Source
+		ksyun_redis_instances
 */
 package ksyun
 

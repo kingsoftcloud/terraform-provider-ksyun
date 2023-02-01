@@ -1,3 +1,23 @@
+/*
+Provides a list of Redis resources in the current region.
+
+# Example Usage
+
+```hcl
+
+	data "ksyun_redis_instances" "default" {
+	  output_file       = "output_result1"
+	  fuzzy_search      = ""
+	  iam_project_id    = ""
+	  cache_id          = ""
+	  vnet_id           = ""
+	  vpc_id            = ""
+	  name              = ""
+	  vip               = ""
+	}
+
+```
+*/
 package ksyun
 
 import (
@@ -16,198 +36,246 @@ func dataSourceRedisInstances() *schema.Resource {
 		// Define input and output parameters
 		Schema: map[string]*schema.Schema{
 			"output_file": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "File name where to save data source results (after running `terraform plan`).",
 			},
 			"total_count": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "Total number of Redis instances that satisfy the condition.",
 			},
 			"cache_id": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The ID of the instance.",
 			},
 			"fuzzy_search": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "fuzzy filter by name / VIP / ID.",
 			},
 			"vnet_id": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The ID of subnet.",
 			},
 			"vpc_id": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The ID of VPC.",
 			},
 			"name": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The name of instance.",
 			},
 			"vip": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Private IP address of the instance.",
 			},
 			"iam_project_id": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The project instance belongs to.",
 			},
 			"instances": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "An information list of instances. Each element contains the following attributes:",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"cache_id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the instance.",
 						},
 						"region": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Region.",
 						},
 						"az": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Availability zone.",
 						},
 						"name": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name of instance.",
 						},
 						"engine": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Engine.",
 						},
 						"mode": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The KVStore instance system architecture.",
 						},
 						"size": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The size of instance.",
 						},
 						"port": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "port number.",
 						},
 						"vip": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Private IP address of the instance.",
 						},
 						"status": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Status.",
 						},
 						"create_time": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "creation time of instance.",
 						},
 						"net_type": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Type of network.",
 						},
 						"vpc_id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The id of VPC linked to the instance.",
 						},
 						"vnet_id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The id of subnet linked to the instance.",
 						},
 						"bill_type": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Bill type.",
 						},
 						"order_type": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Order type.",
 						},
 						"source": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "size of source.",
 						},
 						"service_status": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "service status.",
 						},
 						"service_begin_time": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "service begin time.",
 						},
 						"service_end_time": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "service end time.",
 						},
 						"iam_project_id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "project id.",
 						},
 						"iam_project_name": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "project name.",
 						},
 						"protocol": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "protocol of instance.",
 						},
 						"timing_switch": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Switch auto backup.",
 						},
 						"timezone": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Auto backup time zone.",
 						},
 						"shard_size": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Shard memory size.",
 						},
 						"shard_num": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Shard num.",
 						},
 						"eip": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "EIP address.",
 						},
 						"eip_ro": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "EIP address of read-only node.",
 						},
 						"parameters": {
-							Type:     schema.TypeMap,
-							Computed: true,
+							Type:        schema.TypeMap,
+							Computed:    true,
+							Description: "parameters of instance.",
 						},
 						"readonly_node": {
-							Type:     schema.TypeList,
-							Computed: true,
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "A list of read-only nodes.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"instance_id": {
-										Type:     schema.TypeString,
-										Computed: true,
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The ID of instance.",
 									},
 									"name": {
-										Type:     schema.TypeString,
-										Computed: true,
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name of instance.",
 									},
 									"port": {
-										Type:     schema.TypeString,
-										Computed: true,
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Port number.",
 									},
 									"ip": {
-										Type:     schema.TypeString,
-										Computed: true,
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Private IP.",
 									},
 									"status": {
-										Type:     schema.TypeString,
-										Computed: true,
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Status.",
 									},
 									"create_time": {
-										Type:     schema.TypeString,
-										Computed: true,
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Creation time.",
 									},
 									"proxy": {
-										Type:     schema.TypeString,
-										Computed: true,
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Role of node.",
 									},
 								},
 							},
