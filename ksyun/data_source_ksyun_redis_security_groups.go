@@ -1,3 +1,16 @@
+/*
+Provides a list of Redis security groups in the current region.
+
+# Example Usage
+
+```hcl
+
+	data "ksyun_redis_security_groups" "default" {
+	  output_file       = "output_result1"
+	}
+
+```
+*/
 package ksyun
 
 import (
@@ -15,37 +28,45 @@ func dataSourceRedisSecurityGroups() *schema.Resource {
 		// Define input and output parameters
 		Schema: map[string]*schema.Schema{
 			"output_file": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "File name where to save data source results (after running `terraform plan`).",
 			},
 			"total_count": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "Total number of Redis security groups that satisfy the condition.",
 			},
 			"instances": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "An information list of Redis security groups. Each element contains the following attributes:",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"security_group_id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "security group ID.",
 						},
 						"name": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "security group name.",
 						},
 						"description": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "security group description.",
 						},
 						"created": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "creation time.",
 						},
 						"updated": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "updated time.",
 						},
 					},
 				},

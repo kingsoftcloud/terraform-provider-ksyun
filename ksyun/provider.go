@@ -85,6 +85,7 @@ SLB
 		ksyun_lb_rules
 		ksyun_lbs
 		ksyun_listeners
+		ksyun_lb_register_backend_servers
 
 	Resource
 		ksyun_healthcheck
@@ -160,6 +161,7 @@ Redis
 
 	Data Source
 		ksyun_redis_instances
+		ksyun_redis_security_groups
 */
 package ksyun
 
