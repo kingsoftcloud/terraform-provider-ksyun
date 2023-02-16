@@ -61,6 +61,8 @@ VPC
 		ksyun_network_interfaces
 		ksyun_routes
 		ksyun_security_groups
+		ksyun_subnet_allocated_ip_addresses
+		ksyun_subnet_available_addresses
 
 	Resource
 		ksyun_vpc
@@ -73,6 +75,7 @@ VPC
 		ksyun_route
 		ksyun_security_group
 		ksyun_security_group_entry
+		ksyun_kec_network_interface
 
 SLB
 
@@ -93,6 +96,12 @@ SLB
 		ksyun_lb_acl
 		ksyun_lb_acl_entry
 		ksyun_lb_backend_server_group
+		ksyun_lb_host_header
+		ksyun_lb_register_backend_server
+		ksyun_lb_listener
+		ksyun_lb_listener_associate_acl
+		ksyun_lb_listener_server
+		ksyun_lb_rule
 
 SSH key
 
@@ -110,6 +119,7 @@ Instance(KEC)
 
 	Resource
 		ksyun_instance
+		ksyun_kec_network_interface_attachment
 
 Volume(EBS)
 
@@ -146,11 +156,16 @@ KRDS
 
 	Resource
 		ksyun_krds
+		ksyun_krds_rr
+		ksyun_krds_security_group
 
 MongoDB
 
 	Data Source
 		ksyun_mongodbs
+
+	Resource
+		ksyun_mongodb_instance
 
 RabbitMQ
 

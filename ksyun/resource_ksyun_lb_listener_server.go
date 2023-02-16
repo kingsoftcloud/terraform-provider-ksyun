@@ -1,3 +1,29 @@
+/*
+Provides a Load Balancer Listener server resource.
+
+# Example Usage
+
+```hcl
+
+	resource "ksyun_lb_listener_server" "default" {
+	  listener_id = "3a520244-ddc1-41c8-9d2b-xxxxxxxxxxxx"
+	  real_server_ip = "10.0.77.20"
+	  real_server_port = 8000
+	  real_server_type = "host"
+	  instance_id = "3a520244-ddc1-41c8-9d2b-xxxxxxxxxxxx"
+	  weight = 10
+	}
+
+```
+
+# Import
+
+LB Listener can be imported using the `id`, e.g.
+
+```
+$ terraform import ksyun_lb_listener.example vserver-abcdefg
+```
+*/
 package ksyun
 
 import (
@@ -18,19 +44,22 @@ func resourceKsyunInstancesWithListener() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"listener_id": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Required: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Required:    true,
+				Description: "The id of the listener.",
 			},
 			"real_server_ip": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Required: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Required:    true,
+				Description: "The IP of real server.",
 			},
 			"real_server_port": {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: validation.IntBetween(1, 65535),
+				Description:  "The port of real server.Valid Values:1-65535.",
 			},
 			"real_server_type": {
 				Type:     schema.TypeString,
@@ -39,20 +68,24 @@ func resourceKsyunInstancesWithListener() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					"host",
 					"DirectConnectGateway",
+					"VpnTunnel",
 				}, false),
-				Default: "host",
+				Default:     "host",
+				Description: "The type of real server.Valid Values:'host', 'DirectConnectGateway', 'VpnTunnel'.",
 			},
 			"instance_id": {
 				Type:             schema.TypeString,
 				ForceNew:         true,
 				Optional:         true,
 				DiffSuppressFunc: lbRealServerDiffSuppressFunc,
+				Description:      "The ID of instance.",
 			},
 			"weight": {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				ValidateFunc: validation.IntBetween(1, 255),
 				Default:      1,
+				Description:  "The weight of backend service.Valid Values:1-255.",
 			},
 			"master_slave_type": {
 				Type:     schema.TypeString,
@@ -63,20 +96,24 @@ func resourceKsyunInstancesWithListener() *schema.Resource {
 				}, false),
 				Default:          "Master",
 				DiffSuppressFunc: lbRealServerDiffSuppressFunc,
+				Description:      "whether real server is master of salve. when listener method is MasterSlave, this field is supported.",
 			},
 			"real_server_state": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "State of the real server.",
 			},
 
 			"register_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The registration ID of real server.",
 			},
 
 			"listener_method": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Forwarding mode of listener.",
 			},
 		},
 	}

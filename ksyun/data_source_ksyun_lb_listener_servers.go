@@ -108,7 +108,7 @@ func dataSourceKsyunLbListenerServers() *schema.Resource {
 						"master_slave_type": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "whether real server is master of salve. when listener method is MasterSlave, this field is supported.",
+							Description: "whether real server is master or salve. when listener method is MasterSlave, this field is supported.",
 						},
 					},
 				},

@@ -41,7 +41,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `servers` - An information list of real servers. Each element contains the following attributes:
   * `instance_id` - Instance ID of the real server, if real server type is host.
-  * `master_slave_type` - whether real server is master of salve. when listener method is MasterSlave, this field is supported.
+  * `master_slave_type` - whether real server is master or salve. when listener method is MasterSlave, this field is supported.
   * `real_server_ip` - IP of the real server.
   * `real_server_port` - Port of the real server.
   * `real_server_state` - State of the real server.
