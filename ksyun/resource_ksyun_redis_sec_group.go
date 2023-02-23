@@ -1,3 +1,42 @@
+/*
+Provides an redis security group function.
+
+# Example Usage
+
+```hcl
+
+	variable "available_zone" {
+	  default = "cn-beijing-6a"
+	}
+
+	resource "ksyun_redis_sec_group" "add" {
+	  available_zone = "${var.available_zone}"
+	  name = "testAddTerraform"
+	  description = "testAddTerraform"
+	}
+
+	resource "ksyun_redis_sec_group_rule" "default" {
+	  available_zone = "${var.available_zone}"
+	  security_group_id = "${ksyun_redis_sec_group.add.id}"
+	  rules = ["172.16.0.0/32","192.168.0.0/32"]
+	}
+
+	resource "ksyun_redis_sec_group_allocate" "default" {
+	  available_zone = "${var.available_zone}"
+	  security_group_id = "${ksyun_redis_sec_group.add.id}"
+	  cache_ids = ["122334234"]
+	}
+
+```
+
+# Import
+
+Redis security group can be imported using the `id`, e.g.
+
+```
+$ terraform import ksyun_redis_sec_group.default fdeba8ca-8aa6-4cd0-8ffa-xxxxxxxxxxxx
+```
+*/
 package ksyun
 
 import (
@@ -21,18 +60,21 @@ func resourceRedisSecurityGroup() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"available_zone": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The Zone to launch the security group.",
 			},
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The name of the security group.",
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The description of the security group.",
 			},
 			"rules": {
 				Type:     schema.TypeSet,
@@ -40,7 +82,8 @@ func resourceRedisSecurityGroup() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Set: schema.HashString,
+				Set:         schema.HashString,
+				Description: "The cidr block of source for the instance, multiple cidr separated by comma.",
 			},
 			"cache_ids": {
 				Type:     schema.TypeSet,
@@ -48,7 +91,8 @@ func resourceRedisSecurityGroup() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Set: schema.HashString,
+				Set:         schema.HashString,
+				Description: "The ids of the redis instance.",
 			},
 		},
 	}

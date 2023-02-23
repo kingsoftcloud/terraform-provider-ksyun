@@ -1,3 +1,34 @@
+/*
+Provides an redis instance node resource.
+
+# Example Usage
+
+```hcl
+
+	resource "ksyun_redis_instance_node" "default" {
+	  cache_id          = "${ksyun_redis_instance.default.id}"
+	  available_zone    = "${var.available_zone}"
+	}
+
+	resource "ksyun_redis_instance_node" "node" {
+	  // creating multiple read-only nodes,
+	  // not concurrently, requires dependencies to synchronize the execution of creating multiple read-only nodes.
+	  // if only one read-only node is created, it is not required to fill in.
+	  pre_node_id       = "${ksyun_redis_instance_node.default.id}"
+	  cache_id          = "${ksyun_redis_instance.default.id}"
+	  available_zone    = "${var.available_zone}"
+	}
+
+```
+
+# Import
+
+redis node can be imported using the `id`, e.g.
+
+```
+$ terraform import ksyun_redis_instance_node.default xxxxxxxxx
+```
+*/
 package ksyun
 
 import (
@@ -39,43 +70,52 @@ func resourceRedisInstanceNode() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"available_zone": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The Zone to launch the DB instance.",
 			},
 			"cache_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The ID of the instance.",
 			},
 			"instance_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ID of the instance.",
 			},
 			"name": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Name.",
 			},
 			"port": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "Port number.",
 			},
 			"ip": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "IP address.",
 			},
 			"status": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "status.",
 			},
 			"create_time": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "creation time.",
 			},
 			"proxy": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "proxy.",
 			},
 		},
 	}

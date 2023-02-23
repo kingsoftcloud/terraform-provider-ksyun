@@ -158,6 +158,7 @@ KRDS
 		ksyun_krds
 		ksyun_krds_rr
 		ksyun_krds_security_group
+		ksyun_krds_security_group_rule
 
 MongoDB
 
@@ -177,6 +178,17 @@ Redis
 	Data Source
 		ksyun_redis_instances
 		ksyun_redis_security_groups
+
+	Resource
+		ksyun_redis_instance
+		ksyun_redis_instance_node
+		ksyun_redis_sec_group
+
+Auto Scaling
+
+	Data Source
+		ksyun_scaling_activities
+		ksyun_scaling_configurations
 */
 package ksyun
 

@@ -1,3 +1,19 @@
+/*
+This data source provides a list of ScalingConfiguration resources.
+
+# Example Usage
+
+```hcl
+
+	data "ksyun_scaling_configurations" "default" {
+	  output_file="output_result"
+	  ids=[]
+	  project_ids=[]
+	  scaling_configuration_name= "test"
+	}
+
+```
+*/
 package ksyun
 
 import (
@@ -19,20 +35,24 @@ func dataSourceKsyunScalingConfigurations() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Set: schema.HashString,
+				Set:         schema.HashString,
+				Description: "A list of ScalingConfiguration IDs, all the ScalingConfiguration resources belong to this region will be retrieved if the ID is `\"\"`.",
 			},
 			"name_regex": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.StringIsValidRegExp,
+				Description:  "A regex string to filter results by name.",
 			},
 			"output_file": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "File name where to save data source results (after running `terraform plan`).",
 			},
 			"total_count": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "Total number of ScalingConfiguration resources that satisfy the condition.",
 			},
 			"project_ids": {
 				Type:     schema.TypeSet,
@@ -40,95 +60,114 @@ func dataSourceKsyunScalingConfigurations() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Set: schema.HashString,
+				Set:         schema.HashString,
+				Description: "A list of Project id that the desired ScalingConfiguration belongs to.",
 			},
 			"scaling_configuration_name": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Name of ScalingConfiguration.",
 			},
 			"scaling_configurations": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "It is a nested type which documented below.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 
 						"scaling_configuration_id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of ScalingConfiguration.",
 						},
 
 						"scaling_configuration_name": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The Name of the desired ScalingConfiguration.",
 						},
 						"cpu": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The CPU core size of the desired ScalingConfiguration.",
 						},
 
 						"mem": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The Memory GB size of the desired ScalingConfiguration.",
 						},
 
 						"data_disk_gb": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The Local Volume GB size of the desired ScalingConfiguration.",
 						},
 
 						"gpu": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The GPU core size the desired ScalingConfiguration.",
 						},
 
 						"image_id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The System Image Id of the desired ScalingConfiguration.",
 						},
 
 						"need_monitor_agent": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The Monitor agent flag desired ScalingConfiguration.",
 						},
 
 						"need_security_agent": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The Security agent flag desired ScalingConfiguration.",
 						},
 
 						"charge_type": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "charge type.",
 						},
 
 						"instance_type": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The KEC instance type of the desired ScalingConfiguration.",
 						},
 
 						"instance_name": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The KEC instance name of the desired ScalingConfiguration.",
 						},
 
 						"instance_name_suffix": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The kec instance name suffix of the desired ScalingConfiguration.",
 						},
 
 						"project_id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The Project Id of the desired ScalingConfiguration belong to.",
 						},
 
 						"keep_image_login": {
-							Type:     schema.TypeBool,
-							Computed: true,
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "The Flag with image login set of the desired ScalingConfiguration.",
 						},
 
 						"system_disk_type": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "System disk type.",
 						},
 
 						"key_id": {
@@ -137,67 +176,80 @@ func dataSourceKsyunScalingConfigurations() *schema.Resource {
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
+							Description: "The SSH key set of the desired ScalingConfiguration.",
 						},
 
 						"system_disk_size": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "System disk size.",
 						},
 
 						"data_disks": {
-							Type:     schema.TypeList,
-							Computed: true,
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "It is a nested type which documented below.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"disk_type": {
-										Type:     schema.TypeString,
-										Computed: true,
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The EBS Data Disk Type of the desired data_disk.",
 									},
 									"disk_size": {
-										Type:     schema.TypeInt,
-										Computed: true,
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The EBS Data Disk Size of the desired data_disk.",
 									},
 									"delete_with_instance": {
-										Type:     schema.TypeBool,
-										Computed: true,
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "The Flag with delete EBS Data Disk when KEC Instance destroy.",
 									},
 								},
 							},
 						},
 
 						"instance_name_time_suffix": {
-							Type:     schema.TypeBool,
-							Computed: true,
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "The kec instance name suffix of the desired ScalingConfiguration.",
 						},
 
 						"create_time": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The time of creation of ScalingGroup, formatted in RFC3339 time string.",
 						},
 
 						"user_data": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The user data of the desired ScalingConfiguration.",
 						},
 
 						"address_band_width": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "IP band width.",
 						},
 
 						"band_width_share_id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the BWS.",
 						},
 
 						"line_id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the line.",
 						},
 
 						"address_project_id": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The project ID of the IP address.",
 						},
 					},
 				},
