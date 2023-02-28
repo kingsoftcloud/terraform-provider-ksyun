@@ -1,3 +1,17 @@
+/*
+This data source provides a list of ScalingScheduledTask resources in a ScalingGroup.
+
+# Example Usage
+
+```hcl
+
+	data "ksyun_scaling_scheduled_tasks" "default" {
+	  output_file="output_result"
+	  scaling_group_id = "541241314798xxxxxx"
+	}
+
+```
+*/
 package ksyun
 
 import (
@@ -18,100 +32,120 @@ func dataSourceKsyunScalingScheduledTasks() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Set: schema.HashString,
+				Set:         schema.HashString,
+				Description: "A list of resource IDs.",
 			},
 			"name_regex": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.StringIsValidRegExp,
+				Description:  "A regex string to filter results by name.",
 			},
 			"output_file": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "File name where to save data source results (after running `terraform plan`).",
 			},
 			"total_count": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "Total number of ScalingScheduledTask resources that satisfy the condition.",
 			},
 
 			"scaling_group_id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "A scaling group id that the desired ScalingScheduledTask belong to.",
 			},
 
 			"scaling_scheduled_task_name": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Name that the desired ScalingScheduledTask.",
 			},
 
 			"scaling_scheduled_tasks": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "It is a nested type which documented below.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 
 						"scaling_group_id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ScalingGroup ID of the desired ScalingScheduledTask belong to.",
 						},
 						"scaling_scheduled_task_id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the desired ScalingScheduledTask.",
 						},
 
 						"scaling_scheduled_task_name": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The Name of the desired ScalingScheduledTask.",
 						},
 
 						"readjust_max_size": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The Readjust Max Size of the desired ScalingScheduledTask.",
 						},
 
 						"readjust_min_size": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The Readjust Min Size of the desired ScalingScheduledTask.",
 						},
 
 						"readjust_expect_size": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The Readjust Expect Size of the desired ScalingScheduledTask.",
 						},
 
 						"start_time": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The Start Time of the desired ScalingScheduledTask.",
 						},
 
 						"end_time": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The End Time Operator of the desired ScalingScheduledTask.",
 						},
 
 						"recurrence": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The Recurrence of the desired ScalingScheduledTask.",
 						},
 
 						"repeat_unit": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The Repeat Unit of the desired ScalingScheduledTask.",
 						},
 
 						"repeat_cycle": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The Repeat Cycle the desired ScalingScheduledTask.",
 						},
 
 						"create_time": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The time of creation of ScalingScheduledTask, formatted in RFC3339 time string.",
 						},
 
 						"description": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The Description of the desired ScalingScheduledTask.",
 						},
 					},
 				},

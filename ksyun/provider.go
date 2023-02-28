@@ -160,6 +160,11 @@ KRDS
 		ksyun_krds_security_group
 		ksyun_krds_security_group_rule
 
+SQLServer
+
+	Data Source
+		ksyun_sqlservers
+
 MongoDB
 
 	Data Source
@@ -189,6 +194,19 @@ Auto Scaling
 	Data Source
 		ksyun_scaling_activities
 		ksyun_scaling_configurations
+		ksyun_scaling_groups
+		ksyun_scaling_instances
+		ksyun_scaling_notifications
+		ksyun_scaling_policies
+		ksyun_scaling_scheduled_tasks
+
+Tag
+
+	Data Source
+		ksyun_tags
+
+	Resource
+		ksyun_tag
 */
 package ksyun
 
