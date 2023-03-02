@@ -257,11 +257,11 @@ func resourceKsyunKrds() *schema.Resource {
 				Optional: true,
 				Default:  "DAY",
 				ForceNew: true,
-				ValidateFunc: validation.StringInSlice([]string{
-					"DAY",
-					"YEAR_MONTH",
-				}, false),
-				Description: "bill type, valid values: DAY, YEAR_MONTH. Default is DAY.",
+				//				//ValidateFunc: validation.StringInSlice([]string{
+				//	"DAY",
+				//	"YEAR_MONTH",
+				//}, false),
+				Description: "bill type, valid values: DAY, YEAR_MONTH, HourlyInstantSettlement. Default is DAY.",
 			},
 			"duration": {
 				Type:             schema.TypeInt,
