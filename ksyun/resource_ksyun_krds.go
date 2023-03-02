@@ -92,10 +92,10 @@ func resourceKsyunKrds() *schema.Resource {
 				Optional: true,
 				Default:  "DAY",
 				ForceNew: true,
-				ValidateFunc: validation.StringInSlice([]string{
-					"DAY",
-					"YEAR_MONTH",
-				}, false),
+				//ValidateFunc: validation.StringInSlice([]string{
+				//	"DAY",
+				//	"YEAR_MONTH",
+				//}, false),
 			},
 			"duration": {
 				Type:             schema.TypeInt,
