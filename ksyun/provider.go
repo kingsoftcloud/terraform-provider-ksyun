@@ -77,6 +77,13 @@ VPC
 		ksyun_security_group_entry
 		ksyun_kec_network_interface
 
+VPN
+
+	Data Source
+		ksyun_vpn_gateways
+		ksyun_vpn_customer_gateways
+		ksyun_vpn_tunnels
+
 SLB
 
 	Data Source
