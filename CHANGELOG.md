@@ -1,3 +1,9 @@
+## 1.3.64 (Mar 3, 2023)
+
+IMPROVEMENTS:
+
+- redis支持delete_directly参数
+
 ## 1.3.63 (Mar 1, 2023)
 
 BUG FIXES:
