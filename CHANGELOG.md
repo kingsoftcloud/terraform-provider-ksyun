@@ -1,3 +1,9 @@
+## 1.3.65 (Mar 3, 2023)
+
+BUG FIXES:
+
+- 修复redis清理安全组panic的问题
+
 ## 1.3.64 (Mar 3, 2023)
 
 IMPROVEMENTS:
