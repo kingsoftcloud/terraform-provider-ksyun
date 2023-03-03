@@ -107,10 +107,14 @@ func resourceRedisSecurityGroupDelete(d *schema.ResourceData, meta interface{}) 
 		err error
 	)
 	//deallocate cache instance
+
 	err = deallocateSecurityGroup(d, meta, "", nil, true)
 	if err != nil {
 		return err
 	}
+
+	// 暂时曾家一个wait，等实例删除后，安全组信息更新才能继续删，否则删不掉
+	time.Sleep(20 * time.Second)
 	// delete redis security group
 	deleteReq := make(map[string]interface{})
 	deleteReq["SecurityGroupId.1"] = d.Id()
