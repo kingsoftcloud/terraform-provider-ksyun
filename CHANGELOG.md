@@ -1,3 +1,21 @@
+## 1.3.66 (Mar 3, 2023)
+
+BUG FIXES:
+
+- 修复redis清理安全组由于缓存数据未更新导致删除失败的问题
+
+## 1.3.65 (Mar 3, 2023)
+
+BUG FIXES:
+
+- 修复redis清理安全组panic的问题
+
+## 1.3.64 (Mar 3, 2023)
+
+IMPROVEMENTS:
+
+- redis支持delete_directly参数
+
 ## 1.3.63 (Mar 1, 2023)
 
 BUG FIXES:

@@ -301,6 +301,12 @@ func resourceRedisInstance() *schema.Resource {
 				ForceNew:    true,
 				Description: "assign read only instance area.",
 			},
+			"delete_directly": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Default is `false`, deleted instance will remain in the recycle bin. Setting the value to `true`, instance is permanently deleted without being recycled.",
+			},
 			"engine": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -396,6 +402,9 @@ func resourceRedisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 		err  error
 	)
 	// valid parameters ...
+	//d.Set("delete_directly", d.Get("delete_directly"))
+
+	//logger.Debug(logger.ReqFormat, "delete_directly", d.Get("delete_directly"))
 	createParam, err := resourceRedisInstanceParameterCheckAndPrepare(d, meta, false)
 	if err != nil {
 		return fmt.Errorf("error on creating instance: %s", err)
@@ -403,6 +412,7 @@ func resourceRedisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	r := resourceRedisInstance()
 	transform := map[string]SdkReqTransform{
 		"reset_all_parameters": {Ignore: true},
+		"delete_directly":      {Ignore: true},
 		"parameters":           {Ignore: true},
 		"security_group_id":    {Ignore: true},
 		"protocol": {ValueFunc: func(d *schema.ResourceData) (interface{}, bool) {
@@ -480,6 +490,7 @@ func resourceRedisInstanceDelete(d *schema.ResourceData, meta interface{}) error
 	deleteReq := make(map[string]interface{})
 	deleteReq["CacheId"] = d.Id()
 	deleteReq["AvailableZone"] = d.Get("az")
+	deleteReq["DeleteDirectly"] = d.Get("delete_directly")
 
 	return resource.Retry(20*time.Minute, func() *resource.RetryError {
 		var (
@@ -577,6 +588,7 @@ func resourceRedisInstanceRead(d *schema.ResourceData, meta interface{}) error {
 		ok   bool
 		err  error
 	)
+
 	resp, err = describeRedisInstance(d, meta, "")
 	if err != nil {
 		return fmt.Errorf("error on reading instance %q, %s", d.Id(), err)
