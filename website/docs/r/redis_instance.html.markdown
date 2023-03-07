@@ -110,6 +110,7 @@ The following arguments are supported:
 * `available_zone` - (Optional, ForceNew) The Zone to launch the DB instance.
 * `backup_time_zone` - (Optional) Auto backup time zone. Example: "03:00-04:00".
 * `bill_type` - (Optional, ForceNew) Valid values are 1 (Monthly), 5(Daily), 87(HourlyInstantSettlement).
+* `delete_directly` - (Optional) Default is `false`, deleted instance will remain in the recycle bin. Setting the value to `true`, instance is permanently deleted without being recycled.
 * `duration` - (Optional, ForceNew) Only meaningful if bill_type is 1, Valid values:{1~36}.
 * `iam_project_id` - (Optional) The project instance belongs to.
 * `mode` - (Optional, ForceNew) The KVStore instance system architecture required by the user. Valid values:  1(cluster),2(single),3(SelfDefineCluster).

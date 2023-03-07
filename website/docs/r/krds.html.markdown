@@ -174,7 +174,7 @@ The following arguments are supported:
 * `vpc_id` - (Required, ForceNew) ID of th VPC.
 * `availability_zone_1` - (Optional) zone 1.
 * `availability_zone_2` - (Optional) zone 2.
-* `bill_type` - (Optional, ForceNew) bill type, valid values: DAY, YEAR_MONTH. Default is DAY.
+* `bill_type` - (Optional, ForceNew) bill type, valid values: DAY, YEAR_MONTH, HourlyInstantSettlement. Default is DAY.
 * `duration` - (Optional) purchase duration in months.
 * `force_restart` - (Optional) Set it to true to make some parameter efficient when modifying them. Default to false.
 * `instance_has_eip` - (Optional) attach eip for instance.

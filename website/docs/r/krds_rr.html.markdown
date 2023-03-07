@@ -43,7 +43,7 @@ The following arguments are supported:
 * `db_instance_identifier` - (Required, ForceNew) passes in the instance ID of the RDS highly available instance. A RDS highly available instance can have at most three read-only instances.
 * `db_instance_name` - (Required) instance name.
 * `availability_zone_1` - (Optional, ForceNew) zone 1.
-* `bill_type` - (Optional, ForceNew) bill type, valid values: DAY, YEAR_MONTH. Default is DAY.
+* `bill_type` - (Optional, ForceNew) bill type, valid values: DAY, YEAR_MONTH, HourlyInstantSettlement. Default is DAY.
 * `duration` - (Optional) purchase duration in months.
 * `force_restart` - (Optional) Set it to true to make some parameter efficient when modifying them. Default to false.
 * `instance_has_eip` - (Optional) attach eip for instance.
