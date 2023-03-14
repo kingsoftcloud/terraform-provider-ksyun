@@ -84,6 +84,11 @@ VPN
 		ksyun_vpn_customer_gateways
 		ksyun_vpn_tunnels
 
+	Resource
+		ksyun_vpn_gateway
+		ksyun_vpn_customer_gateway
+		ksyun_vpn_tunnel
+
 SLB
 
 	Data Source
@@ -206,6 +211,14 @@ Auto Scaling
 		ksyun_scaling_notifications
 		ksyun_scaling_policies
 		ksyun_scaling_scheduled_tasks
+
+	Resource
+		ksyun_scaling_configuration
+		ksyun_scaling_group
+		ksyun_scaling_instance
+		ksyun_scaling_notification
+		ksyun_scaling_policy
+		ksyun_scaling_scheduled_task
 
 Tag
 

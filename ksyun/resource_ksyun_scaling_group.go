@@ -1,3 +1,35 @@
+/*
+Provides a ScalingGroup resource.
+
+# Example Usage
+
+```hcl
+
+	resource "ksyun_scaling_group" "foo" {
+	  subnet_id_set = [ksyun_subnet.foo.id]
+	  security_group_id = ksyun_security_group.foo.id
+	  scaling_configuration_id = ksyun_scaling_configuration.foo.id
+	  min_size = 0
+	  max_size = 2
+	  desired_capacity = 0
+	  status = "Active"
+	  slb_config_set  {
+	    slb_id = ksyun_lb.foo.id}
+	    listener_id = ksyun_lb_listener.foo.id
+	    server_port_set = [80]
+	  }
+	}
+
+```
+
+# Import
+
+scalingGroup can be imported using the `id`, e.g.
+
+```
+$ terraform import ksyun_scaling_group.example scaling-group-abc123456
+```
+*/
 package ksyun
 
 import (
@@ -32,31 +64,36 @@ func resourceKsyunScalingGroup() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			"scaling_group_name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "tf-scaling-group",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "tf-scaling-group",
+				Description: "The Name of the desired ScalingGroup.",
 			},
 			"scaling_configuration_id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The Scaling Configuration ID of the desired ScalingGroup set to.",
 			},
 
 			"min_size": {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: validateKecScalingGroupSize,
+				Description:  "The Min KEC instance size of the desired ScalingGroup set to.Valid Value 0-1000.",
 			},
 
 			"max_size": {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: validateKecScalingGroupSize,
+				Description:  "The Max KEC instance size of the desired ScalingGroup set to.Valid Value 0-1000.",
 			},
 
 			"desired_capacity": {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: validateKecScalingGroupDesiredCapacity,
+				Description:  "The Desire Capacity KEC instance count of the desired ScalingGroup set to.Valid Value 0-1000.",
 			},
 
 			"remove_policy": {
@@ -64,6 +101,7 @@ func resourceKsyunScalingGroup() *schema.Resource {
 				Optional:     true,
 				Default:      "RemoveOldestInstance",
 				ValidateFunc: validateKecScalingGroupRemovePolicy,
+				Description:  "The KEC instance remove policy of the desired ScalingGroup set to.Valid Values:'RemoveOldestInstance', 'RemoveNewestInstance'.",
 			},
 
 			"subnet_strategy": {
@@ -71,6 +109,7 @@ func resourceKsyunScalingGroup() *schema.Resource {
 				Optional:     true,
 				Default:      "balanced-distribution",
 				ValidateFunc: validateKecScalingGroupSubnetStrategy,
+				Description:  "The Subnet Strategy of the desired ScalingGroup set to.Valid Values:'balanced-distribution', 'choice-first'.",
 			},
 
 			"subnet_id_set": {
@@ -81,7 +120,8 @@ func resourceKsyunScalingGroup() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Set: schema.HashString,
+				Set:         schema.HashString,
+				Description: "The Subnet ID Set of the desired ScalingGroup set to.",
 			},
 
 			"security_group_id": {
@@ -89,6 +129,7 @@ func resourceKsyunScalingGroup() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{"security_group_id_set"},
+				Description:   "The Security Group ID of the desired ScalingGroup set to.",
 			},
 
 			"security_group_id_set": {
@@ -101,6 +142,7 @@ func resourceKsyunScalingGroup() *schema.Resource {
 				},
 				Set:           schema.HashString,
 				ConflictsWith: []string{"security_group_id"},
+				Description:   "The Security Group ID List of the desired ScalingGroup set to.",
 			},
 
 			"status": {
@@ -108,26 +150,31 @@ func resourceKsyunScalingGroup() *schema.Resource {
 				Optional:     true,
 				Default:      "Active",
 				ValidateFunc: validateKecScalingGroupStatus,
+				Description:  "The Status of the desired ScalingGroup.Valid Values:'Active', 'UnActive'.",
 			},
 
 			"slb_config_set": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				Description: "A list of slb configs.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"slb_id": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The SLB ID of the desired ScalingGroup set to.",
 						},
 						"listener_id": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The Listener ID of the desired ScalingGroup set to.",
 						},
 						"weight": {
-							Type:     schema.TypeInt,
-							Optional: true,
-							Default:  20,
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Default:     20,
+							Description: "The weight of the desired ScalingGroup set to.Valid Values 1-100.",
 						},
 						"health_check_type": {
 							Type:     schema.TypeString,
@@ -137,6 +184,7 @@ func resourceKsyunScalingGroup() *schema.Resource {
 								"slb",
 								"kec",
 							}, false),
+							Description: "Health check type, valid values:'slb','kec'.",
 						},
 						"server_port_set": {
 							Type:     schema.TypeSet,
@@ -145,30 +193,35 @@ func resourceKsyunScalingGroup() *schema.Resource {
 							Elem: &schema.Schema{
 								Type: schema.TypeInt,
 							},
-							Set: schema.HashInt,
+							Set:         schema.HashInt,
+							Description: "The Server Port Set of the desired ScalingGroup set to.Valid Values 1-65535.",
 						},
 					},
 				},
 			},
 
 			"scaling_configuration_name": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The Scaling Configuration Name of the desired ScalingGroup set to.",
 			},
 
 			"instance_num": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The KEC instance Number of the desired ScalingGroup set to.Valid Value 0-10.",
 			},
 
 			"create_time": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The creation time.",
 			},
 
 			"vpc_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ID of the VPC.",
 			},
 		},
 	}

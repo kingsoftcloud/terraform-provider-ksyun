@@ -1,3 +1,23 @@
+/*
+Provides a ScalingNotification resource.
+
+# Example Usage
+
+```hcl
+
+	resource "ksyun_scaling_notification" "foo" {
+	  scaling_group_id = "541241314798505984"
+	  scaling_notification_types = ["1","3"]
+	}
+
+```
+
+# Import
+
+```
+$ terraform import ksyun_scaling_notification.example scaling-notification-abc123456
+```
+*/
 package ksyun
 
 import (
@@ -38,9 +58,10 @@ func resourceKsyunScalingNotification() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			"scaling_group_id": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Required: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Required:    true,
+				Description: "The ScalingGroup ID of the desired ScalingNotification belong to.",
 			},
 
 			"scaling_notification_types": {
@@ -49,12 +70,14 @@ func resourceKsyunScalingNotification() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Set: schema.HashString,
+				Set:         schema.HashString,
+				Description: "The List Types of the desired ScalingNotification.Valid Value '1', '2', '3', '4', '5', '6'.",
 			},
 
 			"scaling_notification_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ID of the notification.",
 			},
 		},
 	}
