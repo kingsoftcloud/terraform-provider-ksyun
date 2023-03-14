@@ -1,3 +1,9 @@
+## 1.3.67 (Mar 14, 2023)
+
+IMPROVEMENTS:
+
+- 基于代码description生成文档
+
 ## 1.3.66 (Mar 3, 2023)
 
 BUG FIXES:
