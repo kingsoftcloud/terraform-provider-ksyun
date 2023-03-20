@@ -92,7 +92,7 @@ func resourceKsyunEip() *schema.Resource {
 				Optional:    true,
 				Default:     0,
 				Description: "The id of the project.",
-				Computed:    true,
+				//Computed:    true,
 			},
 			"tags": tagsSchema(),
 

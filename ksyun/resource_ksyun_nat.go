@@ -105,8 +105,8 @@ func resourceKsyunNat() *schema.Resource {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: validation.IntBetween(1, 15000),
-				Default:      1,
-				Description:  "The BandWidth of Nat Ip, value range:[1, 15000], Default is 1.",
+				//Default:      1,
+				Description: "The BandWidth of Nat Ip, value range:[1, 15000], Default is 1.",
 			},
 
 			"charge_type": {

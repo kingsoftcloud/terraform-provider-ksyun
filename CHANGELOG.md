@@ -1,3 +1,9 @@
+## 1.3.68 (Mar 20, 2023)
+
+BUG FIXES:
+
+- 修复EIP字段设置的BUG。
+
 ## 1.3.67 (Mar 14, 2023)
 
 IMPROVEMENTS:
