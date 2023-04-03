@@ -19,7 +19,7 @@ import (
 	"github.com/KscSDK/ksc-sdk-go/service/tag"
 	"github.com/KscSDK/ksc-sdk-go/service/tagv2"
 	"github.com/KscSDK/ksc-sdk-go/service/vpc"
-	"github.com/ks3sdklib/aws-sdk-go/service/s3"
+	"github.com/wilac-pv/ksyun-ks3-go-sdk/ks3"
 )
 
 type KsyunClient struct {
@@ -38,10 +38,12 @@ type KsyunClient struct {
 	epcconn       *epc.Epc             `json:"epcconn,omitempty"`
 	ebsconn       *ebs.Ebs             `json:"ebsconn,omitempty"`
 	mongodbconn   *mongodb.Mongodb     `json:"mongodbconn,omitempty"`
-	ks3conn       *s3.S3               `json:"ks_3_conn,omitempty"`
+	ks3conn       *ks3.Client          `json:"ks_3_conn,omitempty"`
 	iamconn       *iam.Iam             `json:"iamconn,omitempty"`
 	rabbitmqconn  *rabbitmq.Rabbitmq   `json:"rabbitmqconn,omitempty"`
 	bwsconn       *bws.Bws             `json:"bwsconn,omitempty"`
 	tagconn       *tagv2.Tagv2         `json:"tagconn,omitempty"`
 	tagv1conn     *tag.Tag             `json:"tagv1conn,omitempty"`
+
+	config *Config
 }
