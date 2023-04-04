@@ -7,7 +7,8 @@ import (
 )
 
 const (
-	NotFound = "Notfound"
+	NotFound         = "Notfound"
+	ResourceNotfound = "ResourceNotfound"
 )
 
 type ProviderError struct {

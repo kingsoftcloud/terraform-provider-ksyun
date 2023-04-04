@@ -1,3 +1,24 @@
+/*
+Provides a lb host header resource.
+
+# Example Usage
+
+```hcl
+
+	resource "ksyun_lb_host_header" "default" {
+		listener_id = "xxxx"
+		host_header = "tf-xuan"
+		certificate_id = ""
+	}
+
+```
+
+EIP can be imported using the id, e.g.
+
+```
+terraform import ksyun_lb_host_header.default 67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
+```
+*/
 package ksyun
 
 import (
@@ -17,32 +38,38 @@ func resourceKsyunListenerHostHeader() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"listener_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The ID of the listener.",
 			},
 			"host_header": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The host header.",
 			},
 			"certificate_id": {
 				Type:             schema.TypeString,
 				Optional:         true,
 				Computed:         true,
 				DiffSuppressFunc: hostHeaderDiffSuppressFunc,
+				Description:      "The ID of the certificate, HTTPS type listener creates this parameter which is not default.",
 			},
 			"host_header_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The host header id.",
 			},
 			"create_time": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The time when the host header was created.",
 			},
 			"listener_protocol": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The protocol of the listener.",
 			},
 		},
 	}

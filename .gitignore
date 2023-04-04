@@ -8,3 +8,4 @@ terraform-provider-ksyun
 output_result
 *.log
 vendor_bk
+website_bk

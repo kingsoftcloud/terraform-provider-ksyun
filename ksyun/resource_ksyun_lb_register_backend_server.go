@@ -1,3 +1,27 @@
+/*
+Provides a lb register backend server resource.
+
+# Example Usage
+
+```hcl
+
+	resource "ksyun_lb_register_backend_server" "default" {
+		backend_server_group_id="xxxx"
+		backend_server_ip="192.168.5.xxx"
+		backend_server_port="8081"
+		weight=10
+	}
+
+```
+
+# Import
+
+resource can be imported using the id, e.g.
+
+```
+$ terraform import ksyun_lb_register_backend_server.default 67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
+```
+*/
 package ksyun
 
 import (
@@ -18,58 +42,70 @@ func resourceKsyunRegisterBackendServer() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"backend_server_group_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The ID of backend server group.",
 			},
 			"backend_server_ip": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The IP of backend server.",
 			},
 			"backend_server_port": {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.IntBetween(1, 65535),
+				Description:  "The port of backend server.Valid Values:1-65535.",
 			},
 			"weight": {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				ValidateFunc: validation.IntBetween(1, 255),
 				Default:      1,
+				Description:  "The weight of backend service.Valid Values:0-255.",
 			},
 			"register_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The registration ID of binding server group.",
 			},
 			"real_server_ip": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The IP of real server.",
 			},
 			"real_server_port": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The port of real server.Valid Values:1-65535.",
 			},
 			"real_server_type": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The type of real server.Valid Values:'Host'.",
 			},
 			"instance_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ID of instance.",
 			},
 			"network_interface_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ID of network interface.",
 			},
 			"real_server_state": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The state of real server.Values:'healthy','unhealthy'.",
 			},
 			"create_time": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The time when the backend service was created.",
 			},
 		},
 	}

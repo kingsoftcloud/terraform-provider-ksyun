@@ -1,30 +1,32 @@
 ---
+subcategory: "KRDS"
 layout: "ksyun"
-page_title: "Ksyun: ksyun_krds_security_group"
-sidebar_current: "docs-ksyun-resource-krds-security-group"
+page_title: "ksyun: ksyun_krds_security_group"
+sidebar_current: "docs-ksyun-resource-krds_security_group"
 description: |-
-  Provides an KRDS security group resource.
+  Provide RDS security group function
 ---
 
 # ksyun_krds_security_group
 
 Provide RDS security group function
 
+#
+
 ## Example Usage
 
 ```hcl
-resource "ksyun_krds_security_group" "krds_sec_group_13" {
-  security_group_name = "terraform_security_group_13"
+resource "ksyun_krds_security_group" "default" {
+  security_group_name        = "terraform_security_group_13"
   security_group_description = "terraform-security-group-13"
-  security_group_rule{
+  security_group_rule {
     security_group_rule_protocol = "182.133.0.0/16"
-    security_group_rule_name = "asdf"
+    security_group_rule_name     = "asdf"
   }
-  security_group_rule{
+  security_group_rule {
     security_group_rule_protocol = "182.134.0.0/16"
-    security_group_rule_name = "asdf2"
+    security_group_rule_name     = "asdf2"
   }
-
 }
 ```
 
@@ -32,26 +34,29 @@ resource "ksyun_krds_security_group" "krds_sec_group_13" {
 
 The following arguments are supported:
 
-* `security_group_name `-(Required)  the name of the security group
-* `security_group_description`-（Optional）description of security group
-* `security_group_rule`- (Optional)security group rule
-* `security_group_rule_protocol`- (Required)  0.0.0.0/32 format
-* `security_group_rule_name`- (Required) no more than 256 bytes, only Chinese, uppercase and lowercase letters, numbers, minus signs and underscores are supported
+* `security_group_description` - (Optional) description of security group.
+* `security_group_name` - (Optional) the name of the security group.
+* `security_group_rule` - (Optional) the rule.
 
+The `security_group_rule` object supports the following:
+
+* `security_group_rule_protocol` - (Required) the protocol of the rule.
+* `security_group_rule_name` - (Optional) the name of the rule.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-* `SecurityGroupId`- Security group ID
-* `SecurityGroupRuleId`-rule ID
+* `id` - ID of the resource.
+* `created` - the creation time of the resource.
+* `security_group_id` - Security group ID.
 
-»Timeouts
-NOTE: Available in 1.52.1+.
-```
-The timeouts block allows you to specify timeouts for certain actions:
 
-create - (Defaults to 10 mins) Used when creating the db instance (until it reaches the initial Running status).
-update - (Defaults to 10 mins) Used when updating the db instance (until it reaches the initial Running status).
-delete - (Defaults to 10 mins) Used when terminating the db instance.
+## Import
+
+RDS security group can be imported using the id, e.g.
+
 ```
+$ terraform import ksyun_krds_security_group.default 67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
+```
+

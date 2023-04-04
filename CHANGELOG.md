@@ -1,3 +1,50 @@
+## 1.3.69 (April 3, 2023)
+
+- ### KS3
+
+  RESOURCES:
+
+  * bucket create
+  * bucket read
+  * bucket update 
+  * bucket delete
+
+## 1.3.68 (Mar 20, 2023)
+
+BUG FIXES:
+
+- 修复EIP字段设置的BUG。
+
+## 1.3.67 (Mar 14, 2023)
+
+IMPROVEMENTS:
+
+- 基于代码description生成文档
+
+## 1.3.66 (Mar 3, 2023)
+
+BUG FIXES:
+
+- 修复redis清理安全组由于缓存数据未更新导致删除失败的问题
+
+## 1.3.65 (Mar 3, 2023)
+
+BUG FIXES:
+
+- 修复redis清理安全组panic的问题
+
+## 1.3.64 (Mar 3, 2023)
+
+IMPROVEMENTS:
+
+- redis支持delete_directly参数
+
+## 1.3.63 (Mar 1, 2023)
+
+BUG FIXES:
+
+- 去掉KRDS计费方式校验
+
 ## 1.3.62 (Dec 29, 2022)
 
 BUG FIXES:

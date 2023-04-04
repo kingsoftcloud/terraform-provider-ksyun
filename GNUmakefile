@@ -72,3 +72,6 @@ dev: clean fmt
 
 clean:
 	rm -rf bin/*
+
+doc:
+	cd gendoc && go run ./... && cd ..

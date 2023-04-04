@@ -1,7 +1,8 @@
 ---
+subcategory: "SLB"
 layout: "ksyun"
-page_title: "Ksyun: ksyun_lb_listener_associate_acl"
-sidebar_current: "docs-ksyun-resource-lb-listener"
+page_title: "ksyun: ksyun_lb_listener_associate_acl"
+sidebar_current: "docs-ksyun-resource-lb_listener_associate_acl"
 description: |-
   Associate a Load Balancer Listener resource with acl.
 ---
@@ -10,19 +11,35 @@ description: |-
 
 Associate a Load Balancer Listener resource with acl.
 
+#
+
 ## Example Usage
 
 ```hcl
-resource "ksyun_lb_listener_associate_acl_associate_acl" "default" {
-  listener_id = "b330eae5-11a3-4e9e-bf7d-a7a1117a5878"
-  load_balancer_acl_id = "7e94fa82-05c7-496c-ae5e-35fd32ff3cf2"
+resource "ksyun_lb_listener_associate_acl" "default" {
+  listener_id          = "b330eae5-11a3-4e9e-bf7d-xxxxxxxxxxxx"
+  load_balancer_acl_id = "7e94fa82-05c7-496c-ae5e-xxxxxxxxxxxx"
 }
+```
+
+, e.g.
+
+```hcl
+$ terraform import ksyun_lb_listener_associate_acl.default $ { listener_id } : $ { load_balancer_acl_id }
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-* `load_balancer_id` - (Required) The ID of load balancer instance.
-* `listener_name` - (Optional) The id of the listener. 
+* `listener_id` - (Required, ForceNew) The ID of the listener.
+* `load_balancer_acl_id` - (Required, ForceNew) The ID of the load balancer acl.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `id` - ID of the resource.
+
+
 

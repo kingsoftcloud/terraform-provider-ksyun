@@ -1,3 +1,17 @@
+/*
+This data source provides a list of ScalingPolicy resources in a ScalingGroup.
+
+# Example Usage
+
+```hcl
+
+	data "ksyun_scaling_policies" "default" {
+	  output_file="output_result"
+	  scaling_group_id = "541241314798xxxxxx"
+	}
+
+```
+*/
 package ksyun
 
 import (
@@ -18,100 +32,120 @@ func dataSourceKsyunScalingPolicies() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Set: schema.HashString,
+				Set:         schema.HashString,
+				Description: "A list of policy IDs.",
 			},
 			"name_regex": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.StringIsValidRegExp,
+				Description:  "A regex string to filter results by name.",
 			},
 			"output_file": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "File name where to save data source results (after running `terraform plan`).",
 			},
 			"total_count": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "Total number of ScalingPolicy resources that satisfy the condition.",
 			},
 
 			"scaling_group_id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "A scaling group id that the desired ScalingPolicy belong to.",
 			},
 
 			"scaling_policies_name": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Name that the desired ScalingPolicy.",
 			},
 
 			"scaling_policies": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "It is a nested type which documented below.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 
 						"scaling_group_id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ScalingGroup ID of the desired ScalingPolicy belong to.",
 						},
 						"scaling_policy_id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the desired ScalingPolicy.",
 						},
 
 						"scaling_policy_name": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The Name of the desired ScalingPolicy.",
 						},
 
 						"adjustment_type": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The Adjustment Type of the desired ScalingPolicy.",
 						},
 
 						"adjustment_value": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The Adjustment Value of the desired ScalingPolicy.",
 						},
 
 						"create_time": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The time of creation of ScalingPolicy, formatted in RFC3339 time string.",
 						},
 
 						"cool_down": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The Cool Down of the desired ScalingPolicy.",
 						},
 
 						"dimension_name": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The Dimension Name of the desired ScalingPolicy.",
 						},
 
 						"comparison_operator": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The Comparison Operator of the desired ScalingPolicy.",
 						},
 
 						"threshold": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The Threshold of the desired ScalingPolicy.",
 						},
 
 						"repeat_times": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The Repeat Times of the desired ScalingPolicy.",
 						},
 
 						"period": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The Period of the desired ScalingPolicy.",
 						},
 
 						"function": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The Function Model of the desired ScalingPolicy.",
 						},
 					},
 				},

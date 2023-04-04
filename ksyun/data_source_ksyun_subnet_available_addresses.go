@@ -1,3 +1,18 @@
+/*
+This data source provides a list of subnet available IPs.
+
+# Example Usage
+
+```hcl
+
+	data "ksyun_subnet_available_addresses" "default" {
+	  output_file="output_result"
+	  ids=["494c3a64-eff9-4438-aa7c-694b7baxxxxx"]
+	  subnet_id=["494c3a64-eff9-4438-aa7c-694b7baxxxxx"]
+	}
+
+```
+*/
 package ksyun
 
 import (
@@ -15,17 +30,20 @@ func dataSourceKsyunSubnetAvailableAddresses() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Set: schema.HashString,
+				Set:         schema.HashString,
+				Description: "A list of subnet IDs.",
 			},
 
 			"output_file": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "File name where to save data source results (after running `terraform plan`).",
 			},
 
 			"total_count": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "Total number of available IPs that satisfy the condition.",
 			},
 
 			"subnet_id": {
@@ -34,6 +52,7 @@ func dataSourceKsyunSubnetAvailableAddresses() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
+				Description: "A list of subnet IDs.",
 			},
 			"subnet_available_addresses": {
 				Type:     schema.TypeList,
@@ -41,6 +60,7 @@ func dataSourceKsyunSubnetAvailableAddresses() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
+				Description: "A list of available IPs.",
 			},
 		},
 	}

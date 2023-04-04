@@ -162,7 +162,7 @@ In addition to [generic `provider` arguments](https://www.terraform.io/docs/conf
 
 * `insecure` - (Optional) This is a switch to disable/enable https. (Default: `false`, means enable https).
 
-* `base_url` - (Optional) This is the base url.(Default: `https://api.ksyun.com`)
+* `domain` - (Optional) This is the base url of KSYUN API endpoint. (Default: `api.ksyun.com`) Setup to corresponding base URL if you are using private cloud or other delicated regions. 
 
 ## Testing
 

@@ -1,3 +1,17 @@
+/*
+This data source provides a list of ScalingInstance resources in a ScalingGroup.
+
+# Example Usage
+
+```hcl
+
+	data "ksyun_scaling_instances" "default" {
+	  output_file="output_result"
+	  scaling_group_id = "246b37be-5213-49da-a971-xxxxxxxxxxxx"
+	}
+
+```
+*/
 package ksyun
 
 import (
@@ -11,16 +25,19 @@ func dataSourceKsyunScalingInstances() *schema.Resource {
 		Read: dataSourceKsyunScalingInstancesRead,
 		Schema: map[string]*schema.Schema{
 			"output_file": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "File name where to save data source results (after running `terraform plan`).",
 			},
 			"total_count": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "Total number of ScalingInstance resources that satisfy the condition.",
 			},
 			"scaling_group_id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "A scaling group id that the desired ScalingInstance belong to.",
 			},
 
 			"scaling_instance_ids": {
@@ -29,47 +46,57 @@ func dataSourceKsyunScalingInstances() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Set: schema.HashString,
+				Set:         schema.HashString,
+				Description: "A list of scaling group ids that the desired ScalingInstance belong to.",
 			},
 
 			"health_status": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "the health status that desired scalingInstance belong to.",
 			},
 
 			"creation_type": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "the creation type that desired scalingInstance belong to.",
 			},
 
 			"scaling_instances": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "It is a nested type which documented below.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"scaling_instance_id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The KEC Instance ID of the desired ScalingInstance.",
 						},
 						"scaling_instance_name": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The KEC Instance Name of the desired ScalingInstance.",
 						},
 						"health_status": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The Health Status of the desired ScalingInstance.",
 						},
 						"add_time": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The time of creation of ScalingInstance, formatted in RFC3339 time string.",
 						},
 						"creation_type": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The Creation Type of the desired ScalingInstance.",
 						},
 						"protected_from_detach": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The KEC Instance Protected Model of the desired ScalingInstance.",
 						},
 					},
 				},

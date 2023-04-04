@@ -1,6 +1,7 @@
 package ksyun
 
 import (
+	"fmt"
 	"github.com/KscSDK/ksc-sdk-go/ksc"
 	"github.com/KscSDK/ksc-sdk-go/ksc/utils"
 	"github.com/KscSDK/ksc-sdk-go/service/bws"
@@ -21,9 +22,8 @@ import (
 	"github.com/KscSDK/ksc-sdk-go/service/tag"
 	"github.com/KscSDK/ksc-sdk-go/service/tagv2"
 	"github.com/KscSDK/ksc-sdk-go/service/vpc"
-	"github.com/ks3sdklib/aws-sdk-go/aws"
-	"github.com/ks3sdklib/aws-sdk-go/aws/credentials"
-	"github.com/ks3sdklib/aws-sdk-go/service/s3"
+	"github.com/wilac-pv/ksyun-ks3-go-sdk/ks3"
+	"sync"
 )
 
 // Config is the configuration of ksyun meta data
@@ -46,6 +46,7 @@ func (c *Config) Client() (*KsyunClient, error) {
 	cfg := &ksc.Config{
 		Region: &c.Region,
 	}
+	client.config = c
 	url := &utils.UrlInfo{
 		UseSSL:                      false,
 		Locate:                      false,
@@ -72,15 +73,33 @@ func (c *Config) Client() (*KsyunClient, error) {
 	client.tagconn = tagv2.SdkNew(cli, cfg, url)
 	client.tagv1conn = tag.SdkNew(cli, cfg, url)
 
-	credentials := credentials.NewStaticCredentials(c.AccessKey, c.SecretKey, "")
-	client.ks3conn = s3.New(&aws.Config{
-		Region:           "BEIJING",
-		Credentials:      credentials,
-		Endpoint:         c.Region,
-		DisableSSL:       true,
-		LogLevel:         1,
-		S3ForcePathStyle: true,
-		LogHTTPBody:      true,
-	})
+	//懒加载ks3-client 所以不在此初始化
 	return &client, nil
+}
+
+var goSdkMutex = sync.RWMutex{} // The Go SDK is not thread-safe
+var loadSdkfromRemoteMutex = sync.Mutex{}
+var loadSdkEndpointMutex = sync.Mutex{}
+
+func (client *KsyunClient) WithKs3BucketByName(bucketName string, do func(*ks3.Bucket) (interface{}, error)) (interface{}, error) {
+	return client.WithKs3Client(func(ks3Client *ks3.Client) (interface{}, error) {
+		bucket, err := client.ks3conn.Bucket(bucketName)
+		if err != nil {
+			return nil, fmt.Errorf("unable to get the bucket %s: %#v", bucketName, err)
+		}
+		return do(bucket)
+	})
+}
+func (client *KsyunClient) WithKs3Client(do func(*ks3.Client) (interface{}, error)) (interface{}, error) {
+	goSdkMutex.Lock()
+	defer goSdkMutex.Unlock()
+	// Initialize the KS3 client if necessary
+	if client.ks3conn == nil {
+		ks3conn, err := ks3.New(client.config.Domain, client.config.AccessKey, client.config.SecretKey)
+		if err != nil {
+			return nil, fmt.Errorf("unable to initialize the KS3 client: %#v", err)
+		}
+		client.ks3conn = ks3conn
+	}
+	return do(client.ks3conn)
 }
