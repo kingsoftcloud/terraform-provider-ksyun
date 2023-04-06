@@ -166,6 +166,7 @@ const RequestIdMsg = "RequestId: %s"
 const NotFoundMsg = ResourceNotfound + "!!! %s"
 const WaitTimeoutMsg = "Resource %s %s Timeout In %d Seconds. Got: %s Expected: %s !!! %s"
 const DefaultDebugMsg = "\n*************** %s Response *************** \n%s\n%s******************************\n\n"
+const DataDefaultErrorMsg = "Datasource %s %s Failed!!! %s"
 
 // default region for all resource
 const DEFAULT_REGION = "BEIJING"
