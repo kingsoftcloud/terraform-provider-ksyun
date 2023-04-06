@@ -1,3 +1,14 @@
+## 1.3.69 (April 3, 2023)
+
+- ### KS3
+
+  RESOURCES:
+
+  * bucket create
+  * bucket read
+  * bucket update 
+  * bucket delete
+
 ## 1.3.68 (Mar 20, 2023)
 
 BUG FIXES:

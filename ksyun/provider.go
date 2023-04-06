@@ -396,6 +396,7 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_bws_associate":                    resourceKsyunBandWidthShareAssociate(),
 			"ksyun_bare_metal":                       resourceKsyunBareMetal(),
 			"ksyun_tag":                              resourceKsyunTag(),
+			"ksyun_ks3_bucket":                       resourceKsyunKs3Bucket(),
 		},
 		ConfigureFunc: providerConfigure,
 	}
