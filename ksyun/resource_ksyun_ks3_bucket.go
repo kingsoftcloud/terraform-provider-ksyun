@@ -1,3 +1,90 @@
+/*
+Provides an KS3 Bucket resource.
+
+# Example Usage
+
+```hcl
+# 创建一个名为 "bucket-new" 的 ks3 存储桶资源
+resource "ksyun_ks3_bucket" "bucket-new" {
+  provider = ks3.bj-prod
+  #指定要创建的虚拟存储桶的名称
+  bucket = "YOUR_BUCKET"
+  #桶权限
+  acl    = "public-read"
+}
+
+resource "ksyun_ks3_bucket" "bucket-attr" {
+  provider = ksyun.bj-prod
+  bucket = "bucket-20230324-1"
+  #访问日志的存储路径
+  logging {
+    target_bucket = "bucket-20230324-2"
+    target_prefix = "log/"
+  }
+  #文件生命周期
+  lifecycle_rule {
+    id      = "id1"
+    #如果filter.prefix有值情况下会覆盖这个选项
+    prefix  = "path/1"
+    enabled = true
+
+    #过期删除时间 days or date 只能二选一
+    expiration {
+      #设置过期日期
+      date = "2023-04-10"
+      #设置过期时间
+      #days = "40"
+  }
+  #添加标签
+    filter {
+    prefix = "example_prefix"
+    #每个标签不能与其他标签重复
+    tag {
+      key   = "example_key1"
+      value = "example_value"
+    }
+    tag {
+      key   = "example_key2"
+      value = "example_value"
+    }
+  }
+
+}
+
+lifecycle_rule {
+  id      = "id2"
+  prefix  = "path/365"
+  enabled = true
+
+  expiration {
+    date = "2023-04-10"
+  }
+}
+#跨域规则
+  cors_rule {
+  allowed_origins =  [var.allow-origins-star]
+  allowed_methods = split(",", var.allow-methods-put)
+  allowed_headers = [var.allowed_headers]
+}
+
+cors_rule {
+  allowed_origins = split(",", var.allow-origins-ksyun)
+  allowed_methods = split(",", var.allow-methods-get)
+  allowed_headers = [var.allowed_headers]
+  expose_headers  = [var.expose_headers]
+  max_age_seconds = var.max_age_seconds
+}
+}
+```
+
+# Import
+
+KRDS can be imported using the id, e.g.
+
+```
+$ terraform import ksyun_krds.default 67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
+```
+*/
 package ksyun
 
 import (
@@ -31,6 +118,7 @@ func resourceKsyunKs3Bucket() *schema.Resource {
 				ForceNew:     true,
 				ValidateFunc: validation.StringLenBetween(3, 63),
 				Default:      resource.PrefixedUniqueId("ks3-bucket-"),
+				Description:  "The name of the bucket. If omitted, Terraform will assign a random, unique name.",
 			},
 
 			"acl": {
@@ -38,35 +126,42 @@ func resourceKsyunKs3Bucket() *schema.Resource {
 				Default:      ks3.ACLPrivate,
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"private", "public-read", "public-read-write"}, false),
+				Description:  "The canned ACL to apply. Defaults to private. Valid values are private, public-read, and public-read-write.",
 			},
 			"cors_rule": {
-				Type:     schema.TypeList,
-				Optional: true,
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "The cross domain resource sharing (CORS) configuration rules of the bucket. Each rule can contain up to 100 headers, 100 methods, and 100 origins. For more information, see Cross-domain resource sharing (CORS) in the KS3 Developer Guide.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"allowed_headers": {
-							Type:     schema.TypeList,
-							Optional: true,
-							Elem:     &schema.Schema{Type: schema.TypeString},
+							Type:        schema.TypeList,
+							Optional:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: "Indicate which headers can be used through Access Control Request Headers in the pre inspection option. Each header specified in Access Control Request Headers must be consistent with the header sent to KS3 requests, using at most one '*'",
 						},
 						"allowed_methods": {
-							Type:     schema.TypeList,
-							Required: true,
-							Elem:     &schema.Schema{Type: schema.TypeString},
+							Type:        schema.TypeList,
+							Required:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: "The HTTP methods that the user allows the source to execute must define at least one source address and one method for each CORSRule.\nType: Enum (GET, PUT, HEAD, POST, DELETE)",
 						},
 						"allowed_origins": {
-							Type:     schema.TypeList,
-							Required: true,
-							Elem:     &schema.Schema{Type: schema.TypeString},
+							Type:        schema.TypeList,
+							Required:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: "The source address that users are allowed to access through cross domain resource sharing, which can contain up to one \"*\" wildcard character. Each CORSRule must define at least one source address and one method. For example, http://*. example. com. Additionally, you can use \"*\" to represent all sources.",
 						},
 						"expose_headers": {
-							Type:     schema.TypeList,
-							Optional: true,
-							Elem:     &schema.Schema{Type: schema.TypeString},
+							Type:        schema.TypeList,
+							Optional:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: "Identify response headers that allow customers to access from applications, such as JavaScript XMLHttpRequest data element.",
 						},
 						"max_age_seconds": {
-							Type:     schema.TypeInt,
-							Optional: true,
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Description: "The maximum time in seconds that the browser can cache the preflight response.",
 						},
 					},
 				},
@@ -74,17 +169,20 @@ func resourceKsyunKs3Bucket() *schema.Resource {
 			},
 
 			"logging": {
-				Type:     schema.TypeList,
-				Optional: true,
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Call this interface to set the bucket logging configuration. If the configuration already exists, KS3 will replace it.\nTo use this interface, you need to have permission to perform the ks3: PutBucketLogging operation. The space owner has this permission by default and can grant corresponding permissions to others.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"target_bucket": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The name of the bucket where you want KS3 to store server access logs. You can have your logs delivered to any bucket that you own, including the same bucket that is being logged. You can also configure multiple buckets to deliver their logs to the same target bucket. In this case, you should assign each bucket a unique prefix.",
 						},
 						"target_prefix": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "A prefix for all log object keys. If you store log files from multiple buckets in a single bucket, you can use a prefix to distinguish which log files came from which bucket.",
 						},
 					},
 				},
@@ -94,13 +192,14 @@ func resourceKsyunKs3Bucket() *schema.Resource {
 			"logging_isenable": {
 				Type:       schema.TypeBool,
 				Optional:   true,
-				Deprecated: "Deprecated from 1.37.0. When `logging` is set, the bucket logging will be able.",
+				Deprecated: "Use the logging block instead",
 			},
 
 			"lifecycle_rule": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Optional: true,
+				Type:        schema.TypeList,
+				Computed:    true,
+				Optional:    true,
+				Description: "Call this interface to set the bucket lifecycle configuration. If the configuration already exists, KS3 will replace it.\nTo use this interface, you need to have permission to perform the ks3: PutBucketLifecycle operation. The space owner has this permission by default and can grant corresponding permissions to others.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
@@ -108,33 +207,40 @@ func resourceKsyunKs3Bucket() *schema.Resource {
 							Optional:     true,
 							Computed:     true,
 							ValidateFunc: validation.StringLenBetween(0, 255),
+							Description:  "Unique identifier for the rule. The value cannot be longer than 255 characters.",
 						},
 						"prefix": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Prefix identifying one or more objects to which the rule applies. The rule applies only to objects with key names beginning with the specified prefix. If you specify multiple rules in a lifecycle configuration, the rule with the longest prefix is used to determine which rule applies to a given object. If you specify a prefix for the rule, you cannot specify a tag for the rule.",
 						},
 						"filter": {
-							Type:     schema.TypeSet,
-							Optional: true,
-							MaxItems: 1,
+							Type:        schema.TypeSet,
+							Optional:    true,
+							MaxItems:    1,
+							Description: "Container for the filter of lifecycle rule. If you specify a filter, you cannot specify a prefix for the rule.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"prefix": {
-										Type:     schema.TypeString,
-										Optional: true,
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Prefix identifying one or more objects to which the rule applies. The rule applies only to objects with key names beginning with the specified prefix. If you specify multiple rules in a lifecycle configuration, the rule with the longest prefix is used to determine which rule applies to a given object. If you specify a prefix for the rule, you cannot specify a tag for the rule.",
 									},
 									"tag": {
-										Type:     schema.TypeList,
-										Optional: true,
+										Type:        schema.TypeList,
+										Optional:    true,
+										Description: "Container for the tag of lifecycle rule. If you specify a tag, you cannot specify a prefix for the rule.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"key": {
-													Type:     schema.TypeString,
-													Required: true,
+													Type:        schema.TypeString,
+													Required:    true,
+													Description: "The key of the tag. The key can be up to 128 Unicode characters in length and cannot be prefixed with aws:. You can use any of the following characters: the set of Unicode letters, digits, whitespace, _, ., /, =, +, and -. The maximum key length is 128 Unicode characters.",
 												},
 												"value": {
-													Type:     schema.TypeString,
-													Required: true,
+													Type:        schema.TypeString,
+													Required:    true,
+													Description: "The value of the tag. The value can be up to 256 Unicode characters in length and cannot be prefixed with aws:. You can use any of the following characters: the set of Unicode letters, digits, whitespace, _, ., /, =, +, and -. The maximum value length is 256 Unicode characters.",
 												},
 											},
 										},
@@ -144,39 +250,46 @@ func resourceKsyunKs3Bucket() *schema.Resource {
 						},
 
 						"enabled": {
-							Type:     schema.TypeBool,
-							Required: true,
+							Type:        schema.TypeBool,
+							Required:    true,
+							Description: "If 'Enabled', the rule is currently being applied. If 'Disabled', the rule is not currently being applied.",
 						},
 						"expiration": {
-							Type:     schema.TypeSet,
-							Optional: true,
-							MaxItems: 1,
+							Type:        schema.TypeSet,
+							Optional:    true,
+							MaxItems:    1,
+							Description: "Specifies when an object transitions to a specified storage class. If you specify multiple rules in a lifecycle configuration, the rule with the earliest expiration date is applied to the object. If you specify multiple transition rules for the same object, the rule with the earliest date is applied.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"date": {
-										Type:     schema.TypeString,
-										Optional: true,
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Indicates at what date the object is to be moved or deleted. example: 2016-01-01",
 									},
 									"days": {
 										Type:         schema.TypeInt,
 										Optional:     true,
 										ValidateFunc: validation.IntAtLeast(0),
+										Description:  "Indicates the lifetime, in days, of the objects that are subject to the rule. The value must be a non-zero positive integer.",
 									},
 								},
 							},
 						},
 						"transitions": {
-							Type:     schema.TypeSet,
-							Optional: true,
+							Type:        schema.TypeSet,
+							Optional:    true,
+							Description: "Specifies when an object transitions to a specified storage class. If you specify multiple rules in a lifecycle configuration, the rule with the earliest transition date is applied to the object. If you specify multiple transition rules for the same object, the rule with the earliest date is applied.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"date": {
-										Type:     schema.TypeString,
-										Optional: true,
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Indicates at what date the object is to be updated. example: 2016-01-01",
 									},
 									"days": {
-										Type:     schema.TypeString,
-										Optional: true,
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Indicates the lifetime, in days, of the objects that are subject to the rule. The value must be a non-zero positive integer.",
 									},
 									"storage_class": {
 										Type:     schema.TypeString,
@@ -187,6 +300,7 @@ func resourceKsyunKs3Bucket() *schema.Resource {
 											string(ks3.StorageArchive),
 											string(ks3.StorageDeepIA),
 										}, false),
+										Description: "The class of storage used to store the object.",
 									},
 								},
 							},
@@ -206,6 +320,7 @@ func resourceKsyunKs3Bucket() *schema.Resource {
 					string(ks3.TypeArchive),
 					string(ks3.TypeDeepIA),
 				}, false),
+				Description: "The class of storage used to store the object.",
 			},
 		},
 	}
