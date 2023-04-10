@@ -77,12 +77,88 @@ cors_rule {
 }
 ```
 
-# Import
+# 创建variables.tf (上面var的变量才能引用到)
+```hcl
 
-KRDS can be imported using the id, e.g.
+variable "bucket-new" {
+  default = "bucket-20180423-1"
+}
 
-```
-$ terraform import ksyun_krds.default 67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
+variable "bucket-attr" {
+  default = "bucket-20180423-2"
+}
+
+variable "acl-bj" {
+  default = "private"
+}
+
+
+variable "target-prefix" {
+  default = "log3/"
+}
+
+variable "role-days" {
+  default = "expirationByDays"
+}
+
+variable "rule-days" {
+  default = 365
+}
+variable "my_variable" {
+  type = number
+  default = 42
+}
+
+
+variable "role-date" {
+  default = "expirationByDate"
+}
+
+variable "rule-date" {
+  default = "2023-03-18"
+}
+
+variable "rule-prefix" {
+  default = "path"
+}
+
+variable "allow-empty" {
+  default = true
+}
+
+variable "referers" {
+  default = "http://www.ksyun.com, https://www.ksyun.com, http://?.ksyun.com"
+}
+
+
+variable "allow-origins-star" {
+  default = "*"
+}
+
+variable "allow-origins-ksyun" {
+  default = "http://www.ksyun.com,http://*.ksyun.com"
+}
+
+variable "allow-methods-get" {
+  default = "GET"
+}
+
+variable "allow-methods-put" {
+  default = "PUT,GET"
+}
+
+variable "allowed_headers" {
+  default = "*"
+}
+
+variable "expose_headers" {
+  default = "x-ks3-test, x-ks3-test1"
+}
+
+variable "max_age_seconds" {
+  default = 100
+}
+
 ```
 */
 package ksyun
@@ -138,13 +214,13 @@ func resourceKsyunKs3Bucket() *schema.Resource {
 							Type:        schema.TypeList,
 							Optional:    true,
 							Elem:        &schema.Schema{Type: schema.TypeString},
-							Description: "Indicate which headers can be used through Access Control Request Headers in the pre inspection option. Each header specified in Access Control Request Headers must be consistent with the header sent to KS3 requests, using at most one '*'",
+							Description: "The HTTP header that users are allowed to access through cross domain resource sharing. Each CORSRule must define at least one source address and one method. For example, Authorization. Additionally, you can use \"*\" to represent all headers.",
 						},
 						"allowed_methods": {
 							Type:        schema.TypeList,
 							Required:    true,
 							Elem:        &schema.Schema{Type: schema.TypeString},
-							Description: "The HTTP methods that the user allows the source to execute must define at least one source address and one method for each CORSRule.\nType: Enum (GET, PUT, HEAD, POST, DELETE)",
+							Description: "The HTTP method that users are allowed to access through cross domain resource sharing. Each CORSRule must define at least one source address and one method. For example, GET, PUT, POST, DELETE, HEAD, OPTIONS.",
 						},
 						"allowed_origins": {
 							Type:        schema.TypeList,
@@ -189,11 +265,11 @@ func resourceKsyunKs3Bucket() *schema.Resource {
 				MaxItems: 1,
 			},
 
-			"logging_isenable": {
-				Type:       schema.TypeBool,
-				Optional:   true,
-				Deprecated: "Use the logging block instead",
-			},
+			//"logging_isenable": {
+			//	Type:       schema.TypeBool,
+			//	Optional:   true,
+			//	Deprecated: "Use the logging block instead",
+			//},
 
 			"lifecycle_rule": {
 				Type:        schema.TypeList,
@@ -235,12 +311,12 @@ func resourceKsyunKs3Bucket() *schema.Resource {
 												"key": {
 													Type:        schema.TypeString,
 													Required:    true,
-													Description: "The key of the tag. The key can be up to 128 Unicode characters in length and cannot be prefixed with aws:. You can use any of the following characters: the set of Unicode letters, digits, whitespace, _, ., /, =, +, and -. The maximum key length is 128 Unicode characters.",
+													Description: "The key of the tag.",
 												},
 												"value": {
 													Type:        schema.TypeString,
 													Required:    true,
-													Description: "The value of the tag. The value can be up to 256 Unicode characters in length and cannot be prefixed with aws:. You can use any of the following characters: the set of Unicode letters, digits, whitespace, _, ., /, =, +, and -. The maximum value length is 256 Unicode characters.",
+													Description: "The value of the tag.",
 												},
 											},
 										},
@@ -264,7 +340,7 @@ func resourceKsyunKs3Bucket() *schema.Resource {
 									"date": {
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "Indicates at what date the object is to be moved or deleted. example: 2016-01-01",
+										Description: "Indicates at what date the object is to be moved or deleted.example:2016-01-02.",
 									},
 									"days": {
 										Type:         schema.TypeInt,
@@ -284,7 +360,7 @@ func resourceKsyunKs3Bucket() *schema.Resource {
 									"date": {
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "Indicates at what date the object is to be updated. example: 2016-01-01",
+										Description: "Indicates at what date the object is to be moved or deleted.example:2016-01-02.",
 									},
 									"days": {
 										Type:        schema.TypeString,

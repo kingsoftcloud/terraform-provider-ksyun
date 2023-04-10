@@ -227,6 +227,10 @@ Tag
 
 	Resource
 		ksyun_tag
+
+KS3
+	Resource
+		ksyun_ks3_bucket
 */
 package ksyun
 
