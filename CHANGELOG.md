@@ -106,6 +106,71 @@ BUG FIXES:
 - 修复机型其他属性修改触发网卡更新的问题
 
 
+## 1.3.55 (Oct 8, 2022)
+
+BUG FIXES:
+
+- 修正LB日志参数的文档错误
+- 修正LB的TAG资源类型问题
+
+
+## 1.3.54 (Sep 28, 2022)
+
+BUG FIXES:
+
+- 修正创建LB同时开启日志不生效的问题
+
+
+## 1.3.53 (Sep 28, 2022)
+
+BUG FIXES:
+
+- 更正LB日志功能的example和文档 
+
+
+## 1.3.52 (Sep 20, 2022)
+
+BUG FIXES:
+
+- 修正EBS盘未修改但触发resize的问题
+
+
+## 1.3.51 (Sep 15, 2022)
+
+BUG FIXES:
+
+- 修正KRDS的日志bug，增加KRDS绑定EIP的参数示例
+
+
+## 1.3.50 (Sep 14, 2022)
+
+BUG FIXES:
+
+- 修正KRDS磁盘参数校验的正则
+
+
+## 1.3.49 (Sep 6, 2022)
+
+BUG FIXES:
+
+- 修复云主机示例不能更新安全组的问题（不更新其他网络属性，只更新安全组）
+
+## 1.3.48 (Sep 6, 2022)
+
+BUG FIXES:
+
+- releaser配置增加windows和arm的配置
+
+
+## 1.3.47 (Sep 6, 2022)
+
+BUG FIXES:
+
+- 修复import子网不能获取到AZ属性的问题
+
+
+
+
 ## 1.1.0 (Dec 21,2020)
 
 IMPROVEMENTS:
