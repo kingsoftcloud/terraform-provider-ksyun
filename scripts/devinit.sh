@@ -30,12 +30,12 @@ plugin_path_win=$HO$APPDATAME/terraform.d/plugin-cache/registry.terraform.io/kin
 echo $plugin_path
 
 if [ $OS_TYPE == "linux" -o $OS_TYPE == "darwin" ]; then
-	GOOS=$OS_TYPE GOARCH=$OS_ARCH go build -o bin/terraform-provider-ksyun
+	GOOS=$OS_TYPE GOARCH=$OS_ARCH go build -ldflags "-X main.version=$version" -o bin/terraform-provider-ksyun
 	chmod +x bin/terraform-provider-ksyun
     mkdir -p $plugin_path
     mv bin/terraform-provider-ksyun $plugin_path/terraform-provider-ksyun_v${version}
 elif [ $OS_TYPE == "Windows" ]; then
-	GOOS=$OS_TYPE GOARCH=$OS_ARCH go build -o bin/terraform-provider-ksyun
+	GOOS=$OS_TYPE GOARCH=$OS_ARCH  go build -ldflags "-X main.version=$version" -o bin/terraform-provider-ksyun
 	chmod +x bin/terraform-provider-ksyun.exe
 #    mkdir -p $APPDATA/terraform.d/plugins
     mkdir -p $plugin_path_win
