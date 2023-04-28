@@ -645,11 +645,15 @@ func SdkResponseAutoResourceData(d *schema.ResourceData, resource *schema.Resour
 	} else if reflect.ValueOf(item).Kind() == reflect.Slice {
 		var result []interface{}
 		result = []interface{}{}
-		root := item.([]interface{})
-		for _, v := range root {
-			value := SdkResponseAutoResourceData(d, resource, v, extra, false)
+
+		// bugfix：直接转换为[]interface{}会panic，改用reflect处理
+		s := reflect.ValueOf(item)
+		for i := 0; i < s.Len(); i++ {
+			elem := s.Index(i)
+			value := SdkResponseAutoResourceData(d, resource, elem.Interface(), extra, false)
 			result = append(result, value)
 		}
+
 		if len(result) > 0 {
 			return result
 		}
