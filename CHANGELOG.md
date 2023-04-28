@@ -1,3 +1,9 @@
+## 1.3.74 (April 28, 2023)
+
+BUG FIXES:
+
+- 修复slice类型的interface映射不准确导致panic的问题
+
 ## 1.3.73 (April 19, 2023)
 
 - user-agent增加provider版本
