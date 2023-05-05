@@ -521,9 +521,23 @@ func (s *KecService) modifyKecInstanceType(d *schema.ResourceData, resource *sch
 	}
 	if len(updateReq) > 0 {
 		updateReq["InstanceId"] = d.Id()
-		// 兼容一键三连功能
+		if _, ok := updateReq["InstanceType"]; !ok {
+			updateReq["InstanceType"] = d.Get("instance_type")
+		}
+		//// 兼容一键三连功能
+		//// 如果只是更新了系统盘，可以不配置一键三连
+		//// todo: 本地盘需要测一下
+		//// todo: resizetype是否支持本地盘？ 是否全region都支持？
+		//if !d.HasChange("InstanceType") && d.HasChanges("system_disk.0.disk_size", "system_disk.0.disk_type") {
+		//	//updateReq["SystemDisk.ResizeType"] = "online"
+		//} else {
+		//	updateReq["StopInstance"] = true
+		//	updateReq["AutoRestart"] = true
+		//}
+
 		updateReq["StopInstance"] = true
 		updateReq["AutoRestart"] = true
+
 		callback = ApiCall{
 			param:  &updateReq,
 			action: "ModifyInstanceType",
