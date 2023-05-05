@@ -1,3 +1,9 @@
+## 1.3.75 (May 5, 2023)
+
+BUG FIXES:
+
+- 修复kec更配不调整套餐时参数缺少instanceType的问题
+
 ## 1.3.74 (April 28, 2023)
 
 BUG FIXES:
