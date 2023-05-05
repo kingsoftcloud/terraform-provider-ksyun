@@ -190,6 +190,10 @@ RabbitMQ
 	Data Source
 		ksyun_rabbitmqs
 
+	Resource
+		ksyun_rabbitmq_instance
+		ksyun_rabbitmq_security_rule
+
 Redis
 
 	Data Source
@@ -229,6 +233,7 @@ Tag
 		ksyun_tag
 
 KS3
+
 	Resource
 		ksyun_ks3_bucket
 */

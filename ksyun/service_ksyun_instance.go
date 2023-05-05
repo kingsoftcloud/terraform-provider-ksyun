@@ -521,20 +521,26 @@ func (s *KecService) modifyKecInstanceType(d *schema.ResourceData, resource *sch
 	}
 	if len(updateReq) > 0 {
 		updateReq["InstanceId"] = d.Id()
+
+		// instanceType是必传参数
 		if _, ok := updateReq["InstanceType"]; !ok {
 			updateReq["InstanceType"] = d.Get("instance_type")
 		}
-		//// 兼容一键三连功能
-		//// 如果只是更新了系统盘，可以不配置一键三连
-		//// todo: 本地盘需要测一下
-		//// todo: resizetype是否支持本地盘？ 是否全region都支持？
-		//if !d.HasChange("InstanceType") && d.HasChanges("system_disk.0.disk_size", "system_disk.0.disk_type") {
-		//	//updateReq["SystemDisk.ResizeType"] = "online"
+		// 如果只是更新了系统盘，可以不配置一键三连
+		// 只有ebs支持ResizeType为online， 本地盘传这个值会报错
+		// 并且只支持特定镜像版本
+		// so 暂时不在这个地方引入系统盘的ResizeType
+		// if !d.HasChange("InstanceType") && d.HasChanges("system_disk.0.disk_size", "system_disk.0.disk_type") {
+		//	distTypeInterface := d.Get("system_disk.0.disk_type")
+		//	if v, ok := distTypeInterface.(string); ok && v != "Local_SSD" {
+		//		updateReq["SystemDisk.ResizeType"] = "online"
+		//	}
 		//} else {
 		//	updateReq["StopInstance"] = true
 		//	updateReq["AutoRestart"] = true
 		//}
 
+		// 兼容一键三连功能
 		updateReq["StopInstance"] = true
 		updateReq["AutoRestart"] = true
 

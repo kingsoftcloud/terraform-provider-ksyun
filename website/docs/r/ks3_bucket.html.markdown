@@ -17,6 +17,7 @@ Provides an KS3 Bucket resource.
 
 ```hcl
 # 创建一个名为 "bucket-new" 的 ks3 存储桶资源
+
 resource "ksyun_ks3_bucket" "bucket-new" {
   provider = ks3.bj-prod
   #指定要创建的虚拟存储桶的名称
@@ -72,7 +73,9 @@ resource "ksyun_ks3_bucket" "bucket-attr" {
       date = "2023-04-10"
     }
   }
+
   #跨域规则
+
   cors_rule {
     allowed_origins = [var.allow-origins-star]
     allowed_methods = split(",", var.allow-methods-put)
@@ -86,6 +89,7 @@ resource "ksyun_ks3_bucket" "bucket-attr" {
     expose_headers  = [var.expose_headers]
     max_age_seconds = var.max_age_seconds
   }
+
 }
 ```
 
@@ -115,6 +119,7 @@ variable "role-days" {
 variable "rule-days" {
   default = 365
 }
+
 variable "my_variable" {
   type    = number
   default = 42
