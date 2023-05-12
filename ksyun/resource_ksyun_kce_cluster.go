@@ -120,7 +120,8 @@ func instanceForNode() map[string]*schema.Schema {
 		Type:     schema.TypeString,
 		Required: true,
 		ValidateFunc: validation.StringInSlice([]string{
-			"Worker", "Master_Etcd", "Master", "Etcd",
+			//"Worker",
+			"Master_Etcd", "Master", "Etcd",
 		}, false),
 	}
 	//m["security_group_id"] = &schema.Schema{
@@ -142,6 +143,7 @@ func instanceForNode() map[string]*schema.Schema {
 
 }
 
+// 独立集群和托管集群分开管理？？？
 func resourceKsyunKceCluster() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceKsyunKceClusterCreate,
@@ -170,7 +172,7 @@ func resourceKsyunKceCluster() *schema.Resource {
 				ForceNew: true,
 				Computed: true,
 				ValidateFunc: validation.StringInSlice([]string{
-					"ManagedCluster",
+					"ManagedCluster", // 是否可以先不创建worker？
 					"DedicatedCluster",
 				}, false),
 			},
@@ -244,7 +246,7 @@ func resourceKsyunKceCluster() *schema.Resource {
 				Computed: true,
 				ForceNew: true,
 			},
-			"node_config": {
+			"master_config": {
 				Type:     schema.TypeList,
 				Required: true,
 				ForceNew: true,

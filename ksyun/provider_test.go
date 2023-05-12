@@ -42,7 +42,8 @@ func testAccPreCheck(t *testing.T) {
 		os.Setenv("KSYUN_REGION", "cn-beijing-6")
 	}
 	if v := os.Getenv("KSYUN_DOMAIN"); v == "" {
-		os.Setenv("KSYUN_DOMAIN", DEFAULT_ENDPOINT)
+		//os.Setenv("KSYUN_DOMAIN", DEFAULT_ENDPOINT)
+		//os.Setenv("KSYUN_DOMAIN", DEFAULT_ENDPOINT)
 	}
 }
 

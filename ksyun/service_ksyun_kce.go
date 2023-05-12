@@ -192,7 +192,7 @@ func formatKceClusterReq(d *schema.ResourceData, resource *schema.Resource) (cre
 	createReq, err = SdkRequestAutoMapping(d, resource, false, transform, nil, SdkReqParameter{
 		onlyTransform: false,
 	})
-	if nodeConfigs, ok := createReq["NodeConfig"]; ok {
+	if nodeConfigs, ok := createReq["MasterConfig"]; ok {
 
 		for idx, nodeConfigSrc := range nodeConfigs.([]interface{}) {
 			nodeConfig := nodeConfigSrc.(map[string]interface{})
@@ -207,7 +207,7 @@ func formatKceClusterReq(d *schema.ResourceData, resource *schema.Resource) (cre
 		err = fmt.Errorf("node_config is required")
 	}
 
-	delete(createReq, "NodeConfig")
+	delete(createReq, "MasterConfig")
 	//for k, v := range createReq {
 	//	logger.Debug("[%s] %s:%v", "createReq", k, v)
 	//}
