@@ -1,3 +1,23 @@
+/*
+Provides a ScalingPolicy resource.
+
+# Example Usage
+
+```hcl
+
+	resource "ksyun_scaling_policy" "foo" {
+	  scaling_group_id = "541241314798505984"
+	  threshold = 20
+	}
+
+```
+
+# Import
+
+```
+$ terraform import ksyun_scaling_policy.example scaling-policy-abc123456
+```
+*/
 package ksyun
 
 import (
@@ -69,14 +89,16 @@ func resourceKsyunScalingPolicy() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			"scaling_group_id": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Required: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Required:    true,
+				Description: "The ScalingGroup ID of the desired ScalingNotification belong to.",
 			},
 			"scaling_policy_name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "tf-scaling-policy",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "tf-scaling-policy",
+				Description: "The Name of the desired ScalingPolicy.",
 			},
 
 			"dimension_name": {
@@ -84,6 +106,7 @@ func resourceKsyunScalingPolicy() *schema.Resource {
 				Optional:     true,
 				Default:      "cpu_usage",
 				ValidateFunc: validation.StringInSlice(ksyunScalingPolicyMetricDimensionName, false),
+				Description:  "The Dimension Name of the desired ScalingPolicy.Valid Value 'cpu_usage', 'mem_usage', 'net_outtraffic', 'net_intraffic', 'listener_outtraffic', 'listener_intraffic'.",
 			},
 
 			"comparison_operator": {
@@ -91,12 +114,14 @@ func resourceKsyunScalingPolicy() *schema.Resource {
 				Optional:     true,
 				Default:      "Greater",
 				ValidateFunc: validation.StringInSlice(ksyunScalingPolicyMetricComparisonOperator, false),
+				Description:  "The Comparison Operator of the desired ScalingPolicy.Valid Value 'Greater', 'EqualOrGreater', 'Less', 'EqualOrLess', 'Equal', 'NotEqual'.",
 			},
 
 			"threshold": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  50,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     50,
+				Description: "The Threshold of the desired ScalingPolicy.",
 			},
 
 			"repeat_times": {
@@ -104,6 +129,7 @@ func resourceKsyunScalingPolicy() *schema.Resource {
 				Optional:     true,
 				Default:      3,
 				ValidateFunc: validation.IntBetween(1, 10),
+				Description:  "The Repeat Times of the desired ScalingPolicy.Valid Value 1-10.",
 			},
 
 			"period": {
@@ -111,6 +137,7 @@ func resourceKsyunScalingPolicy() *schema.Resource {
 				Optional:     true,
 				Default:      60,
 				ValidateFunc: validation.IntBetween(60, 999999),
+				Description:  "The Period of the desired ScalingPolicy.Min is 60.",
 			},
 
 			"function": {
@@ -118,6 +145,7 @@ func resourceKsyunScalingPolicy() *schema.Resource {
 				Optional:     true,
 				Default:      "avg",
 				ValidateFunc: validation.StringInSlice(ksyunScalingPolicyMetricFunction, false),
+				Description:  "The Function Model of the desired ScalingPolicy.Valid Value 'avg', 'min', 'max'.",
 			},
 
 			"adjustment_type": {
@@ -125,12 +153,14 @@ func resourceKsyunScalingPolicy() *schema.Resource {
 				Optional:     true,
 				Default:      "QuantityChangeInCapacity",
 				ValidateFunc: validation.StringInSlice(ksyunScalingPolicyMetricAdjustmentType, false),
+				Description:  "The Adjustment Type of the desired ScalingPolicy.Valid Value 'TotalCapacity', 'QuantityChangeInCapacity', 'PercentChangeInCapacity'.",
 			},
 
 			"adjustment_value": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  1,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     1,
+				Description: "The Adjustment Value of the desired ScalingPolicy.Valid Value -100 ~ 100.",
 			},
 
 			"cool_down": {
@@ -138,16 +168,19 @@ func resourceKsyunScalingPolicy() *schema.Resource {
 				Optional:     true,
 				Default:      60,
 				ValidateFunc: validation.IntAtLeast(60),
+				Description:  "The Cool Down of the desired ScalingPolicy.Min is 60.",
 			},
 
 			"create_time": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The creation time.",
 			},
 
 			"scaling_policy_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ID of the scaling policy.",
 			},
 		},
 	}

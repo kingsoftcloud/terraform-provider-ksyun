@@ -1,3 +1,23 @@
+/*
+Associate a Load Balancer Listener resource with acl.
+
+# Example Usage
+
+```hcl
+
+	resource "ksyun_lb_listener_associate_acl" "default" {
+	  listener_id = "b330eae5-11a3-4e9e-bf7d-xxxxxxxxxxxx"
+	  load_balancer_acl_id = "7e94fa82-05c7-496c-ae5e-xxxxxxxxxxxx"
+	}
+
+```
+
+LB Listener assocaite acl resource can be imported using the `listener_id`+`load_balancer_acl_id`, e.g.
+
+```
+$ terraform import ksyun_lb_listener_associate_acl.default ${listener_id}:${load_balancer_acl_id}
+```
+*/
 package ksyun
 
 import (
@@ -16,14 +36,16 @@ func resourceKsyunListenerAssociateAcl() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"listener_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The ID of the listener.",
 			},
 			"load_balancer_acl_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The ID of the load balancer acl.",
 			},
 		},
 	}

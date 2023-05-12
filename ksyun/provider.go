@@ -1,3 +1,242 @@
+/*
+The Ksyun provider is used to interact with many resources supported by Ksyun.
+The provider needs to be configured with the proper credentials before it can be used.
+
+~> **NOTE:** This guide requires an available Ksyun account or sub-account with project to create resources.
+
+The Ksyun provider is used to interact with the
+resources supported by Ksyun. The provider needs to be configured
+with the proper credentials before it can be used.
+
+Use the navigation to the left to read about the available resources.
+
+# Example Usage
+
+```hcl
+
+	terraform {
+	  required_providers {
+	    ksyun = {
+	      source  = "kingsoftcloud/ksyun"
+	    }
+	  }
+	}
+
+# Configure the ksyun Provider
+
+	provider "ksyun" {
+	   access_key = "your ak"
+	   secret_key = "your sk"
+	   region = "cn-beijing-6"
+	}
+
+```
+
+# Resources List
+
+Provider Data Sources
+
+	ksyun_availability_zones
+
+EIP
+
+	Data Source
+		ksyun_eips
+		ksyun_bwses
+		ksyun_lines
+
+	Resource
+		ksyun_eip
+		ksyun_eip_associate
+		ksyun_bws
+		ksyun_bws_associate
+
+VPC
+
+	Data Source
+		ksyun_vpcs
+		ksyun_nats
+		ksyun_network_acls
+		ksyun_subnets
+		ksyun_network_interfaces
+		ksyun_routes
+		ksyun_security_groups
+		ksyun_subnet_allocated_ip_addresses
+		ksyun_subnet_available_addresses
+
+	Resource
+		ksyun_vpc
+		ksyun_subnet
+		ksyun_nat
+		ksyun_nat_associate
+		ksyun_network_acl
+		ksyun_network_acl_entry
+		ksyun_network_acl_associate
+		ksyun_route
+		ksyun_security_group
+		ksyun_security_group_entry
+		ksyun_kec_network_interface
+
+VPN
+
+	Data Source
+		ksyun_vpn_gateways
+		ksyun_vpn_customer_gateways
+		ksyun_vpn_tunnels
+
+	Resource
+		ksyun_vpn_gateway
+		ksyun_vpn_customer_gateway
+		ksyun_vpn_tunnel
+
+SLB
+
+	Data Source
+		ksyun_lb_backend_server_groups
+		ksyun_health_checks
+		ksyun_lb_acls
+		ksyun_lb_host_headers
+		ksyun_lb_listener_servers
+		ksyun_lb_rules
+		ksyun_lbs
+		ksyun_listeners
+		ksyun_lb_register_backend_servers
+
+	Resource
+		ksyun_healthcheck
+		ksyun_lb
+		ksyun_lb_acl
+		ksyun_lb_acl_entry
+		ksyun_lb_backend_server_group
+		ksyun_lb_host_header
+		ksyun_lb_register_backend_server
+		ksyun_lb_listener
+		ksyun_lb_listener_associate_acl
+		ksyun_lb_listener_server
+		ksyun_lb_rule
+
+SSH key
+
+	Data Source
+		ksyun_ssh_keys
+
+	Resource
+		ksyun_ssh_key
+
+Instance(KEC)
+
+	Data Source
+		ksyun_images
+		ksyun_instances
+
+	Resource
+		ksyun_instance
+		ksyun_kec_network_interface_attachment
+
+Volume(EBS)
+
+	Data Source
+		ksyun_volumes
+
+	Resource
+		ksyun_volume
+		ksyun_volume_attach
+
+Bare Metal
+
+	Data Source
+		ksyun_bare_metal_images
+		ksyun_bare_metal_raid_attributes
+		ksyun_bare_metals
+
+	Resource
+		ksyun_bare_metal
+
+KCM
+
+	Data Source
+		ksyun_certificates
+
+	Resource
+		ksyun_certificate
+
+KRDS
+
+	Data Source
+		ksyun_krds
+		ksyun_krds_security_groups
+
+	Resource
+		ksyun_krds
+		ksyun_krds_rr
+		ksyun_krds_security_group
+		ksyun_krds_security_group_rule
+
+SQLServer
+
+	Data Source
+		ksyun_sqlservers
+
+MongoDB
+
+	Data Source
+		ksyun_mongodbs
+
+	Resource
+		ksyun_mongodb_instance
+
+RabbitMQ
+
+	Data Source
+		ksyun_rabbitmqs
+
+	Resource
+		ksyun_rabbitmq_instance
+		ksyun_rabbitmq_security_rule
+
+Redis
+
+	Data Source
+		ksyun_redis_instances
+		ksyun_redis_security_groups
+
+	Resource
+		ksyun_redis_instance
+		ksyun_redis_instance_node
+		ksyun_redis_sec_group
+
+Auto Scaling
+
+	Data Source
+		ksyun_scaling_activities
+		ksyun_scaling_configurations
+		ksyun_scaling_groups
+		ksyun_scaling_instances
+		ksyun_scaling_notifications
+		ksyun_scaling_policies
+		ksyun_scaling_scheduled_tasks
+
+	Resource
+		ksyun_scaling_configuration
+		ksyun_scaling_group
+		ksyun_scaling_instance
+		ksyun_scaling_notification
+		ksyun_scaling_policy
+		ksyun_scaling_scheduled_task
+
+Tag
+
+	Data Source
+		ksyun_tags
+
+	Resource
+		ksyun_tag
+
+KS3
+
+	Resource
+		ksyun_ks3_bucket
+*/
 package ksyun
 
 import (
@@ -54,12 +293,13 @@ func Provider() terraform.ResourceProvider {
 			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"ksyun_lines":                         dataSourceKsyunLines(),
-			"ksyun_eips":                          dataSourceKsyunEips(),
-			"ksyun_slbs":                          dataSourceKsyunLbs(),
-			"ksyun_lbs":                           dataSourceKsyunLbs(),
-			"ksyun_listeners":                     dataSourceKsyunListeners(),
-			"ksyun_health_checks":                 dataSourceKsyunHealthChecks(),
+			"ksyun_lines":         dataSourceKsyunLines(),
+			"ksyun_eips":          dataSourceKsyunEips(),
+			"ksyun_slbs":          dataSourceKsyunLbs(),
+			"ksyun_lbs":           dataSourceKsyunLbs(),
+			"ksyun_listeners":     dataSourceKsyunListeners(),
+			"ksyun_health_checks": dataSourceKsyunHealthChecks(),
+			// 注册两个同样的data，应该去掉一个。。。文档保留ksyun_lb_listener_servers
 			"ksyun_listener_servers":              dataSourceKsyunLbListenerServers(),
 			"ksyun_lb_listener_servers":           dataSourceKsyunLbListenerServers(),
 			"ksyun_lb_acls":                       dataSourceKsyunSlbAcls(),
@@ -167,6 +407,7 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_bare_metal":                       resourceKsyunBareMetal(),
 			"ksyun_tag":                              resourceKsyunTag(),
 			"ksyun_kce_cluster":                      resourceKsyunKceCluster(),
+			"ksyun_ks3_bucket":                       resourceKsyunKs3Bucket(),
 		},
 		ConfigureFunc: providerConfigure,
 	}

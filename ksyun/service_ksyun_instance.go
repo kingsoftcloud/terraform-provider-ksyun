@@ -412,7 +412,18 @@ func (s *KecService) modifyKecInstance(d *schema.ResourceData, resource *schema.
 	// 先stop再start，有时候stop执行后机器没有关闭（默认不使用强制重启，避免客户在不知情的情况下影响服务）；
 	// 如果卡在stop，用户使用其他方式重启了机器，stop就会一直retry
 	// 这里改用reboot，然后等待active，如果没有成功，用户从控制台重启后也会变成active状态，retry到此状态就可以正常退出了
-	if specCall.executeCall != nil || hostNameCall.executeCall != nil {
+
+	// 2022-11-01 [兼容一键三连] by ydx
+	// 根据实例状态判断是否需要重启, 和修改hostname区处理
+	if specCall.executeCall != nil {
+		beforeSpecCall, err := s.rebootOrStartKecInstance(d)
+		if err != nil {
+			return err
+		}
+		callbacks = append(callbacks, beforeSpecCall)
+	}
+
+	if hostNameCall.executeCall != nil {
 		rebootCall, err := s.rebootKecInstance(d)
 		if err != nil {
 			return err
@@ -484,6 +495,10 @@ func (s *KecService) createKecInstanceCommon(d *schema.ResourceData, resource *s
 	createReq["MaxCount"] = "1"
 	createReq["MinCount"] = "1"
 
+	if _, ok := d.GetOk("auto_create_ebs"); !ok {
+		createReq["AutoCreateEbs"] = false
+	}
+
 	callback = ApiCall{
 		param:  &createReq,
 		action: "RunInstances",
@@ -491,6 +506,7 @@ func (s *KecService) createKecInstanceCommon(d *schema.ResourceData, resource *s
 			conn := client.kecconn
 			logger.Debug(logger.RespFormat, call.action, *(call.param))
 			resp, err = conn.RunInstances(call.param)
+			logger.Debug(logger.RespFormat, call.action, "runinstances", err)
 			return resp, err
 		},
 		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
@@ -535,6 +551,29 @@ func (s *KecService) modifyKecInstanceType(d *schema.ResourceData, resource *sch
 	}
 	if len(updateReq) > 0 {
 		updateReq["InstanceId"] = d.Id()
+
+		// instanceType是必传参数
+		if _, ok := updateReq["InstanceType"]; !ok {
+			updateReq["InstanceType"] = d.Get("instance_type")
+		}
+		// 如果只是更新了系统盘，可以不配置一键三连
+		// 只有ebs支持ResizeType为online， 本地盘传这个值会报错
+		// 并且只支持特定镜像版本
+		// so 暂时不在这个地方引入系统盘的ResizeType
+		// if !d.HasChange("InstanceType") && d.HasChanges("system_disk.0.disk_size", "system_disk.0.disk_type") {
+		//	distTypeInterface := d.Get("system_disk.0.disk_type")
+		//	if v, ok := distTypeInterface.(string); ok && v != "Local_SSD" {
+		//		updateReq["SystemDisk.ResizeType"] = "online"
+		//	}
+		//} else {
+		//	updateReq["StopInstance"] = true
+		//	updateReq["AutoRestart"] = true
+		//}
+
+		// 兼容一键三连功能
+		updateReq["StopInstance"] = true
+		updateReq["AutoRestart"] = true
+
 		callback = ApiCall{
 			param:  &updateReq,
 			action: "ModifyInstanceType",
@@ -546,7 +585,11 @@ func (s *KecService) modifyKecInstanceType(d *schema.ResourceData, resource *sch
 			},
 			afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
 				logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
-				err = s.checkKecInstanceState(d, "", []string{"resize_success_local", "migrating_success", "migrating_success_off_line"}, d.Timeout(schema.TimeoutUpdate))
+				err = s.checkKecInstanceState(d, "", []string{
+					"active",
+					"resize_success_local", "migrating_success", "migrating_success_off_line", "cross_finish",
+				}, d.Timeout(schema.TimeoutUpdate))
+
 				if err != nil {
 					return err
 				}
@@ -745,8 +788,8 @@ func (s *KecService) updateKecInstanceNetwork(updateReq map[string]interface{}, 
 func (s *KecService) modifyKecInstanceNetwork(d *schema.ResourceData, resource *schema.Resource) (callback ApiCall, err error) {
 	transform := map[string]SdkReqTransform{
 		"security_group_id": {
-			forceUpdateParam: true,
-			Type:             TransformWithN,
+			//	forceUpdateParam: true,
+			Type: TransformWithN,
 		},
 		"subnet_id":       {},
 		"private_address": {},
@@ -757,15 +800,20 @@ func (s *KecService) modifyKecInstanceNetwork(d *schema.ResourceData, resource *
 			mapping: "DNS2",
 		},
 	}
+
 	updateReq, err := SdkRequestAutoMapping(d, resource, true, transform, nil)
 	if err != nil {
 		return callback, err
 	}
+
 	_, updateSubnet := updateReq["SubnetId"]
 	_, updateIp := updateReq["PrivateAddress"]
 	_, updateDns1 := updateReq["DNS1"]
 	_, updateDns2 := updateReq["DNS2"]
-	if updateSubnet || updateIp || updateDns1 || updateDns2 {
+	// 判断是否更新安全组
+	_, updateSg := updateReq["SecurityGroupId.1"]
+
+	if updateSubnet || updateIp || updateDns1 || updateDns2 || updateSg {
 		return s.updateKecInstanceNetwork(updateReq, resource, false)
 	}
 	return callback, err
@@ -927,6 +975,46 @@ func (s *KecService) stopOrStartKecInstance(d *schema.ResourceData) (callback Ap
 		} else {
 			return s.stopKecInstance(d)
 		}
+	}
+	return callback, err
+}
+
+func (s *KecService) rebootOrStartKecInstance(d *schema.ResourceData) (callback ApiCall, err error) {
+	updateReq := map[string]interface{}{
+		"InstanceId.1": d.Id(),
+	}
+	callback = ApiCall{
+		param:  &updateReq,
+		action: "RebootOrStartInstances",
+		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+
+			data, err := s.readKecInstance(d, "", false)
+			if err != nil {
+				return nil, err
+			}
+			status, err := getSdkValue("InstanceState.Name", data)
+			if err != nil {
+				return nil, err
+			}
+			if status == "active" {
+				return nil, nil
+			}
+			//"active",
+			//	"resize_success_local", "migrating_success", "migrating_success_off_line", "cross_finish",
+
+			conn := client.kecconn
+			logger.Debug(logger.RespFormat, call.action, *(call.param))
+			resp, err = conn.RebootInstances(call.param)
+			return resp, err
+		},
+		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+			logger.Debug(logger.RespFormat, call.action, *(call.param), resp)
+			err = s.checkKecInstanceState(d, "", []string{"active"}, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return err
+			}
+			return err
+		},
 	}
 	return callback, err
 }

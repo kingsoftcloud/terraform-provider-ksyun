@@ -1,3 +1,25 @@
+/*
+Provides a Network ACL resource under VPC resource.
+
+# Example Usage
+
+```hcl
+
+	resource "ksyun_network_acl" "default" {
+	  vpc_id = "a8979fe2-cf1a-47b9-80f6-57445227c541"
+	  network_acl_name = "ceshi"
+	}
+
+```
+
+# Import
+
+Network ACL can be imported using the `id`, e.g.
+
+```
+$ terraform import ksyun_network_acl.default fdeba8ca-8aa6-4cd0-8ffa-52ca9e9fef42
+```
+*/
 package ksyun
 
 import (
@@ -25,14 +47,16 @@ func resourceKsyunNetworkAcl() *schema.Resource {
 		CustomizeDiff: networkAclEntryCustomizeDiff,
 		Schema: map[string]*schema.Schema{
 			"vpc_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The id of the vpc.",
 			},
 			"network_acl_name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The name of the network ACL.",
 			},
 			"network_acl_entries": {
 				Type:     schema.TypeSet,
@@ -41,15 +65,18 @@ func resourceKsyunNetworkAcl() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: entry,
 				},
-				Set: networkAclEntryHash,
+				Set:         networkAclEntryHash,
+				Description: "Network ACL Entries. this parameter will be deprecated, use `ksyun_network_acl_entry` instead.",
 			},
 			"network_acl_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ID of the network ACL.",
 			},
 			"create_time": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The creation time of network acl.",
 			},
 		},
 	}

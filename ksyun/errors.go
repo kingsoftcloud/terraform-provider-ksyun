@@ -7,7 +7,8 @@ import (
 )
 
 const (
-	NotFound = "Notfound"
+	NotFound         = "Notfound"
+	ResourceNotfound = "ResourceNotfound"
 )
 
 type ProviderError struct {
@@ -79,10 +80,13 @@ func notFoundErrorNew(err error) bool {
 }
 
 func inUseError(err error) bool {
+	if err == nil {
+		return false
+	}
 	errMessage := strings.ToLower(err.Error())
 	if strings.Contains(errMessage, "inuse") ||
 		strings.Contains(errMessage, "in use") ||
-		strings.Contains(errMessage, "INVALID_ACTION") ||
+		strings.Contains(errMessage, "invalid_action") ||
 		strings.Contains(errMessage, "used") {
 		return true
 	}

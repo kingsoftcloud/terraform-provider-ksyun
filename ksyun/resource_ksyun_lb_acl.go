@@ -1,3 +1,24 @@
+/*
+Provides a Load Balancer acl resource to add content forwarding policies for Load Balancer backend resource.
+
+# Example Usage
+
+```hcl
+
+	resource "ksyun_lb_acl" "default" {
+	  load_balancer_acl_name = "tf-xun2"
+	}
+
+```
+
+# Import
+
+LB ACL can be imported using the `id`, e.g.
+
+```
+$ terraform import ksyun_lb_acl.example fdeba8ca-8aa6-4cd0-8ffa-52ca9e9fef42
+```
+*/
 package ksyun
 
 import (
@@ -26,8 +47,9 @@ func resourceKsyunLoadBalancerAcl() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"load_balancer_acl_name": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The name of the load balancer acl.",
 			},
 			"ip_version": {
 				Type:     schema.TypeString,
@@ -36,7 +58,8 @@ func resourceKsyunLoadBalancerAcl() *schema.Resource {
 					"ipv4",
 					"ipv6",
 				}, false),
-				Default: "ipv4",
+				Default:     "ipv4",
+				Description: "IP version of the load balancer acl. valid values:'ipv4', 'ipv6'. default is 'ipv4'.",
 			},
 			"load_balancer_acl_entry_set": {
 				Type:     schema.TypeSet,
@@ -44,17 +67,20 @@ func resourceKsyunLoadBalancerAcl() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: entry,
 				},
-				Computed: true,
-				Set:      loadBalancerAclEntryHash,
+				Computed:    true,
+				Set:         loadBalancerAclEntryHash,
+				Description: "ACL Entries. this parameter will be deprecated, use `ksyun_lb_acl_entry` instead.",
 			},
 			"create_time": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "creation time of the load balancer acl.",
 			},
 
 			"load_balancer_acl_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ID of the load balancer acl.",
 			},
 		},
 	}

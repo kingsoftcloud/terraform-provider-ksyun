@@ -1,3 +1,26 @@
+/*
+Provides a lb backend server group resource.
+
+# Example Usage
+
+```hcl
+
+	resource "ksyun_lb_backend_server_group" "default" {
+		backend_server_group_name="xuan-tf"
+		vpc_id=""
+		backend_server_group_type=""
+	}
+
+```
+
+# Import
+
+LB backend server group can be imported using the `id`, e.g.
+
+```
+$ terraform import ksyun_lb_backend_server_group.example fdeba8ca-8aa6-4cd0-8ffa-52ca9e9fef42
+```
+*/
 package ksyun
 
 import (
@@ -21,6 +44,7 @@ func resourceKsyunBackendServerGroup() *schema.Resource {
 		Optional:     true,
 		Default:      "default",
 		ValidateFunc: validation.StringIsNotEmpty,
+		Description:  "hostname of the health check.",
 	}
 
 	return &schema.Resource{
@@ -34,14 +58,16 @@ func resourceKsyunBackendServerGroup() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"backend_server_group_name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "backend_server_group",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "backend_server_group",
+				Description: "The name of backend server group. Default: 'backend_server_group'.",
 			},
 			"vpc_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "ID of the VPC.",
 			},
 			"backend_server_group_type": {
 				Type:     schema.TypeString,
@@ -50,8 +76,9 @@ func resourceKsyunBackendServerGroup() *schema.Resource {
 					"Server",
 					"Mirror",
 				}, false),
-				Default:  "Server",
-				ForceNew: true,
+				Default:     "Server",
+				ForceNew:    true,
+				Description: "The type of backend server group. Valid values: 'Server', 'Mirror'. Default is 'Server'.",
 			},
 			"health_check": {
 				Type:     schema.TypeList,
@@ -62,19 +89,23 @@ func resourceKsyunBackendServerGroup() *schema.Resource {
 				Optional:         true,
 				Computed:         true,
 				DiffSuppressFunc: lbBackendServerDiffSuppressFunc,
+				Description:      "Health check information, only the mirror server has this parameter.",
 			},
 
 			"create_time": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "creation time of the backend server group.",
 			},
 			"backend_server_group_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ID of the backend server group.",
 			},
 			"backend_server_number": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "number of backend servers.",
 			},
 		},
 	}

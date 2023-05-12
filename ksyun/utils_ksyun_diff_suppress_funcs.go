@@ -37,6 +37,17 @@ func chargeSchemaDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bo
 	return false
 }
 
+func kecDiskSnapshotIdDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
+	//logger.Debug("test", "test", d.Id(), k, strings.Contains(k, "disk_snapshot_id"))
+	if d.Id() != "" {
+		if strings.Contains(k, "disk_snapshot_id") {
+			//logger.Debug("test1", "test", 123)
+			return true
+		}
+	}
+	return false
+}
+
 func kecImportDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
 	//由于一些字段暂时无法支持从查询中返回 所以现在设立做特殊处理拦截变更 用来适配导入的场景 后续支持后在对导入场景做优化
 	if d.Id() != "" {
@@ -44,6 +55,9 @@ func kecImportDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
 			return true
 		}
 		if k == "user_data" {
+			return true
+		}
+		if k == "auto_create_ebs" {
 			return true
 		}
 	}

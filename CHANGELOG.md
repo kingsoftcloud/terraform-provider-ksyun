@@ -1,4 +1,191 @@
-## 1.1.1 (Unreleased)
+## 1.3.75 (May 5, 2023)
+
+BUG FIXES:
+
+- 修复kec更配不调整套餐时参数缺少instanceType的问题
+
+## 1.3.74 (April 28, 2023)
+
+BUG FIXES:
+
+- 修复slice类型的interface映射不准确导致panic的问题
+
+## 1.3.73 (April 19, 2023)
+
+- user-agent增加provider版本
+
+## 1.3.71 (April 10, 2023)
+
+- 增加ks3文档
+
+## 1.3.70 (April 6, 2023)
+
+- ### KS3
+
+  RESOURCES:
+
+  * bucket create
+  * bucket read
+  * bucket update 
+  * bucket delete
+
+## 1.3.68 (Mar 20, 2023)
+
+BUG FIXES:
+
+- 修复EIP字段设置的BUG。
+
+## 1.3.67 (Mar 14, 2023)
+
+IMPROVEMENTS:
+
+- 基于代码description生成文档
+
+## 1.3.66 (Mar 3, 2023)
+
+BUG FIXES:
+
+- 修复redis清理安全组由于缓存数据未更新导致删除失败的问题
+
+## 1.3.65 (Mar 3, 2023)
+
+BUG FIXES:
+
+- 修复redis清理安全组panic的问题
+
+## 1.3.64 (Mar 3, 2023)
+
+IMPROVEMENTS:
+
+- redis支持delete_directly参数
+
+## 1.3.63 (Mar 1, 2023)
+
+BUG FIXES:
+
+- 去掉KRDS计费方式校验
+
+## 1.3.62 (Dec 29, 2022)
+
+BUG FIXES:
+
+- 修复KRDS创建失败后，临时参数组没有清理的问题
+
+## 1.3.61 (Dec 27, 2022)
+
+BUG FIXES:
+
+- 修复KRDS修改parameters，float类型参数不生效的问题
+- 修复KRDS新建实例，parameters不生效，必须创建完成后再modify一次的问题
+- 增加KRDS的force_restart参数说明
+
+## 1.3.60 (Dec 15, 2022)
+
+BUG FIXES:
+
+- 修复EIP通过其他方式修改项目制后，无法从tf获取EIP数据的问题。
+
+
+## 1.3.59 (Dec 2, 2022)
+
+BUG FIXES:
+
+- 修复krds只读实例不能更配的问题：ksyun_krds_rr的db_instance_class字段，ForceNew置为false
+
+
+## 1.3.58 (Nov 9, 2022)
+
+BUG FIXES:
+
+- 修复LB监听器绑定ACL后，如果通过其他方式解绑，tf不能正常获取到解绑状态的问题
+
+
+## 1.3.57 (Nov 9, 2022)
+
+IMPROVEMENTS:
+
+- 使用整机镜像创建主机，默认不自动使用镜像关联的快照创建数据盘，需要手动配置盘资源。
+
+
+## 1.3.56 (Nov 1, 2022)
+
+IMPROVEMENTS:
+
+- 支持一键三连，更配会自动关机，自动重启
+- instance的security_group_id增加MinItems限制
+- volume增加snapshot_id字段
+- 优化instance和volume的snapshot_id字段的diff判断（由于api不返回该字段，diff默认忽略）
+
+BUG FIXES:
+
+- 修复更配无法触发的问题
+- 修复机型其他属性修改触发网卡更新的问题
+
+
+## 1.3.55 (Oct 8, 2022)
+
+BUG FIXES:
+
+- 修正LB日志参数的文档错误
+- 修正LB的TAG资源类型问题
+
+
+## 1.3.54 (Sep 28, 2022)
+
+BUG FIXES:
+
+- 修正创建LB同时开启日志不生效的问题
+
+
+## 1.3.53 (Sep 28, 2022)
+
+BUG FIXES:
+
+- 更正LB日志功能的example和文档 
+
+
+## 1.3.52 (Sep 20, 2022)
+
+BUG FIXES:
+
+- 修正EBS盘未修改但触发resize的问题
+
+
+## 1.3.51 (Sep 15, 2022)
+
+BUG FIXES:
+
+- 修正KRDS的日志bug，增加KRDS绑定EIP的参数示例
+
+
+## 1.3.50 (Sep 14, 2022)
+
+BUG FIXES:
+
+- 修正KRDS磁盘参数校验的正则
+
+
+## 1.3.49 (Sep 6, 2022)
+
+BUG FIXES:
+
+- 修复云主机示例不能更新安全组的问题（不更新其他网络属性，只更新安全组）
+
+## 1.3.48 (Sep 6, 2022)
+
+BUG FIXES:
+
+- releaser配置增加windows和arm的配置
+
+
+## 1.3.47 (Sep 6, 2022)
+
+BUG FIXES:
+
+- 修复import子网不能获取到AZ属性的问题
+
+
+
 
 ## 1.1.0 (Dec 21,2020)
 

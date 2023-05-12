@@ -1,3 +1,23 @@
+/*
+Provides a ScalingScheduledTask resource.
+
+# Example Usage
+
+```hcl
+
+	resource "ksyun_scaling_scheduled_task" "foo" {
+	  scaling_group_id = "541241314798505984"
+	  start_time = "2021-05-01 12:00:00"
+	}
+
+```
+
+# Import
+
+```
+$ terraform import ksyun_scaling_scheduled_task.example scaling-scheduled-task-abc123456
+```
+*/
 package ksyun
 
 import (
@@ -44,75 +64,88 @@ func resourceKsyunScalingScheduledTask() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			"scaling_group_id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The ScalingGroup ID of the desired ScalingScheduledTask belong to.",
 			},
 
 			"scaling_scheduled_task_name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "tf-scaling-scheduled_task",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "tf-scaling-scheduled_task",
+				Description: "The Name of the desired ScalingScheduledTask.",
 			},
 
 			"readjust_max_size": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  1,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     1,
+				Description: "The Readjust Max Size of the desired ScalingScheduledTask.",
 			},
 
 			"readjust_min_size": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  1,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     1,
+				Description: "The Readjust Min Size of the desired ScalingScheduledTask.",
 			},
 
 			"readjust_expect_size": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  1,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     1,
+				Description: "The Readjust Expect Size of the desired ScalingScheduledTask.",
 			},
 
 			"start_time": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The Start Time of the desired ScalingScheduledTask.",
 			},
 
 			"end_time": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The End Time Operator of the desired ScalingScheduledTask.",
 			},
 
 			"recurrence": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The Recurrence of the desired ScalingScheduledTask.",
 			},
 
 			"repeat_unit": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice(ksyunScalingScheduledTaskRepeatUnit, false),
+				Description:  "The Repeat Unit of the desired ScalingScheduledTask.",
 			},
 
 			"repeat_cycle": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Repeat Cycle the desired ScalingScheduledTask.",
 			},
 
 			"create_time": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The creation time.",
 			},
 
 			"scaling_scheduled_task_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ID of the task.",
 			},
 
 			"description": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The description of the task.",
 			},
 		},
 	}

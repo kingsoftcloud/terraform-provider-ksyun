@@ -1,21 +1,23 @@
 ---
+subcategory: "Provider Data Sources"
 layout: "ksyun"
-page_title: "Ksyun: ksyun_zones"
-sidebar_current: "docs-ksyun-datasource-zones"
+page_title: "ksyun: ksyun_availability_zones"
+sidebar_current: "docs-ksyun-datasource-availability_zones"
 description: |-
-  Provides a list of available zones in the current region.
+  This data source provides a list of available zones in the current region.
 ---
 
-# ksyun_zones
+# ksyun_availability_zones
 
 This data source provides a list of available zones in the current region.
+
+#
 
 ## Example Usage
 
 ```hcl
 data "ksyun_availability_zones" "default" {
-  output_file=""
-  ids=[]
+  output_file = ""
 }
 ```
 
@@ -29,4 +31,8 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-* `availability_zone_name` - Name of the zone.
+* `availability_zones` - An information list of AvailabilityZones. Each element contains the following attributes:
+  * `availability_zone_name` - Name of the zone.
+* `total_count` - Total number of AvailabilityZones that satisfy the condition.
+
+

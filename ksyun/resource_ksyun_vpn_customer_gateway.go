@@ -1,3 +1,26 @@
+/*
+Provides a Vpn Customer Gateway resource.
+
+# Example Usage
+
+```hcl
+
+	resource "ksyun_vpn_customer_gateway" "default" {
+	  customer_gateway_address   = "100.0.0.2"
+	  ha_customer_gateway_address = "100.0.2.2"
+	  customer_gateway_mame = "ksyun_vpn_cus_gw"
+	}
+
+```
+
+# Import
+
+Vpn Customer Gateway can be imported using the `id`, e.g.
+
+```
+$ terraform import ksyun_vpn_customer_gateway.default $id
+```
+*/
 package ksyun
 
 import (
@@ -23,6 +46,7 @@ func resourceKsyunVpnCustomerGateway() *schema.Resource {
 					validation.StringIsEmpty,
 					validation.IsIPAddress,
 				),
+				Description: "The customer gateway address of the vpn customer gateway.",
 			},
 
 			"ha_customer_gateway_address": {
@@ -32,11 +56,13 @@ func resourceKsyunVpnCustomerGateway() *schema.Resource {
 					validation.StringIsEmpty,
 					validation.IsIPAddress,
 				),
+				Description: "The ha customer gateway address of the vpn customer gateway.",
 			},
 
 			"customer_gateway_mame": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The name of the vpn customer gateway.",
 			},
 		},
 	}

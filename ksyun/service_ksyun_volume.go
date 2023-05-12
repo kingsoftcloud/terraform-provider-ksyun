@@ -256,6 +256,12 @@ func (s *EbsService) ModifyVolumeInfoCall(d *schema.ResourceData, r *schema.Reso
 }
 
 func (s *EbsService) ModifyVolumeResizeCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
+
+	// 判断一下size是否变化，无变化就不调resize的接口
+	// 这个显式判断如果不保留，在绑定状态下会触发一次resize调用，但是size没传就报错了
+	if !d.HasChange("size") {
+		return
+	}
 	transform := map[string]SdkReqTransform{
 		"size": {},
 		"online_resize": {
@@ -299,6 +305,10 @@ func (s *EbsService) ModifyVolumeResizeCall(d *schema.ResourceData, r *schema.Re
 }
 
 func (s *EbsService) ModifyVolume(d *schema.ResourceData, r *schema.Resource) (err error) {
+
+	//a := d.HasChange("project_id")
+	//b := d.HasChange("volume_desc")
+
 	projectCall, err := s.ModifyVolumeProjectCall(d, r)
 	if err != nil {
 		return err
@@ -307,6 +317,7 @@ func (s *EbsService) ModifyVolume(d *schema.ResourceData, r *schema.Resource) (e
 	if err != nil {
 		return err
 	}
+
 	call, err := s.ModifyVolumeResizeCall(d, r)
 	if err != nil {
 		return err

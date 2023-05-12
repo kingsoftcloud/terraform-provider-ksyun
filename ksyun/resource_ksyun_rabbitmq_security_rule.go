@@ -1,3 +1,17 @@
+/*
+Provides a Rabbitmq Security Rule resource.
+
+# Example Usage
+
+```hcl
+
+	resource "ksyun_rabbitmq_security_rule" "default" {
+	  instance_id = "InstanceId"
+	  cidr = "192.168.10.1/32"
+	}
+
+```
+*/
 package ksyun
 
 import (
@@ -26,9 +40,10 @@ func resourceKsyunRabbitmqSecurityRule() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"instance_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The id of the rabbitmq instance.",
 			},
 			"cidr": {
 				Type:          schema.TypeString,
@@ -37,7 +52,8 @@ func resourceKsyunRabbitmqSecurityRule() *schema.Resource {
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) (r bool) {
 					return conflictResourceDiffSuppressForSingle("cidrs", old, new, d)
 				},
-				ForceNew: true,
+				ForceNew:    true,
+				Description: "network cidr.",
 			},
 			"cidrs": {
 				Type:     schema.TypeString,
@@ -52,6 +68,7 @@ func resourceKsyunRabbitmqSecurityRule() *schema.Resource {
 				ValidateFunc:  stringSplitSchemaValidateFunc(","),
 				Deprecated:    "`cidrs` is deprecated use resourceKsyunRabbitmq.cidrs instead ",
 				ConflictsWith: []string{"cidr"},
+				Description:   "network cidrs.",
 			},
 		},
 	}

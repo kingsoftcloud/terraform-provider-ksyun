@@ -1,3 +1,27 @@
+/*
+Provides a Security Group Entry resource.
+
+# Example Usage
+
+```hcl
+
+	resource "ksyun_security_group_entry" "default" {
+	  security_group_id="7385c8ea-79f7-4e9c-b99f-517fc3726256"
+	  cidr_block="10.0.0.1/32"
+	  direction="in"
+	  protocol="ip"
+	}
+
+```
+
+# Import
+
+Security Group Entry can be imported using the `id`, e.g.
+
+```
+$ terraform import ksyun_security_group_entry.example xxxxxxxx-abc123456
+```
+*/
 package ksyun
 
 import (
@@ -17,14 +41,16 @@ func resourceKsyunSecurityGroupEntry() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The description of the entry.",
 			},
 			"security_group_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The ID of the security group.",
 			},
 			"cidr_block": {
 				Type:     schema.TypeString,
@@ -34,6 +60,7 @@ func resourceKsyunSecurityGroupEntry() *schema.Resource {
 					validation.StringIsEmpty,
 					validation.IsCIDR,
 				),
+				Description: "The cidr block of security group rule.",
 			},
 			"direction": {
 				Type:     schema.TypeString,
@@ -43,6 +70,7 @@ func resourceKsyunSecurityGroupEntry() *schema.Resource {
 					"in",
 					"out",
 				}, false),
+				Description: "The direction of the entry, valid values:'in', 'out'.",
 			},
 			"protocol": {
 				Type:     schema.TypeString,
@@ -54,18 +82,21 @@ func resourceKsyunSecurityGroupEntry() *schema.Resource {
 					"udp",
 					"icmp",
 				}, false),
+				Description: "The protocol of the entry, valid values: 'ip', 'tcp', 'udp', 'icmp'.",
 			},
 			"icmp_type": {
 				Type:             schema.TypeInt,
 				Optional:         true,
 				ForceNew:         true,
 				DiffSuppressFunc: securityGroupEntryDiffSuppressFunc,
+				Description:      "ICMP type.The required if protocol type is 'icmp'.",
 			},
 			"icmp_code": {
 				Type:             schema.TypeInt,
 				Optional:         true,
 				ForceNew:         true,
 				DiffSuppressFunc: securityGroupEntryDiffSuppressFunc,
+				Description:      "ICMP code.The required if protocol type is 'icmp'.",
 			},
 			"port_range_from": {
 				Type:             schema.TypeInt,
@@ -73,6 +104,7 @@ func resourceKsyunSecurityGroupEntry() *schema.Resource {
 				ForceNew:         true,
 				ValidateFunc:     validation.IntBetween(1, 65535),
 				DiffSuppressFunc: securityGroupEntryDiffSuppressFunc,
+				Description:      "Port rule start port for TCP or UDP protocol.The required if protocol type is 'tcp' or 'udp'.",
 			},
 			"port_range_to": {
 				Type:             schema.TypeInt,
@@ -80,10 +112,12 @@ func resourceKsyunSecurityGroupEntry() *schema.Resource {
 				ForceNew:         true,
 				ValidateFunc:     validation.IntBetween(1, 65535),
 				DiffSuppressFunc: securityGroupEntryDiffSuppressFunc,
+				Description:      "Port rule end port for TCP or UDP protocol.The required if protocol type is 'tcp' or 'udp'.",
 			},
 			"security_group_entry_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ID of the entry.",
 			},
 		},
 	}

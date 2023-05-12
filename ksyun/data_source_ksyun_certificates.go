@@ -1,3 +1,16 @@
+/*
+This data source provides a list of Certificate resources (KCM) according to their ID.
+
+Example Usage
+
+```hcl
+data "ksyun_certificates" "default" {
+  output_file="output_result"
+  ids = ["c7b2ba05-9302-4933-8588-a66f920ff57d"]
+}
+```
+*/
+
 package ksyun
 
 import (
@@ -15,35 +28,42 @@ func dataSourceKsyunCertificates() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Set: schema.HashString,
+				Set:         schema.HashString,
+				Description: "A list of Certificate IDs, all the Certificates belong to this region will be retrieved if the ID is `\"\"`.",
 			},
 			"name_regex": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.StringIsValidRegExp,
+				Description:  "A regex string to filter results by certificate name.",
 			},
 			"output_file": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "File name where to save data source results (after running `terraform plan`).",
 			},
 
 			"total_count": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "Total number of certificates that satisfy the condition.",
 			},
 
 			"certificates": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "It is a nested type which documented below.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"certificate_id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "ID of the certificate.",
 						},
 						"certificate_name": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "name of the certificate.",
 						},
 					},
 				},

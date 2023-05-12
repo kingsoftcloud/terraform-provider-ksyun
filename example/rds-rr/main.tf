@@ -62,11 +62,10 @@ resource "ksyun_krds" "houbin_terraform_777"{
 }
 
 resource "ksyun_krds_rr" "rds-rr-1"{
-  source_db_instance_identifier= "${ksyun_krds.houbin_terraform_777.id}"
+  db_instance_identifier= "${ksyun_krds.houbin_terraform_777.id}"
   db_instance_class= "db.ram.1|db.disk.15"
   db_instance_name = "houbin_terraform_777_rr_1"
   bill_type = "DAY"
-
 }
 
 

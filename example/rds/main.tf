@@ -47,6 +47,10 @@ resource "ksyun_krds" "houbin_terraform_4"{
   security_group_id = "${ksyun_krds_security_group.krds_sec_group_237.id}"
   preferred_backup_time = "02:00-03:00"
   port=3306
+
+  # 是否分配EIP（默认为false）
+  # instance_has_eip = true
+
   parameters {
     name = "auto_increment_increment"
     value = "10"
@@ -56,6 +60,10 @@ resource "ksyun_krds" "houbin_terraform_4"{
     name = "binlog_format"
     value = "ROW"
   }
+
+  # 部分parameters的更新，需要重启才能生效
+  # 将force_restart设置为true，会在修改参数后自动执行重启
+  # force_restart = true
 
 }
 
