@@ -5,159 +5,161 @@ Provides an KS3 Bucket resource.
 
 ```hcl
 # 创建一个名为 "bucket-new" 的 ks3 存储桶资源
-resource "ksyun_ks3_bucket" "bucket-new" {
-  provider = ks3.bj-prod
-  #指定要创建的虚拟存储桶的名称
-  bucket = "YOUR_BUCKET"
-  #桶权限
-  acl    = "public-read"
+
+	resource "ksyun_ks3_bucket" "bucket-new" {
+	  provider = ks3.bj-prod
+	  #指定要创建的虚拟存储桶的名称
+	  bucket = "YOUR_BUCKET"
+	  #桶权限
+	  acl    = "public-read"
+	}
+
+	resource "ksyun_ks3_bucket" "bucket-attr" {
+	  provider = ksyun.bj-prod
+	  bucket = "bucket-20230324-1"
+	  #访问日志的存储路径
+	  logging {
+	    target_bucket = "bucket-20230324-2"
+	    target_prefix = "log/"
+	  }
+	  #文件生命周期
+	  lifecycle_rule {
+	    id      = "id1"
+	    #如果filter.prefix有值情况下会覆盖这个选项
+	    prefix  = "path/1"
+	    enabled = true
+
+	    #过期删除时间 days or date 只能二选一
+	    expiration {
+	      #设置过期日期
+	      date = "2023-04-10"
+	      #设置过期时间
+	      #days = "40"
+	  }
+	  #添加标签
+	    filter {
+	    prefix = "example_prefix"
+	    #每个标签不能与其他标签重复
+	    tag {
+	      key   = "example_key1"
+	      value = "example_value"
+	    }
+	    tag {
+	      key   = "example_key2"
+	      value = "example_value"
+	    }
+	  }
+
 }
 
-resource "ksyun_ks3_bucket" "bucket-attr" {
-  provider = ksyun.bj-prod
-  bucket = "bucket-20230324-1"
-  #访问日志的存储路径
-  logging {
-    target_bucket = "bucket-20230324-2"
-    target_prefix = "log/"
-  }
-  #文件生命周期
-  lifecycle_rule {
-    id      = "id1"
-    #如果filter.prefix有值情况下会覆盖这个选项
-    prefix  = "path/1"
-    enabled = true
+	lifecycle_rule {
+	  id      = "id2"
+	  prefix  = "path/365"
+	  enabled = true
 
-    #过期删除时间 days or date 只能二选一
-    expiration {
-      #设置过期日期
-      date = "2023-04-10"
-      #设置过期时间
-      #days = "40"
-  }
-  #添加标签
-    filter {
-    prefix = "example_prefix"
-    #每个标签不能与其他标签重复
-    tag {
-      key   = "example_key1"
-      value = "example_value"
-    }
-    tag {
-      key   = "example_key2"
-      value = "example_value"
-    }
-  }
+	  expiration {
+	    date = "2023-04-10"
+	  }
+	}
 
-}
-
-lifecycle_rule {
-  id      = "id2"
-  prefix  = "path/365"
-  enabled = true
-
-  expiration {
-    date = "2023-04-10"
-  }
-}
 #跨域规则
-  cors_rule {
-  allowed_origins =  [var.allow-origins-star]
-  allowed_methods = split(",", var.allow-methods-put)
-  allowed_headers = [var.allowed_headers]
-}
 
-cors_rule {
-  allowed_origins = split(",", var.allow-origins-ksyun)
-  allowed_methods = split(",", var.allow-methods-get)
-  allowed_headers = [var.allowed_headers]
-  expose_headers  = [var.expose_headers]
-  max_age_seconds = var.max_age_seconds
-}
+	  cors_rule {
+	  allowed_origins =  [var.allow-origins-star]
+	  allowed_methods = split(",", var.allow-methods-put)
+	  allowed_headers = [var.allowed_headers]
+	}
+
+	cors_rule {
+	  allowed_origins = split(",", var.allow-origins-ksyun)
+	  allowed_methods = split(",", var.allow-methods-get)
+	  allowed_headers = [var.allowed_headers]
+	  expose_headers  = [var.expose_headers]
+	  max_age_seconds = var.max_age_seconds
+	}
+
 }
 ```
 
 # 创建variables.tf (上面var的变量才能引用到)
 ```hcl
 
-variable "bucket-new" {
-  default = "bucket-20180423-1"
-}
+	variable "bucket-new" {
+	  default = "bucket-20180423-1"
+	}
 
-variable "bucket-attr" {
-  default = "bucket-20180423-2"
-}
+	variable "bucket-attr" {
+	  default = "bucket-20180423-2"
+	}
 
-variable "acl-bj" {
-  default = "private"
-}
+	variable "acl-bj" {
+	  default = "private"
+	}
 
+	variable "target-prefix" {
+	  default = "log3/"
+	}
 
-variable "target-prefix" {
-  default = "log3/"
-}
+	variable "role-days" {
+	  default = "expirationByDays"
+	}
 
-variable "role-days" {
-  default = "expirationByDays"
-}
+	variable "rule-days" {
+	  default = 365
+	}
 
-variable "rule-days" {
-  default = 365
-}
-variable "my_variable" {
-  type = number
-  default = 42
-}
+	variable "my_variable" {
+	  type = number
+	  default = 42
+	}
 
+	variable "role-date" {
+	  default = "expirationByDate"
+	}
 
-variable "role-date" {
-  default = "expirationByDate"
-}
+	variable "rule-date" {
+	  default = "2023-03-18"
+	}
 
-variable "rule-date" {
-  default = "2023-03-18"
-}
+	variable "rule-prefix" {
+	  default = "path"
+	}
 
-variable "rule-prefix" {
-  default = "path"
-}
+	variable "allow-empty" {
+	  default = true
+	}
 
-variable "allow-empty" {
-  default = true
-}
+	variable "referers" {
+	  default = "http://www.ksyun.com, https://www.ksyun.com, http://?.ksyun.com"
+	}
 
-variable "referers" {
-  default = "http://www.ksyun.com, https://www.ksyun.com, http://?.ksyun.com"
-}
+	variable "allow-origins-star" {
+	  default = "*"
+	}
 
+	variable "allow-origins-ksyun" {
+	  default = "http://www.ksyun.com,http://*.ksyun.com"
+	}
 
-variable "allow-origins-star" {
-  default = "*"
-}
+	variable "allow-methods-get" {
+	  default = "GET"
+	}
 
-variable "allow-origins-ksyun" {
-  default = "http://www.ksyun.com,http://*.ksyun.com"
-}
+	variable "allow-methods-put" {
+	  default = "PUT,GET"
+	}
 
-variable "allow-methods-get" {
-  default = "GET"
-}
+	variable "allowed_headers" {
+	  default = "*"
+	}
 
-variable "allow-methods-put" {
-  default = "PUT,GET"
-}
+	variable "expose_headers" {
+	  default = "x-ks3-test, x-ks3-test1"
+	}
 
-variable "allowed_headers" {
-  default = "*"
-}
-
-variable "expose_headers" {
-  default = "x-ks3-test, x-ks3-test1"
-}
-
-variable "max_age_seconds" {
-  default = 100
-}
+	variable "max_age_seconds" {
+	  default = 100
+	}
 
 ```
 */

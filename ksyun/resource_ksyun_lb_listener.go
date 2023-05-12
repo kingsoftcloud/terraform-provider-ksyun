@@ -12,10 +12,10 @@ Provides a Load Balancer Listener resource.
 	}
 
 	resource "ksyun_lb_listener" "default" {
-	  listener_name = "tf-xun",
-	  listener_port = "8000",
-	  listener_protocol = "HTTPS",
-	  listener_state = "stop",
+	  listener_name = "tf-xun"
+	  listener_port = "8000"
+	  listener_protocol = "HTTPS"
+	  listener_state = "stop"
 	  load_balancer_id = "7fae85e4-ab1a-415c-aef9-03a402c79d97",
 	  method = "RoundRobin"
 	  certificate_id = "${ksyun_certificate.default.id}"
