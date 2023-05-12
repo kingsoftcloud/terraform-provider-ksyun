@@ -1,9 +1,7 @@
 package ksyun
 
 import (
-	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/terraform-providers/terraform-provider-ksyun/logger"
 )
 
 type KceWorkerService struct {
@@ -13,12 +11,23 @@ type KceWorkerService struct {
 func (s *KceWorkerService) AddWorker(d *schema.ResourceData, resource *schema.Resource) (err error) {
 	clusterId := d.Get("cluster_id")
 	instanceId := d.Get("instance_id")
-	//imageId := d.Get("image_id")
+	imageId := d.Get("image_id")
 
-	node, err := s.getNode(clusterId.(string), instanceId.(string))
-	logger.Debug("%s", "AddWorker", node, err)
+	//var nodes []interface{}
+	//nodes, err = s.getNode(clusterId.(string), instanceId.(string))
+	//if err != nil {
+	//	return
+	//}
+	//
+	//// 检查是否已经绑定
+	//if len(nodes) > 0 {
+	//
+	//}
+	//logger.Debug("%s", "AddWorker", nodes, err)
 	return
 }
+
+func (s *KceWorkerService) addNode() {}
 
 func (s *KceWorkerService) getNode(clusterId, instanceId string) (list []interface{}, err error) {
 	conn := s.client.kceconn
@@ -28,15 +37,12 @@ func (s *KceWorkerService) getNode(clusterId, instanceId string) (list []interfa
 		"Filter.1.Value.1": instanceId,
 	}
 
-	fmt.Println(condition)
 	var resp *map[string]interface{}
 	resp, err = conn.DescribeClusterInstance(&condition)
 
 	if err != nil {
-		fmt.Println(err)
 		return
 	}
-	logger.Debug("%v", "getNode", resp, err, err != nil)
 	var clusterInstanceResults interface{}
 	clusterInstanceResults, err = getSdkValue("InstanceSet", *resp)
 	if err != nil {

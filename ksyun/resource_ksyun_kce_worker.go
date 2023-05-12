@@ -20,12 +20,12 @@ func resourceKsyunKceWorker() *schema.Resource {
 			"instance_id": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The ID of the kec instance.",
+				Description: "The ID of the kec instance. The instance will be shut down while being added to the kce cluster.",
 			},
 			"image_id": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The ID of the image.",
+				Description: "The ID of the image which support KCE.",
 			},
 		},
 	}
