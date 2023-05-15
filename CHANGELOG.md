@@ -1,3 +1,9 @@
+## 1.3.76 (May 15, 2023)
+
+IMPROVEMENTS:
+
+- ksyun_data_image返回增加real_image_id字段
+
 ## 1.3.75 (May 5, 2023)
 
 BUG FIXES:

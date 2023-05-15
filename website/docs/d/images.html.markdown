@@ -53,6 +53,7 @@ In addition to all arguments above, the following attributes are exported:
   * `name` - Display name of the image.
   * `platform` - Platform type of the image system.
   * `progress` - image creation progress percentage.
+  * `real_image_id` - The real id of the image.
   * `sys_disk` - size of system disk.
   * `user_category` - User defined category.
 * `total_count` - Total number of image that satisfy the condition.
