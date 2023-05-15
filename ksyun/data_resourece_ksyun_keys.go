@@ -300,6 +300,7 @@ var imageKeys = map[string]bool{
 	"Ipv6Support":      true,
 	"IsModifyType":     true,
 	"IsCloudMarket":    true,
+	"RealImageId":      true,
 }
 var networkInterfaceKeys = map[string]bool{
 	"NetworkInterfaceId":   true,
