@@ -383,3 +383,46 @@ func (s *KceService) ReadAndSetKceCluster(d *schema.ResourceData, r *schema.Reso
 		return nil
 	})
 }
+
+func (s *KceService) readKceInstanceImages(condition map[string]interface{}) (data []interface{}, err error) {
+	var (
+		resp    *map[string]interface{}
+		results interface{}
+	)
+
+	//return pageQuery(condition, "MaxResults", "Marker", 10, 0, func(condition map[string]interface{}) ([]interface{}, error) {
+	conn := s.client.kceconn
+
+	if condition == nil {
+		resp, err = conn.DescribeInstanceImage(nil)
+		if err != nil {
+			return data, err
+		}
+	} else {
+		resp, err = conn.DescribeInstanceImage(&condition)
+		if err != nil {
+			return data, err
+		}
+	}
+	//logger.Debug("kce instance images: %v %v", "DescribeInstanceImage", resp, err)
+	results, err = getSdkValue("ImageSet", *resp)
+	logger.Debug("kce instance images: %v %v", "results", results, err)
+	if err != nil {
+		return data, err
+	}
+	data = results.([]interface{})
+	return data, err
+	//})
+
+}
+
+func (s *KceService) ReadAndSetKceInstanceImages(d *schema.ResourceData, r *schema.Resource) (err error) {
+	var data []interface{}
+	data, err = s.readKceInstanceImages(nil)
+	return mergeDataSourcesResp(d, r, ksyunDataSource{
+		collection:  data,
+		idFiled:     "ImageId",
+		nameField:   "ImageName",
+		targetField: "image_set",
+	})
+}

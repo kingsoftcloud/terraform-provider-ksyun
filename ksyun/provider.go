@@ -344,6 +344,7 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_bare_metal_images":             dataSourceKsyunBareMetalImages(),
 			"ksyun_bare_metal_raid_attributes":    dataSourceKsyunBareMetalRaidAttributes(),
 			"ksyun_kce_clusters":                  dataSourceKsyunKceClusters(),
+			"ksyun_kce_instance_images":           dataSourceKsyunKceInstanceImages(),
 			"ksyun_tags":                          dataSourceKsyunTags(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
