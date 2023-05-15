@@ -154,6 +154,11 @@ func dataSourceKsyunImages() *schema.Resource {
 							Computed:    true,
 							Description: "Whether image is from cloud market or not.",
 						},
+						"real_image_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The real id of the image.",
+						},
 					},
 				},
 			},
@@ -170,6 +175,7 @@ func dataSourceKsyunImagesRead(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return fmt.Errorf("error on reading Image list req(%v):%v", req, err)
 	}
+	//logger.Debug("%v", "DescribeImages", resp, err)
 	itemSet, ok := (*resp)["ImagesSet"]
 	if !ok {
 		return fmt.Errorf("error on reading Image set")
