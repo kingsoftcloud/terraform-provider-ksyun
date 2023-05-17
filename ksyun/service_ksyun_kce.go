@@ -2,6 +2,7 @@ package ksyun
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -338,15 +339,29 @@ func (s *KceService) getAllNodes(clusterId string) ([]interface{}, error) {
 func (s *KceService) DeleteKceCluster(d *schema.ResourceData, r *schema.Resource) (err error) {
 	req := make(map[string]interface{})
 	req["ClusterId"] = d.Id()
+	_, err = s.client.kceconn.DeleteCluster(&req)
+	if err != nil {
+		return
+	}
+	var data []interface{}
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
 		logger.Debug(logger.ReqFormat, "DeleteCluster", req)
-		_, err = s.client.kceconn.DeleteCluster(&req)
 
-		if err == nil {
+		data, err = s.readKceClusters(req)
+		if len(data) == 0 {
 			return nil
 		}
 
-		return resource.NonRetryableError(err)
+		status, err := getSdkValue("Status", data[0])
+		if err != nil {
+			return resource.NonRetryableError(err)
+		}
+		if status.(string) != "deleting" {
+			err = errors.New("cluster status not available")
+			return resource.NonRetryableError(err)
+		}
+		return resource.RetryableError(errors.New("deleting"))
+
 	})
 }
 
