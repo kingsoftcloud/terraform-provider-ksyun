@@ -8,9 +8,33 @@ import (
 
 const testAccKceWorkerConfig = `
 resource "ksyun_kce_worker" "foo" {
-	cluster_id = "bdd98fcf-b3d3-4296-817a-f54b04f9ea9e"
-	image_id = "234567"
-	instance_id = "7496b61d-8d50-4c5a-86b3-4953cf63f3fd"
+	cluster_id = "5e2d7073-a948-42d1-81ec-13d679edfd10"
+	image_id = "7dc43a49-4d3e-4498-993c-4192847d75bf"
+	instance_id = "321521e8-4885-426c-baa1-2fc9a4eced76"
+
+	instance_password = "Test1234$"
+
+	data_disk {
+		auto_format_and_mount = true
+		file_system = "ext4"
+		mount_target = "/data"
+	}
+	container_runtime = "docker"
+	docker_path = "/data/docker_new"
+	user_script = "abc"
+	pre_user_script = "def"
+	schedulable = true
+	//label {
+	//	key = "key1"
+	//	value = "value1"
+	//}
+	//label {
+	//	key = "key2"
+	//	value = "value2"
+	//}
+	container_log_max_size = 200
+	container_log_max_files = 20
+	extra_arg = ["abc=def", "hig=klm"]
 }
 `
 
@@ -25,12 +49,20 @@ func TestAccKsyunKceWorker_basic(t *testing.T) {
 		CheckDestroy:  testAccCheckKceWorkerDestroy,
 		Steps: []resource.TestStep{
 			{
+				//PlanOnly: true,
 				Config: testAccKceWorkerConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckKceWorkerExists("ksyun_kce_worker.foo", &val),
 					testAccCheckKceWorkerAttributes(&val),
 				),
 			},
+			//{
+			//	ResourceName:      "ksyun_kce_worker.foo",
+			//	ImportStateId:     "bedfb5d0-bb8f-40dd-9f1d-8966fd1ace87:3a66ad5a-313b-41c0-8b72-6749e438ea17",
+			//	ImportState:       true,
+			//	ImportStateVerify: true,
+			//	//ImportStateVerifyIgnore: []string{"lang"},
+			//},
 		},
 	})
 }
