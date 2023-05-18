@@ -152,6 +152,12 @@ Bare Metal
 	Resource
 		ksyun_bare_metal
 
+KCE
+
+	Data Source
+		ksyun_kce_clusters
+		ksyun_kce_instance_images
+
 KCM
 
 	Data Source
