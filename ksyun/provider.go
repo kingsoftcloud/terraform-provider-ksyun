@@ -158,6 +158,10 @@ KCE
 		ksyun_kce_clusters
 		ksyun_kce_instance_images
 
+	Resource
+		ksyun_kce_cluster
+		ksyun_kce_worker
+
 KCM
 
 	Data Source

@@ -1,8 +1,21 @@
+## 1.4.0 ()
+
+DATA SOURCES:
+
+- ksyun_kce_clusters 获取容器集群
+- ksyun_kce_instance_images 获取云主机容器节点可用的镜像
+
+RESOURCES:
+
+- ksyun_kce_cluster 容器集群（本期仅支持独立集群，不支持托管集群）
+- ksyun_kce_worker 容器的worker节点
+
+
 ## 1.3.76 (May 15, 2023)
 
 IMPROVEMENTS:
 
-- ksyun_data_image返回增加real_image_id字段
+- data_ksyun_images返回增加real_image_id字段
 
 ## 1.3.75 (May 5, 2023)
 

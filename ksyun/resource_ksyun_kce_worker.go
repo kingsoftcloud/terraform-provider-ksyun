@@ -1,3 +1,41 @@
+/*
+Provides a KCE worker resource.
+
+# Example Usage
+
+```hcl
+
+	resource "ksyun_kce_worker" "default" {
+	  cluster_id        = ksyun_kce_cluster.test_cluster.id
+	  instance_id       = ksyun_instance.traffic_analysis.0.id
+	  image_id          = data.ksyun_kce_instance_images.test.image_set.0.image_id
+	  instance_password = "1235Test$"
+	  data_disk {
+	    auto_format_and_mount = true
+	    file_system           = "ext4"
+	    mount_target          = "/data"
+	  }
+	  container_runtime       = "docker"
+	  docker_path             = "/data/docker_new"
+	  user_script             = "abc"
+	  pre_user_script         = "def"
+	  schedulable             = false
+
+	  container_log_max_size  = 200
+	  container_log_max_files = 20
+	}
+
+```
+
+# Import
+
+KCE worker can be imported using the id, e.g.
+
+```
+$ terraform import ksyun_kce_worker.default 67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
+```
+*/
+
 package ksyun
 
 import (
@@ -20,7 +58,7 @@ func resourceKsyunKceWorker() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "The ID of the kce cluster",
+				Description: "The ID of the kce cluster.",
 			},
 			"instance_id": {
 				Type:        schema.TypeString,
