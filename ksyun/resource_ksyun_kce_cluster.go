@@ -160,8 +160,9 @@ func instanceForNode() map[string]*schema.Schema {
 	m["tags"].Computed = true
 
 	m["count"] = &schema.Schema{
-		Type:     schema.TypeInt,
-		Required: true,
+		Type:         schema.TypeInt,
+		Required:     true,
+		ValidateFunc: validation.IntInSlice([]int{3, 5}),
 	}
 	m["role"] = &schema.Schema{
 		Type:     schema.TypeString,
@@ -220,8 +221,8 @@ func resourceKsyunKceCluster() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
-				Computed: true,
-				Default:  "DedicatedCluster",
+				//Computed: true,
+				Default: "DedicatedCluster",
 				ValidateFunc: validation.StringInSlice([]string{
 					// "ManagedCluster", // 是否可以先不创建worker？
 					"DedicatedCluster",
@@ -313,9 +314,10 @@ func resourceKsyunKceCluster() *schema.Resource {
 					"Users need to pass the Elastic IP creation pass-through parameter, which should be a JSON-formatted string.",
 			},
 			"master_config": {
-				Type:     schema.TypeList,
-				Required: true,
+				Type: schema.TypeList,
+				//Required: true,
 				ForceNew: true,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: instanceForNode(),
 				},
@@ -334,6 +336,11 @@ func resourceKsyunKceClusterCreate(d *schema.ResourceData, meta interface{}) (er
 	return
 }
 func resourceKsyunKceClusterUpdate(d *schema.ResourceData, meta interface{}) (err error) {
+	srv := KceService{meta.(*KsyunClient)}
+	err = srv.UpdateCluster(d, resourceKsyunKceCluster())
+	if err != nil {
+		return fmt.Errorf("error on create kce cluster: %s", err)
+	}
 	return
 }
 func resourceKsyunKceClusterRead(d *schema.ResourceData, meta interface{}) (err error) {

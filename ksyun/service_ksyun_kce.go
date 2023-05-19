@@ -302,14 +302,18 @@ func (s *KceService) CreateCluster(d *schema.ResourceData, resource *schema.Reso
 	return
 }
 
-func (s *KceService) getAllNodes(clusterId string) ([]interface{}, error) {
+func (s *KceService) getAllMasters(clusterId string) ([]interface{}, error) {
 
 	var (
 		resp                   *map[string]interface{}
 		clusterInstanceResults interface{}
 	)
 	condition := map[string]interface{}{
-		"ClusterId": clusterId,
+		"ClusterId":        clusterId,
+		"Filter.1.Name":    "instance-role",
+		"Filter.1.Value.1": "Master_Etcd",
+		"Filter.1.Value.2": "Master",
+		"Filter.1.Value.3": "Master_Etcd",
 	}
 	return pageQuery(condition, "MaxResults", "Marker", 10, 0, func(condition map[string]interface{}) ([]interface{}, error) {
 		conn := s.client.kceconn
@@ -365,6 +369,20 @@ func (s *KceService) DeleteKceCluster(d *schema.ResourceData, r *schema.Resource
 	})
 }
 
+func (s *KceService) UpdateCluster(d *schema.ResourceData, r *schema.Resource) (err error) {
+	params := map[string]interface{}{
+		"ClusterId": d.Get("cluster_id"),
+	}
+	if d.HasChange("cluster_name") {
+		params["ClusterName"] = d.Get("cluster_name")
+	}
+	if d.HasChange("cluster_desc") {
+		params["ClusterDesc"] = d.Get("cluster_desc")
+	}
+	_, err = s.client.kceconn.ModifyClusterInfo(&params)
+	return
+}
+
 func (s *KceService) ReadAndSetKceCluster(d *schema.ResourceData, r *schema.Resource) (err error) {
 	//fmt.Println(d, resource)
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -389,11 +407,10 @@ func (s *KceService) ReadAndSetKceCluster(d *schema.ResourceData, r *schema.Reso
 		extra := map[string]SdkResponseMapping{}
 		SdkResponseAutoResourceData(d, r, clusterInfo, extra)
 		//
-		//// 获取集群节点信息
-		list, err := s.getAllNodes(d.Id())
-		//d.Set("cluster_id", clusterInfo["ClusterId"])
-
-		logger.Debug("[%s] %+v, %+v", "allNodes", list, err)
+		err = s.readAndSetMasters(d, r)
+		if err != nil {
+			return resource.NonRetryableError(err)
+		}
 
 		return nil
 	})
@@ -404,7 +421,6 @@ func (s *KceService) readKceInstanceImages(condition map[string]interface{}) (da
 		resp    *map[string]interface{}
 		results interface{}
 	)
-
 	//return pageQuery(condition, "MaxResults", "Marker", 10, 0, func(condition map[string]interface{}) ([]interface{}, error) {
 	conn := s.client.kceconn
 
@@ -441,3 +457,36 @@ func (s *KceService) ReadAndSetKceInstanceImages(d *schema.ResourceData, r *sche
 		targetField: "image_set",
 	})
 }
+
+// 把tf里master的配置，和master机器列表对应起来
+func (s *KceService) readAndSetMasters(d *schema.ResourceData, r *schema.Resource) (err error) {
+
+	//masterConfigSrc := d.Get("master_config")
+	//logger.Debug("readAndSetMasters", "master_config", masterConfigSrc)
+	//if masterConfigList, ok := masterConfigSrc.([]interface{}); ok {
+	//	for _, configItem := range masterConfigList {
+	//		logger.Debug("readAndSetMasters", "master_config_item", configItem.(map[string]interface{}))
+	//	}
+	//}
+	//
+	//var instances []interface{}
+	//instances, err = s.getAllMasters(d.Id())
+	//
+	//logger.Debug("readAndSetMasters", "instances", instances)
+	//for _, itemSrc := range instances {
+	//	if item, ok := itemSrc.(map[string]interface{}); ok {
+	//		instanceRole := item["InstanceRole"]
+	//	}
+	//}
+	//d.Get("master_config")
+
+	// todo:
+	// 把机器列表格式化一组字符串，然后将master_config也格式化成一组字符串，
+	// 然后把机器串匹配master_config，能匹配上就累加数字，如果最终有差异，就成为diff
+
+	return
+}
+
+//// 将master机器列表
+//func getMasterUniqKeyFromInstances() {}
+//func getMasterUniqKeyFromConfigs()   {}
