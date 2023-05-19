@@ -53,7 +53,7 @@ The following arguments are supported:
 
 * `cluster_name` - (Required) The name of the cluster.
 * `k8s_version` - (Required, ForceNew) kubernetes version, valid values:"v1.17.6", "v1.19.3", "v1.21.3".
-* `master_config` - (Required, ForceNew) The configuration for the master nodes.
+* `master_config` - (Required) The configuration for the master nodes.
 * `network_type` - (Required, ForceNew) The network type of the cluster. valid values: 'Flannel', 'Canal'.
 * `pod_cidr` - (Required, ForceNew) The pod CIDR block.
 * `reserve_subnet_id` - (Required, ForceNew) The ID of the reserve subnet.
@@ -80,7 +80,7 @@ The `master_config` object supports the following:
 * `charge_type` - (Required, ForceNew) charge type of the instance.
 * `count` - (Required) 
 * `image_id` - (Required) The ID for the image to use for the instance.
-* `role` - (Required) 
+* `role` - (Required) Node role. when the MasterEtcdSeparate field is set to false, both the Worker and Master_Etcd roles need to be specified.when the MasterEtcdSeparate field is set to true, the Master, Etcd, and Worker roles need to be specified simultaneously.
 * `security_group_id` - (Required) Security Group to associate with.
 * `subnet_id` - (Required) The ID of subnet. the instance will use the subnet in the current region.
 * `auto_create_ebs` - (Optional) Whether to create EBS volumes from snapshots in the custom image, default is false.

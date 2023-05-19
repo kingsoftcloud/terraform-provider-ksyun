@@ -171,6 +171,8 @@ func instanceForNode() map[string]*schema.Schema {
 			//"Worker",
 			"Master_Etcd", "Master", "Etcd",
 		}, false),
+		Description: "Node role. when the MasterEtcdSeparate field is set to false, both the Worker and Master_Etcd roles need to be specified." +
+			"when the MasterEtcdSeparate field is set to true, the Master, Etcd, and Worker roles need to be specified simultaneously.",
 	}
 	//m["security_group_id"] = &schema.Schema{
 	//	Type:     schema.TypeString,
@@ -314,9 +316,10 @@ func resourceKsyunKceCluster() *schema.Resource {
 					"Users need to pass the Elastic IP creation pass-through parameter, which should be a JSON-formatted string.",
 			},
 			"master_config": {
-				Type: schema.TypeList,
-				//Required: true,
-				ForceNew: true,
+				Type:     schema.TypeList,
+				Required: true,
+				//Optional: true,
+				//ForceNew: true,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: instanceForNode(),
