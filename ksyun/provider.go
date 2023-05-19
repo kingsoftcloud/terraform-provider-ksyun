@@ -137,6 +137,7 @@ Volume(EBS)
 
 	Data Source
 		ksyun_volumes
+		ksyun_snapshots
 
 	Resource
 		ksyun_volume
@@ -321,6 +322,7 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_redis_instances":               dataSourceRedisInstances(),
 			"ksyun_redis_security_groups":         dataSourceRedisSecurityGroups(),
 			"ksyun_volumes":                       dataSourceKsyunVolumes(),
+			"ksyun_snapshots":                     dataSourceKsyunSnapshots(),
 			"ksyun_mongodbs":                      dataSourceKsyunMongodbs(),
 			"ksyun_lb_host_headers":               dataSourceKsyunListenerHostHeaders(),
 			"ksyun_lb_rules":                      dataSourceKsyunSlbRules(),
