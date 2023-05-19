@@ -53,7 +53,6 @@ The following arguments are supported:
 
 * `cluster_name` - (Required) The name of the cluster.
 * `k8s_version` - (Required, ForceNew) kubernetes version, valid values:"v1.17.6", "v1.19.3", "v1.21.3".
-* `master_config` - (Required, ForceNew) The configuration for the master nodes.
 * `network_type` - (Required, ForceNew) The network type of the cluster. valid values: 'Flannel', 'Canal'.
 * `pod_cidr` - (Required, ForceNew) The pod CIDR block.
 * `reserve_subnet_id` - (Required, ForceNew) The ID of the reserve subnet.
@@ -65,60 +64,41 @@ The following arguments are supported:
 * `max_pod_per_node` - (Optional, ForceNew) The maximum number of pods that can be run on each node. valid values: 16, 32, 64, 128, 256.
 * `public_api_server` - (Optional, ForceNew) Whether to expose the apiserver to the public network. If not needed, do not fill in this option. If selected, a public SLB and EIP will be created to enable public access to the cluster's API server. Users need to pass the Elastic IP creation pass-through parameter, which should be a JSON-formatted string.
 
-The `data_disks` object supports the following:
-
-* `delete_with_instance` - (Optional, ForceNew) Delete this data disk when the instance is destroyed. It only works on EBS disk.
-* `disk_size` - (Optional, ForceNew) Data disk size. value range: [10, 16000].
-* `disk_snapshot_id` - (Optional, ForceNew) When the cloud disk opens, the snapshot id is entered.
-* `disk_type` - (Optional, ForceNew) Data disk type.
-
-The `extension_network_interface` object supports the following:
-
-
-The `master_config` object supports the following:
-
-* `charge_type` - (Required, ForceNew) charge type of the instance.
-* `count` - (Required) 
-* `image_id` - (Required) The ID for the image to use for the instance.
-* `role` - (Required) 
-* `security_group_id` - (Required) Security Group to associate with.
-* `subnet_id` - (Required) The ID of subnet. the instance will use the subnet in the current region.
-* `auto_create_ebs` - (Optional) Whether to create EBS volumes from snapshots in the custom image, default is false.
-* `data_disk_gb` - (Optional) The size of the local SSD disk.
-* `data_disks` - (Optional) The list of data disks created with instance.
-* `data_guard_id` - (Optional, ForceNew) Add instance being created to a disaster tolerance group.
-* `dns1` - (Optional) DNS1 of the primary network interface.
-* `dns2` - (Optional) DNS2 of the primary network interface.
-* `force_delete` - (Optional) Indicate whether to delete instance directly or not.
-* `force_reinstall_system` - (Optional) Indicate whether to reinstall system.
-* `host_name` - (Optional) The hostname of the instance. only effective when image support cloud-init.
-* `iam_role_name` - (Optional) name of iam role.
-* `instance_name` - (Optional) The name of instance, which contains 2-64 characters and only support Chinese, English, numbers.
-* `instance_password` - (Optional) Password to an instance is a string of 8 to 32 characters.
-* `instance_status` - (Optional) The state of instance.
-* `instance_type` - (Optional) The type of instance to start.
-* `keep_image_login` - (Optional) Keep the initial settings of the custom image.
-* `key_id` - (Optional) The certificate id of the instance.
-* `local_volume_snapshot_id` - (Optional, ForceNew) When the local data disk opens, the snapshot id is entered.
-* `private_ip_address` - (Optional) Instance private IP address can be specified when you creating new instance.
-* `project_id` - (Optional) The project instance belongs to.
-* `purchase_time` - (Optional, ForceNew) The duration that you will buy the resource.
-* `sriov_net_support` - (Optional, ForceNew) whether support networking enhancement.
-* `system_disk` - (Optional) System disk parameters.
-* `tags` - (Optional) the tags of the resource.
-* `user_data` - (Optional, ForceNew) The user data to be specified into this instance. Must be encrypted in base64 format and limited in 16 KB. only effective when image support cloud-init.
-
-The `system_disk` object supports the following:
-
-* `disk_size` - (Optional) The size of the data disk. value range: [20, 500].
-* `disk_type` - (Optional, ForceNew) System disk type. `Local_SSD`, Local SSD disk. `SSD3.0`, The SSD cloud disk. `EHDD`, The EHDD cloud disk.
-
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
 * `id` - ID of the resource.
 * `cluster_id` - The ID of the cluster.
+* `master_config` - The configuration for the master nodes.
+  * `data_disk_gb` - The size of the local SSD disk.
+  * `data_disks` - The list of data disks created with instance.
+    * `disk_id` - ID of the disk.
+    * `disk_size` - Data disk size. value range: [10, 16000].
+    * `disk_type` - Data disk type.
+  * `dns1` - DNS1 of the primary network interface.
+  * `dns2` - DNS2 of the primary network interface.
+  * `extension_network_interface` - extension network interface information.
+    * `network_interface_id` - ID of the extension network interface.
+  * `has_modify_keys` - whether the certificate key has modified.
+  * `has_modify_password` - whether the password has modified.
+  * `has_modify_system_disk` - whether the system disk has modified.
+  * `host_name` - The hostname of the instance. only effective when image support cloud-init.
+  * `instance_id` - ID of the instance.
+  * `instance_name` - The name of instance, which contains 2-64 characters and only support Chinese, English, numbers.
+  * `instance_password` - Password to an instance is a string of 8 to 32 characters.
+  * `instance_status` - The state of instance.
+  * `instance_type` - The type of instance to start.
+  * `key_id` - The certificate id of the instance.
+  * `local_volume_snapshot_id` - When the local data disk opens, the snapshot id is entered.
+  * `network_interface_id` - ID of the network interface.
+  * `private_ip_address` - Instance private IP address can be specified when you creating new instance.
+  * `project_id` - The project instance belongs to.
+  * `sriov_net_support` - whether support networking enhancement.
+  * `system_disk` - System disk parameters.
+    * `disk_size` - The size of the data disk. value range: [20, 500].
+    * `disk_type` - System disk type. `Local_SSD`, Local SSD disk. `SSD3.0`, The SSD cloud disk. `EHDD`, The EHDD cloud disk.
+  * `tags` - the tags of the resource.
 
 
 ## Import
