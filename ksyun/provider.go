@@ -128,7 +128,8 @@ Instance(KEC)
 	Data Source
 		ksyun_images
 		ksyun_instances
-		ksyun_instance_local_volumes
+		ksyun_local_volumes
+		ksyun_local_snapshots
 
 	Resource
 		ksyun_instance
@@ -323,7 +324,8 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_subnet_allocated_ip_addresses": dataSourceKsyunSubnetAllocatedIpAddresses(),
 			"ksyun_security_groups":               dataSourceKsyunSecurityGroups(),
 			"ksyun_instances":                     dataSourceKsyunInstances(),
-			"ksyun_instance_local_volumes":        dataSourceKsyunKecLocalVolumes(),
+			"ksyun_local_volumes":                 dataSourceKsyunLocalVolumes(),
+			"ksyun_local_snapshots":               dataSourceKsyunLocalSnapshots(),
 			"ksyun_images":                        dataSourceKsyunImages(),
 			"ksyun_sqlservers":                    dataSourceKsyunSqlServer(),
 			"ksyun_krds":                          dataSourceKsyunKrds(),

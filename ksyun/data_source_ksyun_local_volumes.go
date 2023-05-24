@@ -5,7 +5,7 @@ This data source provides a list of kec local volumes in the current region.
 
 ```hcl
 
-	data "ksyun_instance_local_volumes" "default" {
+	data "ksyun_local_volumes" "default" {
 	  output_file=""
 	}
 
@@ -16,9 +16,9 @@ package ksyun
 
 import "github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 
-func dataSourceKsyunKecLocalVolumes() *schema.Resource {
+func dataSourceKsyunLocalVolumes() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceKsyunKecLocalVolumeRead,
+		Read: dataSourceKsyunLocalVolumeRead,
 		Schema: map[string]*schema.Schema{
 			"output_file": {
 				Type:        schema.TypeString,
@@ -88,7 +88,7 @@ func dataSourceKsyunKecLocalVolumes() *schema.Resource {
 	}
 }
 
-func dataSourceKsyunKecLocalVolumeRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceKsyunLocalVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	s := LocalVolumeService{meta.(*KsyunClient)}
-	return s.ReadAndSetLocalVolumes(d, dataSourceKsyunKecLocalVolumes())
+	return s.ReadAndSetLocalVolumes(d, dataSourceKsyunLocalVolumes())
 }
