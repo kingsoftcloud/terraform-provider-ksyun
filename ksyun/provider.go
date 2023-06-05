@@ -128,10 +128,15 @@ Instance(KEC)
 	Data Source
 		ksyun_images
 		ksyun_instances
+		ksyun_auto_snapshot_policy
+		ksyun_data_guard_group
 
 	Resource
 		ksyun_instance
 		ksyun_kec_network_interface_attachment
+		ksyun_auto_snapshot_policy
+		ksyun_auto_snapshot_volume_association
+		ksyun_data_guard_group
 
 Volume(EBS)
 
@@ -344,7 +349,8 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_bare_metal_images":             dataSourceKsyunBareMetalImages(),
 			"ksyun_bare_metal_raid_attributes":    dataSourceKsyunBareMetalRaidAttributes(),
 			"ksyun_tags":                          dataSourceKsyunTags(),
-			"ksyun_snapshot":                      dataSourceKsyunSnapshot(),
+			"ksyun_auto_snapshot_policy":          dataSourceKsyunAutoSnapshotPolicy(),
+			"ksyun_data_guard_group":              dataSourceKsyunDataGuardGroup(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"ksyun_eip":                              resourceKsyunEip(),
@@ -407,8 +413,9 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_bare_metal":                       resourceKsyunBareMetal(),
 			"ksyun_tag":                              resourceKsyunTag(),
 			"ksyun_ks3_bucket":                       resourceKsyunKs3Bucket(),
-			"ksyun_snapshot":                         resourceKsyunSnapshot(),
-			"ksyun_snapshot_volume_association":      ResourceKsyunSnapshotAssociation(),
+			"ksyun_auto_snapshot_policy":             resourceKsyunAutoSnapshotPolicy(),
+			"ksyun_auto_snapshot_volume_association": resourceKsyunAutoSnapshotVolumeAssociation(),
+			"ksyun_data_guard_group":                 resourceKsyunDataGuardGroup(),
 		},
 		ConfigureFunc: providerConfigure,
 	}

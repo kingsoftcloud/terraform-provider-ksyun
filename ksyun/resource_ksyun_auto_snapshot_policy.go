@@ -1,6 +1,26 @@
-// Copyright 2022 NotOne Lv <aiphalv0010@gmail.com>. All rights reserved.
-// Use of this source code is governed by a MIT style
-// license that can be found in the LICENSE file.
+/*
+Provides a tag resource.
+
+# Example Usage
+
+```hcl
+
+	resource "ksyun_auto_snapshot_policy" "foo" {
+	  name   = "your auto snapshot policy name"
+	  auto_snapshot_date = [1,3,4,5]
+	  auto_snapshot_time = [1,3,4,5,9,22]
+	}
+
+```
+
+# Import
+
+Tag can be imported using the `id`, e.g.
+
+```
+$ terraform import ksyun_auto_snapshot_policy.foo "auto_snapshot_policy_id"
+```
+*/
 
 package ksyun
 
@@ -13,24 +33,27 @@ import (
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
 )
 
-func resourceKsyunSnapshot() *schema.Resource {
+func resourceKsyunAutoSnapshotPolicy() *schema.Resource {
 	return &schema.Resource{
-		Read:   resourceKsyunSnapshotRead,
-		Create: resourceKsyunSnapshotCreate,
-		Delete: resourceKsyunSnapshotDelete,
-		Update: resourceKsyunSnapshotUpdate,
+		Read:   resourceKsyunAutoSnapshotPolicyRead,
+		Create: resourceKsyunAutoSnapshotPolicyCreate,
+		Delete: resourceKsyunAutoSnapshotPolicyDelete,
+		Update: resourceKsyunAutoSnapshotPolicyUpdate,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 
 		Schema: map[string]*schema.Schema{
 			// parameter
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "the name of KEC snapshot policy",
+				Description: "the name of auto snapshot policy.",
 			},
 			"auto_snapshot_policy_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The id of auto snapshot policy",
+				Description: "The id of auto snapshot policy.",
 			},
 			"auto_snapshot_time": {
 				Type: schema.TypeSet,
@@ -46,7 +69,7 @@ func resourceKsyunSnapshot() *schema.Resource {
 				},
 				Required: true,
 				// Default:     []int{0},
-				Description: "Setting the snapshot time in a day, its scope is between 0 and 23",
+				Description: "Setting the snapshot time in a day, its scope is between 0 and 23.",
 			},
 			"auto_snapshot_date": {
 				Type: schema.TypeSet,
@@ -55,29 +78,29 @@ func resourceKsyunSnapshot() *schema.Resource {
 					ValidateFunc: validation.IntBetween(1, 7),
 				},
 				Required:    true,
-				Description: "Setting the snapshot date in a week, its scope is between 1 and 7",
+				Description: "Setting the snapshot date in a week, its scope is between 1 and 7.",
 			},
 
 			"retention_time": {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				ValidateFunc: validation.IntBetween(0, 9999),
-				Description:  "the snapshot will be reserved for when, the cap is 9999",
+				Description:  "the snapshot will be reserved for when, the cap is 9999.",
 			},
 			"creation_date": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The snapshot policy creation date",
+				Description: "The snapshot policy creation date.",
 			},
 		},
 	}
 }
 
-func resourceKsyunSnapshotRead(d *schema.ResourceData, meta interface{}) error {
-	snapshotSrv := SnapshotSrv{
+func resourceKsyunAutoSnapshotPolicyRead(d *schema.ResourceData, meta interface{}) error {
+	snapshotSrv := AutoSnapshotSrv{
 		client: meta.(*KsyunClient),
 	}
-	r := resourceKsyunSnapshot()
+	r := resourceKsyunAutoSnapshotPolicy()
 
 	reqTransform := map[string]SdkReqTransform{
 		"name":                    {mapping: "AutoSnapshotPolicyName"},
@@ -139,11 +162,11 @@ func resourceKsyunSnapshotRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceKsyunSnapshotCreate(d *schema.ResourceData, meta interface{}) error {
-	snapshotSrv := SnapshotSrv{
+func resourceKsyunAutoSnapshotPolicyCreate(d *schema.ResourceData, meta interface{}) error {
+	snapshotSrv := AutoSnapshotSrv{
 		client: meta.(*KsyunClient),
 	}
-	r := resourceKsyunSnapshot()
+	r := resourceKsyunAutoSnapshotPolicy()
 
 	reqTransform := map[string]SdkReqTransform{
 		"name":               {mapping: "AutoSnapshotPolicyName"},
@@ -171,18 +194,18 @@ func resourceKsyunSnapshotCreate(d *schema.ResourceData, meta interface{}) error
 	policyId := results.(string)
 	_ = d.Set("auto_snapshot_policy_id", policyId)
 	d.SetId(policyId)
-	err = resourceKsyunSnapshotRead(d, meta)
+	err = resourceKsyunAutoSnapshotPolicyRead(d, meta)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func resourceKsyunSnapshotUpdate(d *schema.ResourceData, meta interface{}) error {
-	snapshotSrv := SnapshotSrv{
+func resourceKsyunAutoSnapshotPolicyUpdate(d *schema.ResourceData, meta interface{}) error {
+	snapshotSrv := AutoSnapshotSrv{
 		client: meta.(*KsyunClient),
 	}
-	r := resourceKsyunSnapshot()
+	r := resourceKsyunAutoSnapshotPolicy()
 
 	reqTransform := map[string]SdkReqTransform{
 		"auto_snapshot_time": {Type: TransformWithN},
@@ -216,11 +239,11 @@ func resourceKsyunSnapshotUpdate(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 
-	return resourceKsyunSnapshotRead(d, meta)
+	return resourceKsyunAutoSnapshotPolicyRead(d, meta)
 }
 
-func resourceKsyunSnapshotDelete(d *schema.ResourceData, meta interface{}) error {
-	snapshotSrv := SnapshotSrv{
+func resourceKsyunAutoSnapshotPolicyDelete(d *schema.ResourceData, meta interface{}) error {
+	snapshotSrv := AutoSnapshotSrv{
 		client: meta.(*KsyunClient),
 	}
 
@@ -236,8 +259,7 @@ func resourceKsyunSnapshotDelete(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 
-	policySet, err := getSdkValue("AutoSnapshotPolicySet", resp)
-	if err != nil || policySet == nil {
+	if _, err := getSdkValue("AutoSnapshotPolicySet", resp); err != nil {
 		return fmt.Errorf("fail to delete snapshot from ksyun sdk. auto_snapshot_policy_id: %s", d.Get("auto_snapshot_policy_id"))
 	}
 

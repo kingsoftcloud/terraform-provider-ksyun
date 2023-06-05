@@ -10,22 +10,22 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestResourceKsyunSnapshotAssociation_basic(t *testing.T) {
+func TestResourceKsyunAutoSnapshotAssociation_basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
 
-		IDRefreshName: "ksyun_snapshot_volume_association.foo",
+		IDRefreshName: "ksyun_auto_snapshot_volume_association.foo",
 		Providers:     testAccProviders,
 		// CheckDestroy:  testAccCheckSnapshotDestroy,
 
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSnapshotAssociationConfig,
+				Config: testAccAutoSnapshotVolumeAssociationConfig,
 
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIDExists("ksyun_snapshot_volume_association.foo"),
+					testAccCheckIDExists("ksyun_auto_snapshot_volume_association.foo"),
 				),
 			},
 			// // to test terraform when its configuration changes
@@ -39,13 +39,13 @@ func TestResourceKsyunSnapshotAssociation_basic(t *testing.T) {
 	})
 }
 
-const testAccSnapshotAssociationConfig = `
+const testAccAutoSnapshotVolumeAssociationConfig = `
 provider "ksyun" {
 	region = "cn-beijing-6"
 }
 
 
-resource "ksyun_snapshot_volume_association" "foo" {
+resource "ksyun_auto_snapshot_volume_association" "foo" {
   attach_volume_id = "a94bbaac-0b83-4610-9040-cdbc15b061ab"
   auto_snapshot_policy_id = "860576274707722240"
 }

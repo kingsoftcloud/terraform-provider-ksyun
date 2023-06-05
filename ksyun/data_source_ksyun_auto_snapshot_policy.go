@@ -1,23 +1,20 @@
 /*
-Provides a list of Redis security groups in the current region.
+Query instance auto snapshot policies information
 
 # Example Usage
 
 ```hcl
 
-		data "ksyun_snapshot" "foo" {
+		data "ksyun_auto_snapshot_policy" "foo" {
 			name = "your auto snapshot policy name"
 			auto_snapshot_policy_ids = ["auto snapshot policy id"] // a list of auto snapshot policy id that can be null
 			output_file = "output_result_snapshot"
 		}
 
-		output "ksyun_snapshot" {
-			value = data.ksyun_snapshot.foo
+		output "ksyun_auto_snapshot_policy" {
+			value = data.ksyun_auto_snapshot_policy.foo
 		}
 
-		output "ksyun_snapshots_total_count" {
-			value = data.ksyun_snapshot.foo.total_count
-		}
 ```
 */
 
@@ -28,15 +25,15 @@ import (
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
 )
 
-func dataSourceKsyunSnapshot() *schema.Resource {
+func dataSourceKsyunAutoSnapshotPolicy() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceKsyunSnapshotRead,
+		Read: dataSourceKsyunAutoSnapshotPolicyRead,
 		Schema: map[string]*schema.Schema{
 			// parameter
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "the name of KEC snapshot policy",
+				Description: "the name of auto snapshot policy.",
 			},
 			// query snapshot policy
 			"auto_snapshot_policy_ids": {
@@ -45,7 +42,7 @@ func dataSourceKsyunSnapshot() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Description: "The id of auto snapshot policy",
+				Description: "The id of auto snapshot policy.",
 			},
 			"output_file": {
 				Type:        schema.TypeString,
@@ -56,12 +53,13 @@ func dataSourceKsyunSnapshot() *schema.Resource {
 			"total_count": {
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "Total number of snapshot policies resources that satisfy the condition.",
+				Description: "Total number of auto snapshot policies resources that satisfy the condition.",
 			},
 
 			"snapshots": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "An information list of auto snapshot policy. Each element contains the following attributes:",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						// return values by data source query
@@ -71,22 +69,22 @@ func dataSourceKsyunSnapshot() *schema.Resource {
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
-							Description: "The snapshot policy will be created in these hours",
+							Description: "The snapshot policy will be created in these hours.",
 						},
 						"creation_date": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The snapshot policy creation date",
+							Description: "The snapshot policy creation date.",
 						},
 						"auto_snapshot_policy_id": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The snapshot policy id",
+							Description: "The snapshot policy id.",
 						},
 						"auto_snapshot_date": {
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The snapshot policy will be triggered in these dates per month",
+							Description: "The snapshot policy will be triggered in these dates per month.",
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
@@ -94,17 +92,17 @@ func dataSourceKsyunSnapshot() *schema.Resource {
 						"auto_snapshot_policy_name": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The snapshot policy name",
+							Description: "The snapshot policy name.",
 						},
 						"attach_local_volume_num": {
 							Type:        schema.TypeInt,
 							Computed:    true,
-							Description: "The volume number that is attached to this policy",
+							Description: "The volume number that is attached to this policy.",
 						},
 						"attach_ebs_volume_num": {
 							Type:        schema.TypeInt,
 							Computed:    true,
-							Description: "The snapshot retention period (unit: day)",
+							Description: "The snapshot retention period (unit: day).",
 						},
 					},
 				},
@@ -113,12 +111,12 @@ func dataSourceKsyunSnapshot() *schema.Resource {
 	}
 }
 
-// dataSourceKsyunSnapshotRead will read data source from ksyun
-func dataSourceKsyunSnapshotRead(d *schema.ResourceData, meta interface{}) error {
-	snapshotSrv := SnapshotSrv{
+// dataSourceKsyunAutoSnapshotPolicyRead will read data source from ksyun
+func dataSourceKsyunAutoSnapshotPolicyRead(d *schema.ResourceData, meta interface{}) error {
+	snapshotSrv := AutoSnapshotSrv{
 		client: meta.(*KsyunClient),
 	}
-	r := dataSourceKsyunSnapshot()
+	r := dataSourceKsyunAutoSnapshotPolicy()
 
 	reqTransform := map[string]SdkReqTransform{
 		"name":                     {mapping: "AutoSnapshotPolicyName"},

@@ -1,6 +1,16 @@
-// Copyright 2022 NotOne Lv <aiphalv0010@gmail.com>. All rights reserved.
-// Use of this source code is governed by a MIT style
-// license that can be found in the LICENSE file.
+/*
+Provides a tag resource.
+
+# Example Usage
+
+```hcl
+
+	resource "ksyun_snapshot_volume_association" "foo" {
+	  attach_volume_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+	  auto_snapshot_policy_id = "auto_snapshot_policy_id"
+	}
+```
+*/
 
 package ksyun
 
@@ -12,11 +22,11 @@ import (
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
 )
 
-func ResourceKsyunSnapshotAssociation() *schema.Resource {
+func resourceKsyunAutoSnapshotVolumeAssociation() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceKsyunSnapshotAssociationCreate,
-		Read:   resourceKsyunSnapshotAssociationRead,
-		Delete: resourceKsyunSnapshotAssociationDelete,
+		Create: resourceKsyunAutoSnapshotVolumeAssociationCreate,
+		Read:   resourceKsyunAutoSnapshotVolumeAssociationRead,
+		Delete: resourceKsyunAutoSnapshotVolumeAssociationDelete,
 		// Importer: &schema.ResourceImporter{
 		// 	State: importNatAssociate,
 		// },
@@ -38,12 +48,12 @@ func ResourceKsyunSnapshotAssociation() *schema.Resource {
 	}
 }
 
-func resourceKsyunSnapshotAssociationCreate(d *schema.ResourceData, meta interface{}) error {
-	SnapshotSrv := SnapshotSrv{
+func resourceKsyunAutoSnapshotVolumeAssociationCreate(d *schema.ResourceData, meta interface{}) error {
+	SnapshotSrv := AutoSnapshotSrv{
 		client: meta.(*KsyunClient),
 	}
 
-	r := resourceKsyunNatAssociation()
+	r := resourceKsyunAutoSnapshotVolumeAssociation()
 
 	reqTransform := map[string]SdkReqTransform{
 		"attach_volume_id":        {Type: TransformWithN},
@@ -71,12 +81,12 @@ func resourceKsyunSnapshotAssociationCreate(d *schema.ResourceData, meta interfa
 	return nil
 }
 
-func resourceKsyunSnapshotAssociationRead(d *schema.ResourceData, meta interface{}) error {
+func resourceKsyunAutoSnapshotVolumeAssociationRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceKsyunSnapshotAssociationDelete(d *schema.ResourceData, meta interface{}) error {
-	SnapshotSrv := SnapshotSrv{
+func resourceKsyunAutoSnapshotVolumeAssociationDelete(d *schema.ResourceData, meta interface{}) error {
+	SnapshotSrv := AutoSnapshotSrv{
 		client: meta.(*KsyunClient),
 	}
 

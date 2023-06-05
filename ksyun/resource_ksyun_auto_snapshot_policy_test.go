@@ -123,7 +123,7 @@ func testAccCheckSnapshotDestroy(s *terraform.State) error {
 		}
 
 		client := testAccProvider.Meta().(*KsyunClient)
-		snapshotSrv := SnapshotSrv{
+		snapshotSrv := AutoSnapshotSrv{
 			client: client,
 		}
 		subnet := make(map[string]interface{})
