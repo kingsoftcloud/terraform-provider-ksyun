@@ -97,20 +97,16 @@ func resourceKsyunAutoSnapshotPolicy() *schema.Resource {
 }
 
 func resourceKsyunAutoSnapshotPolicyRead(d *schema.ResourceData, meta interface{}) error {
-	snapshotSrv := AutoSnapshotSrv{
-		client: meta.(*KsyunClient),
-	}
+	snapshotSrv := NewAutoSnapshotSrv(meta.(*KsyunClient))
+
 	r := resourceKsyunAutoSnapshotPolicy()
 
-	reqTransform := map[string]SdkReqTransform{
-		"name":                    {mapping: "AutoSnapshotPolicyName"},
-		"auto_snapshot_policy_id": {mapping: "AutoSnapshotPolicyId", Type: TransformWithN},
-	}
+	reqParameters := make(map[string]interface{})
 
-	reqParameters, err := SdkRequestAutoMapping(d, r, false, reqTransform, nil)
-	if err != nil {
-		return err
+	if name, ok := d.GetOk("name"); ok {
+		reqParameters["AutoSnapshotPolicyName"] = name
 	}
+	reqParameters["AutoSnapshotPolicyId.0"] = d.Id()
 	// call query function
 	action := "DescribeAutoSnapshotPolicy"
 	logger.Debug(logger.ReqFormat, action, reqParameters)
@@ -119,16 +115,8 @@ func resourceKsyunAutoSnapshotPolicyRead(d *schema.ResourceData, meta interface{
 	if err != nil || len(sdkResponse) < 1 {
 		return fmt.Errorf("while query snapshot policy have encountered an error detail: %s", err)
 	}
-	policySet, err := getSdkValue("AutoSnapshotPolicySet", sdkResponse)
-	if err != nil || policySet == nil {
-		return fmt.Errorf("the snapshot doesn't exsit from ksyun sdk. auto_snapshot_policy_id: %s, name: %s "+
-			"\n This resource has been deleted on ksyun. you can delete local resource in ./.terraform.tfstate",
-			d.Get("auto_snapshot_policy_id"), d.Get("name"))
-	}
 
-	data := policySet.([]interface{})
-
-	result := data[0].(map[string]interface{})
+	result := sdkResponse[0].(map[string]interface{})
 
 	extra := map[string]SdkResponseMapping{
 		"AutoSnapshotTime": {
@@ -156,6 +144,9 @@ func resourceKsyunAutoSnapshotPolicyRead(d *schema.ResourceData, meta interface{
 				return datesList
 			},
 		},
+		"AutoSnapshotPolicyName": {
+			Field: "name",
+		},
 	}
 	SdkResponseAutoResourceData(d, r, result, extra)
 
@@ -163,9 +154,8 @@ func resourceKsyunAutoSnapshotPolicyRead(d *schema.ResourceData, meta interface{
 }
 
 func resourceKsyunAutoSnapshotPolicyCreate(d *schema.ResourceData, meta interface{}) error {
-	snapshotSrv := AutoSnapshotSrv{
-		client: meta.(*KsyunClient),
-	}
+	snapshotSrv := NewAutoSnapshotSrv(meta.(*KsyunClient))
+
 	r := resourceKsyunAutoSnapshotPolicy()
 
 	reqTransform := map[string]SdkReqTransform{
@@ -183,15 +173,11 @@ func resourceKsyunAutoSnapshotPolicyCreate(d *schema.ResourceData, meta interfac
 	action := "CreateAutoSnapshotPolicy"
 	logger.Debug(logger.ReqFormat, action, reqParameters)
 
-	sdkResponse, err := snapshotSrv.createAutoSnapshotPolicy(reqParameters)
+	policyId, err := snapshotSrv.createAutoSnapshotPolicy(reqParameters)
 	if err != nil {
 		return err
 	}
-	results, err := getSdkValue("AutoSnapshotPolicyId", sdkResponse)
-	if err != nil {
-		return err
-	}
-	policyId := results.(string)
+
 	_ = d.Set("auto_snapshot_policy_id", policyId)
 	d.SetId(policyId)
 	err = resourceKsyunAutoSnapshotPolicyRead(d, meta)
@@ -202,9 +188,8 @@ func resourceKsyunAutoSnapshotPolicyCreate(d *schema.ResourceData, meta interfac
 }
 
 func resourceKsyunAutoSnapshotPolicyUpdate(d *schema.ResourceData, meta interface{}) error {
-	snapshotSrv := AutoSnapshotSrv{
-		client: meta.(*KsyunClient),
-	}
+	snapshotSrv := NewAutoSnapshotSrv(meta.(*KsyunClient))
+
 	r := resourceKsyunAutoSnapshotPolicy()
 
 	reqTransform := map[string]SdkReqTransform{
@@ -243,9 +228,7 @@ func resourceKsyunAutoSnapshotPolicyUpdate(d *schema.ResourceData, meta interfac
 }
 
 func resourceKsyunAutoSnapshotPolicyDelete(d *schema.ResourceData, meta interface{}) error {
-	snapshotSrv := AutoSnapshotSrv{
-		client: meta.(*KsyunClient),
-	}
+	snapshotSrv := NewAutoSnapshotSrv(meta.(*KsyunClient))
 
 	removeMap := map[string]interface{}{
 		"AutoSnapshotPolicyId.1": d.Id(),
@@ -254,13 +237,9 @@ func resourceKsyunAutoSnapshotPolicyDelete(d *schema.ResourceData, meta interfac
 	action := "DeleteAutoSnapshotPolicy"
 	logger.Debug(logger.ReqFormat, action, removeMap)
 
-	resp, err := snapshotSrv.deleteAutoSnapshotPolicy(removeMap)
+	_, err := snapshotSrv.deleteAutoSnapshotPolicy(removeMap)
 	if err != nil {
 		return err
-	}
-
-	if _, err := getSdkValue("AutoSnapshotPolicySet", resp); err != nil {
-		return fmt.Errorf("fail to delete snapshot from ksyun sdk. auto_snapshot_policy_id: %s", d.Get("auto_snapshot_policy_id"))
 	}
 
 	return nil

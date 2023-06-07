@@ -4,9 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"io/ioutil"
 	"log"
 	"os"
@@ -15,6 +12,10 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func SchemaSetToInstanceMap(s interface{}, prefix string, input *map[string]interface{}) {
@@ -69,7 +70,7 @@ func writeToFile(filePath string, data interface{}) error {
 	if err != nil {
 		return err
 	}
-	os.Remove(absPath)
+	_ = os.Remove(absPath)
 	var bs []byte
 	switch data := data.(type) {
 	case string:
@@ -104,7 +105,7 @@ func merageResultDirect(result *[]map[string]interface{}, source []interface{}) 
 	}
 }
 
-// schemaSetToStringSlice used for converting terraform schema set to a string slice
+// SchemaSetToStringSlice used for converting terraform schema set to a string slice
 func SchemaSetToStringSlice(s interface{}) []string {
 	vL := []string{}
 
@@ -115,14 +116,18 @@ func SchemaSetToStringSlice(s interface{}) []string {
 	return vL
 }
 
+// getSdkValue will get values from GO-SDK. it's feature is get values from nest structure
+// e.g getSdkValue("key.nest_key", object)
 func getSdkValue(keyPattern string, obj interface{}) (interface{}, error) {
 	keys := strings.Split(keyPattern, ".")
 	root := obj
 	for index, k := range keys {
 		if reflect.ValueOf(root).Kind() == reflect.Map {
 			root = root.(map[string]interface{})[k]
+			// if root == nil, it represents the obj doesn't contain this keys
+			// so, it usually returns an error
 			if root == nil {
-				return root, nil
+				return root, fmt.Errorf("the obj doesn't contain key %s", k)
 			}
 
 		} else if reflect.ValueOf(root).Kind() == reflect.Slice {
@@ -131,7 +136,7 @@ func getSdkValue(keyPattern string, obj interface{}) (interface{}, error) {
 				return nil, fmt.Errorf("keyPattern %s index %d must number", keyPattern, index)
 			}
 			if len(root.([]interface{})) < i {
-				return nil, nil
+				return nil, fmt.Errorf("the obj doesn't contain key %s", k)
 			}
 			root = root.([]interface{})[i]
 		}
@@ -143,11 +148,12 @@ type SliceMappingFunc func(map[string]interface{}) map[string]interface{}
 
 type IdMappingFunc func(string, map[string]interface{}) string
 
+// SdkSliceData organize slice data mapping needs information
 type SdkSliceData struct {
 	IdField          string
-	IdMappingFunc    IdMappingFunc
-	SliceMappingFunc SliceMappingFunc
-	TargetName       string
+	IdMappingFunc    IdMappingFunc    // id mapping function
+	SliceMappingFunc SliceMappingFunc // data mapping function
+	TargetName       string           // the convert keys' name
 }
 
 func sliceMapping(ids []string, data []map[string]interface{}, sdkSliceData SdkSliceData, item interface{}) ([]string, []map[string]interface{}) {
@@ -436,7 +442,7 @@ func SdkRequestAutoExtra(r map[string]SdkReqTransform, d *schema.ResourceData, f
 	return extra
 }
 
-// Auto Transform Terraform Resource to SDK Request Parameter
+// SdkRequestAutoMapping Auto Transform Terraform Resource to SDK Request Parameter
 // d : Transform schema.ResourceData Ptr
 // resource: Transform schema.Resource Ptr
 // onlyTransform : map[string]TransformType ,If set this field,Transform will with this array instead of Transform schema.Resource
@@ -571,6 +577,8 @@ func SdkResponseDefault(p string, d interface{}, item *interface{}) {
 	}
 }
 
+// SdkResponseAutoResourceData will convert response data to terraform resource data
+//
 func SdkResponseAutoResourceData(d *schema.ResourceData, resource *schema.Resource, item interface{}, extra map[string]SdkResponseMapping, start ...bool) interface{} {
 	setFlag := false
 	if start == nil || (len(start) > 0 && start[0]) {
@@ -582,14 +590,14 @@ func SdkResponseAutoResourceData(d *schema.ResourceData, resource *schema.Resour
 		for k, v := range root {
 			var value interface{}
 			var err error
-			//if v == nil {
+			// if v == nil {
 			//	continue
-			//}
-			//if str, ok := v.(string); ok {
+			// }
+			// if str, ok := v.(string); ok {
 			//	if str == "" {
 			//		continue
 			//	}
-			//}
+			// }
 			m := SdkResponseMapping{}
 			target := Hump2Downline(k)
 			if _, ok := extra[k]; ok {
@@ -661,6 +669,11 @@ func SdkResponseAutoResourceData(d *schema.ResourceData, resource *schema.Resour
 	return nil
 }
 
+// SdkResponseAutoMapping converts SDK response to resource.schema[collectField]
+// collectField is in the resource field defined, it's contents is mapping the sdk response
+// computeItem will migrate into item.
+// extraMapping will define self the field mapping instead of abide by hump-to-underline.
+// e.g. resource id, items instance_id extraMapping{ instance_id: { mapping: "id"} }
 func SdkResponseAutoMapping(resource *schema.Resource, collectField string, item map[string]interface{}, computeItem map[string]interface{},
 	extraMapping map[string]SdkResponseMapping) map[string]interface{} {
 	var result map[string]interface{}
@@ -757,6 +770,8 @@ func SdkMapMapping(result interface{}, sdkSliceData SdkSliceData) (map[string]in
 	return data, nil
 }
 
+// SdkSliceMapping will set the slice values from sdk into this d schema.ResourceData
+// input parameter result is the raw sdk response
 func SdkSliceMapping(d *schema.ResourceData, result interface{}, sdkSliceData SdkSliceData) ([]string, []map[string]interface{}, error) {
 	var err error
 	var ids []string
@@ -859,4 +874,35 @@ func checkValueInSliceMap(data []interface{}, key string, value interface{}) (c 
 		}
 	}
 	return c
+}
+
+func checkValueInSlice(data []string, key string) (c bool) {
+	for _, iterK := range data {
+		if iterK == key {
+			c = true
+			return c
+		}
+	}
+	return c
+}
+
+func transformMapValue2String(keyPattern string, obj interface{}) error {
+	retObj, err := getSdkValue(keyPattern, obj)
+	if err != nil || retObj == nil {
+		return fmt.Errorf("key pattern: %s not exsits in object", keyPattern)
+	}
+	switch retObj.(type) {
+	case map[string]interface{}:
+		iterObj := retObj.(map[string]interface{})
+		for k, v := range iterObj {
+			switch v.(type) {
+			case float64:
+				// convert float64 to string, which it will cut out the value after the decimal point
+				iterObj[k] = strconv.FormatFloat(v.(float64), 'f', 0, 64)
+			case int:
+				iterObj[k] = strconv.Itoa(v.(int))
+			}
+		}
+	}
+	return nil
 }

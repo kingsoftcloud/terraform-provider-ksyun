@@ -128,23 +128,16 @@ func testAccCheckSnapshotDestroy(s *terraform.State) error {
 		}
 		subnet := make(map[string]interface{})
 		subnet["AutoSnapshotPolicyId.1"] = rs.Primary.ID
-		ptr, err := snapshotSrv.querySnapshotPolicyByID(subnet)
+		sdkResponse, err := snapshotSrv.querySnapshotPolicyByID(subnet)
 
 		// Verify the error is what we want
 		if err != nil {
 			return err
 		}
-		if ptr != nil {
-			policySetIf := ptr["AutoSnapshotPolicySet"]
-			if policySetIf == nil {
-				continue
-			}
-			policySet := policySetIf.([]interface{})
-			if len(policySet) == 0 {
-				continue
-			} else {
-				return fmt.Errorf("subnet still exist")
-			}
+		if len(sdkResponse) == 0 {
+			continue
+		} else {
+			return fmt.Errorf("subnet still exist")
 		}
 	}
 

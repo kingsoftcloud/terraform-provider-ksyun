@@ -16,6 +16,12 @@ type DataGuardSrv struct {
 	client *KsyunClient
 }
 
+func NewDataGuardSrv(client *KsyunClient) DataGuardSrv {
+	return DataGuardSrv{
+		client: client,
+	}
+}
+
 func (d *DataGuardSrv) describeDataGuardGroup(input map[string]interface{}) (data []interface{}, err error) {
 	var (
 		resp *map[string]interface{}
@@ -30,9 +36,8 @@ func (d *DataGuardSrv) describeDataGuardGroup(input map[string]interface{}) (dat
 	if err != nil || results == nil {
 		return nil, fmt.Errorf("the current available zone not exsits any data guard group")
 	}
-	data = results.([]interface{})
 
-	return data, err
+	return If2Slice(results)
 }
 
 // createDataGuardGroup will create data guard group and it returns this data guard group id
@@ -47,8 +52,7 @@ func (d *DataGuardSrv) createDataGuardGroup(input map[string]interface{}) (strin
 	if err != nil || results == nil {
 		return "", err
 	}
-	guardId := results.(string)
-	return guardId, err
+	return If2String(results)
 }
 
 func (d *DataGuardSrv) deleteDataGuardGroup(input map[string]interface{}) error {

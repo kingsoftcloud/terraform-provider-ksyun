@@ -84,25 +84,16 @@ func resourceKsyunDataGuardGroup() *schema.Resource {
 }
 
 func resourceKsyunDataGuardGroupRead(d *schema.ResourceData, meta interface{}) error {
-	dataGuardSrv := DataGuardSrv{
-		client: meta.(*KsyunClient),
-	}
+	dataGuardSrv := NewDataGuardSrv(meta.(*KsyunClient))
 	r := resourceKsyunDataGuardGroup()
 
 	reqParameters := map[string]interface{}{}
 
-	if dataGuardId, ok := d.GetOk("data_guard_id"); ok {
-		reqParameters["data_guard_id"] = dataGuardId
-	}
-
 	if dataGuardName, ok := d.GetOk("data_guard_name"); ok {
-		reqParameters["data_guard_id"] = dataGuardName
+		reqParameters["DataGuardName"] = dataGuardName
 	}
 
-	if len(reqParameters) < 1 {
-		return fmt.Errorf("refresh data guard group must need data_guard_name or data_guard id, but now there are none")
-	}
-
+	reqParameters["DataGuardId"] = d.Id()
 	// call query function
 	action := "DescribeDataGuardGroup"
 	logger.Debug(logger.ReqFormat, action, reqParameters)
@@ -111,22 +102,14 @@ func resourceKsyunDataGuardGroupRead(d *schema.ResourceData, meta interface{}) e
 	if err != nil || len(sdkResponse) < 1 {
 		return fmt.Errorf("while query snapshot policy have encountered an error detail: %s", err)
 	}
-	policySet, err := getSdkValue("DataGuardsSet", sdkResponse)
-	if err != nil || policySet == nil {
+
+	if len(sdkResponse) < 1 {
 		return fmt.Errorf("the data guard group doesn't exsit from ksyun. data_guard_id: %s, data_guard_name: %s "+
 			"\n This resource has been deleted on ksyun. you can delete local resource in ./.terraform.tfstate",
 			d.Get("data_guard_id"), d.Get("data_guard_name"))
 	}
 
-	data := policySet.([]interface{})
-
-	if len(data) < 1 {
-		return fmt.Errorf("the data guard group doesn't exsit from ksyun. data_guard_id: %s, data_guard_name: %s "+
-			"\n This resource has been deleted on ksyun. you can delete local resource in ./.terraform.tfstate",
-			d.Get("data_guard_id"), d.Get("data_guard_name"))
-	}
-
-	result := data[0].(map[string]interface{})
+	result := sdkResponse[0].(map[string]interface{})
 
 	SdkResponseAutoResourceData(d, r, result, nil)
 
@@ -134,9 +117,8 @@ func resourceKsyunDataGuardGroupRead(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceKsyunDataGuardGroupCreate(d *schema.ResourceData, meta interface{}) error {
-	dataGuardSrv := DataGuardSrv{
-		client: meta.(*KsyunClient),
-	}
+	dataGuardSrv := NewDataGuardSrv(meta.(*KsyunClient))
+
 	r := resourceKsyunDataGuardGroup()
 
 	reqTransform := map[string]SdkReqTransform{
@@ -192,9 +174,7 @@ func resourceKsyunDataGuardGroupUpdate(d *schema.ResourceData, meta interface{})
 }
 
 func resourceKsyunDataGuardGroupDelete(d *schema.ResourceData, meta interface{}) error {
-	dataGuardSrv := DataGuardSrv{
-		client: meta.(*KsyunClient),
-	}
+	dataGuardSrv := NewDataGuardSrv(meta.(*KsyunClient))
 
 	removeMap := map[string]interface{}{
 		"DataGuardId.1": d.Id(),

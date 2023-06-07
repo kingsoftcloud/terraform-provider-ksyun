@@ -10,12 +10,19 @@ Provides a tag resource.
 	  auto_snapshot_policy_id = "auto_snapshot_policy_id"
 	}
 ```
+
+# Import
+
+Tag can be imported using the `id`, e.g.
+
+```
+$ terraform import ksyun_snapshot_volume_association.foo ${auto_snapshot_policy_id}:${attach_volume_id}
+```
 */
 
 package ksyun
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -27,9 +34,9 @@ func resourceKsyunAutoSnapshotVolumeAssociation() *schema.Resource {
 		Create: resourceKsyunAutoSnapshotVolumeAssociationCreate,
 		Read:   resourceKsyunAutoSnapshotVolumeAssociationRead,
 		Delete: resourceKsyunAutoSnapshotVolumeAssociationDelete,
-		// Importer: &schema.ResourceImporter{
-		// 	State: importNatAssociate,
-		// },
+		Importer: &schema.ResourceImporter{
+			State: importAutoSnapshotPolicyAssociate,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"attach_volume_id": {
@@ -49,9 +56,7 @@ func resourceKsyunAutoSnapshotVolumeAssociation() *schema.Resource {
 }
 
 func resourceKsyunAutoSnapshotVolumeAssociationCreate(d *schema.ResourceData, meta interface{}) error {
-	SnapshotSrv := AutoSnapshotSrv{
-		client: meta.(*KsyunClient),
-	}
+	SnapshotSrv := NewAutoSnapshotSrv(meta.(*KsyunClient))
 
 	r := resourceKsyunAutoSnapshotVolumeAssociation()
 
@@ -66,15 +71,11 @@ func resourceKsyunAutoSnapshotVolumeAssociationCreate(d *schema.ResourceData, me
 	}
 
 	action := "ApplyAutoSnapshotPolicy"
-	logger.Debug(logger.ReqFormat, action, reqParameters)
-	sdkResponse, err := SnapshotSrv.associatedAutoSnapshotPolicy(reqParameters)
+	associationSet, err := SnapshotSrv.associatedAutoSnapshotPolicy(reqParameters)
 	if err != nil {
 		return err
 	}
-	associationSet, err := getSdkValue("ReturnSet", sdkResponse)
-	if err != nil || associationSet == nil {
-		return fmt.Errorf("the snapshot policy is fail to associate attach volume, \n auto_snapshot_policy_id: %s \n attach_volume_id: %s", d.Get("auto_snapshot_policy_id"), d.Get("attach_volume_id"))
-	}
+	logger.Debug(logger.RespFormat, action, reqParameters, associationSet)
 
 	combineIds := []string{d.Get("auto_snapshot_policy_id").(string), d.Get("attach_volume_id").(string)}
 	d.SetId(strings.Join(combineIds, ":"))
@@ -82,13 +83,31 @@ func resourceKsyunAutoSnapshotVolumeAssociationCreate(d *schema.ResourceData, me
 }
 
 func resourceKsyunAutoSnapshotVolumeAssociationRead(d *schema.ResourceData, meta interface{}) error {
+	// DescribeVolumes query ebs volumes
+	SnapshotSrv := NewAutoSnapshotSrv(meta.(*KsyunClient))
+
+	r := resourceKsyunNatAssociation()
+
+	volumeId := d.Get("attach_volume_id").(string)
+
+	sdkResponse, err := SnapshotSrv.readAutoSnapshotPolicyVolumeAssociationById(volumeId)
+	if err != nil {
+		return err
+	}
+
+	if sdkResponse != nil && len(sdkResponse) > 0 {
+		SdkResponseAutoResourceData(d, r, sdkResponse[0], map[string]SdkResponseMapping{
+			"VolumeId": {
+				Field: "attach_volume_id",
+			},
+		})
+	}
+
 	return nil
 }
 
 func resourceKsyunAutoSnapshotVolumeAssociationDelete(d *schema.ResourceData, meta interface{}) error {
-	SnapshotSrv := AutoSnapshotSrv{
-		client: meta.(*KsyunClient),
-	}
+	SnapshotSrv := NewAutoSnapshotSrv(meta.(*KsyunClient))
 
 	r := resourceKsyunNatAssociation()
 
@@ -105,15 +124,12 @@ func resourceKsyunAutoSnapshotVolumeAssociationDelete(d *schema.ResourceData, me
 	}
 
 	action := "CancelAutoSnapshotPolicy"
-	logger.Debug(logger.ReqFormat, action, reqParameters)
-
 	sdkResponse, err := SnapshotSrv.unassociatedAutoSnapshotPolicy(reqParameters)
 	if err != nil {
 		return err
 	}
-	associationSet, err := getSdkValue("ReturnSet", sdkResponse)
-	if err != nil || associationSet == nil {
-		return fmt.Errorf("the snapshot policy is fail to unassociate attach volume, \n auto_snapshot_policy_id: %s \n attach_volume_id: %s", d.Get("auto_snapshot_policy_id"), d.Get("attach_volume_id"))
-	}
+
+	logger.Debug(logger.RespFormat, action, reqParameters, sdkResponse)
+
 	return nil
 }

@@ -5,14 +5,19 @@ Query ksyun krds parameter group information
 
 ```hcl
 
-		data "ksyun_snapshot" "foo" {}
-
-		output "ksyun_snapshot" {
-			value = data.ksyun_snapshot.foo
+		provider "ksyun" {
+			region = "cn-beijing-6"
 		}
 
-		output "ksyun_snapshots_total_count" {
-			value = data.ksyun_snapshot.foo.total_count
+
+		data "ksyun_krds_parameter_group" "foo" {
+			output_file = "output_result"
+			// if you give db_parameter_group_id will return the single krds parameter group
+			// if you don't give this value, it will return a list of krds parameter groups
+			db_parameter_group_id = "b233609c-42e1-4aad-aa68-9a2ebdf68a82"
+
+			// keyword is a filter value that can query the results by name of description
+			keyword = "name or description"
 		}
 ```
 */
@@ -103,9 +108,7 @@ func dataSourceKsyunKrdsParameterGroup() *schema.Resource {
 
 // dataSourceKsyunKrdsParameterGroupRead will read data source from ksyun
 func dataSourceKsyunKrdsParameterGroupRead(d *schema.ResourceData, meta interface{}) error {
-	krdsParameterSrv := KrdsParameterSrv{
-		client: meta.(*KsyunClient),
-	}
+	krdsParameterSrv := NewKrdsParameterSrv(meta.(*KsyunClient))
 
 	var (
 		r           = dataSourceKsyunKrdsParameterGroup()

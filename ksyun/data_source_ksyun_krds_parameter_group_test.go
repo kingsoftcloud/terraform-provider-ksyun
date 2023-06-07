@@ -13,10 +13,16 @@ func TestAccKsyunKrdsParameterGroupDataSource_basic(t *testing.T) {
 		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
+			// {
+			// 	Config: testAccDataKrdsParameterGroupConfig,
+			// 	Check: resource.ComposeTestCheckFunc(
+			// 		testAccCheckIDExists("data.ksyun_krds_parameter_group.foo"),
+			// 	),
+			// },
 			{
-				Config: testAccDataKrdsParameterGroupConfig,
+				Config: testAccDataKrdsParameterGroupKeywordConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIDExists("data.ksyun_krds_parameter_group.foo"),
+					testAccCheckIDExists("data.ksyun_krds_parameter_group.bra"),
 				),
 			},
 		},
@@ -32,5 +38,17 @@ provider "ksyun" {
 data "ksyun_krds_parameter_group" "foo" {
 	output_file = "output_result"
 	db_parameter_group_id = "b233609c-42e1-4aad-aa68-9a2ebdf68a82"
+}
+`
+const testAccDataKrdsParameterGroupKeywordConfig = `
+provider "ksyun" {
+	region = "cn-beijing-6"
+}
+
+
+data "ksyun_krds_parameter_group" "bra" {
+	output_file = "output_result_keyword"
+	// db_parameter_group_id = "b233609c-42e1-4aad-aa68-9a2ebdf68a82"
+	keyword = "tf"
 }
 `

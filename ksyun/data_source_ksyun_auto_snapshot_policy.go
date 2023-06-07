@@ -131,15 +131,10 @@ func dataSourceKsyunAutoSnapshotPolicyRead(d *schema.ResourceData, meta interfac
 	action := "DescribeAutoSnapshotPolicy"
 	logger.Debug(logger.ReqFormat, action, reqParameters)
 
-	sdKResponse, err := snapshotSrv.querySnapshotPolicyByID(reqParameters)
+	data, err := snapshotSrv.querySnapshotPolicyByID(reqParameters)
 	if err != nil {
 		return err
 	}
-	results, err := getSdkValue("AutoSnapshotPolicySet", sdKResponse)
-	if err != nil {
-		return err
-	}
-	data := results.([]interface{})
 
 	return mergeDataSourcesResp(d, r, ksyunDataSource{
 		collection:  data,

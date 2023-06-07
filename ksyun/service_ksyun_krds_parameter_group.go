@@ -13,6 +13,12 @@ type KrdsParameterSrv struct {
 	client *KsyunClient
 }
 
+func NewKrdsParameterSrv(client *KsyunClient) KrdsParameterSrv {
+	return KrdsParameterSrv{
+		client: client,
+	}
+}
+
 func (s *KrdsParameterSrv) GetConn() *krds.Krds {
 	return s.client.krdsconn
 }
@@ -31,7 +37,10 @@ func (s *KrdsParameterSrv) describeDBParameterGroupById(input map[string]interfa
 	if err != nil {
 		return nil, err
 	}
-	data := results.([]interface{})
+	data, err := If2Slice(results)
+	if err != nil {
+		return nil, err
+	}
 	if err := transformMapValue2String("0.Parameters", data); err != nil {
 		return nil, err
 	}
@@ -45,7 +54,7 @@ func (s *KrdsParameterSrv) describeDBParameterGroupAll(input map[string]interfac
 		results interface{}
 	)
 
-	return pageQuery(input, "MaxRecords", "Marker", 10, 0, func(condition map[string]interface{}) ([]interface{}, error) {
+	return pageQuery(input, "MaxRecords", "Marker", 100, 0, func(condition map[string]interface{}) ([]interface{}, error) {
 		conn := s.GetConn()
 		action := "DescribeDBParameterGroup"
 		logger.Debug(logger.ReqFormat, action, condition)
@@ -65,7 +74,42 @@ func (s *KrdsParameterSrv) describeDBParameterGroupAll(input map[string]interfac
 		if err != nil {
 			return data, err
 		}
-		data = results.([]interface{})
-		return data, err
+		return If2Slice(results)
 	})
+}
+
+func (s *KrdsParameterSrv) createDBParameterGroup(input map[string]interface{}) (string, error) {
+	var (
+		resp *map[string]interface{}
+		err  error
+	)
+	resp, err = s.GetConn().CreateDBParameterGroup(&input)
+	if err != nil {
+		return "", err
+	}
+
+	results, err := getSdkValue("Data.DBParameterGroup.DBParameterGroupId", *resp)
+	if err != nil || results == nil {
+		return "", err
+	}
+	return If2String(results)
+}
+
+func (s *KrdsParameterSrv) deleteDBParameterGroup(input map[string]interface{}) (err error) {
+	_, err = s.GetConn().DeleteDBParameterGroup(&input)
+	return err
+}
+
+func (s *KrdsParameterSrv) modifyDBParameterGroup(input map[string]interface{}) (data map[string]interface{}, err error) {
+	var resp *map[string]interface{}
+	resp, err = s.GetConn().ModifyDBParameterGroup(&input)
+	if err != nil {
+		return data, err
+	}
+	results, err := getSdkValue("Data.DBParameterGroup", *resp)
+	if err != nil || results == nil {
+		return data, err
+	}
+
+	return If2Map(results)
 }
