@@ -6,9 +6,11 @@ package ksyun
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/KscSDK/ksc-sdk-go/service/ebs"
 	"github.com/KscSDK/ksc-sdk-go/service/kec"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 type AutoSnapshotSrv struct {
@@ -28,7 +30,18 @@ func (s *AutoSnapshotSrv) querySnapshotPolicyByID(input map[string]interface{}) 
 		err  error
 	)
 
-	resp, err = s.GetConn().DescribeAutoSnapshotPolicy(&input)
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		resp, err = s.GetConn().DescribeAutoSnapshotPolicy(&input)
+		if err != nil {
+			return resource.RetryableError(fmt.Errorf("the ksyun sdk internal error detail: %s", err))
+		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("error describing auto snapshot policy: %s", err)
+	}
+
 	results, err := getSdkValue("AutoSnapshotPolicySet", *resp)
 	if err != nil {
 		return nil, fmt.Errorf("the ksyun sdk internal error detail: %s", err)
@@ -42,7 +55,16 @@ func (s *AutoSnapshotSrv) createAutoSnapshotPolicy(input map[string]interface{})
 		resp *map[string]interface{}
 		err  error
 	)
-	resp, err = s.GetConn().CreateAutoSnapshotPolicy(&input)
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		resp, err = s.GetConn().CreateAutoSnapshotPolicy(&input)
+		if err != nil {
+			return resource.RetryableError(fmt.Errorf("the ksyun sdk internal error detail: %s", err))
+		}
+		return nil
+	})
+	if err != nil {
+		return "", fmt.Errorf("error create auto snapshot policy: %s", err)
+	}
 
 	results, err := getSdkValue("AutoSnapshotPolicyId", *resp)
 	if err != nil {
@@ -57,7 +79,17 @@ func (s *AutoSnapshotSrv) deleteAutoSnapshotPolicy(input map[string]interface{})
 		resp *map[string]interface{}
 		err  error
 	)
-	resp, err = s.GetConn().DeleteAutoSnapshotPolicy(&input)
+
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		resp, err = s.GetConn().DeleteAutoSnapshotPolicy(&input)
+		if err != nil {
+			return resource.RetryableError(fmt.Errorf("the ksyun sdk internal error detail: %s", err))
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error delete auto snapshot policy: %s", err)
+	}
 
 	retSet, err := getSdkValue("AutoSnapshotPolicySet", *resp)
 	if err != nil {
@@ -81,6 +113,9 @@ func (s *AutoSnapshotSrv) associatedAutoSnapshotPolicy(input map[string]interfac
 		resp *map[string]interface{}
 	)
 	resp, err = s.GetConn().ApplyAutoSnapshotPolicy(&input)
+	if err != nil {
+		return nil, fmt.Errorf("the ksyun sdk internal error detail: %s", err)
+	}
 
 	associationSet, err := getSdkValue("ReturnSet", *resp)
 	if err != nil {

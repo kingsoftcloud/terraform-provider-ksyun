@@ -47,6 +47,9 @@ func (d *DataGuardSrv) createDataGuardGroup(input map[string]interface{}) (strin
 		err  error
 	)
 	resp, err = d.GetConn().CreateDataGuardGroup(&input)
+	if err != nil {
+		return "", err
+	}
 
 	results, err := getSdkValue("DataGuardId", *resp)
 	if err != nil || results == nil {
@@ -58,7 +61,7 @@ func (d *DataGuardSrv) createDataGuardGroup(input map[string]interface{}) (strin
 func (d *DataGuardSrv) deleteDataGuardGroup(input map[string]interface{}) error {
 
 	return resource.Retry(3*time.Minute, func() *resource.RetryError {
-		if _, ok := input["DBParameterGroupId"]; !ok && input["DBParameterGroupId"].(string) != "" {
+		if _, ok := input["DataGuardId.1"]; ok && input["DataGuardId.1"].(string) != "" {
 			_, err := d.GetConn().DeleteDataGuardGroups(&input)
 			// logger.Debug("test %s %s %s", "DeleteDBParameterGroup", inUseError(deleteErr), deleteErr)
 			if err == nil || notFoundErrorNew(err) || inUseError(err) {

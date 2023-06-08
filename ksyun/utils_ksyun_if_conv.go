@@ -4,7 +4,10 @@ package ksyun
 
 import "fmt"
 
-func If2Slice(any interface{}) ([]interface{}, error) {
+func If2Slice(any interface{}) (ret []interface{}, err error) {
+	if any == nil {
+		return ret, err
+	}
 	switch any.(type) {
 	case []interface{}:
 		return any.([]interface{}), nil
@@ -14,6 +17,9 @@ func If2Slice(any interface{}) ([]interface{}, error) {
 }
 
 func If2Map(any interface{}) (ret map[string]interface{}, err error) {
+	if any == nil {
+		return ret, err
+	}
 	switch any.(type) {
 	case map[string]interface{}:
 		ret = any.(map[string]interface{})
@@ -25,6 +31,9 @@ func If2Map(any interface{}) (ret map[string]interface{}, err error) {
 }
 
 func If2String(any interface{}) (ret string, err error) {
+	if any == nil {
+		return ret, err
+	}
 	switch any.(type) {
 	case string:
 		ret = any.(string)

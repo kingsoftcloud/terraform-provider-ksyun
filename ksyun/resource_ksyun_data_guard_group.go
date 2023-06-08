@@ -62,7 +62,7 @@ func resourceKsyunDataGuardGroup() *schema.Resource {
 					}
 					return
 				},
-				Description: "The data guard group display type, and its types only include the host and domain.",
+				Description: "The data guard group display type, Value options: [ host, domain ]. Note: some account doesn't support domain data guard <br> - Host: represent machine level <br> - Domain: represent the domain of disaster tolerance.",
 			},
 			"data_guard_level": {
 				Type:        schema.TypeString,
@@ -149,20 +149,15 @@ func resourceKsyunDataGuardGroupUpdate(d *schema.ResourceData, meta interface{})
 	dataGuardSrv := DataGuardSrv{
 		client: meta.(*KsyunClient),
 	}
-	r := resourceKsyunDataGuardGroup()
 
-	reqTransform := map[string]SdkReqTransform{
-		"data_guard_name": {},
+	if ok := d.HasChange("data_guard_name"); !ok {
+		return fmt.Errorf("this resource only supports to modify data_guard_name")
+	}
+	reqParameters := map[string]interface{}{
+		"DataGuardName": d.Get("data_guard_name"),
 	}
 
-	reqParameters, err := SdkRequestAutoMapping(d, r, true, reqTransform, nil)
-	if err != nil {
-		return err
-	}
-
-	if len(reqParameters) > 0 {
-		reqParameters["DataGuardId"] = d.Id()
-	}
+	reqParameters["DataGuardId"] = d.Id()
 	action := "ModifyModifyDataGuardGroups"
 	logger.Debug(logger.ReqFormat, action, reqParameters)
 

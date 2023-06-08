@@ -67,8 +67,7 @@ func resourceKsyunAutoSnapshotPolicy() *schema.Resource {
 						return
 					},
 				},
-				Required: true,
-				// Default:     []int{0},
+				Required:    true,
 				Description: "Setting the snapshot time in a day, its scope is between 0 and 23.",
 			},
 			"auto_snapshot_date": {
@@ -158,6 +157,10 @@ func resourceKsyunAutoSnapshotPolicyCreate(d *schema.ResourceData, meta interfac
 
 	r := resourceKsyunAutoSnapshotPolicy()
 
+	if err := checkTimesAndDatesEmpty(d); err != nil {
+		return err
+	}
+
 	reqTransform := map[string]SdkReqTransform{
 		"name":               {mapping: "AutoSnapshotPolicyName"},
 		"auto_snapshot_time": {Type: TransformWithN},
@@ -191,6 +194,10 @@ func resourceKsyunAutoSnapshotPolicyUpdate(d *schema.ResourceData, meta interfac
 	snapshotSrv := NewAutoSnapshotSrv(meta.(*KsyunClient))
 
 	r := resourceKsyunAutoSnapshotPolicy()
+
+	if err := checkTimesAndDatesEmpty(d); err != nil {
+		return err
+	}
 
 	reqTransform := map[string]SdkReqTransform{
 		"auto_snapshot_time": {Type: TransformWithN},
@@ -242,5 +249,17 @@ func resourceKsyunAutoSnapshotPolicyDelete(d *schema.ResourceData, meta interfac
 		return err
 	}
 
+	return nil
+}
+
+func checkTimesAndDatesEmpty(d *schema.ResourceData) error {
+	snapshotTimes := d.Get("auto_snapshot_time").(*schema.Set)
+	snapshotDates := d.Get("auto_snapshot_date").(*schema.Set)
+	if snapshotTimes.Len() < 1 {
+		return fmt.Errorf("auto_snapshot_time is empty, please set your snpashot times")
+	}
+	if snapshotDates.Len() < 1 {
+		return fmt.Errorf("auto_snapshot_date is empty, please set your snpashot times")
+	}
 	return nil
 }

@@ -127,7 +127,7 @@ func getSdkValue(keyPattern string, obj interface{}) (interface{}, error) {
 			// if root == nil, it represents the obj doesn't contain this keys
 			// so, it usually returns an error
 			if root == nil {
-				return root, fmt.Errorf("the obj doesn't contain key %s", k)
+				return root, nil
 			}
 
 		} else if reflect.ValueOf(root).Kind() == reflect.Slice {
@@ -136,7 +136,7 @@ func getSdkValue(keyPattern string, obj interface{}) (interface{}, error) {
 				return nil, fmt.Errorf("keyPattern %s index %d must number", keyPattern, index)
 			}
 			if len(root.([]interface{})) < i {
-				return nil, fmt.Errorf("the obj doesn't contain key %s", k)
+				return nil, nil
 			}
 			root = root.([]interface{})[i]
 		}
@@ -578,7 +578,6 @@ func SdkResponseDefault(p string, d interface{}, item *interface{}) {
 }
 
 // SdkResponseAutoResourceData will convert response data to terraform resource data
-//
 func SdkResponseAutoResourceData(d *schema.ResourceData, resource *schema.Resource, item interface{}, extra map[string]SdkResponseMapping, start ...bool) interface{} {
 	setFlag := false
 	if start == nil || (len(start) > 0 && start[0]) {
