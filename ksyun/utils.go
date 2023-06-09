@@ -885,11 +885,43 @@ func checkValueInSlice(data []string, key string) (c bool) {
 	return c
 }
 
-func transformMapValue2String(keyPattern string, obj interface{}) error {
-	retObj, err := getSdkValue(keyPattern, obj)
-	if err != nil || retObj == nil {
-		return fmt.Errorf("key pattern: %s not exsits in object", keyPattern)
+func TransformMapValue2StringWithKey(keyPattern string, obj interface{}) error {
+	if obj == nil {
+		return fmt.Errorf("transform object must be not nil")
 	}
+	var (
+		retObj interface{}
+		err    error
+	)
+
+	switch obj.(type) {
+	case []interface{}:
+		for _, subObj := range obj.([]interface{}) {
+			retObj, err = getSdkValue(keyPattern, subObj)
+			if err != nil {
+				return fmt.Errorf("key pattern: %s not exsits in object", keyPattern)
+			}
+			if retObj == nil {
+				continue
+			}
+			transformerValueOfObj2String(retObj)
+		}
+	case map[string]interface{}:
+		retObj, err = getSdkValue(keyPattern, obj)
+		if err != nil {
+			return fmt.Errorf("key pattern: %s not exsits in object", keyPattern)
+		}
+		if retObj == nil {
+			return err
+		}
+		transformerValueOfObj2String(retObj)
+	}
+	return err
+}
+
+// transformerValueOfObj2String will convert values of object, such as map, slice, to string
+// for the nest string field of terraform resource map
+func transformerValueOfObj2String(retObj interface{}) {
 	switch retObj.(type) {
 	case map[string]interface{}:
 		iterObj := retObj.(map[string]interface{})
@@ -902,6 +934,17 @@ func transformMapValue2String(keyPattern string, obj interface{}) error {
 				iterObj[k] = strconv.Itoa(v.(int))
 			}
 		}
+	case []interface{}:
+		iterObj := retObj.([]interface{})
+		for i, v := range iterObj {
+			switch v.(type) {
+			case float64:
+				// convert float64 to string, which it will cut out the value after the decimal point
+				iterObj[i] = strconv.FormatFloat(v.(float64), 'f', 0, 64)
+			case int:
+				iterObj[i] = strconv.Itoa(v.(int))
+			}
+		}
+
 	}
-	return nil
 }

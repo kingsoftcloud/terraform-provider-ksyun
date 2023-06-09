@@ -226,7 +226,8 @@ func readKrdsParameterGroup(d *schema.ResourceData, meta interface{}, parameterG
 	if err != nil {
 		return data, err
 	}
-	data = resp[0].(map[string]interface{})
+	sdkValue, _ := getSdkValue("0.Parameters", resp)
+	data, err = If2Map(sdkValue)
 	return data, err
 }
 
@@ -443,12 +444,14 @@ func prepareModifyDbParameterParams(d *schema.ResourceData, meta interface{}, ke
 	// read current
 	if d.Id() == "" {
 		currents = make(map[string]interface{})
-	} else if v, ok := d.GetOk("resource_name"); ok && // added: to deal with the current parameters of krds parameter group
-		v == "krds_parameters_group" {
-		currents, err = readKrdsParameterGroup(d, meta, "")
-		if err != nil {
-			return needRestart, num, err
-		}
+	} else if v, ok := d.GetOk("resource_name"); ok {
+		resourceName := v.(string)
+		if resourceName == ResourceKrdsParameterGroup {
+			currents, err = readKrdsParameterGroup(d, meta, "")
+			if err != nil {
+				return needRestart, num, err
+			}
+		} // added: to deal with the current parameters of krds parameter group
 	} else {
 		currents, err = readKrdsInstanceParameters(d, meta, "")
 		if err != nil {

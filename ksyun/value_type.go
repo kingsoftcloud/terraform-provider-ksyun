@@ -1,5 +1,7 @@
 package ksyun
 
+import "time"
+
 type TransformType int
 
 const (
@@ -10,4 +12,12 @@ const (
 	TransformListUnique
 	TransformListN
 	TransformSingleN
+)
+
+const (
+	ResourceKrdsParameterGroup = "krds_parameters_group"
+)
+
+const (
+	RetryTimeoutMinute = 10 * time.Minute
 )

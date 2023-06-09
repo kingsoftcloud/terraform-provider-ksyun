@@ -6,6 +6,7 @@ package ksyun
 
 import (
 	"github.com/KscSDK/ksc-sdk-go/service/krds"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
 )
 
@@ -32,6 +33,9 @@ func (s *KrdsParameterSrv) describeDBParameterGroupById(input map[string]interfa
 	)
 
 	resp, err = s.GetConn().DescribeDBParameterGroup(&input)
+	if err != nil {
+		return nil, err
+	}
 
 	results, err = getSdkValue("Data.DBParameterGroups", *resp)
 	if err != nil {
@@ -41,9 +45,7 @@ func (s *KrdsParameterSrv) describeDBParameterGroupById(input map[string]interfa
 	if err != nil {
 		return nil, err
 	}
-	if err := transformMapValue2String("0.Parameters", data); err != nil {
-		return nil, err
-	}
+
 	return data, err
 }
 
@@ -96,8 +98,14 @@ func (s *KrdsParameterSrv) createDBParameterGroup(input map[string]interface{}) 
 }
 
 func (s *KrdsParameterSrv) deleteDBParameterGroup(input map[string]interface{}) (err error) {
-	_, err = s.GetConn().DeleteDBParameterGroup(&input)
-	return err
+	// _, err = s.GetConn().DeleteDBParameterGroup(&input)
+	return resource.Retry(RetryTimeoutMinute, func() *resource.RetryError {
+		_, err = s.GetConn().DeleteDBParameterGroup(&input)
+		if err != nil {
+			return retryError(err)
+		}
+		return nil
+	})
 }
 
 func (s *KrdsParameterSrv) modifyDBParameterGroup(input map[string]interface{}) (data map[string]interface{}, err error) {

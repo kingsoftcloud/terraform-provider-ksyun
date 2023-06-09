@@ -143,6 +143,10 @@ func dataSourceKsyunKrdsParameterGroupRead(d *schema.ResourceData, meta interfac
 		return fmt.Errorf("the current available zone not exsits any krds parameter group")
 	}
 
+	if err := TransformMapValue2StringWithKey("Parameters", sdkResponse); err != nil {
+		return err
+	}
+
 	return mergeDataSourcesResp(d, r, ksyunDataSource{
 		collection:  sdkResponse,
 		idFiled:     "DBParameterGroupId",

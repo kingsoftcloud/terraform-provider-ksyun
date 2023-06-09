@@ -30,13 +30,7 @@ func (s *AutoSnapshotSrv) querySnapshotPolicyByID(input map[string]interface{}) 
 		err  error
 	)
 
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = s.GetConn().DescribeAutoSnapshotPolicy(&input)
-		if err != nil {
-			return resource.RetryableError(fmt.Errorf("the ksyun sdk internal error detail: %s", err))
-		}
-		return nil
-	})
+	resp, err = s.GetConn().DescribeAutoSnapshotPolicy(&input)
 
 	if err != nil {
 		return nil, fmt.Errorf("error describing auto snapshot policy: %s", err)
@@ -58,7 +52,7 @@ func (s *AutoSnapshotSrv) createAutoSnapshotPolicy(input map[string]interface{})
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, err = s.GetConn().CreateAutoSnapshotPolicy(&input)
 		if err != nil {
-			return resource.RetryableError(fmt.Errorf("the ksyun sdk internal error detail: %s", err))
+			return retryError(err)
 		}
 		return nil
 	})
@@ -83,7 +77,7 @@ func (s *AutoSnapshotSrv) deleteAutoSnapshotPolicy(input map[string]interface{})
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, err = s.GetConn().DeleteAutoSnapshotPolicy(&input)
 		if err != nil {
-			return resource.RetryableError(fmt.Errorf("the ksyun sdk internal error detail: %s", err))
+			return retryError(err)
 		}
 		return nil
 	})

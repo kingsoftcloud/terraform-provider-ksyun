@@ -20,9 +20,9 @@ func TestAccKsyunKrdsParameterGroupDataSource_basic(t *testing.T) {
 			// 	),
 			// },
 			{
-				Config: testAccDataKrdsParameterGroupKeywordConfig,
+				Config: testAccDataKrdsParameterGroupConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIDExists("data.ksyun_krds_parameter_group.bra"),
+					testAccCheckIDExists("data.ksyun_krds_parameter_group.foo"),
 				),
 			},
 		},
@@ -37,7 +37,7 @@ provider "ksyun" {
 
 data "ksyun_krds_parameter_group" "foo" {
 	output_file = "output_result"
-	db_parameter_group_id = "b233609c-42e1-4aad-aa68-9a2ebdf68a82"
+	db_parameter_group_id = "e217a352-6262-47ac-8bc6-dfd9551e7643"
 }
 `
 const testAccDataKrdsParameterGroupKeywordConfig = `

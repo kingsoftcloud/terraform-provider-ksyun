@@ -93,10 +93,11 @@ func resourceKsyunKrdsParameterGroup() *schema.Resource {
 				Description: "krds database version. Value options:<br> - Mysql: [ 5.5, 5.6, 5.7, 8.0 ] <br> - Percona: [ 5.6 ] <br> - Consistent_mysql: [ 5.7 ] <br> - Ebs_mysql: [ 5.6, 5.7 ].",
 			},
 			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "",
-				Description: "The description of this db parameter group.",
+				Type:     schema.TypeString,
+				Optional: true,
+				// Default:     "",
+				ValidateFunc: validateName,
+				Description:  "The description of this db parameter group.",
 			},
 
 			"resource_name": {
@@ -123,7 +124,9 @@ func resourceKsyunKrdsParameterGroupRead(d *schema.ResourceData, meta interface{
 	if err != nil || len(sdkResponse) < 1 {
 		return fmt.Errorf("while query db parameter group have encountered an error, detail: %s", err)
 	}
-
+	if err := TransformMapValue2StringWithKey("Parameters", sdkResponse); err != nil {
+		return err
+	}
 	data := sdkResponse[0]
 
 	extra := map[string]SdkResponseMapping{
@@ -167,7 +170,7 @@ func resourceKsyunKrdsParameterGroupCreate(d *schema.ResourceData, meta interfac
 	}
 
 	d.SetId(dbParameterId)
-	_ = d.Set("resource_name", "krds_parameter_group")
+	_ = d.Set("resource_name", ResourceKrdsParameterGroup)
 
 	return d.Set("db_parameter_group_id", dbParameterId)
 }

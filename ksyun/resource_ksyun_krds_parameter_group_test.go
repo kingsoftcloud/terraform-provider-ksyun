@@ -16,7 +16,7 @@ func TestResourceKsyunKrdsParameterGroup_basic(t *testing.T) {
 			testAccPreCheck(t)
 		},
 
-		IDRefreshName: "ksyun_krds_parameter_group.foo",
+		IDRefreshName: "ksyun_krds_parameter_group.dpg_with_parameters",
 		Providers:     testAccProviders,
 		// CheckDestroy:  testAccCheckSnapshotDestroy,
 
@@ -25,14 +25,14 @@ func TestResourceKsyunKrdsParameterGroup_basic(t *testing.T) {
 				Config: testAccKrdsParameterGroupConfig,
 
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIDExists("ksyun_krds_parameter_group.foo"),
+					testAccCheckIDExists("ksyun_krds_parameter_group.dpg_with_parameters"),
 				),
 			},
 			// // to test terraform when its configuration changes
 			{
 				Config: testAccKrdsParameterGroupUpdateConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIDExists("ksyun_krds_parameter_group.foo"),
+					testAccCheckIDExists("ksyun_krds_parameter_group.dpg_with_parameters"),
 				),
 			},
 		},
@@ -44,20 +44,23 @@ provider "ksyun" {
 	region =  "cn-beijing-6"
 }
 
-resource "ksyun_krds_parameter_group" "foo" {
-	name = "tf_test_on_hcl"
-	engine = "mysql"
-	engine_version = "5.7"
-	description = "terraform created"
-	parameters = {
-		connect_timeout = 30
-		log_slow_admin_statements = "OFF"
-		log_bin_trust_function_creators = "OFF"
-		log_queries_not_using_indexes = "OFF"  
-		innodb_stats_on_metadata = "OFF"  
-		table_open_cache_instances = 1  
-		group_concat_max_len = 102
-	}
+resource "ksyun_krds_parameter_group" "dpg_with_parameters" {
+  name  = "tf_krdpg_on_hcl_with"
+  description    = "acceptance-test"
+  engine = "mysql"
+  engine_version = "5.7"
+  parameters = {
+    auto_increment_increment = 10240
+    auto_increment_offset = 5
+    back_log = 65535
+	connect_timeout = 30
+	log_slow_admin_statements = "OFF"
+	log_bin_trust_function_creators = "OFF"
+	log_queries_not_using_indexes = "OFF"  
+	innodb_stats_on_metadata = "OFF"  
+	table_open_cache_instances = 1  
+	group_concat_max_len = 102
+  }
 }
 `
 
@@ -66,20 +69,19 @@ provider "ksyun" {
 	region = "cn-beijing-6"
 }
 
-resource "ksyun_krds_parameter_group" "foo" {
-	name = "tf_test_on_hcl"
-	engine = "mysql"
-	engine_version = "5.7"
-	description = "terraform created update"
-	parameters = {
+// test parameters: -> empty
+resource "ksyun_krds_parameter_group" "dpg_with_parameters" {
+  name  = "tf_krdpg_on_hcl_with"
+  description    = "acceptance-test"
+  engine = "mysql"
+  engine_version = "5.7"
+  parameters = {
+	    auto_increment_increment = 10240
+		auto_increment_offset = 5
+		back_log = 65535
 		connect_timeout = 60
-		log_slow_admin_statements = "OFF"
-		log_bin_trust_function_creators = "OFF"
-		log_queries_not_using_indexes = "OFF"  
-		innodb_stats_on_metadata = "OFF"  
 		table_open_cache_instances = 1  
 		group_concat_max_len = 102
-		max_connect_errors = 2000
 	}
 }
 `

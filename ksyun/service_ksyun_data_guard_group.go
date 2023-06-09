@@ -6,7 +6,6 @@ package ksyun
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/KscSDK/ksc-sdk-go/service/kec"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -60,17 +59,14 @@ func (d *DataGuardSrv) createDataGuardGroup(input map[string]interface{}) (strin
 
 func (d *DataGuardSrv) deleteDataGuardGroup(input map[string]interface{}) error {
 
-	return resource.Retry(3*time.Minute, func() *resource.RetryError {
+	return resource.Retry(RetryTimeoutMinute, func() *resource.RetryError {
 		if _, ok := input["DataGuardId.1"]; ok && input["DataGuardId.1"].(string) != "" {
 			_, err := d.GetConn().DeleteDataGuardGroups(&input)
-			// logger.Debug("test %s %s %s", "DeleteDBParameterGroup", inUseError(deleteErr), deleteErr)
-			if err == nil || notFoundErrorNew(err) || inUseError(err) {
-				return nil
-			} else {
-				return resource.RetryableError(err)
+			if err != nil {
+				return retryError(err)
 			}
 		}
-		return nil // resource.RetryableError(nil)
+		return nil
 	})
 }
 
