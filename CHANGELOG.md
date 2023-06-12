@@ -1,3 +1,11 @@
+## 1.3.77 (Jun 12, 2023)
+
+IMPROVEMENTS:
+
+- 删除redis安全组的机制优化
+- SLB监听器的健康检查字段设为Deprecated，使用ksyun_healthcheck代替
+
+
 ## 1.3.76 (May 15, 2023)
 
 IMPROVEMENTS:

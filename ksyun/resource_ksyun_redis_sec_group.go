@@ -157,12 +157,29 @@ func resourceRedisSecurityGroupDelete(d *schema.ResourceData, meta interface{}) 
 		return err
 	}
 
-	// 暂时曾家一个wait，等实例删除后，安全组信息更新才能继续删，否则删不掉
+	//暂时曾家一个wait，等实例删除后，安全组信息更新才能继续删，否则删不掉
 	time.Sleep(20 * time.Second)
 	// delete redis security group
 	deleteReq := make(map[string]interface{})
 	deleteReq["SecurityGroupId.1"] = d.Id()
 	return resource.Retry(20*time.Minute, func() *resource.RetryError {
+
+		// 删除前先check一下安全组的resourceNum是否已经为0 (之前有数据同步问题)
+		conn := meta.(*KsyunClient).kcsv1conn
+		resp, err := conn.DescribeSecurityGroup(&map[string]interface{}{
+			"SecurityGroupId": d.Id(),
+		})
+		if err != nil {
+			return resource.NonRetryableError(err)
+		}
+
+		//logger.Debug("Data.resourceNum", "Data.resourceNum", resp)
+		resourceNum, err := getSdkValue("Data.resourceNum", resp)
+		//logger.Debug("Data.resourceNum.resourceNum", "Data.resourceNum.resourceNum", resourceNum)
+		if v, ok := resourceNum.(int); ok && v > 0 {
+			return resource.RetryableError(errors.New("deleting"))
+		}
+
 		integrationAzConf := &IntegrationRedisAzConf{
 			resourceData: d,
 			client:       meta.(*KsyunClient),

@@ -220,9 +220,11 @@ func resourceKsyunListener() *schema.Resource {
 				Type:     schema.TypeList,
 				MaxItems: 1,
 				Optional: true,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: entry,
 				},
+				Deprecated:       "This parameter is deprecated and will be removed in a future version, use `ksyun_healthcheck` instead.",
 				DiffSuppressFunc: lbListenerDiffSuppressFunc,
 				Description:      "Health check.",
 			},
