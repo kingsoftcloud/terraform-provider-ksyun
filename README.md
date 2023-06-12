@@ -92,6 +92,14 @@ $  go test -test.run TestAccKsyunEip_basic -v
 
 2、 到tf文件所在目录执行`terraform init --plugin-dir ~/.terraform.d/plugin-cache/`会获取到本地版本的provider(**注意**:高版本的terraform需要指定provider所在路径，这里通过参数形式指定，其他指定方式可以参考官方开发文档：https://www.terraform.io/cli/config/config-file)
 
+
+指定运行单测（用于开发调试）
+
+```bash
+TF_LOG=debug TF_ACC=true go test -test.run TestAccKsyunEip_basic -v
+```
+
+
 生成文档
 
   make doc

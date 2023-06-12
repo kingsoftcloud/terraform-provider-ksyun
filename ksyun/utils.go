@@ -582,14 +582,6 @@ func SdkResponseAutoResourceData(d *schema.ResourceData, resource *schema.Resour
 		for k, v := range root {
 			var value interface{}
 			var err error
-			//if v == nil {
-			//	continue
-			//}
-			//if str, ok := v.(string); ok {
-			//	if str == "" {
-			//		continue
-			//	}
-			//}
 			m := SdkResponseMapping{}
 			target := Hump2Downline(k)
 			if _, ok := extra[k]; ok {
@@ -634,7 +626,6 @@ func SdkResponseAutoResourceData(d *schema.ResourceData, resource *schema.Resour
 					log.Println(err.Error())
 					panic("ERROR: " + err.Error())
 				}
-
 			} else {
 				result[target] = value
 			}
@@ -859,4 +850,14 @@ func checkValueInSliceMap(data []interface{}, key string, value interface{}) (c 
 		}
 	}
 	return c
+}
+
+func transInterfaceToStruct(source interface{}, target interface{}) (err error) {
+	var bytes []byte
+	bytes, err = json.Marshal(source)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(bytes, target)
+	return
 }

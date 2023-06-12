@@ -88,3 +88,12 @@ func stringSplitRead(sep string, field string, currentExists []string, d *schema
 	}
 	return result
 }
+
+func stringSliceContains(arr []string, str string) bool {
+	for _, s := range arr {
+		if s == str {
+			return true
+		}
+	}
+	return false
+}

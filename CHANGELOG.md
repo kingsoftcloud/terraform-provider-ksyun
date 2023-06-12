@@ -1,3 +1,10 @@
+## 1.3.78 (Jun 12, 2023)
+
+IMPROVEMENTS:
+
+- data_ksyun_snapshots: EBS快照
+- data_ksyun_local_snapshots: 本地盘快照
+
 ## 1.3.77 (Jun 12, 2023)
 
 IMPROVEMENTS:
@@ -5,12 +12,11 @@ IMPROVEMENTS:
 - 删除redis安全组的机制优化
 - SLB监听器的健康检查字段设为Deprecated，使用ksyun_healthcheck代替
 
-
 ## 1.3.76 (May 15, 2023)
 
 IMPROVEMENTS:
 
-- ksyun_data_image返回增加real_image_id字段
+- data_ksyun_images返回增加real_image_id字段
 
 ## 1.3.75 (May 5, 2023)
 
