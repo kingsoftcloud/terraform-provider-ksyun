@@ -1,15 +1,16 @@
-## 1.4.0 ()
+## 1.3.78 (Jun 12, 2023)
 
-DATA SOURCES:
+IMPROVEMENTS:
 
-- ksyun_kce_clusters 获取容器集群
-- ksyun_kce_instance_images 获取云主机容器节点可用的镜像
+- data_ksyun_snapshots: EBS快照
+- data_ksyun_local_snapshots: 本地盘快照
 
-RESOURCES:
+## 1.3.77 (Jun 12, 2023)
 
-- ksyun_kce_cluster 容器集群（本期仅支持独立集群，不支持托管集群）
-- ksyun_kce_worker 容器的worker节点
+IMPROVEMENTS:
 
+- 删除redis安全组的机制优化
+- SLB监听器的健康检查字段设为Deprecated，使用ksyun_healthcheck代替
 
 ## 1.3.76 (May 15, 2023)
 
