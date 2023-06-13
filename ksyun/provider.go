@@ -144,6 +144,7 @@ Volume(EBS)
 	Resource
 		ksyun_volume
 		ksyun_volume_attach
+		ksyun_snapshot
 
 Bare Metal
 
@@ -398,6 +399,7 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_mongodb_security_rule":            resourceKsyunMongodbSecurityRule(),
 			"ksyun_volume":                           resourceKsyunVolume(),
 			"ksyun_volume_attach":                    resourceKsyunVolumeAttach(),
+			"ksyun_snapshot":                         resourceKsyunSnapshot(),
 			"ksyun_lb_rule":                          resourceKsyunSlbRule(),
 			"ksyun_lb_host_header":                   resourceKsyunListenerHostHeader(),
 			"ksyun_lb_backend_server_group":          resourceKsyunBackendServerGroup(),
