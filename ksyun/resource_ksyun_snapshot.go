@@ -5,8 +5,11 @@ Provides a EBS snapshot resource.
 
 ```hcl
 
-	resource "ksyun_snapshot" "default" {
-	}
+		resource "ksyun_snapshot" "default" {
+	  		snapshot_name = "test_tf_snapshot"
+			snapshot_desc = "test descrition"
+			volume_id = "xxxxxxxxx"
+		}
 
 ```
 
