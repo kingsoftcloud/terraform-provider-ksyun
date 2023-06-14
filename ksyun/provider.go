@@ -128,9 +128,14 @@ Instance(KEC)
 	Data Source
 		ksyun_images
 		ksyun_instances
+<<<<<<< HEAD
 		ksyun_auto_snapshot_policy
 		ksyun_auto_snapshot_policy_volume_association
 		ksyun_data_guard_group
+=======
+		ksyun_local_volumes
+		ksyun_local_snapshots
+>>>>>>> 9f96d303f7d9a004cc38c33b9017c3fdf2948594
 
 	Resource
 		ksyun_instance
@@ -143,6 +148,7 @@ Volume(EBS)
 
 	Data Source
 		ksyun_volumes
+		ksyun_snapshots
 
 	Resource
 		ksyun_volume
@@ -157,6 +163,16 @@ Bare Metal
 
 	Resource
 		ksyun_bare_metal
+
+KCE
+
+	Data Source
+		ksyun_kce_clusters
+		ksyun_kce_instance_images
+
+	Resource
+		ksyun_kce_cluster
+		ksyun_kce_worker
 
 KCM
 
@@ -320,6 +336,8 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_subnet_allocated_ip_addresses":           dataSourceKsyunSubnetAllocatedIpAddresses(),
 			"ksyun_security_groups":                         dataSourceKsyunSecurityGroups(),
 			"ksyun_instances":                               dataSourceKsyunInstances(),
+			"ksyun_local_volumes":                           dataSourceKsyunLocalVolumes(),
+			"ksyun_local_snapshots":                         dataSourceKsyunLocalSnapshots(),
 			"ksyun_images":                                  dataSourceKsyunImages(),
 			"ksyun_sqlservers":                              dataSourceKsyunSqlServer(),
 			"ksyun_krds":                                    dataSourceKsyunKrds(),
@@ -329,6 +347,7 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_redis_instances":                         dataSourceRedisInstances(),
 			"ksyun_redis_security_groups":                   dataSourceRedisSecurityGroups(),
 			"ksyun_volumes":                                 dataSourceKsyunVolumes(),
+			"ksyun_snapshots":                               dataSourceKsyunSnapshots(),
 			"ksyun_mongodbs":                                dataSourceKsyunMongodbs(),
 			"ksyun_lb_host_headers":                         dataSourceKsyunListenerHostHeaders(),
 			"ksyun_lb_rules":                                dataSourceKsyunSlbRules(),
@@ -351,6 +370,8 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_bare_metals":                             dataSourceKsyunBareMetals(),
 			"ksyun_bare_metal_images":                       dataSourceKsyunBareMetalImages(),
 			"ksyun_bare_metal_raid_attributes":              dataSourceKsyunBareMetalRaidAttributes(),
+			"ksyun_kce_clusters":                            dataSourceKsyunKceClusters(),
+			"ksyun_kce_instance_images":                     dataSourceKsyunKceInstanceImages(),
 			"ksyun_tags":                                    dataSourceKsyunTags(),
 			"ksyun_auto_snapshot_policy":                    dataSourceKsyunAutoSnapshotPolicy(),
 			"ksyun_data_guard_group":                        dataSourceKsyunDataGuardGroup(),
@@ -417,6 +438,8 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_bws_associate":                    resourceKsyunBandWidthShareAssociate(),
 			"ksyun_bare_metal":                       resourceKsyunBareMetal(),
 			"ksyun_tag":                              resourceKsyunTag(),
+			"ksyun_kce_cluster":                      resourceKsyunKceCluster(),
+			"ksyun_kce_worker":                       resourceKsyunKceWorker(),
 			"ksyun_ks3_bucket":                       resourceKsyunKs3Bucket(),
 			"ksyun_auto_snapshot_policy":             resourceKsyunAutoSnapshotPolicy(),
 			"ksyun_auto_snapshot_volume_association": resourceKsyunAutoSnapshotVolumeAssociation(),

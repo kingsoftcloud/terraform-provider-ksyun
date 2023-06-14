@@ -6,6 +6,8 @@ import (
 	"github.com/KscSDK/ksc-sdk-go/service/eip"
 	"github.com/KscSDK/ksc-sdk-go/service/epc"
 	"github.com/KscSDK/ksc-sdk-go/service/iam"
+	"github.com/KscSDK/ksc-sdk-go/service/kce"
+	"github.com/KscSDK/ksc-sdk-go/service/kcev2"
 	"github.com/KscSDK/ksc-sdk-go/service/kcm"
 	"github.com/KscSDK/ksc-sdk-go/service/kcsv1"
 	"github.com/KscSDK/ksc-sdk-go/service/kcsv2"
@@ -44,6 +46,8 @@ type KsyunClient struct {
 	bwsconn       *bws.Bws             `json:"bwsconn,omitempty"`
 	tagconn       *tagv2.Tagv2         `json:"tagconn,omitempty"`
 	tagv1conn     *tag.Tag             `json:"tagv1conn,omitempty"`
+	kceconn       *kce.Kce             `json:"kceconn,omitempty"`
+	kcev2conn     *kcev2.Kcev2         `json:"kcev2conn,omitempty"`
 
 	config *Config
 }
