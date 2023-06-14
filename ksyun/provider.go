@@ -115,6 +115,11 @@ SLB
 		ksyun_lb_listener_server
 		ksyun_lb_rule
 
+ALB
+
+	Resource
+		ksyun_alb
+
 SSH key
 
 	Data Source
@@ -364,6 +369,7 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_tags":                          dataSourceKsyunTags(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
+			"ksyun_alb":                              resourceKsyunAlb(),
 			"ksyun_eip":                              resourceKsyunEip(),
 			"ksyun_eip_associate":                    resourceKsyunEipAssociation(),
 			"ksyun_lb":                               resourceKsyunLb(),
