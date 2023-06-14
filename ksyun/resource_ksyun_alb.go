@@ -4,8 +4,41 @@ Provides a ALB resource.
 # Example Usage
 
 ```hcl
-resource "ksyun_alb" "default" {
-}
+
+	resource "ksyun_vpc" "default" {
+	  vpc_name = "tf_alb_test_vpc"
+	  cidr_block = "10.0.0.0/16"
+	}
+
+	resource "ksyun_alb" "default" {
+	  alb_name = "tf_test_alb1"
+	  alb_version = "standard"
+	  alb_type = "public"
+	  state = "start"
+	  charge_type = "PrePaidByHourUsage"
+	  vpc_id = ksyun_vpc.default.id
+	  project_id = 0
+	}
+
+	data "ksyun_lines" "default" {
+	  output_file="output_result1"
+	  line_name="BGP"
+	}
+
+	resource "ksyun_eip" "foo" {
+	  line_id =data.ksyun_lines.default.lines.0.line_id
+	  band_width =1
+	  charge_type = "PostPaidByDay"
+	  purchase_time =1
+	  project_id=0
+	}
+
+	resource "ksyun_eip_associate" "eip_bind" {
+	  allocation_id = ksyun_eip.foo.id
+	  instance_id   = ksyun_alb.foo.id
+	  instance_type = "Slb"
+	}
+
 ```
 
 # Import

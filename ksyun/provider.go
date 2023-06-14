@@ -117,6 +117,9 @@ SLB
 
 ALB
 
+	Data Source
+		ksyun_albs
+
 	Resource
 		ksyun_alb
 
@@ -311,6 +314,7 @@ func Provider() terraform.ResourceProvider {
 			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
+			"ksyun_albs":          dataSourceKsyunAlbs(),
 			"ksyun_lines":         dataSourceKsyunLines(),
 			"ksyun_eips":          dataSourceKsyunEips(),
 			"ksyun_slbs":          dataSourceKsyunLbs(),

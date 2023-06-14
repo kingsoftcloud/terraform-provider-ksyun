@@ -240,6 +240,46 @@ func (alb *AlbService) RemoveAlb(d *schema.ResourceData) (err error) {
 	return ksyunApiCallNew([]ApiCall{call}, d, alb.client, true)
 }
 
+func (alb *AlbService) ReadAndSetAlbs(d *schema.ResourceData, r *schema.Resource) (err error) {
+	transform := map[string]SdkReqTransform{
+		"ids": {
+			mapping: "AlbId",
+			Type:    TransformWithN,
+		},
+		"project_id": {
+			mapping: "ProjectId",
+			Type:    TransformWithN,
+		},
+		"vpc_id": {
+			mapping: "vpc-id",
+			Type:    TransformWithFilter,
+		},
+		"state": {
+			mapping: "state",
+			Type:    TransformWithFilter,
+		},
+	}
+	req, err := mergeDataSourcesReq(d, r, transform)
+	if err != nil {
+		return err
+	}
+	data, err := alb.readAlbs(req)
+	if err != nil {
+		return err
+	}
+
+	return mergeDataSourcesResp(d, r, ksyunDataSource{
+		collection:  data,
+		idFiled:     "AlbId",
+		targetField: "albs",
+		extra: map[string]SdkResponseMapping{
+			"AlbId": {
+				Field:    "id",
+				KeepAuto: true,
+			},
+		},
+	})
+}
 func (alb *AlbService) ReadAndSetAlb(d *schema.ResourceData, r *schema.Resource) (err error) {
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
 		data, callErr := alb.readAlb(d, "", true)

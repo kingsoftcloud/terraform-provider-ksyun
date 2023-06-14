@@ -16,7 +16,38 @@ Provides a ALB resource.
 ## Example Usage
 
 ```hcl
+resource "ksyun_vpc" "default" {
+  vpc_name   = "tf_alb_test_vpc"
+  cidr_block = "10.0.0.0/16"
+}
+
 resource "ksyun_alb" "default" {
+  alb_name    = "tf_test_alb1"
+  alb_version = "standard"
+  alb_type    = "public"
+  state       = "start"
+  charge_type = "PrePaidByHourUsage"
+  vpc_id      = ksyun_vpc.default.id
+  project_id  = 0
+}
+
+data "ksyun_lines" "default" {
+  output_file = "output_result1"
+  line_name   = "BGP"
+}
+
+resource "ksyun_eip" "foo" {
+  line_id       = data.ksyun_lines.default.lines.0.line_id
+  band_width    = 1
+  charge_type   = "PostPaidByDay"
+  purchase_time = 1
+  project_id    = 0
+}
+
+resource "ksyun_eip_associate" "eip_bind" {
+  allocation_id = ksyun_eip.foo.id
+  instance_id   = ksyun_alb.foo.id
+  instance_type = "Slb"
 }
 ```
 
@@ -24,12 +55,12 @@ resource "ksyun_alb" "default" {
 
 The following arguments are supported:
 
+* `alb_type` - (Required, ForceNew) The type of the ALB, valid values:'public', 'internal''.
+* `alb_version` - (Required, ForceNew) The version of the ALB. valid values:'standard', 'advanced'.
+* `charge_type` - (Required, ForceNew) The charge type, valid values: 'PrePaidByHourUsage'.
 * `vpc_id` - (Required, ForceNew) The ID of the VPC.
 * `alb_name` - (Optional) The name of the ALB.
-* `alb_type` - (Optional, ForceNew) The type of the ALB, valid values:'public', 'internal'. Default is 'public'.
-* `alb_version` - (Optional, ForceNew) The version of the ALB. valid values:'standard', 'advanced'. Default is 'standard'.
-* `charge_type` - (Optional, ForceNew) The charge type, valid values: 'PrePaidByHourUsage'.
-* `ip_version` - (Optional, ForceNew) IP version, 'ipv4' or 'ipv6'. Default is 'ipv4'.
+* `ip_version` - (Optional, ForceNew) IP version, 'ipv4' or 'ipv6'.
 * `project_id` - (Optional) The ID of the project.
 * `state` - (Optional) The state of the ALB, valid values:'start', 'stop'.
 
