@@ -119,9 +119,11 @@ ALB
 
 	Data Source
 		ksyun_albs
+		ksyun_alb_listeners
 
 	Resource
 		ksyun_alb
+		ksyun_alb_listener
 
 SSH key
 
@@ -315,6 +317,7 @@ func Provider() terraform.ResourceProvider {
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"ksyun_albs":          dataSourceKsyunAlbs(),
+			"ksyun_alb_listeners": dataSourceKsyunAlbListeners(),
 			"ksyun_lines":         dataSourceKsyunLines(),
 			"ksyun_eips":          dataSourceKsyunEips(),
 			"ksyun_slbs":          dataSourceKsyunLbs(),
@@ -374,6 +377,7 @@ func Provider() terraform.ResourceProvider {
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"ksyun_alb":                              resourceKsyunAlb(),
+			"ksyun_alb_listener":                     resourceKsyunAlbListener(),
 			"ksyun_eip":                              resourceKsyunEip(),
 			"ksyun_eip_associate":                    resourceKsyunEipAssociation(),
 			"ksyun_lb":                               resourceKsyunLb(),

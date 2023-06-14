@@ -28,7 +28,7 @@ data "ksyun_albs" "default" {
 
 The following arguments are supported:
 
-* `ids` - (Optional) A list of Elastic IP IDs, all the EIPs belong to this region will be retrieved if the ID is `""`.
+* `ids` - (Optional) A list of ALB IDs, all the ALBs belong to this region will be retrieved if the ID is `""`.
 * `output_file` - (Optional) File name where to save data source results (after running `terraform plan`).
 * `state` - (Optional) One or more state.
 * `vpc_id` - (Optional) One or more VPC IDs.

@@ -31,7 +31,7 @@ func dataSourceKsyunAlbs() *schema.Resource {
 					Type: schema.TypeString,
 				},
 				Set:         schema.HashString,
-				Description: "A list of Elastic IP IDs, all the EIPs belong to this region will be retrieved if the ID is `\"\"`.",
+				Description: "A list of ALB IDs, all the ALBs belong to this region will be retrieved if the ID is `\"\"`.",
 			},
 			// openapi暂未支持
 			//"project_id": {

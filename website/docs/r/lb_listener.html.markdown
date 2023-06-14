@@ -45,6 +45,7 @@ The following arguments are supported:
 
 * `listener_port` - (Required, ForceNew) The protocol port of listener.
 * `load_balancer_id` - (Required, ForceNew) The ID of the LB.
+* `session` - (Required) session.
 * `certificate_id` - (Optional) The ID of certificate.
 * `enable_http2` - (Optional) whether enable to HTTP2.
 * `health_check` - (Optional, **Deprecated**) This parameter is deprecated and will be removed in a future version, use `ksyun_healthcheck` instead. Health check.
@@ -55,7 +56,6 @@ The following arguments are supported:
 * `load_balancer_acl_id` - (Optional) The ID of LB ACL.
 * `method` - (Optional, ForceNew) Forwarding mode of listener.Valid Values:'RoundRobin', 'LeastConnections', 'MasterSlave', 'QUIC_CID'.
 * `redirect_listener_id` - (Optional) The ID of the redirect listener.
-* `session` - (Optional) session.
 * `tls_cipher_policy` - (Optional) TLS cipher policy, valid values:'TlsCipherPolicy1.0','TlsCipherPolicy1.1','TlsCipherPolicy1.2','TlsCipherPolicy1.2-strict'.
 
 The `health_check` object supports the following:
