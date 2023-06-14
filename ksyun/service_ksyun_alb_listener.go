@@ -82,27 +82,30 @@ func (s *AlbListenerService) readListeners(condition map[string]interface{}) (da
 		resp    *map[string]interface{}
 		results interface{}
 	)
-	conn := s.client.slbconn
-	action := "DescribeAlbListeners"
-	logger.Debug(logger.ReqFormat, action, condition)
-	if condition == nil {
-		resp, err = conn.DescribeAlbListeners(nil)
-		if err != nil {
-			return data, err
-		}
-	} else {
-		resp, err = conn.DescribeAlbListeners(&condition)
-		if err != nil {
-			return data, err
-		}
-	}
 
-	results, err = getSdkValue("AlbListenerSet", *resp)
-	if err != nil {
+	return pageQuery(condition, "MaxResults", "NextToken", 200, 1, func(condition map[string]interface{}) ([]interface{}, error) {
+		conn := s.client.slbconn
+		action := "DescribeAlbListeners"
+		logger.Debug(logger.ReqFormat, action, condition)
+		if condition == nil {
+			resp, err = conn.DescribeAlbListeners(nil)
+			if err != nil {
+				return data, err
+			}
+		} else {
+			resp, err = conn.DescribeAlbListeners(&condition)
+			if err != nil {
+				return data, err
+			}
+		}
+
+		results, err = getSdkValue("AlbListenerSet", *resp)
+		if err != nil {
+			return data, err
+		}
+		data = results.([]interface{})
 		return data, err
-	}
-	data = results.([]interface{})
-	return
+	})
 }
 
 func (s *AlbListenerService) readListener(d *schema.ResourceData, listenerId string) (data map[string]interface{}, err error) {

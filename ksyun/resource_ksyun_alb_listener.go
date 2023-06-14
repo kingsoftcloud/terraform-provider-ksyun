@@ -83,6 +83,7 @@ func resourceKsyunAlbListener() *schema.Resource {
 			"tls_cipher_policy": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 				ValidateFunc: validation.StringInSlice([]string{
 					"TlsCipherPolicy1.0",
 					"TlsCipherPolicy1.1",
@@ -156,6 +157,7 @@ func resourceKsyunAlbListener() *schema.Resource {
 			"enable_http2": {
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Computed:    true,
 				Description: "whether enable to HTTP2.",
 			},
 			"http_protocol": {
