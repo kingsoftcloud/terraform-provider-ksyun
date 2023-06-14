@@ -3,6 +3,8 @@ Provides an RDS Read Only instance resource. A DB read only instance is an isola
 
 # Example Usage
 
+## Create a read-replica krds instance
+
 ```hcl
 
 	resource "ksyun_krds_rr" "my_rds_rr"{
@@ -11,18 +13,33 @@ Provides an RDS Read Only instance resource. A DB read only instance is an isola
 	  db_instance_name = "houbin_terraform_888_rr_1"
 	  bill_type = "DAY"
 	  security_group_id = "******"
+	}
+```
 
-	  parameters {
-	    name = "auto_increment_increment"
-	    value = "7"
-	  }
+## Create a read-replica krds instance with a parameter template
 
-	  parameters {
-	    name = "binlog_format"
-	    value = "ROW"
+```hcl
+
+	resource "ksyun_krds_parameter_group" "dpg" {
+	  name  = "tf_krdpg_on_hcl"
+	  description    = "acceptance-test"
+	  engine = "mysql"
+	  engine_version = "5.5"
+	  parameters = {
+		back_log = 34455
+		connect_timeout = 30
 	  }
 	}
 
+	resource "ksyun_krds_rr" "my_rds_rr"{
+	  db_instance_identifier= "******"
+	  db_instance_class= "db.ram.2|db.disk.50"
+	  db_instance_name = "houbin_terraform_888_rr_1"
+	  bill_type = "DAY"
+	  security_group_id = "******"
+	  db_parameter_template_id = "${ksyun_krds_parameter_group.dpg}"
+	  force_restart = true
+	}
 ```
 
 # Import
@@ -33,12 +50,14 @@ RDS Read Only instance resource can be imported using the id, e.g.
 $ terraform import ksyun_krds_rr.my_rds_rr 67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
 ```
 */
+
 package ksyun
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 var krdsRrNotSupport = []string{
@@ -74,7 +93,7 @@ func resourceKsyunKrdsRr() *schema.Resource {
 	rrSchema["db_instance_class"] = &schema.Schema{
 		Type:     schema.TypeString,
 		Required: true,
-		//ForceNew:     true,
+		// ForceNew:     true,
 		ValidateFunc: validDbInstanceClass(),
 		Description:  "this value regex db.ram.d{1,3}|db.disk.d{1,5}, db.ram is rds random access memory size, db.disk is disk size.",
 	}

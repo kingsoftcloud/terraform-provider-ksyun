@@ -62,7 +62,7 @@ func resourceKsyunDataGuardGroup() *schema.Resource {
 					}
 					return
 				},
-				Description: "The data guard group display type, Value options: [ host, domain ]. Note: some account doesn't support domain data guard <br> - Host: represent machine level <br> - Domain: represent the domain of disaster tolerance.",
+				Description: "The data guard group display type, Value options: [ host, domain ]. <br> - Host: represent machine level <br> - Domain: represent the domain of disaster tolerance <br> Note: some account doesn't support domain data guard.",
 			},
 			"data_guard_level": {
 				Type:        schema.TypeString,

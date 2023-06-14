@@ -3,10 +3,9 @@ Provides an RDS instance resource. A DB instance is an isolated database environ
 
 # Example Usage
 
+## Create an RDS MySQL instance
+
 ```hcl
-
-# Create a RDS MySQL instance
-
 	provider "ksyun"{
 	  region = "cn-shanghai-3"
 	  access_key = ""
@@ -26,8 +25,6 @@ Provides an RDS instance resource. A DB instance is an isolated database environ
 	  subnet_name      = "ksyun-subnet-tf"
 	  cidr_block = "10.7.0.0/21"
 	  subnet_type = "Reserve"
-	  dhcp_ip_from = "10.7.0.2"
-	  dhcp_ip_to = "10.7.0.253"
 	  vpc_id  = "${ksyun_vpc.default.id}"
 	  gateway_ip = "10.7.0.1"
 	  dns1 = "198.18.254.41"
@@ -65,13 +62,13 @@ Provides an RDS instance resource. A DB instance is an isolated database environ
 	  availability_zone_2 = "cn-shanghai-3b"
 	  port=3306
 	}
+```
 
-# Create a RDS MySQL instance with specific parameters
+## Create an RDS MySQL instance with a parameter template
 
+```hcl
 	provider "ksyun"{
 	  region = "cn-shanghai-3"
-	  access_key = ""
-	  secret_key = ""
 	}
 
 	variable "available_zone" {
@@ -87,8 +84,6 @@ Provides an RDS instance resource. A DB instance is an isolated database environ
 	  subnet_name      = "ksyun-subnet-tf"
 	  cidr_block = "10.7.0.0/21"
 	  subnet_type = "Reserve"
-	  dhcp_ip_from = "10.7.0.2"
-	  dhcp_ip_to = "10.7.0.253"
 	  vpc_id  = "${ksyun_vpc.default.id}"
 	  gateway_ip = "10.7.0.1"
 	  dns1 = "198.18.254.41"
@@ -110,6 +105,17 @@ Provides an RDS instance resource. A DB instance is an isolated database environ
 	  }
 	}
 
+	resource "ksyun_krds_parameter_group" "dpg" {
+	  name  = "tf_krdpg_on_hcl"
+	  description    = "acceptance-test"
+	  engine = "mysql"
+	  engine_version = "5.5"
+	  parameters = {
+		back_log = 65535
+		connect_timeout = 30
+	  }
+	}
+
 	resource "ksyun_krds" "my_rds_xx"{
 	  output_file = "output_file"
 	  db_instance_class= "db.ram.2|db.disk.21"
@@ -124,27 +130,11 @@ Provides an RDS instance resource. A DB instance is an isolated database environ
 	  bill_type = "DAY"
 	  security_group_id = "${ksyun_krds_security_group.krds_sec_group_14.id}"
 	  preferred_backup_time = "01:00-02:00"
-	  parameters {
-	    name = "auto_increment_increment"
-	    value = "8"
-	  }
-
-	  parameters {
-	    name = "binlog_format"
-	    value = "ROW"
-	  }
-
-	  parameters {
-	    name = "delayed_insert_limit"
-	    value = "108"
-	  }
-	  parameters {
-	    name = "auto_increment_offset"
-	    value= "2"
-	  }
 	  availability_zone_1 = "cn-shanghai-3a"
 	  availability_zone_2 = "cn-shanghai-3b"
 	  instance_has_eip = true
+	  force_restart = true
+      db_parameter_template_id = "${ksyun_krds_parameter_group.dpg.id}"
 	}
 
 ```
@@ -157,14 +147,16 @@ KRDS can be imported using the id, e.g.
 $ terraform import ksyun_krds.default 67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
 ```
 */
+
 package ksyun
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"time"
 )
 
 func resourceKsyunKrds() *schema.Resource {
@@ -260,7 +252,7 @@ func resourceKsyunKrds() *schema.Resource {
 				//				//ValidateFunc: validation.StringInSlice([]string{
 				//	"DAY",
 				//	"YEAR_MONTH",
-				//}, false),
+				// }, false),
 				Description: "bill type, valid values: DAY, YEAR_MONTH, HourlyInstantSettlement. Default is DAY.",
 			},
 			"duration": {
@@ -289,7 +281,22 @@ func resourceKsyunKrds() *schema.Resource {
 			"db_parameter_group_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "ID of the parameter group.",
+				Description: "ID of the parameter group that db instance all used.",
+			},
+			// support optional, if db_parameter_template_id != nil will use to create instance by db_parameter_group
+			"db_parameter_template_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "ID of the template parameter group, Value is null will use to create instance with default parameters.",
+				DiffSuppressFunc: func(key, old, new string, d *schema.ResourceData) bool {
+					if old != new {
+						if old != "" && new == "" {
+							return true
+						}
+						return false
+					}
+					return true
+				},
 			},
 			"preferred_backup_time": {
 				Type:        schema.TypeString,
@@ -321,18 +328,18 @@ func resourceKsyunKrds() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"name": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "name of the parameter.",
 						},
 						"value": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "value of the parameter.",
 						},
 					},
 				},
-				Set:         parameterToHash,
-				Optional:    true,
+				Set: parameterToHash,
+				// Optional:    true,
 				Computed:    true,
 				Description: "database parameters.",
 			},

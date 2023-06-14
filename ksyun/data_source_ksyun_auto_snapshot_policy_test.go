@@ -29,8 +29,6 @@ provider "ksyun" {
 }
 
 data "ksyun_auto_snapshot_policy" "foo" {
-	name = "tf_combine_test"
-	auto_snapshot_policy_ids = ["858469026661474304"]
     output_file = "output_result_snapshot"
 }
 

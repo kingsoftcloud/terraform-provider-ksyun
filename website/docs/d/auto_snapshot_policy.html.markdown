@@ -15,10 +15,12 @@ Query instance auto snapshot policies information
 
 ## Example Usage
 
+## query auto snapshot policy with name or id
+
 ```hcl
 data "ksyun_auto_snapshot_policy" "foo" {
   name                     = "your auto snapshot policy name"
-  auto_snapshot_policy_ids = ["auto snapshot policy id"] // a list of auto snapshot policy id that can be null
+  auto_snapshot_policy_ids = ["auto snapshot policy id"]
   output_file              = "output_result_snapshot"
 }
 
@@ -27,12 +29,20 @@ output "ksyun_auto_snapshot_policy" {
 }
 ```
 
+## query all auto snapshot policy
+
+```hcl
+data "ksyun_auto_snapshot_policy" "foo" {
+  output_file = "output_result_snapshot"
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
 
-* `name` - (Required) the name of auto snapshot policy.
 * `auto_snapshot_policy_ids` - (Optional) The id of auto snapshot policy.
+* `name` - (Optional) the name of auto snapshot policy.
 * `output_file` - (Optional) File name where to save data source results (after running `terraform plan`).
 
 ## Attributes Reference

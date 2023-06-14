@@ -128,14 +128,11 @@ Instance(KEC)
 	Data Source
 		ksyun_images
 		ksyun_instances
-<<<<<<< HEAD
+		ksyun_local_volumes
+		ksyun_local_snapshots
 		ksyun_auto_snapshot_policy
 		ksyun_auto_snapshot_policy_volume_association
 		ksyun_data_guard_group
-=======
-		ksyun_local_volumes
-		ksyun_local_snapshots
->>>>>>> 9f96d303f7d9a004cc38c33b9017c3fdf2948594
 
 	Resource
 		ksyun_instance
