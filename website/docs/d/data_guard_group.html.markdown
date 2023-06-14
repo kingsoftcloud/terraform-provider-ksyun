@@ -16,14 +16,15 @@ Query instance auto snapshot policies information
 ## Example Usage
 
 ```hcl
-data "ksyun_snapshot" "foo" {}
-
-output "ksyun_snapshot" {
-  value = data.ksyun_snapshot.foo
+data "ksyun_data_guard_group" "foo" {
+  output_file = "output_result"
+}
+data "ksyun_data_guard_group" "foo1" {
+  data_guard_name = "Data Guard Name"
 }
 
-output "ksyun_snapshots_total_count" {
-  value = data.ksyun_snapshot.foo.total_count
+data "ksyun_data_guard_group" "foo2" {
+  data_guard_id = "Data Guard Id"
 }
 ```
 

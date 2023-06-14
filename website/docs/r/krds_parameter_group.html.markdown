@@ -4,41 +4,30 @@ layout: "ksyun"
 page_title: "ksyun: ksyun_krds_parameter_group"
 sidebar_current: "docs-ksyun-resource-krds_parameter_group"
 description: |-
-  Provides a tag resource.
+  Provides a krds parameter template groups.
 ---
 
 # ksyun_krds_parameter_group
 
-Provides a tag resource.
+Provides a krds parameter template groups.
 
 #
 
 ## Example Usage
 
 ```hcl
-resource "ksyun_krds_parameter_group" "dpg1" {
+resource "ksyun_krds_parameter_group" "dpg" {
   name           = "tf_dpg_on_hcl"
-  description    = "tf configuration test"
+  description    = "tf_configuration_test"
   engine         = "mysql"
   engine_version = "5.7"
   parameters = {
-    connect_timeout            = 20
-    innodb_stats_on_metadata   = "OFF"
-    table_open_cache_instances = 1
-    group_concat_max_len       = 102
-    max_connect_errors         = 2000
-    max_prepared_stmt_count    = 65535
-    max_user_connections       = 65535
+    connect_timeout         = 20
+    max_prepared_stmt_count = 65535
+    max_user_connections    = 65535
+    back_log                = 65535
+    innodb_open_files       = 1000
   }
-}
-
-data "ksyun_krds_parameter_group" "foo" {
-  output_file           = "output_result"
-  db_parameter_group_id = ksyun_krds_parameter_group.dpg1.id
-}
-
-output "dpg_out" {
-  value = data.ksyun_krds_parameter_group.foo
 }
 ```
 

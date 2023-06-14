@@ -15,9 +15,9 @@ Provides an RDS instance resource. A DB instance is an isolated database environ
 
 ## Example Usage
 
-```hcl
-# Create a RDS MySQL instance
+## Create an RDS MySQL instance
 
+```hcl
 provider "ksyun" {
   region     = "cn-shanghai-3"
   access_key = ""
@@ -37,8 +37,6 @@ resource "ksyun_subnet" "foo" {
   subnet_name       = "ksyun-subnet-tf"
   cidr_block        = "10.7.0.0/21"
   subnet_type       = "Reserve"
-  dhcp_ip_from      = "10.7.0.2"
-  dhcp_ip_to        = "10.7.0.253"
   vpc_id            = "${ksyun_vpc.default.id}"
   gateway_ip        = "10.7.0.1"
   dns1              = "198.18.254.41"
@@ -76,13 +74,13 @@ resource "ksyun_krds" "my_rds_xx" {
   availability_zone_2   = "cn-shanghai-3b"
   port                  = 3306
 }
+```
 
-# Create a RDS MySQL instance with specific parameters
+## Create an RDS MySQL instance with a parameter template
 
+```hcl
 provider "ksyun" {
-  region     = "cn-shanghai-3"
-  access_key = ""
-  secret_key = ""
+  region = "cn-shanghai-3"
 }
 
 variable "available_zone" {
@@ -98,8 +96,6 @@ resource "ksyun_subnet" "foo" {
   subnet_name       = "ksyun-subnet-tf"
   cidr_block        = "10.7.0.0/21"
   subnet_type       = "Reserve"
-  dhcp_ip_from      = "10.7.0.2"
-  dhcp_ip_to        = "10.7.0.253"
   vpc_id            = "${ksyun_vpc.default.id}"
   gateway_ip        = "10.7.0.1"
   dns1              = "198.18.254.41"
@@ -121,41 +117,36 @@ resource "ksyun_krds_security_group" "krds_sec_group_14" {
   }
 }
 
+resource "ksyun_krds_parameter_group" "dpg" {
+  name           = "tf_krdpg_on_hcl"
+  description    = "acceptance-test"
+  engine         = "mysql"
+  engine_version = "5.5"
+  parameters = {
+    back_log        = 65535
+    connect_timeout = 30
+  }
+}
+
 resource "ksyun_krds" "my_rds_xx" {
-  output_file           = "output_file"
-  db_instance_class     = "db.ram.2|db.disk.21"
-  db_instance_name      = "houbin_terraform_1-n"
-  db_instance_type      = "HRDS"
-  engine                = "mysql"
-  engine_version        = "5.7"
-  master_user_name      = "admin"
-  master_user_password  = "123qweASD123"
-  vpc_id                = "${ksyun_vpc.default.id}"
-  subnet_id             = "${ksyun_subnet.foo.id}"
-  bill_type             = "DAY"
-  security_group_id     = "${ksyun_krds_security_group.krds_sec_group_14.id}"
-  preferred_backup_time = "01:00-02:00"
-  parameters {
-    name  = "auto_increment_increment"
-    value = "8"
-  }
-
-  parameters {
-    name  = "binlog_format"
-    value = "ROW"
-  }
-
-  parameters {
-    name  = "delayed_insert_limit"
-    value = "108"
-  }
-  parameters {
-    name  = "auto_increment_offset"
-    value = "2"
-  }
-  availability_zone_1 = "cn-shanghai-3a"
-  availability_zone_2 = "cn-shanghai-3b"
-  instance_has_eip    = true
+  output_file              = "output_file"
+  db_instance_class        = "db.ram.2|db.disk.21"
+  db_instance_name         = "houbin_terraform_1-n"
+  db_instance_type         = "HRDS"
+  engine                   = "mysql"
+  engine_version           = "5.7"
+  master_user_name         = "admin"
+  master_user_password     = "123qweASD123"
+  vpc_id                   = "${ksyun_vpc.default.id}"
+  subnet_id                = "${ksyun_subnet.foo.id}"
+  bill_type                = "DAY"
+  security_group_id        = "${ksyun_krds_security_group.krds_sec_group_14.id}"
+  preferred_backup_time    = "01:00-02:00"
+  availability_zone_1      = "cn-shanghai-3a"
+  availability_zone_2      = "cn-shanghai-3b"
+  instance_has_eip         = true
+  force_restart            = true
+  db_parameter_template_id = "${ksyun_krds_parameter_group.dpg.id}"
 }
 ```
 
@@ -175,20 +166,15 @@ The following arguments are supported:
 * `availability_zone_1` - (Optional) zone 1.
 * `availability_zone_2` - (Optional) zone 2.
 * `bill_type` - (Optional, ForceNew) bill type, valid values: DAY, YEAR_MONTH, HourlyInstantSettlement. Default is DAY.
+* `db_parameter_template_id` - (Optional) ID of the template parameter group, Value is null will use to create instance with default parameters.
 * `duration` - (Optional) purchase duration in months.
 * `force_restart` - (Optional) Set it to true to make some parameter efficient when modifying them. Default to false.
 * `instance_has_eip` - (Optional) attach eip for instance.
-* `parameters` - (Optional) database parameters.
 * `port` - (Optional) port number.
 * `preferred_backup_time` - (Optional) backup time.
 * `project_id` - (Optional) project ID.
 * `security_group_id` - (Optional) proprietary security group id for krds.
 * `vip` - (Optional) virtual IP.
-
-The `parameters` object supports the following:
-
-* `name` - (Required) name of the parameter.
-* `value` - (Required) value of the parameter.
 
 ## Attributes Reference
 
@@ -196,10 +182,13 @@ In addition to all arguments above, the following attributes are exported:
 
 * `id` - ID of the resource.
 * `db_instance_identifier` - instance ID.
-* `db_parameter_group_id` - ID of the parameter group.
+* `db_parameter_group_id` - ID of the parameter group that db instance all used.
 * `eip_port` - EIP port.
 * `eip` - EIP address.
 * `instance_create_time` - instance create time.
+* `parameters` - database parameters.
+  * `name` - name of the parameter.
+  * `value` - value of the parameter.
 * `region` - region code.
 
 

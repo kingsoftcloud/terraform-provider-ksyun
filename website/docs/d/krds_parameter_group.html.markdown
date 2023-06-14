@@ -24,7 +24,7 @@ data "ksyun_krds_parameter_group" "foo" {
   output_file = "output_result"
   // if you give db_parameter_group_id will return the single krds parameter group
   // if you don't give this value, it will return a list of krds parameter groups
-  db_parameter_group_id = "b233609c-42e1-4aad-aa68-9a2ebdf68a82"
+  db_parameter_group_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
   // keyword is a filter value that can query the results by name of description
   keyword = "name or description"

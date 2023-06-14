@@ -41,23 +41,19 @@ func TestResourceKsyunDataGuardGroup_basic(t *testing.T) {
 
 const testAccDataGuardGroupConfig = `
 provider "ksyun" {
-	region = "cn-qingyangtest-1"
+	region = "cn-beijing-6"
 }
 
 
 resource "ksyun_data_guard_group" "foo" {
   data_guard_name = "terraform_test_on_hcl"
   data_guard_type = "host"
-  tags {
-    env = "development"
-    name = "example tag"
-  }
 }
 `
 
 const testAccDataGuardGroupUpdateConfig = `
 provider "ksyun" {
-	region = "cn-qingyangtest-1"
+	region = "cn-beijing-6"
 }
 
 
