@@ -126,6 +126,7 @@ ALB
 		ksyun_alb
 		ksyun_alb_listener
 		ksyun_alb_rule_group
+		ksyun_alb_listener_cert_group
 
 SSH key
 
@@ -382,6 +383,7 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_alb":                              resourceKsyunAlb(),
 			"ksyun_alb_listener":                     resourceKsyunAlbListener(),
 			"ksyun_alb_rule_group":                   resourceKsyunAlbRuleGroup(),
+			"ksyun_alb_listener_cert_group":          resourceKsyunAlbListenerCertGroup(),
 			"ksyun_eip":                              resourceKsyunEip(),
 			"ksyun_eip_associate":                    resourceKsyunEipAssociation(),
 			"ksyun_lb":                               resourceKsyunLb(),

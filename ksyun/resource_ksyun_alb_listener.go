@@ -12,10 +12,10 @@ Provides a ALB Listener resource.
 
 # Import
 
-LB Listener can be imported using the `id`, e.g.
+ALB Listener can be imported using the `id`, e.g.
 
 ```
-$ terraform import ksyun_lb_listener.example vserver-abcdefg
+$ terraform import ksyun_alb_listener.example vserver-abcdefg
 ```
 */
 package ksyun
