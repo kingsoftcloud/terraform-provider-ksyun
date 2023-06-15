@@ -141,6 +141,7 @@ IMPROVEMENTS:
 - instance的security_group_id增加MinItems限制
 - volume增加snapshot_id字段
 - 优化instance和volume的snapshot_id字段的diff判断（由于api不返回该字段，diff默认忽略）
+- 新增EBS类型：ESSD_PL1、ESSD_PL2、ESSD_PL3
 
 BUG FIXES:
 
