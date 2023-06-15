@@ -2,6 +2,7 @@ package ksyun
 
 import (
 	"fmt"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -226,7 +227,16 @@ func readKrdsParameterGroup(d *schema.ResourceData, meta interface{}, parameterG
 	if err != nil {
 		return data, err
 	}
-	sdkValue, _ := getSdkValue("0.Parameters", resp)
+	engineVersionIf, _ := getSdkValue("0.EngineVersion", resp)
+	engineVersion, _ := If2String(engineVersionIf)
+	// if ok is false that means this resource is not exist.
+	if _engineVersion, ok := d.GetOk("engine_version"); ok {
+		if !reflect.DeepEqual(engineVersion, _engineVersion) {
+			return nil, fmt.Errorf("db parameter group engine version must be matched krds instance engine version")
+		}
+	}
+
+	sdkValue, _ := getSdkValue("0.Parameters", resp[0])
 	data, err = If2Map(sdkValue)
 	return data, err
 }
@@ -243,7 +253,6 @@ func readAndSetKrdsInstanceParameters(d *schema.ResourceData, meta interface{}) 
 	remote := make(map[string]map[string]interface{})
 	var parameters []map[string]interface{}
 	// 参考aws的做法，由于配置有很多默认项,这里只列出展示用户可能修改的配置参数
-	local := d.Get("parameters").(*schema.Set)
 	for k, v := range parameter {
 		t := "string"
 		m := make(map[string]interface{})
@@ -264,53 +273,39 @@ func readAndSetKrdsInstanceParameters(d *schema.ResourceData, meta interface{}) 
 
 		remote[k] = m
 	}
-	if local.Len() < 1 {
-		for k, v := range remote {
-			if v1, ok := defaultParameter[k]; ok {
-				switch v1.(map[string]interface{})["Type"] {
-				case "integer":
-					if strconv.FormatInt(int64(v1.(map[string]interface{})["Default"].(float64)), 10) != v["value"] {
-						parameters = append(parameters, v)
-					}
-				case "float":
-					if strconv.FormatFloat(v1.(map[string]interface{})["Default"].(float64), 'g', 1, 64) != v["value"] {
-						parameters = append(parameters, v)
-					}
-				case "expression":
-					if v1.(map[string]interface{})["Variable"] == "instance_memory" {
-						ramStr := strings.Replace(strings.Split(d.Get("db_instance_class").(string), "|")[0], "db.ram.", "", -1)
-						scaleStr := strings.Replace(v1.(map[string]interface{})["DefaultScaleFactor"].(string), "%", "", -1)
-						ram, _ := strconv.ParseInt(ramStr, 10, 64)
-						scale, _ := strconv.ParseFloat(scaleStr, 64)
-						defaultScaleValue := strconv.FormatInt(int64(float64(ram*1024*1024*1024)*(scale/100)), 10)
-						if defaultScaleValue != v["value"] {
-							parameters = append(parameters, v)
-						}
-					} else {
-						parameters = append(parameters, v)
-					}
-				default:
-					if v1.(map[string]interface{})["Default"] != v["value"] {
-						parameters = append(parameters, v)
-					}
-				}
-
-			}
-		}
-	} else {
-		for _, value := range local.List() {
-			name := value.(map[string]interface{})["name"]
-			for k, v := range remote {
-				if k == name {
+	for k, v := range remote {
+		if v1, ok := defaultParameter[k]; ok {
+			switch v1.(map[string]interface{})["Type"] {
+			case "integer":
+				if strconv.FormatInt(int64(v1.(map[string]interface{})["Default"].(float64)), 10) != v["value"] {
 					parameters = append(parameters, v)
-					break
+				}
+			case "float":
+				if strconv.FormatFloat(v1.(map[string]interface{})["Default"].(float64), 'g', 1, 64) != v["value"] {
+					parameters = append(parameters, v)
+				}
+			case "expression":
+				if v1.(map[string]interface{})["Variable"] == "instance_memory" {
+					ramStr := strings.Replace(strings.Split(d.Get("db_instance_class").(string), "|")[0], "db.ram.", "", -1)
+					scaleStr := strings.Replace(v1.(map[string]interface{})["DefaultScaleFactor"].(string), "%", "", -1)
+					ram, _ := strconv.ParseInt(ramStr, 10, 64)
+					scale, _ := strconv.ParseFloat(scaleStr, 64)
+					defaultScaleValue := strconv.FormatInt(int64(float64(ram*1024*1024*1024)*(scale/100)), 10)
+					if defaultScaleValue != v["value"] {
+						parameters = append(parameters, v)
+					}
+				} else {
+					parameters = append(parameters, v)
+				}
+			default:
+				if v1.(map[string]interface{})["Default"] != v["value"] {
+					parameters = append(parameters, v)
 				}
 			}
+
 		}
 	}
 
-	// if local, ok := d.GetOk("parameters"); ok {
-	// }
 	err = d.Set("parameters", parameters)
 	return err
 }
@@ -455,7 +450,7 @@ func checkAndProcessKrdsParametersWithDPGId(d *schema.ResourceData, meta interfa
 		if oId != "" {
 			oldParameter, err = readKrdsParameterGroup(d, meta, oId)
 			if err != nil && notFoundError(err) {
-				return nil, false, fmt.Errorf("error query parameters of new parameter group id %s, error: %s", nId, err)
+				return nil, false, fmt.Errorf("error query parameters of old parameter group id %s, error: %s", nId, err)
 			}
 			transformerValueOfObj2String(oldParameter)
 		}
@@ -711,11 +706,6 @@ func modifyKrdsParameterGroup(d *schema.ResourceData, meta interface{}, onCreate
 }
 
 func modifyKrdsParameterGroupWithDPGId(d *schema.ResourceData, meta interface{}, onCreate bool) (call ksyunApiCallFunc, err error) {
-	_, restart, err := checkAndProcessKrdsParametersWithDPGId(d, meta)
-	// logger.Debug("test", "test", paramsReq, restart, err)
-	if err != nil {
-		return call, err
-	}
 	if !d.HasChange("db_parameter_template_id") {
 		return call, err
 	}
@@ -725,11 +715,16 @@ func modifyKrdsParameterGroupWithDPGId(d *schema.ResourceData, meta interface{},
 		return call, err
 	}
 
-	// check force_restart
-	if !d.Get("force_restart").(bool) && restart && !onCreate {
-		return call, fmt.Errorf("some parameter change must set force_restart true")
-	}
 	call = func(d *schema.ResourceData, meta interface{}) (err error) {
+		_, restart, err := checkAndProcessKrdsParametersWithDPGId(d, meta)
+		// logger.Debug("test", "test", paramsReq, restart, err)
+		if err != nil {
+			return err
+		}
+		// check force_restart
+		if !d.Get("force_restart").(bool) && restart && !onCreate {
+			return fmt.Errorf("some parameter change must set force_restart true")
+		}
 		conn := meta.(*KsyunClient).krdsconn
 
 		err = checkKrdsInstanceState(d, meta, "", d.Timeout(schema.TimeoutUpdate))
@@ -881,15 +876,15 @@ func createKrdsDbInstance(d *schema.ResourceData, meta interface{}) (call ksyunA
 
 func createKrdsRrInstance(d *schema.ResourceData, meta interface{}) (call ksyunApiCallFunc, err error) {
 	transform := map[string]SdkReqTransform{
-		"db_instance_identifier": {mapping: "DBInstanceIdentifier"},
-		"db_instance_class":      {mapping: "DBInstanceClass"},
-		"db_instance_name":       {mapping: "DBInstanceName"},
-		"availability_zone_1":    {mapping: "AvailabilityZone"},
-		"db_parameter_group_id":  {Ignore: true},
-		"security_group_id":      {Ignore: true},
-		"instance_has_eip":       {Ignore: true},
-		"parameters":             {Ignore: true},
-		"force_restart":          {Ignore: true},
+		"db_instance_identifier":   {mapping: "DBInstanceIdentifier"},
+		"db_instance_class":        {mapping: "DBInstanceClass"},
+		"db_instance_name":         {mapping: "DBInstanceName"},
+		"availability_zone_1":      {mapping: "AvailabilityZone"},
+		"db_parameter_template_id": {Ignore: true},
+		"security_group_id":        {Ignore: true},
+		"instance_has_eip":         {Ignore: true},
+		"parameters":               {Ignore: true},
+		"force_restart":            {Ignore: true},
 	}
 
 	createReq, err := SdkRequestAutoMapping(d, resourceKsyunKrdsRr(), false, transform, nil, SdkReqParameter{
@@ -918,11 +913,15 @@ func createKrdsRrInstance(d *schema.ResourceData, meta interface{}) (call ksyunA
 			krdsInstance := bodyData["DBInstance"].(map[string]interface{})
 			instanceId := krdsInstance["DBInstanceIdentifier"].(string)
 			dBParameterGroupId := krdsInstance["DBParameterGroupId"].(string)
+			dBEngine := krdsInstance["Engine"].(string)
+			dBEngineVersion := krdsInstance["EngineVersion"].(string)
 			d.SetId(instanceId)
 			err = d.Set("db_parameter_group_id", dBParameterGroupId)
 			if err != nil {
 				return err
 			}
+			_ = d.Set("engine", dBEngine)
+			_ = d.Set("engine_version", dBEngineVersion)
 		}
 		err = checkKrdsInstanceState(d, meta, "", d.Timeout(schema.TimeoutUpdate))
 		if err != nil {

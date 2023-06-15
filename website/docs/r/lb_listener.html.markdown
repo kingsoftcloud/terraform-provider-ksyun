@@ -47,7 +47,7 @@ The following arguments are supported:
 * `load_balancer_id` - (Required, ForceNew) The ID of the LB.
 * `certificate_id` - (Optional) The ID of certificate.
 * `enable_http2` - (Optional) whether enable to HTTP2.
-* `health_check` - (Optional) Health check.
+* `health_check` - (Optional, **Deprecated**) This parameter is deprecated and will be removed in a future version, use `ksyun_healthcheck` instead. Health check.
 * `http_protocol` - (Optional) HTTP protocol, valid values:'HTTP1.0','HTTP1.1'.
 * `listener_name` - (Optional) The name of listener.
 * `listener_protocol` - (Optional, ForceNew) The protocol of listener.Valid Values:'TCP', 'UDP', 'HTTP', 'HTTPS'.
