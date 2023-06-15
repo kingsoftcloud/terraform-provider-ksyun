@@ -51,7 +51,7 @@ The `alb_rule_set` object supports the following:
 In addition to all arguments above, the following attributes are exported:
 
 * `id` - ID of the resource.
-
+* `alb_rule_group_id` - The ID of the rule group.
 
 
 ## Import

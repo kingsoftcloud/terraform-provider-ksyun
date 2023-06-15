@@ -120,6 +120,7 @@ ALB
 	Data Source
 		ksyun_albs
 		ksyun_alb_listeners
+		ksyun_alb_rule_groups
 
 	Resource
 		ksyun_alb
@@ -317,14 +318,15 @@ func Provider() terraform.ResourceProvider {
 			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"ksyun_albs":          dataSourceKsyunAlbs(),
-			"ksyun_alb_listeners": dataSourceKsyunAlbListeners(),
-			"ksyun_lines":         dataSourceKsyunLines(),
-			"ksyun_eips":          dataSourceKsyunEips(),
-			"ksyun_slbs":          dataSourceKsyunLbs(),
-			"ksyun_lbs":           dataSourceKsyunLbs(),
-			"ksyun_listeners":     dataSourceKsyunListeners(),
-			"ksyun_health_checks": dataSourceKsyunHealthChecks(),
+			"ksyun_albs":            dataSourceKsyunAlbs(),
+			"ksyun_alb_listeners":   dataSourceKsyunAlbListeners(),
+			"ksyun_alb_rule_groups": dataSourceKsyunAlbRuleGroups(),
+			"ksyun_lines":           dataSourceKsyunLines(),
+			"ksyun_eips":            dataSourceKsyunEips(),
+			"ksyun_slbs":            dataSourceKsyunLbs(),
+			"ksyun_lbs":             dataSourceKsyunLbs(),
+			"ksyun_listeners":       dataSourceKsyunListeners(),
+			"ksyun_health_checks":   dataSourceKsyunHealthChecks(),
 			// 注册两个同样的data，应该去掉一个。。。文档保留ksyun_lb_listener_servers
 			"ksyun_listener_servers":              dataSourceKsyunLbListenerServers(),
 			"ksyun_lb_listener_servers":           dataSourceKsyunLbListenerServers(),

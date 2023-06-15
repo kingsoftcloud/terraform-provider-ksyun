@@ -121,6 +121,35 @@ func (s *AlbRuleGroup) readRuleGroup(d *schema.ResourceData, ruleGroupId string)
 	}
 	return
 }
+
+func (s *AlbRuleGroup) ReadAndSetRuleGroups(d *schema.ResourceData, r *schema.Resource) (err error) {
+	transform := map[string]SdkReqTransform{
+		"ids": {
+			mapping: "AlbRuleGroupId",
+			Type:    TransformWithN,
+		},
+		"alb_listener_id": {
+			mapping: "alblistener-id",
+			Type:    TransformWithFilter,
+		},
+	}
+	req, err := mergeDataSourcesReq(d, r, transform)
+	if err != nil {
+		return err
+	}
+	data, err := s.readRuleGroups(req)
+	if err != nil {
+		return err
+	}
+	return mergeDataSourcesResp(d, r, ksyunDataSource{
+		collection:  data,
+		nameField:   "AlbRuleGroupName",
+		idFiled:     "AlbRuleGroupId",
+		targetField: "alb_rule_groups",
+		extra:       map[string]SdkResponseMapping{},
+	})
+}
+
 func (s *AlbRuleGroup) ReadAndSetRuleGroup(d *schema.ResourceData, r *schema.Resource) (err error) {
 	data, err := s.readRuleGroup(d, "")
 	if err != nil {
