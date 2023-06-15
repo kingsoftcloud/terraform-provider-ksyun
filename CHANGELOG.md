@@ -1,3 +1,9 @@
+## 1.3.79 (Jun 15, 2023)
+
+IMPROVEMENTS:
+
+- EBS数据盘增加ESSD_PL0类型
+
 ## 1.3.78 (Jun 12, 2023)
 
 IMPROVEMENTS:

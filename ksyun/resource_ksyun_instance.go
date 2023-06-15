@@ -129,6 +129,7 @@ func instanceConfig() map[string]*schema.Schema {
 							"SSD3.0",
 							"EHDD",
 							"Local_SSD",
+							"ESSD_PL0",
 							"ESSD_PL1",
 							"ESSD_PL2",
 							"ESSD_PL3",
