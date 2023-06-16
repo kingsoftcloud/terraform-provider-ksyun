@@ -350,6 +350,7 @@ func readKrdsDefaultParameters(d *schema.ResourceData, diff *schema.ResourceDiff
 // generate the krds parameter's creating request body
 // check whether mysql engine version and parameters match.
 func checkAndProcessKrdsParameters(d *schema.ResourceData, meta interface{}) (req map[string]interface{}, needRestart bool, err error) {
+	req = make(map[string]interface{})
 	if d.HasChange("parameters") {
 		oldParameters, newParameters := d.GetChange("parameters")
 		req, needRestart, err = parametersOldAndNewCompare(d, meta, oldParameters, newParameters)
@@ -430,6 +431,7 @@ func parametersOldAndNewCompare(d *schema.ResourceData, meta interface{}, oldPar
 }
 
 func checkAndProcessKrdsParametersWithDPGId(d *schema.ResourceData, meta interface{}) (req map[string]interface{}, needRestart bool, err error) {
+	req = make(map[string]interface{})
 	if d.HasChange("db_parameter_template_id") {
 		oldDPGId, newDPGId := d.GetChange("db_parameter_template_id")
 		oId, _ := If2String(oldDPGId)
