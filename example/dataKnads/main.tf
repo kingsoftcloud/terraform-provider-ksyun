@@ -1,18 +1,10 @@
-terraform {
-  required_providers {
-    ksyun = {
-      source = "kingsoftcloud/ksyun"
-      version = "1.3.78"
-    }
-  }
-}
 # Specify the provider and access details
 provider "ksyun" {
   region = "cn-beijing-6"
 }
 
-# Get  eips
-data "ksyun_eips" "default" {
+# Get  knads
+data "ksyun_knads" "default" {
   output_file="output_result"
 
   ids=[]

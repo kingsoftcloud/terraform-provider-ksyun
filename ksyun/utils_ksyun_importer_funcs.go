@@ -306,3 +306,21 @@ func importVolumeAttach(d *schema.ResourceData, meta interface{}) ([]*schema.Res
 
 	return []*schema.ResourceData{d}, nil
 }
+
+func importKnadAssociate(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	var err error
+	items := strings.Split(d.Id(), ":")
+	if len(items) < 2 {
+		return []*schema.ResourceData{d}, fmt.Errorf("import id must split with ':'")
+	}
+	err = d.Set("knad_id", items[0])
+	if err != nil {
+		return []*schema.ResourceData{d}, err
+	}
+	err = d.Set("ip", items[1])
+	if err != nil {
+		return []*schema.ResourceData{d}, err
+	}
+
+	return []*schema.ResourceData{d}, nil
+}

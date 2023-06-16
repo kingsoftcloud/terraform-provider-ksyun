@@ -12,6 +12,7 @@ import (
 	"github.com/KscSDK/ksc-sdk-go/service/kcsv1"
 	"github.com/KscSDK/ksc-sdk-go/service/kcsv2"
 	"github.com/KscSDK/ksc-sdk-go/service/kec"
+	"github.com/KscSDK/ksc-sdk-go/service/knad"
 	"github.com/KscSDK/ksc-sdk-go/service/krds"
 	"github.com/KscSDK/ksc-sdk-go/service/mongodb"
 	"github.com/KscSDK/ksc-sdk-go/service/rabbitmq"
@@ -71,6 +72,7 @@ func (c *Config) Client() (*KsyunClient, error) {
 	client.bwsconn = bws.SdkNew(cli, cfg, url)
 	client.tagconn = tagv2.SdkNew(cli, cfg, url)
 	client.tagv1conn = tag.SdkNew(cli, cfg, url)
+	client.knadconn = knad.SdkNew(cli, cfg, url)
 
 	credentials := credentials.NewStaticCredentials(c.AccessKey, c.SecretKey, "")
 	client.ks3conn = s3.New(&aws.Config{

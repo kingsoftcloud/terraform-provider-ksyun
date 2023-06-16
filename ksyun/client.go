@@ -10,6 +10,7 @@ import (
 	"github.com/KscSDK/ksc-sdk-go/service/kcsv1"
 	"github.com/KscSDK/ksc-sdk-go/service/kcsv2"
 	"github.com/KscSDK/ksc-sdk-go/service/kec"
+	"github.com/KscSDK/ksc-sdk-go/service/knad"
 	"github.com/KscSDK/ksc-sdk-go/service/krds"
 	"github.com/KscSDK/ksc-sdk-go/service/mongodb"
 	"github.com/KscSDK/ksc-sdk-go/service/rabbitmq"
@@ -20,6 +21,7 @@ import (
 	"github.com/KscSDK/ksc-sdk-go/service/tagv2"
 	"github.com/KscSDK/ksc-sdk-go/service/vpc"
 	"github.com/ks3sdklib/aws-sdk-go/service/s3"
+	//"github.com/KscSDK/ksc-sdk-go/service/knad"
 )
 
 type KsyunClient struct {
@@ -44,4 +46,5 @@ type KsyunClient struct {
 	bwsconn       *bws.Bws             `json:"bwsconn,omitempty"`
 	tagconn       *tagv2.Tagv2         `json:"tagconn,omitempty"`
 	tagv1conn     *tag.Tag             `json:"tagv1conn,omitempty"`
+	knadconn      *knad.Knad           `json:"knadconn,omitempty"`
 }

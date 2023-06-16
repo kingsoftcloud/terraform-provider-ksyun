@@ -10,8 +10,8 @@ cloud.google.com/go/datastore v1.0.0/go.mod h1:LXYbyblFSglQ5pkeyhO+Qmw7ukd3C+pD7
 github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
-github.com/KscSDK/ksc-sdk-go v0.1.46 h1:pjKqykOiBMhq7nc12y9d2lmCWDMbkKTTnRq5yqtozmY=
-github.com/KscSDK/ksc-sdk-go v0.1.46/go.mod h1:isHlJZi429ff5JLemSc10h7nznNgzJAY4MmNM8u7SBo=
+github.com/KscSDK/ksc-sdk-go v0.1.48 h1:1PnvEsSLhwlmdcvs9isAlhyXjcvVM6FiB88mYdurcz8=
+github.com/KscSDK/ksc-sdk-go v0.1.48/go.mod h1:isHlJZi429ff5JLemSc10h7nznNgzJAY4MmNM8u7SBo=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/OpenPeeDeeP/depguard v1.0.1 h1:VlW4R6jmBIv3/u1JNlawEvJMM4J+dPORPaZasQee8Us=
 github.com/OpenPeeDeeP/depguard v1.0.1/go.mod h1:xsIw86fROiiwelg+jB2uM9PiKihMMmUx/1V+TNhjQvM=
