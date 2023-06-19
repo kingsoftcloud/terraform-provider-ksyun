@@ -126,6 +126,34 @@ func (s *AlbListenerCertGroupService) readCertGroup(d *schema.ResourceData, cert
 	return
 }
 
+func (s *AlbListenerCertGroupService) ReadAndSetCertGroups(d *schema.ResourceData, r *schema.Resource) (err error) {
+	transform := map[string]SdkReqTransform{
+		"ids": {
+			mapping: "AlbListenerCertGroupId",
+			Type:    TransformWithN,
+		},
+		"alb_listener_id": {
+			mapping: "alblistener-id",
+			Type:    TransformWithFilter,
+		},
+	}
+	req, err := mergeDataSourcesReq(d, r, transform)
+	if err != nil {
+		return err
+	}
+	data, err := s.readCertGroups(req)
+	if err != nil {
+		return err
+	}
+	return mergeDataSourcesResp(d, r, ksyunDataSource{
+		collection: data,
+		//nameField:   "AlbListenerName",
+		idFiled:     "AlbListenerCertGroupId",
+		targetField: "listener_cert_groups",
+		extra:       map[string]SdkResponseMapping{},
+	})
+}
+
 func (s *AlbListenerCertGroupService) ReadAndSetCertGroup(d *schema.ResourceData, r *schema.Resource) (err error) {
 	var data map[string]interface{}
 	data, err = s.readCertGroup(d, "")
@@ -150,18 +178,6 @@ func (s *AlbListenerCertGroupService) ReadAndSetCertGroup(d *schema.ResourceData
 					result = append(result, r)
 				}
 				logger.Debug(logger.RespFormat, "AlbListenerCertSetMap", result, i)
-				//var dat []interface{}
-				//if err := json.Unmarshal([]byte(v), &dat); err == nil {
-				//	for _, v := range dat {
-				//		d := v.(map[string]interface{})
-				//		r := make(map[string]interface{})
-				//		r["certificate_name"] = d["CertificateName"]
-				//		r["cert_authority"] = d["CertAuthority"]
-				//		r["common_name"] = d["CommonName"]
-				//		r["expire_time"] = d["ExpireTime"]
-				//		result = append(result, r)
-				//	}
-				//}
 				return result
 			},
 		},

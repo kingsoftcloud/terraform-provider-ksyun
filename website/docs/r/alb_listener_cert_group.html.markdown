@@ -25,9 +25,9 @@ resource "ksyun_alb_listener_cert_group" "default" {
 The following arguments are supported:
 
 * `alb_listener_id` - (Required, ForceNew) The ID of the ALB Listener.
-* `alb_listener_cert_set` - (Optional) certificate list.
+* `certificate` - (Optional) The certificate included in the cert group.
 
-The `alb_listener_cert_set` object supports the following:
+The `certificate` object supports the following:
 
 * `certificate_id` - (Required) The ID of the certificate.
 
