@@ -42,6 +42,41 @@ Provides an RDS Read Only instance resource. A DB read only instance is an isola
 	}
 ```
 
+## Create a read-replica krds instance with a parameter template and special parameters
+
+```hcl
+
+	resource "ksyun_krds_parameter_group" "dpg" {
+	  name  = "tf_krdpg_on_hcl"
+	  description    = "acceptance-test"
+	  engine = "mysql"
+	  engine_version = "5.5"
+	  parameters = {
+		back_log = 34455
+		connect_timeout = 30
+	  }
+	}
+
+	resource "ksyun_krds_rr" "my_rds_rr"{
+	  db_instance_identifier= "******"
+	  db_instance_class= "db.ram.2|db.disk.50"
+	  db_instance_name = "houbin_terraform_888_rr_1"
+	  bill_type = "DAY"
+	  security_group_id = "******"
+	  db_parameter_template_id = "${ksyun_krds_parameter_group.dpg}"
+	  force_restart = true
+
+	  parameters {
+	    name  = "innodb_open_files"
+	    value = "900"
+	  }
+	  parameters {
+	    name  = "max_user_connections"
+	    value = "888"
+	  }
+	}
+```
+
 # Import
 
 RDS Read Only instance resource can be imported using the id, e.g.

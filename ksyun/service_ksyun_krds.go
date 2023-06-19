@@ -13,6 +13,12 @@ import (
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
 )
 
+type KrdsParameterGroupModify struct {
+	DPGId        string
+	IsCreate     bool
+	IsOnlyUpdate bool
+}
+
 func readKrdsSupportRegions(meta interface{}) (regions []interface{}, err error) {
 	var (
 		resp *map[string]interface{}
@@ -253,6 +259,7 @@ func readAndSetKrdsInstanceParameters(d *schema.ResourceData, meta interface{}) 
 	remote := make(map[string]map[string]interface{})
 	var parameters []map[string]interface{}
 	// 参考aws的做法，由于配置有很多默认项,这里只列出展示用户可能修改的配置参数
+	local := d.Get("parameters").(*schema.Set)
 	for k, v := range parameter {
 		t := "string"
 		m := make(map[string]interface{})
@@ -273,39 +280,53 @@ func readAndSetKrdsInstanceParameters(d *schema.ResourceData, meta interface{}) 
 
 		remote[k] = m
 	}
-	for k, v := range remote {
-		if v1, ok := defaultParameter[k]; ok {
-			switch v1.(map[string]interface{})["Type"] {
-			case "integer":
-				if strconv.FormatInt(int64(v1.(map[string]interface{})["Default"].(float64)), 10) != v["value"] {
-					parameters = append(parameters, v)
-				}
-			case "float":
-				if strconv.FormatFloat(v1.(map[string]interface{})["Default"].(float64), 'g', 1, 64) != v["value"] {
-					parameters = append(parameters, v)
-				}
-			case "expression":
-				if v1.(map[string]interface{})["Variable"] == "instance_memory" {
-					ramStr := strings.Replace(strings.Split(d.Get("db_instance_class").(string), "|")[0], "db.ram.", "", -1)
-					scaleStr := strings.Replace(v1.(map[string]interface{})["DefaultScaleFactor"].(string), "%", "", -1)
-					ram, _ := strconv.ParseInt(ramStr, 10, 64)
-					scale, _ := strconv.ParseFloat(scaleStr, 64)
-					defaultScaleValue := strconv.FormatInt(int64(float64(ram*1024*1024*1024)*(scale/100)), 10)
-					if defaultScaleValue != v["value"] {
-						parameters = append(parameters, v)
-					}
-				} else {
-					parameters = append(parameters, v)
-				}
-			default:
-				if v1.(map[string]interface{})["Default"] != v["value"] {
-					parameters = append(parameters, v)
-				}
+	// if local.Len() < 1 {
+	// 	for k, v := range remote {
+	// 		if v1, ok := defaultParameter[k]; ok {
+	// 			switch v1.(map[string]interface{})["Type"] {
+	// 			case "integer":
+	// 				if strconv.FormatInt(int64(v1.(map[string]interface{})["Default"].(float64)), 10) != v["value"] {
+	// 					parameters = append(parameters, v)
+	// 				}
+	// 			case "float":
+	// 				if strconv.FormatFloat(v1.(map[string]interface{})["Default"].(float64), 'g', 1, 64) != v["value"] {
+	// 					parameters = append(parameters, v)
+	// 				}
+	// 			case "expression":
+	// 				if v1.(map[string]interface{})["Variable"] == "instance_memory" {
+	// 					ramStr := strings.Replace(strings.Split(d.Get("db_instance_class").(string), "|")[0], "db.ram.", "", -1)
+	// 					scaleStr := strings.Replace(v1.(map[string]interface{})["DefaultScaleFactor"].(string), "%", "", -1)
+	// 					ram, _ := strconv.ParseInt(ramStr, 10, 64)
+	// 					scale, _ := strconv.ParseFloat(scaleStr, 64)
+	// 					defaultScaleValue := strconv.FormatInt(int64(float64(ram*1024*1024*1024)*(scale/100)), 10)
+	// 					if defaultScaleValue != v["value"] {
+	// 						parameters = append(parameters, v)
+	// 					}
+	// 				} else {
+	// 					parameters = append(parameters, v)
+	// 				}
+	// 			default:
+	// 				if v1.(map[string]interface{})["Default"] != v["value"] {
+	// 					parameters = append(parameters, v)
+	// 				}
+	// 			}
+	//
+	// 		}
+	// 	}
+	// } else {
+	for _, value := range local.List() {
+		name := value.(map[string]interface{})["name"]
+		for k, v := range remote {
+			if k == name {
+				parameters = append(parameters, v)
+				break
 			}
-
 		}
 	}
+	// }
 
+	// if local, ok := d.GetOk("parameters"); ok {
+	// }
 	err = d.Set("parameters", parameters)
 	return err
 }
@@ -348,7 +369,8 @@ func readKrdsDefaultParameters(d *schema.ResourceData, diff *schema.ResourceDiff
 
 // checkAndProcessKrdsParameters check changed parameters whether valid and
 // generate the krds parameter's creating request body
-// check whether mysql engine version and parameters match.
+// check whether mysql engine version and parameters match
+// process the temporary parameter group and apply it.
 func checkAndProcessKrdsParameters(d *schema.ResourceData, meta interface{}) (req map[string]interface{}, needRestart bool, err error) {
 	req = make(map[string]interface{})
 	if d.HasChange("parameters") {
@@ -373,7 +395,7 @@ func parametersOldAndNewCompare(d *schema.ResourceData, meta interface{}, oldPar
 	// init from list to kv
 	// compatibility with terraform type schema.map
 	switch oldParameters.(type) {
-	case schema.Set:
+	case *schema.Set:
 		if params, ok := oldParameters.(*schema.Set); ok {
 			for _, i := range params.List() {
 				oldKv[i.(map[string]interface{})["name"].(string)] = i.(map[string]interface{})["value"].(string)
@@ -387,7 +409,7 @@ func parametersOldAndNewCompare(d *schema.ResourceData, meta interface{}, oldPar
 	}
 
 	switch newParameters.(type) {
-	case schema.Set:
+	case *schema.Set:
 		if params, ok := newParameters.(*schema.Set); ok {
 			for _, i := range params.List() {
 				newKv[i.(map[string]interface{})["name"].(string)] = i.(map[string]interface{})["value"].(string)
@@ -430,36 +452,41 @@ func parametersOldAndNewCompare(d *schema.ResourceData, meta interface{}, oldPar
 	return req, needRestart, err
 }
 
-func checkAndProcessKrdsParametersWithDPGId(d *schema.ResourceData, meta interface{}) (req map[string]interface{}, needRestart bool, err error) {
+func checkAndProcessKrdsParameterGroup(d *schema.ResourceData, meta interface{}) (req map[string]interface{}, needRestart bool, err error) {
 	req = make(map[string]interface{})
 	if d.HasChange("db_parameter_template_id") {
 		oldDPGId, newDPGId := d.GetChange("db_parameter_template_id")
 		oId, _ := If2String(oldDPGId)
 		nId, _ := If2String(newDPGId)
-		var (
-			newParameter map[string]interface{}
-			oldParameter map[string]interface{}
-		)
 
-		if nId != "" {
-			newParameter, err = readKrdsParameterGroup(d, meta, nId)
-			if err != nil {
-				return nil, false, fmt.Errorf("error query parameters of new parameter group id %s, error: %s", nId, err)
-			}
-			transformerValueOfObj2String(newParameter)
-		}
-
-		if oId != "" {
-			oldParameter, err = readKrdsParameterGroup(d, meta, oId)
-			if err != nil && notFoundError(err) {
-				return nil, false, fmt.Errorf("error query parameters of old parameter group id %s, error: %s", nId, err)
-			}
-			transformerValueOfObj2String(oldParameter)
-		}
-
-		req, needRestart, err = parametersOldAndNewCompare(d, meta, oldParameter, newParameter)
+		return parametersGroupOldAndNewCompare(d, meta, oId, nId)
 	}
 	return req, needRestart, err
+}
+
+func parametersGroupOldAndNewCompare(d *schema.ResourceData, meta interface{}, oId, nId string) (req map[string]interface{}, needRestart bool, err error) {
+	var (
+		newParameter map[string]interface{}
+		oldParameter map[string]interface{}
+	)
+
+	if nId != "" {
+		newParameter, err = readKrdsParameterGroup(d, meta, nId)
+		if err != nil {
+			return nil, false, fmt.Errorf("error query parameters of new parameter group id %s, error: %s", nId, err)
+		}
+		transformerValueOfObj2String(newParameter)
+	}
+
+	if oId != "" {
+		oldParameter, err = readKrdsParameterGroup(d, meta, oId)
+		if err != nil && notFoundError(err) {
+			return nil, false, fmt.Errorf("error query parameters of old parameter group id %s, error: %s", nId, err)
+		}
+		transformerValueOfObj2String(oldParameter)
+	}
+
+	return parametersOldAndNewCompare(d, meta, oldParameter, newParameter)
 }
 
 // prepareModifyDbParameterParams prepare db parameter needs parameters
@@ -618,10 +645,13 @@ func createKrdsRrParameterGroup(d *schema.ResourceData, meta interface{}) (call 
 	}
 
 	// If create read-replica instance with custom parameters, modify the master instance parameter group.
-	return modifyKrdsParameterGroup(d, meta, true)
+	return modifyKrdsPartialParameterCall(d, meta, true)
 }
 
 func createKrdsTempParameterGroup(d *schema.ResourceData, meta interface{}) (call ksyunApiCallFunc, err error) {
+	if _, ok := d.GetOk("db_parameter_template_id"); !ok {
+		return nil, err
+	}
 	paramsReq, _, err := checkAndProcessKrdsParameters(d, meta)
 	if err != nil {
 		return call, err
@@ -662,92 +692,43 @@ func removeKrdsParameterGroup(d *schema.ResourceData, meta interface{}) (err err
 	return nil
 }
 
-func modifyKrdsParameterGroup(d *schema.ResourceData, meta interface{}, onCreate bool) (call ksyunApiCallFunc, err error) {
-	paramsReq, restart, err := checkAndProcessKrdsParameters(d, meta)
-	// logger.Debug("test", "test", paramsReq, restart, err)
-	if err != nil {
-
-		return call, err
-	}
-	if len(paramsReq) > 0 {
-		// check force_restart
-		if !d.Get("force_restart").(bool) && restart && !onCreate {
-			return call, fmt.Errorf("some parameter change must set force_restart true")
-		}
-		call = func(d *schema.ResourceData, meta interface{}) (err error) {
-			err = checkKrdsInstanceState(d, meta, "", d.Timeout(schema.TimeoutUpdate))
-			if err != nil {
-				return err
-			}
-			paramsReq["DBParameterGroupId"] = d.Get("db_parameter_group_id").(string)
-			conn := meta.(*KsyunClient).krdsconn
-			action := "ModifyDBParameterGroup"
-			logger.Debug(logger.RespFormat, action, paramsReq)
-			_, err = conn.ModifyDBParameterGroup(&paramsReq)
-			if err != nil {
-				return err
-			}
-			err = checkKrdsInstanceState(d, meta, "", d.Timeout(schema.TimeoutUpdate))
-			if err != nil {
-				return err
-			}
-			if d.Get("force_restart").(bool) || (onCreate && restart) {
-				restartParam := make(map[string]interface{})
-				restartParam["DBInstanceIdentifier"] = d.Id()
-				action = "RebootDBInstance"
-				logger.Debug(logger.RespFormat, action, restartParam)
-				_, err = conn.RebootDBInstance(&restartParam)
-				if err != nil {
-					return err
-				}
-			}
-			return err
-		}
-	}
-	return call, err
-}
-
-func modifyKrdsParameterGroupWithDPGId(d *schema.ResourceData, meta interface{}, onCreate bool) (call ksyunApiCallFunc, err error) {
-	if !d.HasChange("db_parameter_template_id") {
-		return call, err
-	}
-	dbParameterTempId, _ := If2String(d.Get("db_parameter_template_id"))
-	if dbParameterTempId == "" {
-		// create a db parameter group that their parameters are default
-		return call, err
+func modifyKrdsPartialParameterCall(d *schema.ResourceData, meta interface{}, onCreate bool) (call ksyunApiCallFunc, err error) {
+	if !d.HasChange("parameters") {
+		return nil, err
 	}
 
 	call = func(d *schema.ResourceData, meta interface{}) (err error) {
-		_, restart, err := checkAndProcessKrdsParametersWithDPGId(d, meta)
+		paramsReq, restart, err := checkAndProcessKrdsParameters(d, meta)
 		// logger.Debug("test", "test", paramsReq, restart, err)
 		if err != nil {
 			return err
 		}
-		// check force_restart
+		if len(paramsReq) == 0 {
+			return nil
+		}
 		if !d.Get("force_restart").(bool) && restart && !onCreate {
 			return fmt.Errorf("some parameter change must set force_restart true")
 		}
-		conn := meta.(*KsyunClient).krdsconn
-
 		err = checkKrdsInstanceState(d, meta, "", d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return err
 		}
-
-		modifyInstanceParam := make(map[string]interface{})
-		modifyInstanceParam["DBParameterGroupId"] = d.Get("db_parameter_template_id")
-		modifyInstanceParam["DBInstanceIdentifier"] = d.Id()
-		action := "ModifyDBInstance"
-		logger.Debug(logger.ReqFormat, action, modifyInstanceParam)
-		_, err = conn.ModifyDBInstance(&modifyInstanceParam)
+		paramsReq["DBParameterGroupId"] = d.Get("db_parameter_group_id").(string)
+		conn := meta.(*KsyunClient).krdsconn
+		action := "ModifyDBParameterGroup"
+		logger.Debug(logger.RespFormat, action, paramsReq)
+		_, err = conn.ModifyDBParameterGroup(&paramsReq)
 		if err != nil {
 			return err
 		}
-
+		err = checkKrdsInstanceState(d, meta, "", d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return err
+		}
 		if d.Get("force_restart").(bool) || (onCreate && restart) {
 			restartParam := make(map[string]interface{})
 			restartParam["DBInstanceIdentifier"] = d.Id()
-			action := "RebootDBInstance"
+			action = "RebootDBInstance"
 			logger.Debug(logger.RespFormat, action, restartParam)
 			_, err = conn.RebootDBInstance(&restartParam)
 			if err != nil {
@@ -759,16 +740,101 @@ func modifyKrdsParameterGroupWithDPGId(d *schema.ResourceData, meta interface{},
 	return call, err
 }
 
+func modifyKrdsParameterGroupCall(d *schema.ResourceData, meta interface{}, onCreate bool) (call ksyunApiCallFunc, err error) {
+	if !d.HasChange("db_parameter_template_id") {
+		return call, err
+	}
+	dbParameterTempId, _ := If2String(d.Get("db_parameter_template_id"))
+	if dbParameterTempId == "" {
+		// create a db parameter group that their parameters are default
+		return call, err
+	}
+
+	call = func(d *schema.ResourceData, meta interface{}) error {
+		additionalModify := KrdsParameterGroupModify{
+			IsCreate: onCreate,
+		}
+		return modifyKrdsParameterGroup(d, meta, additionalModify)
+	}
+	return call, err
+}
+
+func modifyKrdsParameterGroup(d *schema.ResourceData, meta interface{}, additionalModify KrdsParameterGroupModify) (err error) {
+	var (
+		dpgId string
+
+		restart  = false
+		onCreate = additionalModify.IsCreate
+	)
+
+	if additionalModify.DPGId == "" {
+		_, restart, err = checkAndProcessKrdsParameterGroup(d, meta)
+		// logger.Debug("test", "test", paramsReq, restart, err)
+		if err != nil {
+			return err
+		}
+		dpgId = d.Get("db_parameter_template_id").(string)
+	} else {
+
+		dpgId = additionalModify.DPGId
+		_, restart, err = parametersGroupOldAndNewCompare(d, meta, "", dpgId)
+		if err != nil {
+			return err
+		}
+	}
+
+	// check force_restart
+	if !d.Get("force_restart").(bool) && restart && !onCreate {
+		return fmt.Errorf("some parameter change must set force_restart true")
+	}
+	conn := meta.(*KsyunClient).krdsconn
+
+	err = checkKrdsInstanceState(d, meta, "", d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return err
+	}
+
+	modifyInstanceParam := make(map[string]interface{})
+	modifyInstanceParam["DBParameterGroupId"] = dpgId
+	modifyInstanceParam["DBInstanceIdentifier"] = d.Id()
+	action := "ModifyDBInstance"
+	logger.Debug(logger.ReqFormat, action, modifyInstanceParam)
+	_, err = conn.ModifyDBInstance(&modifyInstanceParam)
+	if err != nil {
+		return err
+	}
+
+	if d.Get("force_restart").(bool) || (onCreate && restart) {
+		restartParam := make(map[string]interface{})
+		restartParam["DBInstanceIdentifier"] = d.Id()
+		action := "RebootDBInstance"
+		logger.Debug(logger.RespFormat, action, restartParam)
+		_, err = conn.RebootDBInstance(&restartParam)
+		if err != nil {
+			return err
+		}
+	}
+	return err
+}
+
 func createKrdsInstance(d *schema.ResourceData, meta interface{}, isRR bool) (err error) {
 	var (
 		api []ksyunApiCallFunc
 	)
 	if !isRR {
+		// create instance
 		instanceCreateCall, err := createKrdsDbInstance(d, meta)
 		if err != nil {
 			return err
 		}
 		api = append(api, instanceCreateCall)
+
+		// apply temporary parameters
+		changePartialParametersCall, err := modifyKrdsPartialParameterCall(d, meta, true)
+		if err != nil {
+			return err
+		}
+		api = append(api, changePartialParametersCall)
 	} else {
 		// create rr instance
 		instanceCreateCall, err := createKrdsRrInstance(d, meta)
@@ -777,12 +843,19 @@ func createKrdsInstance(d *schema.ResourceData, meta interface{}, isRR bool) (er
 		}
 		api = append(api, instanceCreateCall)
 
-		// apply db parameter group on this rr instance
-		applyDPGCall, err := modifyKrdsParameterGroupWithDPGId(d, meta, true)
+		// apply db parameter template group on this rr instance
+		applyDPGCall, err := modifyKrdsParameterGroupCall(d, meta, true)
 		if err != nil {
 			return err
 		}
 		api = append(api, applyDPGCall)
+
+		// to deal with temporary DPG
+		tempParameterGroupCall, err := createKrdsRrParameterGroup(d, meta)
+		if err != nil {
+			return err
+		}
+		api = append(api, tempParameterGroupCall)
 
 		// ModifySG
 		modifyDBSg, err := modifyKrdsInstanceSg(d, meta, false)
@@ -863,7 +936,9 @@ func createKrdsDbInstance(d *schema.ResourceData, meta interface{}) (call ksyunA
 			bodyData := (*resp)["Data"].(map[string]interface{})
 			krdsInstance := bodyData["DBInstance"].(map[string]interface{})
 			instanceId := krdsInstance["DBInstanceIdentifier"].(string)
+			krdsParameterGroupId := krdsInstance["DBParameterGroupId"].(string)
 			d.SetId(instanceId)
+			_ = d.Set("db_parameter_group_id", krdsParameterGroupId)
 		}
 		err = checkKrdsInstanceState(d, meta, "", d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
@@ -1022,11 +1097,17 @@ func modifyKrdsInstance(d *schema.ResourceData, meta interface{}, isRR bool) (er
 			modifyParameterGroupCall ksyunApiCallFunc
 		)
 		// If this modification is not upgraded instance engine version, check the parameters needs modification.
-		modifyParameterGroupCall, err = modifyKrdsParameterGroupWithDPGId(d, meta, false)
+		modifyParameterGroupCall, err = modifyKrdsParameterGroupCall(d, meta, false)
 		if err != nil {
 			return err
 		}
 		call = append(call, modifyParameterGroupCall)
+
+		changePartialParametersCall, err := modifyKrdsPartialParameterCall(d, meta, false)
+		if err != nil {
+			return err
+		}
+		call = append(call, changePartialParametersCall)
 	}
 
 	err = ksyunApiCall(call, d, meta)
@@ -1186,7 +1267,7 @@ func modifyKrdsInstanceEngineVersion(d *schema.ResourceData, meta interface{}) (
 	}
 	if len(upgradeDBInstanceEngineVersionParam) > 0 {
 		// check krds parameter whether validation before update db instance engine version.
-		_, err = modifyKrdsParameterGroup(d, meta, false)
+		_, _, err = checkAndProcessKrdsParameters(d, meta)
 		if err != nil {
 			return call, err
 		}

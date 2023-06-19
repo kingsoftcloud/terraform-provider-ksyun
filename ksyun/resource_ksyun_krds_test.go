@@ -25,15 +25,17 @@ func TestAccKsyunKrds_basic(t *testing.T) {
 			{
 				Config: testAccKrdsConfig,
 
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testCheckKrdsExists("ksyun_krds.rds_terraform_3", &val),
 				),
+				ExpectNonEmptyPlan: true,
 			},
 			{
 				Config: testAccKrdsUpdateConfig,
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testCheckKrdsExists("ksyun_krds.rds_terraform_3", &val),
 				),
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
@@ -85,6 +87,8 @@ func testAccCheckKrdsDestroy(s *terraform.State) error {
 		if err != nil {
 			if err.(awserr.Error).Code() == "NOT_FOUND" {
 				return nil
+			} else if notFoundError(err) {
+				return nil
 			}
 			return err
 		}
@@ -117,7 +121,7 @@ resource "ksyun_subnet" "foo" {
 }
 
 resource "ksyun_krds_parameter_group" "dpg" {
-  name  = "tf_krdpg_on_hcl_with_1"
+  name  = "tf_krdpg_on_hcl_with_partial_parameters"
   description    = "acceptance-test"
   engine = "mysql"
   engine_version = "5.5"
@@ -129,7 +133,7 @@ resource "ksyun_krds_parameter_group" "dpg" {
 
 resource "ksyun_krds" "rds_terraform_3" {
   db_instance_class= "db.ram.1|db.disk.15"
-  db_instance_name = "terraform_1"
+  db_instance_name = "terraform_3"
   db_instance_type = "HRDS"
   engine = "mysql"
   engine_version = "5.5"
@@ -140,7 +144,12 @@ resource "ksyun_krds" "rds_terraform_3" {
   bill_type = "DAY"
   preferred_backup_time = "01:00-02:00"
   instance_has_eip = true
-  db_parameter_template_id = "${ksyun_krds_parameter_group.dpg_with_apply_1.id}"
+  db_parameter_template_id = "${ksyun_krds_parameter_group.dpg.id}"
+  parameters {
+	name = "innodb_open_files"
+	value = 900
+  }
+  force_restart = true
 }
 
 resource "ksyun_tag" "test_tag" {
@@ -218,8 +227,8 @@ resource "ksyun_subnet" "foo" {
   availability_zone = "${var.available_zone}"
 }
 
-resource "ksyun_krds_parameter_group" "dpg_with_apply_1" {
-  name  = "tf_krdpg_on_hcl_with_1"
+resource "ksyun_krds_parameter_group" "dpg" {
+  name  = "tf_krdpg_on_hcl_with_partial_parameters"
   description    = "acceptance-test"
   engine = "mysql"
   engine_version = "5.5"
@@ -244,7 +253,7 @@ resource "ksyun_krds_parameter_group" "dpg_with_apply_2" {
 
 resource "ksyun_krds" "rds_terraform_3" {
   db_instance_class= "db.ram.1|db.disk.15"
-  db_instance_name = "terraform_1"
+  db_instance_name = "terraform_3"
   db_instance_type = "HRDS"
   engine = "mysql"
   engine_version = "5.5"
@@ -256,7 +265,15 @@ resource "ksyun_krds" "rds_terraform_3" {
   preferred_backup_time = "01:00-02:00"
   instance_has_eip = true
   force_restart = true
-  db_parameter_template_id = "${ksyun_krds_parameter_group.dpg_with_apply_2.id}"
+  db_parameter_template_id = "${ksyun_krds_parameter_group.dpg.id}"
+  parameters  {
+  	name = "back_log"
+	value = 23344
+  }
+  parameters  {
+  	name = "innodb_open_files"
+	value = 700
+  }
 }
 
 resource "ksyun_tag" "test_tag" {
