@@ -28,6 +28,14 @@ func dataSourceKsyunKnads() *schema.Resource {
 				},
 			},
 			"project_id": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Set: schema.HashString,
+			},
+			"output_file": {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
