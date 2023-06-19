@@ -5,6 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
+	"strconv"
 	"time"
 )
 
@@ -37,7 +38,16 @@ func (s *KnadService) ReadAndSetKnads(d *schema.ResourceData, r *schema.Resource
 		collection:  data,
 		targetField: "knads",
 		idFiled:     "KnadId",
-		extra:       map[string]SdkResponseMapping{},
+		extra: map[string]SdkResponseMapping{
+			"ProjectId": {
+				Field: "project_id",
+				FieldRespFunc: func(element interface{}) interface{} {
+
+					projectIdStr := strconv.FormatFloat(element.(float64), 0, 0, 64)
+					return projectIdStr
+				},
+			},
+		},
 	})
 }
 
