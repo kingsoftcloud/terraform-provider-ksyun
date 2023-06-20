@@ -2,11 +2,13 @@ package ksyun
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
-	"strconv"
-	"time"
 )
 
 type KecService struct {
@@ -26,9 +28,9 @@ func (s *KecService) readAndSetKecInstance(d *schema.ResourceData, r *schema.Res
 				return resource.NonRetryableError(fmt.Errorf("error on  reading instane %q, %s", d.Id(), callErr))
 			}
 		} else {
-			//InstanceConfigure
+			// InstanceConfigure
 			SdkResponseAutoResourceData(d, r, data["InstanceConfigure"], nil)
-			//InstanceState
+			// InstanceState
 			stateExtra := map[string]SdkResponseMapping{
 				"Name": {
 					Field: "instance_status",
@@ -37,7 +39,7 @@ func (s *KecService) readAndSetKecInstance(d *schema.ResourceData, r *schema.Res
 			SdkResponseAutoResourceData(d, r, data["InstanceState"], stateExtra)
 			extra := map[string]SdkResponseMapping{}
 			if data["NetworkInterfaceSet"] != nil {
-				//Primary network_interface
+				// Primary network_interface
 				for _, vif := range data["NetworkInterfaceSet"].([]interface{}) {
 					if vif.(map[string]interface{})["NetworkInterfaceType"] == "primary" {
 						extra := map[string]SdkResponseMapping{
@@ -53,7 +55,7 @@ func (s *KecService) readAndSetKecInstance(d *schema.ResourceData, r *schema.Res
 							},
 						}
 						SdkResponseAutoResourceData(d, r, vif, extra)
-						//read dns info
+						// read dns info
 						var networkInterface map[string]interface{}
 						networkInterface, err = s.readKecNetworkInterface(d.Get("network_interface_id").(string))
 						if err != nil {
@@ -78,7 +80,7 @@ func (s *KecService) readAndSetKecInstance(d *schema.ResourceData, r *schema.Res
 					}
 				}
 
-				//extension_network_interface
+				// extension_network_interface
 				extra["NetworkInterfaceSet"] = SdkResponseMapping{
 					Field: "extension_network_interface",
 					FieldRespFunc: func(i interface{}) interface{} {
@@ -96,7 +98,7 @@ func (s *KecService) readAndSetKecInstance(d *schema.ResourceData, r *schema.Res
 				Field: "key_id",
 			}
 
-			//tag
+			// tag
 			if len(disableSetTag) == 0 || !disableSetTag[0] {
 				err = mergeTagsData(d, &data, s.client, "instance")
 				if err != nil {
@@ -109,7 +111,7 @@ func (s *KecService) readAndSetKecInstance(d *schema.ResourceData, r *schema.Res
 			} else {
 				err = d.Set("force_reinstall_system", false)
 			}
-			//control
+			// control
 			_ = d.Set("has_modify_system_disk", false)
 			_ = d.Set("has_modify_password", false)
 			_ = d.Set("has_modify_keys", false)
@@ -312,55 +314,55 @@ func (s *KecService) modifyKecInstance(d *schema.ResourceData, resource *schema.
 	var (
 		callbacks []ApiCall
 	)
-	//project
+	// project
 	projectCall, err := s.modifyKecInstanceProject(d, resource)
 	if err != nil {
 		return err
 	}
 	callbacks = append(callbacks, projectCall)
-	//tag
+	// tag
 	tagService := TagService{s.client}
 	tagCall, err := tagService.ReplaceResourcesTagsWithResourceCall(d, resource, "instance", true, false)
 	if err != nil {
 		return err
 	}
 	callbacks = append(callbacks, tagCall)
-	//name
+	// name
 	nameCall, err := s.modifyKecInstanceName(d, resource)
 	if err != nil {
 		return err
 	}
 	callbacks = append(callbacks, nameCall)
-	//role
+	// role
 	roleCall, err := s.modifyKecInstanceIamRole(d)
 	if err != nil {
 		return err
 	}
 	callbacks = append(callbacks, roleCall)
-	//network update
+	// network update
 	networkCall, err := s.modifyKecInstanceNetwork(d, resource)
 	if err != nil {
 		return err
 	}
 	callbacks = append(callbacks, networkCall)
-	//force stop or start
+	// force stop or start
 	stateCall, err := s.stopOrStartKecInstance(d)
 	if err != nil {
 		return err
 	}
 	callbacks = append(callbacks, stateCall)
-	//need to stop
-	//image
+	// need to stop
+	// image
 	imageCall, err := s.modifyKecInstanceImage(d, resource)
 	if err != nil {
 		return err
 	}
-	//password
+	// password
 	passCall, err := s.modifyKecInstancePassword(d, resource)
 	if err != nil {
 		return err
 	}
-	//key
+	// key
 	addCall, removeCall, err := s.modifyKecInstanceKeys(d)
 	if err != nil {
 		return err
@@ -383,7 +385,7 @@ func (s *KecService) modifyKecInstance(d *schema.ResourceData, resource *schema.
 		}
 		callbacks = append(callbacks, startCall)
 	}
-	//need to restart
+	// need to restart
 	specCall, err := s.modifyKecInstanceType(d, resource)
 	if err != nil {
 		return err
@@ -395,7 +397,7 @@ func (s *KecService) modifyKecInstance(d *schema.ResourceData, resource *schema.
 	}
 	callbacks = append(callbacks, hostNameCall)
 
-	//if hostNameCall.executeCall != nil {
+	// if hostNameCall.executeCall != nil {
 	//	stopCall, err := s.stopKecInstance(d)
 	//	if err != nil {
 	//		return err
@@ -406,7 +408,7 @@ func (s *KecService) modifyKecInstance(d *schema.ResourceData, resource *schema.
 	//		return err
 	//	}
 	//	callbacks = append(callbacks, startCall)
-	//}
+	// }
 
 	// 2022-03-17 [更配重启问题记录] by ydx
 	// 先stop再start，有时候stop执行后机器没有关闭（默认不使用强制重启，避免客户在不知情的情况下影响服务）；
@@ -463,7 +465,7 @@ func transKecInstanceParams(d *schema.ResourceData, resource *schema.Resource) (
 }
 
 func (s *KecService) createKecInstanceCommon(d *schema.ResourceData, resource *schema.Resource) (callback ApiCall, err error) {
-	//transform := map[string]SdkReqTransform{
+	// transform := map[string]SdkReqTransform{
 	//	"key_id": {
 	//		Type: TransformWithN,
 	//	},
@@ -484,10 +486,10 @@ func (s *KecService) createKecInstanceCommon(d *schema.ResourceData, resource *s
 	//	"force_delete":           {Ignore: true},
 	//	"force_reinstall_system": {Ignore: true},
 	//	"tags":                   {Ignore: true},
-	//}
-	//createReq, err := SdkRequestAutoMapping(d, resource, false, transform, nil, SdkReqParameter{
+	// }
+	// createReq, err := SdkRequestAutoMapping(d, resource, false, transform, nil, SdkReqParameter{
 	//	onlyTransform: false,
-	//})
+	// })
 	createReq, err := transKecInstanceParams(d, resource)
 	if err != nil {
 		return callback, err
@@ -565,10 +567,19 @@ func (s *KecService) modifyKecInstanceType(d *schema.ResourceData, resource *sch
 		//	if v, ok := distTypeInterface.(string); ok && v != "Local_SSD" {
 		//		updateReq["SystemDisk.ResizeType"] = "online"
 		//	}
-		//} else {
+		// } else {
 		//	updateReq["StopInstance"] = true
 		//	updateReq["AutoRestart"] = true
-		//}
+		// }
+		// check instance type change content
+		// it's need to stop this instance, if the change content is demotion config
+		// it's support change on online, if the change content will modify instance type or upgrade config
+		oldInstanceTypeIf, newInstanceTypeIf := d.GetChange("instance_type")
+		oldInstanceType, _ := If2String(oldInstanceTypeIf)
+		newInstanceType, _ := If2String(newInstanceTypeIf)
+		if s.isInstanceDemotionConfig(oldInstanceType, newInstanceType) {
+			updateReq["IsPreStopInstance"] = true
+		}
 
 		// 兼容一键三连功能
 		updateReq["StopInstance"] = true
@@ -577,6 +588,21 @@ func (s *KecService) modifyKecInstanceType(d *schema.ResourceData, resource *sch
 		callback = ApiCall{
 			param:  &updateReq,
 			action: "ModifyInstanceType",
+			beforeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (bool, error) {
+				// check upgrade or demotion instance type
+				if isPreStop, ok := (*call.param)["IsPreStopInstance"]; !ok || !isPreStop.(bool) {
+					return true, nil
+				}
+				delete(*call.param, "IsPreStopInstance")
+				callFunc, err := s.stopKecInstance(d)
+				if err != nil {
+					return false, err
+				}
+				if err := ksyunApiCallNew([]ApiCall{callFunc}, d, client, false); err != nil {
+					return false, err
+				}
+				return true, nil
+			},
 			executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
 				conn := client.kecconn
 				logger.Debug(logger.RespFormat, call.action, *(call.param))
@@ -603,7 +629,7 @@ func (s *KecService) modifyKecInstanceIamRole(d *schema.ResourceData) (callback 
 	if d.HasChange("iam_role_name") {
 		_, nr := d.GetChange("iam_role_name")
 		if nr == "" {
-			//unbind
+			// unbind
 			updateReq := map[string]interface{}{
 				"InstanceId.1": d.Id(),
 			}
@@ -622,7 +648,7 @@ func (s *KecService) modifyKecInstanceIamRole(d *schema.ResourceData) (callback 
 				},
 			}
 		} else {
-			//change
+			// change
 			updateReq := map[string]interface{}{
 				"InstanceId.1": d.Id(),
 				"IamRoleName":  nr,
@@ -996,16 +1022,25 @@ func (s *KecService) rebootOrStartKecInstance(d *schema.ResourceData) (callback 
 			if err != nil {
 				return nil, err
 			}
-			if status == "active" {
+			conn := client.kecconn
+			statusStr, _ := If2String(status)
+			switch statusStr {
+			case "migrating_success":
+				logger.Debug(logger.RespFormat, call.action, *(call.param))
+				resp, err = conn.RebootInstances(call.param)
+				return resp, err
+			case "resize_success_local", "migrating_success_off_line", "cross_finish":
+				logger.Debug(logger.RespFormat, call.action, *(call.param), statusStr)
+				resp, err = conn.StartInstances(call.param)
+				return resp, err
+			case "active":
 				return nil, nil
+			default:
+				return nil, fmt.Errorf("the current status of the resource does not support this operation %s", statusStr)
 			}
-			//"active",
+			// "active",
 			//	"resize_success_local", "migrating_success", "migrating_success_off_line", "cross_finish",
 
-			conn := client.kecconn
-			logger.Debug(logger.RespFormat, call.action, *(call.param))
-			resp, err = conn.RebootInstances(call.param)
-			return resp, err
 		},
 		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
 			logger.Debug(logger.RespFormat, call.action, *(call.param), resp)
@@ -1419,4 +1454,35 @@ func (s *KecService) modifyNetworkInterfaceAttachment(d *schema.ResourceData, re
 		return err
 	}
 	return ksyunApiCallNew([]ApiCall{call}, d, s.client, true)
+}
+
+func (s *KecService) isInstanceDemotionConfig(oldType, newType string) bool {
+	oldTypeSlice := strings.Split(oldType, ".")
+	newTypeSlice := strings.Split(newType, ".")
+	if len(oldTypeSlice) < 2 || len(newTypeSlice) < 2 {
+		return false
+	}
+
+	// the instance type will be changed
+	if oldTypeSlice[0] != newTypeSlice[0] {
+		return false
+	}
+
+	// the equivalent instance type
+	oldConfig := oldTypeSlice[1]
+	newConfig := newTypeSlice[1]
+	oldCpuNums := oldConfig[:len(oldConfig)-1]
+	newCpuNums := newConfig[:len(newConfig)-1]
+
+	oNum, _ := strconv.Atoi(oldCpuNums)
+	nNum, _ := strconv.Atoi(newCpuNums)
+	// the cpu nums will be changed
+	if oNum <= nNum {
+		oldMemSize := oldConfig[len(oldConfig)-1]
+		newMemSize := newConfig[len(newConfig)-1]
+		if oldMemSize <= newMemSize {
+			return false
+		}
+	}
+	return true
 }

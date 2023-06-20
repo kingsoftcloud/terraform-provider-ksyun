@@ -52,6 +52,40 @@ resource "ksyun_krds_rr" "my_rds_rr" {
 }
 ```
 
+## Create a read-replica krds instance with a parameter template and special parameters
+
+```hcl
+resource "ksyun_krds_parameter_group" "dpg" {
+  name           = "tf_krdpg_on_hcl"
+  description    = "acceptance-test"
+  engine         = "mysql"
+  engine_version = "5.5"
+  parameters = {
+    back_log        = 34455
+    connect_timeout = 30
+  }
+}
+
+resource "ksyun_krds_rr" "my_rds_rr" {
+  db_instance_identifier   = "******"
+  db_instance_class        = "db.ram.2|db.disk.50"
+  db_instance_name         = "houbin_terraform_888_rr_1"
+  bill_type                = "DAY"
+  security_group_id        = "******"
+  db_parameter_template_id = "${ksyun_krds_parameter_group.dpg}"
+  force_restart            = true
+
+  parameters {
+    name  = "innodb_open_files"
+    value = "900"
+  }
+  parameters {
+    name  = "max_user_connections"
+    value = "888"
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -65,10 +99,16 @@ The following arguments are supported:
 * `duration` - (Optional) purchase duration in months.
 * `force_restart` - (Optional) Set it to true to make some parameter efficient when modifying them. Default to false.
 * `instance_has_eip` - (Optional) attach eip for instance.
+* `parameters` - (Optional) database parameters.
 * `port` - (Optional) port number.
 * `project_id` - (Optional) project ID.
 * `security_group_id` - (Optional) proprietary security group id for krds.
 * `vip` - (Optional) virtual IP.
+
+The `parameters` object supports the following:
+
+* `name` - (Required) name of the parameter.
+* `value` - (Required) value of the parameter.
 
 ## Attributes Reference
 
@@ -82,9 +122,6 @@ In addition to all arguments above, the following attributes are exported:
 * `engine_version` - db engine version only support 5.5|5.6|5.7|8.0.
 * `engine` - engine is db type, only support mysql|percona.
 * `instance_create_time` - instance create time.
-* `parameters` - database parameters.
-  * `name` - name of the parameter.
-  * `value` - value of the parameter.
 * `region` - region code.
 
 

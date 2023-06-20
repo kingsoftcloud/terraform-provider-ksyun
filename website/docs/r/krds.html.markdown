@@ -121,7 +121,7 @@ resource "ksyun_krds_parameter_group" "dpg" {
   name           = "tf_krdpg_on_hcl"
   description    = "acceptance-test"
   engine         = "mysql"
-  engine_version = "5.5"
+  engine_version = "5.7"
   parameters = {
     back_log        = 65535
     connect_timeout = 30
@@ -170,11 +170,17 @@ The following arguments are supported:
 * `duration` - (Optional) purchase duration in months.
 * `force_restart` - (Optional) Set it to true to make some parameter efficient when modifying them. Default to false.
 * `instance_has_eip` - (Optional) attach eip for instance.
+* `parameters` - (Optional) database parameters.
 * `port` - (Optional) port number.
 * `preferred_backup_time` - (Optional) backup time.
 * `project_id` - (Optional) project ID.
 * `security_group_id` - (Optional) proprietary security group id for krds.
 * `vip` - (Optional) virtual IP.
+
+The `parameters` object supports the following:
+
+* `name` - (Required) name of the parameter.
+* `value` - (Required) value of the parameter.
 
 ## Attributes Reference
 
@@ -186,9 +192,6 @@ In addition to all arguments above, the following attributes are exported:
 * `eip_port` - EIP port.
 * `eip` - EIP address.
 * `instance_create_time` - instance create time.
-* `parameters` - database parameters.
-  * `name` - name of the parameter.
-  * `value` - value of the parameter.
 * `region` - region code.
 
 
