@@ -1114,6 +1114,8 @@ func (s *KecService) stopKecInstance(d *schema.ResourceData) (callback ApiCall, 
 			if status.(string) == "stopped" {
 				doExecute = false
 			} else {
+				// if instance state is another state, such as migrating_success, resize_success_local and so on.
+				// instance state must be active so that it can stop this instance.
 				doExecute = true
 			}
 			return doExecute, err
@@ -1477,7 +1479,9 @@ func (s *KecService) isInstanceDemotionConfig(oldType, newType string) bool {
 	oNum, _ := strconv.Atoi(oldCpuNums)
 	nNum, _ := strconv.Atoi(newCpuNums)
 	// the cpu nums will be changed
-	if oNum <= nNum {
+	if oNum < nNum {
+		return false
+	} else if oNum == nNum {
 		oldMemSize := oldConfig[len(oldConfig)-1]
 		newMemSize := newConfig[len(newConfig)-1]
 		if oldMemSize <= newMemSize {

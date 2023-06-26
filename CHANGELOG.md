@@ -1,3 +1,13 @@
+## 1.4.1 (Jun 20, 2023)
+
+IMPROVEMENTS:
+
+- 新增mysql参数组独立管理并支持实例使用临时参数(ksyun_krds_parameter_group)
+- 新增kec容灾组管理(ksyun_data_guard_group)
+- 新增kec自动快照策略管理(ksyun_auto_snapshot_policy)
+- 修复kec实例升降配时的重启逻辑(ksyun_instance: instance_type)
+  - NOTE: 实例降级操作会触发实例关机
+
 ## 1.3.78 (Jun 12, 2023)
 
 IMPROVEMENTS:
