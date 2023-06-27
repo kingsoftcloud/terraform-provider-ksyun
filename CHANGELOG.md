@@ -1,3 +1,19 @@
+## 1.4.1 (Jun 20, 2023)
+
+IMPROVEMENTS:
+
+- 新增mysql参数组独立管理并暂不支持实例应用参数组(ksyun_krds_parameter_group)
+- 新增kec容灾组管理(ksyun_data_guard_group)
+- 新增kec自动快照策略管理(ksyun_auto_snapshot_policy)
+- 修复kec实例升降配时的重启逻辑(ksyun_instance: instance_type)
+  - NOTE: 实例降级操作会触发实例关机
+
+## 1.3.79 (Jun 15, 2023)
+
+IMPROVEMENTS:
+
+- EBS数据盘增加ESSD_PL0类型
+
 ## 1.3.78 (Jun 12, 2023)
 
 IMPROVEMENTS:
@@ -135,6 +151,7 @@ IMPROVEMENTS:
 - instance的security_group_id增加MinItems限制
 - volume增加snapshot_id字段
 - 优化instance和volume的snapshot_id字段的diff判断（由于api不返回该字段，diff默认忽略）
+- 新增EBS类型：ESSD_PL1、ESSD_PL2、ESSD_PL3
 
 BUG FIXES:
 

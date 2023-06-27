@@ -45,9 +45,10 @@ package ksyun
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"time"
 )
 
 func instanceConfig() map[string]*schema.Schema {
@@ -72,7 +73,7 @@ func instanceConfig() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Computed:    true,
-			Description: "The type of instance to start.",
+			Description: "The type of instance to start. <br> - NOTE: it's may trigger this instance to power off, if instance type will be demotion.",
 		},
 		"system_disk": {
 			Type:        schema.TypeList,
@@ -129,6 +130,7 @@ func instanceConfig() map[string]*schema.Schema {
 							"SSD3.0",
 							"EHDD",
 							"Local_SSD",
+							"ESSD_PL0",
 							"ESSD_PL1",
 							"ESSD_PL2",
 							"ESSD_PL3",
@@ -254,10 +256,10 @@ func instanceConfig() map[string]*schema.Schema {
 		},
 		// eip和主机的绑定关系，放在绑定的resource里描述，不在vm的结构里提供这个字段
 		// 否则后绑定，资源创建完成时这个字段为空
-		//"public_ip": {
+		// "public_ip": {
 		//	Type:     schema.TypeString,
 		//	Computed: true,
-		//},
+		// },
 		"instance_name": {
 			Type:        schema.TypeString,
 			Optional:    true,
@@ -324,11 +326,11 @@ func instanceConfig() map[string]*schema.Schema {
 			Description: "DNS2 of the primary network interface.",
 		},
 		"tags": tagsSchema(),
-		//"has_init_info": {
+		// "has_init_info": {
 		//	Type:     schema.TypeBool,
 		//	Computed: true,
-		//},
-		//some control
+		// },
+		// some control
 		"has_modify_system_disk": {
 			Type:        schema.TypeBool,
 			Computed:    true,
@@ -371,7 +373,7 @@ func instanceConfig() map[string]*schema.Schema {
 			Type:     schema.TypeBool,
 			Optional: true,
 			Default:  false,
-			//ForceNew:         true,
+			// ForceNew:         true,
 			DiffSuppressFunc: kecImportDiffSuppress,
 			Description:      "Whether to create EBS volumes from snapshots in the custom image, default is false.",
 		},
