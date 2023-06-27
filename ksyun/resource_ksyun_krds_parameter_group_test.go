@@ -1,7 +1,3 @@
-// Copyright 2022 NotOne Lv <aiphalv0010@gmail.com>. All rights reserved.
-// Use of this source code is governed by a MIT style
-// license that can be found in the LICENSE file.
-
 package ksyun
 
 import (
@@ -28,7 +24,7 @@ func TestResourceKsyunKrdsParameterGroup_basic(t *testing.T) {
 					testAccCheckIDExists("ksyun_krds_parameter_group.dpg_with_parameters"),
 				),
 			},
-			// // to test terraform when its configuration changes
+			// to test terraform when its configuration changes
 			{
 				Config: testAccKrdsParameterGroupUpdateConfig,
 				Check: resource.ComposeTestCheckFunc(
@@ -49,18 +45,22 @@ resource "ksyun_krds_parameter_group" "dpg_with_parameters" {
   description    = "acceptance-test"
   engine = "mysql"
   engine_version = "5.7"
-  parameters = {
-    auto_increment_increment = 10240
-    auto_increment_offset = 5
-    back_log = 65535
-	connect_timeout = 30
-	log_slow_admin_statements = "OFF"
-	log_bin_trust_function_creators = "OFF"
-	log_queries_not_using_indexes = "OFF"  
-	innodb_stats_on_metadata = "OFF"  
-	table_open_cache_instances = 1  
-	group_concat_max_len = 102
-  }
+parameters {
+	    	name = "auto_increment_increment"
+	    	value = "8"
+		}
+		parameters {
+			name = "binlog_format"
+			value = "ROW"
+		}
+		parameters {
+			name = "delayed_insert_limit"
+			value = "108"
+		}
+		parameters {
+			name = "auto_increment_offset"
+			value= "2"
+		}
 }
 `
 
@@ -75,14 +75,26 @@ resource "ksyun_krds_parameter_group" "dpg_with_parameters" {
   description    = "acceptance-test"
   engine = "mysql"
   engine_version = "5.7"
-  parameters = {
-	    auto_increment_increment = 10240
-		auto_increment_offset = 5
-		back_log = 65535
-		connect_timeout = 60
-		table_open_cache_instances = 1  
-		group_concat_max_len = 102
-	}
+parameters {
+	    	name = "auto_increment_increment"
+	    	value = "8"
+		}
+		parameters {
+			name = "binlog_format"
+			value = "ROW"
+		}
+		parameters {
+			name = "delayed_insert_limit"
+			value = "108"
+		}
+		parameters {
+			name = "auto_increment_offset"
+			value= "2"
+		}
+		parameters {
+			name = "back_log"
+			value= "65535"
+		}
 }
 `
 const testAccKrdsParameterGroupApplyConfig = `

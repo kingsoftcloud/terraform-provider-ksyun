@@ -27,7 +27,7 @@ resource "ksyun_data_guard_group" "foo" {
 The following arguments are supported:
 
 * `data_guard_name` - (Required) The name of data guard group.
-* `data_guard_type` - (Optional) The data guard group display type, and its types only include the host and domain.
+* `data_guard_type` - (Optional) The data guard group display type, Value options: [ host, domain ]. <br> - Host: represent machine level <br> - Domain: represent the domain of disaster tolerance <br> Note: some account doesn't support domain data guard.
 
 ## Attributes Reference
 

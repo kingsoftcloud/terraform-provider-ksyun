@@ -2,6 +2,7 @@ package ksyun
 
 import (
 	"fmt"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -213,7 +214,7 @@ func readKrdsParameterGroup(d *schema.ResourceData, meta interface{}, parameterG
 		resp []interface{}
 	)
 	if parameterGroupId == "" {
-		parameterGroupId = d.Id()
+		parameterGroupId = d.Get("db_parameter_group_id").(string)
 	}
 	req := map[string]interface{}{
 		"DBParameterGroupId": parameterGroupId,
@@ -226,7 +227,16 @@ func readKrdsParameterGroup(d *schema.ResourceData, meta interface{}, parameterG
 	if err != nil {
 		return data, err
 	}
-	sdkValue, _ := getSdkValue("0.Parameters", resp)
+	engineVersionIf, _ := getSdkValue("0.EngineVersion", resp)
+	engineVersion, _ := If2String(engineVersionIf)
+	// if ok is false that means this resource is not exist.
+	if _engineVersion, ok := d.GetOk("engine_version"); ok {
+		if !reflect.DeepEqual(engineVersion, _engineVersion) {
+			return nil, fmt.Errorf("db parameter group engine version must be matched krds instance engine version")
+		}
+	}
+
+	sdkValue, _ := getSdkValue("0.Parameters", resp[0])
 	data, err = If2Map(sdkValue)
 	return data, err
 }
@@ -351,8 +361,6 @@ func readKrdsDefaultParameters(d *schema.ResourceData, diff *schema.ResourceDiff
 	return data, err
 }
 
-// checkAndProcessKrdsParameters check changed parameters whether valid and
-// generate the krds parameter's creating request body
 func checkAndProcessKrdsParameters(d *schema.ResourceData, meta interface{}) (req map[string]interface{}, needRestart bool, err error) {
 	req = make(map[string]interface{})
 	if d.HasChange("parameters") {
@@ -367,35 +375,16 @@ func checkAndProcessKrdsParameters(d *schema.ResourceData, meta interface{}) (re
 		index := 1
 		oldParameters, newParameters = d.GetChange("parameters")
 		// init from list to kv
-		// compatibility with terraform type schema.map
-		switch oldParameters.(type) {
-		case schema.Set:
-			if params, ok := oldParameters.(*schema.Set); ok {
-				for _, i := range params.List() {
-					oldKv[i.(map[string]interface{})["name"].(string)] = i.(map[string]interface{})["value"].(string)
-				}
-			}
-		case map[string]interface{}:
-			oldP := oldParameters.(map[string]interface{})
-			for k, v := range oldP {
-				oldKv[k] = v.(string)
+		if params, ok := oldParameters.(*schema.Set); ok {
+			for _, i := range params.List() {
+				oldKv[i.(map[string]interface{})["name"].(string)] = i.(map[string]interface{})["value"].(string)
 			}
 		}
-
-		switch newParameters.(type) {
-		case schema.Set:
-			if params, ok := newParameters.(*schema.Set); ok {
-				for _, i := range params.List() {
-					newKv[i.(map[string]interface{})["name"].(string)] = i.(map[string]interface{})["value"].(string)
-				}
-			}
-		case map[string]interface{}:
-			newP := newParameters.(map[string]interface{})
-			for k, v := range newP {
-				newKv[k] = v.(string)
+		if params, ok := newParameters.(*schema.Set); ok {
+			for _, i := range params.List() {
+				newKv[i.(map[string]interface{})["name"].(string)] = i.(map[string]interface{})["value"].(string)
 			}
 		}
-
 		// compare add or remove
 		for k := range oldKv {
 			if _, ok := newKv[k]; !ok {
@@ -426,8 +415,6 @@ func checkAndProcessKrdsParameters(d *schema.ResourceData, meta interface{}) (re
 	return req, needRestart, err
 }
 
-// prepareModifyDbParameterParams prepare db parameter needs parameters
-// toDefault is mean to use default parameter configuration
 func prepareModifyDbParameterParams(d *schema.ResourceData, meta interface{}, keys []string, req *map[string]interface{}, kv map[string]string, index int, toDefault bool) (needRestart bool, num int, err error) {
 	var (
 		defaults map[string]interface{}
@@ -782,7 +769,7 @@ func createKrdsDbInstance(d *schema.ResourceData, meta interface{}) (call ksyunA
 
 			// 由于临时参数组不被tf管理，创建实例失败，需要手动回收
 			if d.Get("db_parameter_group_id") != nil && d.Get("db_parameter_group_id").(string) != "" {
-				_ = removeKrdsParameterGroup(d, meta)
+				removeKrdsParameterGroup(d, meta)
 			}
 
 			return err

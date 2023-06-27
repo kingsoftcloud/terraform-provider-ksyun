@@ -1,33 +1,31 @@
 /*
-Provides a tag resource.
+Provides a krds parameter template groups.
 
 # Example Usage
 
 ```hcl
 
-	resource "ksyun_krds_parameter_group" "dpg1" {
+	resource "ksyun_krds_parameter_group" "dpg" {
 		name = "tf_dpg_on_hcl"
-		description = "tf configuration test"
+		description = "tf_configuration_test"
 		engine = "mysql"
 		engine_version = "5.7"
-		parameters = {
-			connect_timeout = 20
-			innodb_stats_on_metadata = "OFF"
-			table_open_cache_instances = 1
-			group_concat_max_len = 102
-			max_connect_errors = 2000
-			max_prepared_stmt_count = 65535
-			max_user_connections = 65535
+		parameters {
+	    	name = "auto_increment_increment"
+	    	value = "8"
 		}
-	}
-
-	data "ksyun_krds_parameter_group" "foo" {
-		output_file = "output_result"
-		db_parameter_group_id = ksyun_krds_parameter_group.dpg1.id
-	}
-
-	output "dpg_out" {
-		value = data.ksyun_krds_parameter_group.foo
+		parameters {
+			name = "binlog_format"
+			value = "ROW"
+		}
+		parameters {
+			name = "delayed_insert_limit"
+			value = "108"
+		}
+		parameters {
+			name = "auto_increment_offset"
+			value= "2"
+		}
 	}
 
 ```
@@ -73,12 +71,25 @@ func resourceKsyunKrdsParameterGroup() *schema.Resource {
 				Description: "The id of krds parameter group.",
 			},
 			"parameters": {
-				Type:     schema.TypeMap,
-				Optional: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
+				Type: schema.TypeSet,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "name of the parameter.",
+						},
+						"value": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "value of the parameter.",
+						},
+					},
 				},
-				Description: "The custom parameters.",
+				Set:         parameterToHash,
+				Optional:    true,
+				Computed:    true,
+				Description: "database parameters.",
 			},
 			"engine": {
 				Type:         schema.TypeString,
@@ -133,6 +144,22 @@ func resourceKsyunKrdsParameterGroupRead(d *schema.ResourceData, meta interface{
 		"DBParameterGroupName": {
 			Field: "name",
 		},
+		"Parameters": {
+			FieldRespFunc: func(i interface{}) interface{} {
+				if parameter, ok := i.(map[string]interface{}); ok {
+					var remote = make([]map[string]interface{}, 0, len(parameter))
+
+					for k, v := range parameter {
+						m := make(map[string]interface{})
+						m["name"] = k
+						m["value"] = fmt.Sprintf("%v", v)
+						remote = append(remote, m)
+					}
+					return remote
+				}
+				return nil
+			},
+		},
 	}
 
 	SdkResponseAutoResourceData(d, r, data, extra)
@@ -143,7 +170,6 @@ func resourceKsyunKrdsParameterGroupRead(d *schema.ResourceData, meta interface{
 func resourceKsyunKrdsParameterGroupCreate(d *schema.ResourceData, meta interface{}) error {
 	krdsParameterSrv := NewKrdsParameterSrv(meta.(*KsyunClient))
 
-	// TODO: to validate the relational mappings between engine and engine_version
 	krdsEngine := d.Get("engine").(string)
 	krdsEngineVersion := d.Get("engine_version").(string)
 
