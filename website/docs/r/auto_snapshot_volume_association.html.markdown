@@ -16,7 +16,7 @@ Provides a tag resource.
 ## Example Usage
 
 ```hcl
-resource "ksyun_snapshot_volume_association" "foo" {
+resource "ksyun_auto_snapshot_volume_association" "foo" {
   attach_volume_id        = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
   auto_snapshot_policy_id = "auto_snapshot_policy_id"
 }
@@ -42,6 +42,6 @@ In addition to all arguments above, the following attributes are exported:
 Tag can be imported using the `id`, e.g.
 
 ```
-$ terraform import ksyun_snapshot_volume_association.foo ${auto_snapshot_policy_id}:${attach_volume_id}
+$ terraform import ksyun_auto_snapshot_volume_association.foo ${auto_snapshot_policy_id}:${attach_volume_id}
 ```
 
