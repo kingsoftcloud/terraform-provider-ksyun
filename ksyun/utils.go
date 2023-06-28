@@ -70,7 +70,7 @@ func writeToFile(filePath string, data interface{}) error {
 	if err != nil {
 		return err
 	}
-	_ = os.Remove(absPath)
+	os.Remove(absPath)
 	var bs []byte
 	switch data := data.(type) {
 	case string:
@@ -105,7 +105,7 @@ func merageResultDirect(result *[]map[string]interface{}, source []interface{}) 
 	}
 }
 
-// SchemaSetToStringSlice used for converting terraform schema set to a string slice
+// schemaSetToStringSlice used for converting terraform schema set to a string slice
 func SchemaSetToStringSlice(s interface{}) []string {
 	vL := []string{}
 
@@ -116,16 +116,12 @@ func SchemaSetToStringSlice(s interface{}) []string {
 	return vL
 }
 
-// getSdkValue will get values from GO-SDK. it's feature is get values from nest structure
-// e.g getSdkValue("key.nest_key", object)
 func getSdkValue(keyPattern string, obj interface{}) (interface{}, error) {
 	keys := strings.Split(keyPattern, ".")
 	root := obj
 	for index, k := range keys {
 		if reflect.ValueOf(root).Kind() == reflect.Map {
 			root = root.(map[string]interface{})[k]
-			// if root == nil, it represents the obj doesn't contain this keys
-			// so, it usually returns an error
 			if root == nil {
 				return root, nil
 			}
@@ -148,12 +144,11 @@ type SliceMappingFunc func(map[string]interface{}) map[string]interface{}
 
 type IdMappingFunc func(string, map[string]interface{}) string
 
-// SdkSliceData organize slice data mapping needs information
 type SdkSliceData struct {
 	IdField          string
-	IdMappingFunc    IdMappingFunc    // id mapping function
-	SliceMappingFunc SliceMappingFunc // data mapping function
-	TargetName       string           // the convert keys' name
+	IdMappingFunc    IdMappingFunc
+	SliceMappingFunc SliceMappingFunc
+	TargetName       string
 }
 
 func sliceMapping(ids []string, data []map[string]interface{}, sdkSliceData SdkSliceData, item interface{}) ([]string, []map[string]interface{}) {
@@ -442,7 +437,7 @@ func SdkRequestAutoExtra(r map[string]SdkReqTransform, d *schema.ResourceData, f
 	return extra
 }
 
-// SdkRequestAutoMapping Auto Transform Terraform Resource to SDK Request Parameter
+// Auto Transform Terraform Resource to SDK Request Parameter
 // d : Transform schema.ResourceData Ptr
 // resource: Transform schema.Resource Ptr
 // onlyTransform : map[string]TransformType ,If set this field,Transform will with this array instead of Transform schema.Resource
@@ -577,7 +572,6 @@ func SdkResponseDefault(p string, d interface{}, item *interface{}) {
 	}
 }
 
-// SdkResponseAutoResourceData will convert response data to terraform resource data
 func SdkResponseAutoResourceData(d *schema.ResourceData, resource *schema.Resource, item interface{}, extra map[string]SdkResponseMapping, start ...bool) interface{} {
 	setFlag := false
 	if start == nil || (len(start) > 0 && start[0]) {
@@ -659,11 +653,6 @@ func SdkResponseAutoResourceData(d *schema.ResourceData, resource *schema.Resour
 	return nil
 }
 
-// SdkResponseAutoMapping converts SDK response to resource.schema[collectField]
-// collectField is in the resource field defined, it's contents is mapping the sdk response
-// computeItem will migrate into item.
-// extraMapping will define self the field mapping instead of abide by hump-to-underline.
-// e.g. resource id, items instance_id extraMapping{ instance_id: { mapping: "id"} }
 func SdkResponseAutoMapping(resource *schema.Resource, collectField string, item map[string]interface{}, computeItem map[string]interface{},
 	extraMapping map[string]SdkResponseMapping) map[string]interface{} {
 	var result map[string]interface{}
@@ -760,8 +749,6 @@ func SdkMapMapping(result interface{}, sdkSliceData SdkSliceData) (map[string]in
 	return data, nil
 }
 
-// SdkSliceMapping will set the slice values from sdk into this d schema.ResourceData
-// input parameter result is the raw sdk response
 func SdkSliceMapping(d *schema.ResourceData, result interface{}, sdkSliceData SdkSliceData) ([]string, []map[string]interface{}, error) {
 	var err error
 	var ids []string
