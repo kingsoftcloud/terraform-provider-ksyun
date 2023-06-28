@@ -1,4 +1,4 @@
-## 1.4.1 (Jun 20, 2023)
+## 1.4.0 (Unreleased)
 
 FEATURES:
 
@@ -6,6 +6,7 @@ FEATURES:
 - - **New Resource:** `ksyun_data_guard_group`
 - - **New Resource:** `ksyun_auto_snapshot_policy` 自动快照策略管理
 - - **New Resource:** `ksyun_auto_snapshot_policy_volume_association` 自动快照策略应用到云硬盘
+- - **New Resource:** `ksyun_snapshot` EBS快照
 - - **New Data Source:** `ksyun_krds_parameter_group`
 - - **New Data Source:** `ksyun_data_guard_group`
 - - **New Data Source:** `ksyun_auto_snapshot_policy`
