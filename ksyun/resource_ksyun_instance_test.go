@@ -2,9 +2,10 @@ package ksyun
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"testing"
 )
 
 func TestAccKsyunInstance_basic(t *testing.T) {
@@ -37,6 +38,7 @@ func TestAccKsyunInstance_update(t *testing.T) {
 		IDRefreshName: "ksyun_instance.foo",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckInstanceDestroy,
+
 		Steps: []resource.TestStep{
 			{
 				Config: testAccInstanceConfig,
@@ -44,9 +46,25 @@ func TestAccKsyunInstance_update(t *testing.T) {
 					testAccCheckInstanceExists("ksyun_instance.foo", &val),
 					testAccCheckInstanceAttributes(&val),
 				),
+				ExpectNonEmptyPlan: true,
 			},
+			// {
+			// 	Config: testAccInstanceDemotionUpdateConfig,
+			// 	Check: resource.ComposeTestCheckFunc(
+			// 		testAccCheckInstanceExists("ksyun_instance.foo", &val),
+			// 		testAccCheckInstanceAttributes(&val),
+			// 	),
+			// 	ExpectNonEmptyPlan: true,
+			// },
+			// {
+			// 	Config: testAccInstanceUpgradeUpdateConfig,
+			// 	Check: resource.ComposeTestCheckFunc(
+			// 		testAccCheckInstanceExists("ksyun_instance.foo", &val),
+			// 		testAccCheckInstanceAttributes(&val),
+			// 	),
+			// },
 			{
-				Config: testAccInstanceUpdateConfig,
+				Config: testAccInstanceChangeTypeConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckInstanceExists("ksyun_instance.foo", &val),
 					testAccCheckInstanceAttributes(&val),
@@ -124,14 +142,15 @@ func testAccCheckInstanceDestroy(s *terraform.State) error {
 }
 
 const testAccInstanceConfig = `
+provider "ksyun" {
+	region =  "cn-guangzhou-1"
+}
 data "ksyun_images" "centos-7_5" {
-  output_file=""
   platform= "centos-7.5"
-  is_public=true
+  
 }
 data "ksyun_availability_zones" "default" {
-  output_file=""
-  ids=[]
+  output_file="output_result_az"
 }
 resource "ksyun_vpc" "default" {
   vpc_name   = "ksyun-vpc-tf"
@@ -141,8 +160,6 @@ resource "ksyun_subnet" "default" {
   subnet_name      = "ksyun-subnet-tf"
   cidr_block = "10.7.0.0/21"
   subnet_type = "Normal"
-  dhcp_ip_from = "10.7.0.2"
-  dhcp_ip_to = "10.7.0.253"
   vpc_id  = "${ksyun_vpc.default.id}"
   gateway_ip = "10.7.0.1"
   dns1 = "198.18.254.41"
@@ -155,9 +172,9 @@ resource "ksyun_security_group" "default" {
 }
 resource "ksyun_instance" "foo" {
   image_id="${data.ksyun_images.centos-7_5.images.0.image_id}"
-  instance_type="S3.1A"
+  instance_type="N3.4B"
 
-  data_disk_gb=0
+  data_disk_gb=16
   #max_count=1
   #min_count=1
   subnet_id="${ksyun_subnet.default.id}"
@@ -166,72 +183,175 @@ resource "ksyun_instance" "foo" {
   charge_type="Daily"
   purchase_time=1
   security_group_id=["${ksyun_security_group.default.id}"]
-  private_ip_address=""
-  instance_name="ksyun-kec-tf"
-  instance_name_suffix=""
-  sriov_net_support="false"
-  project_id=100013
-  data_guard_id=""
-  key_id=[]
-  force_delete=true
-}
-
-`
-
-const testAccInstanceUpdateConfig = `
-data "ksyun_images" "centos-7_5" {
-  output_file=""
-  platform= "centos-7.5"
-  is_public=true
-}
-data "ksyun_availability_zones" "default" {
-  output_file=""
-  ids=[]
-}
-resource "ksyun_vpc" "default" {
-  vpc_name   = "ksyun-vpc-tf"
-  cidr_block = "10.7.0.0/21"
-}
-resource "ksyun_subnet" "default" {
-  subnet_name      = "ksyun-subnet-tf"
-  cidr_block = "10.7.0.0/21"
-  subnet_type = "Normal"
-  dhcp_ip_from = "10.7.0.2"
-  dhcp_ip_to = "10.7.0.253"
-  vpc_id  = "${ksyun_vpc.default.id}"
-  gateway_ip = "10.7.0.1"
-  dns1 = "198.18.254.41"
-  dns2 = "198.18.254.40"
-  availability_zone = "${data.ksyun_availability_zones.default.availability_zones.0.availability_zone_name}"
-}
-resource "ksyun_security_group" "default" {
-  vpc_id = "${ksyun_vpc.default.id}"
-  security_group_name="ksyun-security-group"
-}
-resource "ksyun_instance" "foo" {
-  image_id="${data.ksyun_images.centos-7_5.images.0.image_id}"
-  instance_type="S4.1A"
-  system_disk{
-    disk_type="SSD3.0"
-    disk_size=30
-  }
-  data_disk_gb=0
-  #max_count=1
-  #min_count=1
-  subnet_id="${ksyun_subnet.default.id}"
-  instance_password="Xuan663222"
-  keep_image_login=false
-  charge_type="Daily"
-  purchase_time=1
-  security_group_id=["${ksyun_security_group.default.id}"]
-  private_ip_address=""
-  instance_name="ksyun-kec-tf-update"
-  instance_name_suffix=""
+  instance_name="ksyun-kec-tf-demotion"
   sriov_net_support="false"
   project_id=0
   data_guard_id=""
   key_id=[]
-  force_delete=true
+}
+
+`
+
+const testAccInstanceDemotionUpdateConfig = `
+provider "ksyun" {
+	region =  "cn-guangzhou-1"
+}
+data "ksyun_images" "centos-7_5" {
+  platform= "centos-7.5"
+  
+}
+data "ksyun_availability_zones" "default" {
+  output_file="output_result_az"
+}
+resource "ksyun_vpc" "default" {
+  vpc_name   = "ksyun-vpc-tf"
+  cidr_block = "10.7.0.0/21"
+}
+resource "ksyun_subnet" "default" {
+  subnet_name      = "ksyun-subnet-tf"
+  cidr_block = "10.7.0.0/21"
+  subnet_type = "Normal"
+  vpc_id  = "${ksyun_vpc.default.id}"
+  gateway_ip = "10.7.0.1"
+  dns1 = "198.18.254.41"
+  dns2 = "198.18.254.40"
+  availability_zone = "${data.ksyun_availability_zones.default.availability_zones.0.availability_zone_name}"
+}
+resource "ksyun_security_group" "default" {
+  vpc_id = "${ksyun_vpc.default.id}"
+  security_group_name="ksyun-security-group"
+}
+resource "ksyun_instance" "foo" {
+  image_id="${data.ksyun_images.centos-7_5.images.0.image_id}"
+  instance_type="N3.2B"
+  system_disk{
+    disk_type="SSD3.0"
+    disk_size=30
+  }
+  data_disk_gb=16
+  #max_count=1
+  #min_count=1
+  subnet_id="${ksyun_subnet.default.id}"
+  instance_password="Xuan663222"
+  keep_image_login=false
+  charge_type="Daily"
+  purchase_time=1
+  security_group_id=["${ksyun_security_group.default.id}"]
+  instance_name="ksyun-kec-tf-demotion-update"
+  sriov_net_support="false"
+  project_id=0
+  data_guard_id=""
+  key_id=[]
+}
+
+`
+
+const testAccInstanceUpgradeUpdateConfig = `
+provider "ksyun" {
+	region =  "cn-guangzhou-1"
+}
+
+data "ksyun_images" "centos-7_5" {
+  platform= "centos-7.5"
+  
+}
+data "ksyun_availability_zones" "default" {
+  output_file="output_result_az"
+}
+resource "ksyun_vpc" "default" {
+  vpc_name   = "ksyun-vpc-tf"
+  cidr_block = "10.7.0.0/21"
+}
+resource "ksyun_subnet" "default" {
+  subnet_name      = "ksyun-subnet-tf"
+  cidr_block = "10.7.0.0/21"
+  subnet_type = "Normal"
+  vpc_id  = "${ksyun_vpc.default.id}"
+  gateway_ip = "10.7.0.1"
+  dns1 = "198.18.254.41"
+  dns2 = "198.18.254.40"
+  availability_zone = "${data.ksyun_availability_zones.default.availability_zones.0.availability_zone_name}"
+}
+resource "ksyun_security_group" "default" {
+  vpc_id = "${ksyun_vpc.default.id}"
+  security_group_name="ksyun-security-group"
+}
+resource "ksyun_instance" "foo" {
+  image_id="${data.ksyun_images.centos-7_5.images.0.image_id}"
+  instance_type="N3.8B"
+  system_disk{
+    disk_type="SSD3.0"
+    disk_size=30
+  }
+  data_disk_gb=16
+  #max_count=1
+  #min_count=1
+  subnet_id="${ksyun_subnet.default.id}"
+  instance_password="Xuan663222"
+  keep_image_login=false
+  charge_type="Daily"
+  purchase_time=1
+  security_group_id=["${ksyun_security_group.default.id}"]
+  instance_name="ksyun-kec-tf-demotion-update"
+  sriov_net_support="false"
+  project_id=0
+  data_guard_id=""
+  key_id=[]
+}
+
+`
+
+const testAccInstanceChangeTypeConfig = `
+provider "ksyun" {
+	region =  "cn-guangzhou-1"
+}
+
+data "ksyun_images" "centos-7_5" {
+  platform= "centos-7.5"
+  
+}
+data "ksyun_availability_zones" "default" {
+  output_file="output_result_az"
+}
+resource "ksyun_vpc" "default" {
+  vpc_name   = "ksyun-vpc-tf"
+  cidr_block = "10.7.0.0/21"
+}
+resource "ksyun_subnet" "default" {
+  subnet_name      = "ksyun-subnet-tf"
+  cidr_block = "10.7.0.0/21"
+  subnet_type = "Normal"
+  vpc_id  = "${ksyun_vpc.default.id}"
+  gateway_ip = "10.7.0.1"
+  dns1 = "198.18.254.41"
+  dns2 = "198.18.254.40"
+  availability_zone = "${data.ksyun_availability_zones.default.availability_zones.0.availability_zone_name}"
+}
+resource "ksyun_security_group" "default" {
+  vpc_id = "${ksyun_vpc.default.id}"
+  security_group_name="ksyun-security-group"
+}
+resource "ksyun_instance" "foo" {
+  image_id="${data.ksyun_images.centos-7_5.images.0.image_id}"
+  instance_type="HKEC.1C"
+  system_disk{
+    disk_type="SSD3.0"
+    disk_size=30
+  }
+  data_disk_gb=16
+  #max_count=1
+  #min_count=1
+  subnet_id="${ksyun_subnet.default.id}"
+  instance_password="Xuan663222"
+  keep_image_login=false
+  charge_type="Daily"
+  purchase_time=1
+  security_group_id=["${ksyun_security_group.default.id}"]
+  instance_name="ksyun-kec-tf-demotion-update"
+  sriov_net_support="false"
+  project_id=0
+  data_guard_id=""
+  key_id=[]
 }
 
 `

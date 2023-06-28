@@ -88,7 +88,7 @@ In addition to all arguments above, the following attributes are exported:
   * `instance_name` - The name of instance, which contains 2-64 characters and only support Chinese, English, numbers.
   * `instance_password` - Password to an instance is a string of 8 to 32 characters.
   * `instance_status` - The state of instance.
-  * `instance_type` - The type of instance to start.
+  * `instance_type` - The type of instance to start. <br> - NOTE: it's may trigger this instance to power off, if instance type will be demotion.
   * `key_id` - The certificate id of the instance.
   * `local_volume_snapshot_id` - When the local data disk opens, the snapshot id is entered.
   * `network_interface_id` - ID of the network interface.
