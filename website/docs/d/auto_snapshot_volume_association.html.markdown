@@ -1,13 +1,13 @@
 ---
 subcategory: "Instance(KEC)"
 layout: "ksyun"
-page_title: "ksyun: ksyun_auto_snapshot_policy_volume_association"
-sidebar_current: "docs-ksyun-datasource-auto_snapshot_policy_volume_association"
+page_title: "ksyun: ksyun_auto_snapshot_volume_association"
+sidebar_current: "docs-ksyun-datasource-auto_snapshot_volume_association"
 description: |-
   Provides a list of Redis security groups in the current region.
 ---
 
-# ksyun_auto_snapshot_policy_volume_association
+# ksyun_auto_snapshot_volume_association
 
 Provides a list of Redis security groups in the current region.
 
@@ -18,7 +18,7 @@ Provides a list of Redis security groups in the current region.
 query asp and volume associations by volume id
 
 ```hcl
-data "ksyun_auto_snapshot_policy_volume_association" "foo" {
+data "ksyun_auto_snapshot_volume_association" "foo" {
   output_file      = "output_result_volume_id"
   attach_volume_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 }
@@ -27,7 +27,7 @@ data "ksyun_auto_snapshot_policy_volume_association" "foo" {
 query all associations.
 
 ```hcl
-data "ksyun_auto_snapshot_policy_volume_association" "foo1" {
+data "ksyun_auto_snapshot_volume_association" "foo1" {
   output_file = "output_result_null"
 }
 ```
@@ -35,7 +35,7 @@ data "ksyun_auto_snapshot_policy_volume_association" "foo1" {
 query asp and volume associations by auto_snapshot_policy_id
 
 ```hcl
-data "ksyun_auto_snapshot_policy_volume_association" "foo2" {
+data "ksyun_auto_snapshot_volume_association" "foo2" {
   output_file             = "output_result_policy_id"
   auto_snapshot_policy_id = "auto_snapshot_policy_id"
 }
