@@ -4,12 +4,12 @@ layout: "ksyun"
 page_title: "ksyun: ksyun_data_guard_group"
 sidebar_current: "docs-ksyun-resource-data_guard_group"
 description: |-
-  Provides a tag resource.
+  Provides a data guard group resource.
 ---
 
 # ksyun_data_guard_group
 
-Provides a tag resource.
+Provides a data guard group resource.
 
 #
 

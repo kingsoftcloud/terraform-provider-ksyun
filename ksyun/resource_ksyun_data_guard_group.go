@@ -1,5 +1,5 @@
 /*
-Provides a tag resource.
+Provides a data guard group resource.
 
 # Example Usage
 
