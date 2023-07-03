@@ -375,6 +375,7 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_data_guard_group":                 dataSourceKsyunDataGuardGroup(),
 			"ksyun_krds_parameter_group":             dataSourceKsyunKrdsParameterGroup(),
 			"ksyun_auto_snapshot_volume_association": dataSourceKsyunAutoSnapshotVolumeAssociation(),
+			"ksyun_knads":                            dataSourceKsyunKnads(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"ksyun_eip":                              resourceKsyunEip(),
@@ -444,6 +445,8 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_auto_snapshot_volume_association": resourceKsyunAutoSnapshotVolumeAssociation(),
 			"ksyun_data_guard_group":                 resourceKsyunDataGuardGroup(),
 			"ksyun_krds_parameter_group":             resourceKsyunKrdsParameterGroup(),
+			"ksyun_knad":                             resourceKsyunKnad(),
+			"ksyun_knad_associate":                   resourceKsyunKnadAssociate(),
 		},
 		ConfigureFunc: providerConfigure,
 	}
