@@ -22,7 +22,7 @@ func resourceKsyunKnad() *schema.Resource {
 			},
 			"knad_id": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Computed: true,
 			},
 			"link_type": {
 				Type:     schema.TypeString,
@@ -62,10 +62,6 @@ func resourceKsyunKnad() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"kid": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 		},
 	}
 }
@@ -79,6 +75,7 @@ func resourceKsyunKnadCreate(d *schema.ResourceData, meta interface{}) (err erro
 }
 
 func resourceKsyunKnadRead(d *schema.ResourceData, meta interface{}) (err error) {
+
 	knadService := KnadService{meta.(*KsyunClient)}
 	err = knadService.ReadAndSetKnad(d, resourceKsyunKnad())
 	if err != nil {

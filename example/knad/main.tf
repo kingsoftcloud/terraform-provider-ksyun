@@ -1,18 +1,25 @@
 # Specify the provider and access details
-//provider "ksyun" {
-//  region = "cn-beijing-6"
-//}
-//data "ksyun_lines" "default" {
-//  output_file="output_result1"
-//  line_name="BGP"
-//}
-
-# Create an eip
-resource "ksyun_knad" "default1" {
-  band_width =1
-  charge_type = "Daily"
-  project_id = 0
-  tags = {
-    "xym-test" ="123",
+terraform {
+  required_providers {
+    ksyun = {
+      source = "kingsoftcloud/ksyun"
+    }
   }
+}
+
+provider "ksyun" {
+  region = "cn-qingyangtest-1"
+}
+# Create an eip
+resource "ksyun_knad" "default2" {
+  link_type = "DDoS_BGP"
+  ip_count = 10
+  band = 30
+  max_band = 80
+  idc_band = 150
+  duration = 1
+  knad_name = "test-tf2"
+  bill_type = 1
+  service_id = "KEAD_30G"
+  project_id="123"
 }

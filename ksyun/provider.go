@@ -167,6 +167,7 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_bare_metal":                       resourceKsyunBareMetal(),
 			"ksyun_tag":                              resourceKsyunTag(),
 			"ksyun_knad":                             resourceKsyunKnad(),
+			"ksyun_knad_associate":                   resourceKsyunKnadAssociate(),
 		},
 		ConfigureFunc: providerConfigure,
 	}

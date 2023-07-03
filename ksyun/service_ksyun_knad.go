@@ -15,7 +15,7 @@ type KnadService struct {
 
 func (s *KnadService) ReadAndSetKnads(d *schema.ResourceData, r *schema.Resource) (err error) {
 	transform := map[string]SdkReqTransform{
-		"knad_id": {
+		"ids": {
 			mapping: "KnadId",
 			Type:    TransformWithN,
 		},
@@ -39,11 +39,11 @@ func (s *KnadService) ReadAndSetKnads(d *schema.ResourceData, r *schema.Resource
 		targetField: "knads",
 		idFiled:     "KnadId",
 		extra: map[string]SdkResponseMapping{
+			//类型转换 float转string
 			"ProjectId": {
 				Field: "project_id",
 				FieldRespFunc: func(element interface{}) interface{} {
-
-					projectIdStr := strconv.FormatFloat(element.(float64), 0, 0, 64)
+					projectIdStr := strconv.FormatFloat(element.(float64), 'f', -1, 64)
 					return projectIdStr
 				},
 			},
@@ -90,10 +90,18 @@ func (s *KnadService) ReadAndSetKnad(d *schema.ResourceData, r *schema.Resource)
 			if notFoundError(callErr) {
 				return resource.RetryableError(callErr)
 			} else {
-				return resource.NonRetryableError(fmt.Errorf("error on  reading bandWidthShare %q, %s", d.Id(), callErr))
+				return resource.NonRetryableError(fmt.Errorf("error on  reading knad %q, %s", d.Id(), callErr))
 			}
 		} else {
-			SdkResponseAutoResourceData(d, r, data, chargeExtraForVpc(data))
+			SdkResponseAutoResourceData(d, r, data, map[string]SdkResponseMapping{
+				"ProjectId": {
+					Field: "project_id",
+					FieldRespFunc: func(element interface{}) interface{} {
+						projectIdStr := strconv.FormatFloat(element.(float64), 'f', -1, 64)
+						return projectIdStr
+					},
+				},
+			})
 			return nil
 		}
 	})
@@ -108,10 +116,6 @@ func (s *KnadService) ReadKnad(d *schema.ResourceData, knadId string) (data map[
 	}
 	req := map[string]interface{}{
 		"KnadId.1": knadId,
-	}
-	err = addProjectInfo(d, &req, s.client)
-	if err != nil {
-		return data, err
 	}
 	results, err = s.ReadKnads(req)
 	if err != nil {
@@ -163,24 +167,26 @@ func (s *KnadService) CreateKnad(d *schema.ResourceData, r *schema.Resource) (er
 
 // 更新入口 ModifyKnad
 func (s *KnadService) ModifyKnad(d *schema.ResourceData, r *schema.Resource) (err error) {
-	projectCall, err := s.ModifyKnadProjectCall(d, r)
+	/*projectCall, err := s.ModifyKnadProjectCall(d, r)
 	if err != nil {
 		return err
-	}
+	}*/
 	call, err := s.ModifyKnadCall(d, r)
 	if err != nil {
 		return err
 	}
-	return ksyunApiCallNew([]ApiCall{projectCall, call}, d, s.client, true)
+	return ksyunApiCallNew([]ApiCall{call}, d, s.client, true)
+	//return ksyunApiCallNew([]ApiCall{projectCall, call}, d, s.client, true)
 }
 
 func (s *KnadService) ModifyKnadProjectCall(d *schema.ResourceData, resource *schema.Resource) (callback ApiCall, err error) {
 	transform := map[string]SdkReqTransform{
-		"project_id": {Ignore: true},
+		"project_id": {},
 	}
 	updateReq, err := SdkRequestAutoMapping(d, resource, true, transform, nil, SdkReqParameter{
 		false,
 	})
+
 	if err != nil {
 		return callback, err
 	}
@@ -201,9 +207,14 @@ func (s *KnadService) ModifyKnadProjectCall(d *schema.ResourceData, resource *sc
 
 func (s *KnadService) ModifyKnadCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
 	transform := map[string]SdkReqTransform{
-		"project_id": {},
+		"service_id": {forceUpdateParam: true},
+		"project_id": {Ignore: true},
+		"ip_count":   {forceUpdateParam: true},
+		"band":       {forceUpdateParam: true},
+		"max_band":   {forceUpdateParam: true},
+		"idc_band":   {forceUpdateParam: true},
 	}
-	req, err := SdkRequestAutoMapping(d, r, false, transform, nil)
+	req, err := SdkRequestAutoMapping(d, r, true, transform, nil)
 	if err != nil {
 		return callback, err
 	}
@@ -216,6 +227,9 @@ func (s *KnadService) ModifyKnadCall(d *schema.ResourceData, r *schema.Resource)
 				conn := client.knadconn
 				logger.Debug(logger.RespFormat, call.action, *(call.param))
 				resp, err = conn.ModifyKnad(call.param)
+				if err != nil {
+					return nil, err
+				}
 				return resp, err
 			},
 			afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
@@ -240,7 +254,7 @@ func (s *KnadService) RemoveKnadCall(d *schema.ResourceData) (callback ApiCall, 
 			return resp, err
 		},
 		callError: func(d *schema.ResourceData, client *KsyunClient, call ApiCall, baseErr error) error {
-			return resource.Retry(15*time.Minute, func() *resource.RetryError {
+			return resource.Retry(1*time.Minute, func() *resource.RetryError {
 				_, callErr := s.ReadKnad(d, "")
 				if callErr != nil {
 					if notFoundError(callErr) {
@@ -274,37 +288,60 @@ func (s *KnadService) RemoveKnad(d *schema.ResourceData) (err error) {
 }
 
 func (s *KnadService) ReadAndSetAssociateKnad(d *schema.ResourceData, r *schema.Resource) (err error) {
-	data, err := s.ReadKnadAssociate(d, d.Get("band_width_share_id").(string), d.Get("allocation_id").(string))
+
+	data, err := s.ReadKnadAssociate(d, d.Get("knad_id").(string), d.Get("ip").(*schema.Set))
+	if err != nil {
+		return err
+	}
 	SdkResponseAutoResourceData(d, r, data, nil)
 	return err
 }
 
-func (s *KnadService) ReadKnadAssociate(d *schema.ResourceData, knadId string, ip string) (result map[string]interface{}, err error) {
-	data, err := s.ReadKnadIpList(d, knadId)
-	result = make(map[string]interface{})
-	var emptyMap = make(map[string]interface{}) //todo 空map?
-	if len(data) == 0 {
-		return emptyMap, fmt.Errorf("Ip %s not associate in Knad %s ", ip, knadId)
+// 判断subset是否是superset的子集
+func is_Subset(subset []string, superset []string) bool {
+	checkset := make(map[string]bool)
+	for _, element := range subset {
+		checkset[element] = true
 	}
-
-	isFound := false
-	for _, v := range data {
-		if v1, ok := v.(map[string]interface{})["Ip"]; ok && v1 == ip {
-			isFound = true
-			result["ip"] = v1
-			break
+	for _, value := range superset {
+		if checkset[value] {
+			delete(checkset, value)
 		}
 	}
+	return len(checkset) == 0
+}
 
-	if !isFound {
-		return emptyMap, fmt.Errorf("ip %s not associate in knad %s ", ip, knadId)
+func (s *KnadService) ReadKnadAssociate(d *schema.ResourceData, knadId string, ip *schema.Set) (result map[string]interface{}, err error) {
+	data, err := s.ReadKnadIpList(d, knadId)
+	result = make(map[string]interface{})
+	var emptyMap = make(map[string]interface{})
+	var associateIps []string //db里读出来的ips
+	//if len(data) == 0 {
+	//	return emptyMap, fmt.Errorf("instance has not band ips")
+	//}
+
+	for _, v := range data {
+		associateIps = append(associateIps, v.(map[string]interface{})["Ip"].(string))
 	}
+	ipSlice := make([]string, 0) //d里获取的ip
+	for _, _ip := range ip.List() {
+		ipSlice = append(ipSlice, _ip.(string))
+	}
+	if len(ipSlice) != len(associateIps) {
+		return emptyMap, fmt.Errorf("ip not associate knad")
+	}
+	//isFound := is_Subset(ipSlice, associateIps)
+	//
+	//if !isFound {
+	//	return emptyMap, fmt.Errorf("ip not associate knad") //todo
+	//}
 
 	result["KnadId"] = knadId
+	result["Ip"] = associateIps
 	return result, err
 }
 
-// 已绑ip列表 TODO sdk加方法KnadIpList  待替换方法
+// 已绑ip列表
 func (s *KnadService) ReadKnadIpList(d *schema.ResourceData, knadId string) (data []interface{}, err error) {
 	var (
 		resp    *map[string]interface{}
@@ -323,8 +360,7 @@ func (s *KnadService) ReadKnadIpList(d *schema.ResourceData, knadId string) (dat
 		}
 	*/
 	conn := s.client.knadconn
-	//resp, err = conn.KnadIpList(&req) //TODO 待放开  查已绑ip列表
-	resp, err = conn.DescribeKnad(&req)
+	resp, err = conn.IpList(&req)
 	if err != nil {
 		return data, err
 	}
@@ -345,11 +381,13 @@ func (s *KnadService) DisassociateKnad(d *schema.ResourceData) (err error) {
 }
 
 func (s *KnadService) DisassociateKnadCall(d *schema.ResourceData) (callback ApiCall, err error) {
-	removeReq := map[string]interface{}{
-		"Ip.1": d.Get("ip"),
+	transform := map[string]SdkReqTransform{
+		"ip": {Type: TransformWithN},
 	}
+
+	req, err := SdkRequestAutoMapping(d, resourceKsyunKnadAssociate(), false, transform, nil)
 	callback = ApiCall{
-		param:  &removeReq,
+		param:  &req,
 		action: "DisassociateIp",
 		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
 			conn := client.knadconn
@@ -392,13 +430,9 @@ func (s *KnadService) AssociateKnad(d *schema.ResourceData, r *schema.Resource) 
 	return ksyunApiCallNew([]ApiCall{call}, d, s.client, true)
 }
 func (s *KnadService) AssociateKnadCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
-	//todo read eip
-	//todo read knad
-	//knadService := KnadService{s.client}
 	transform := map[string]SdkReqTransform{
-		"ip": {
-			Type: TransformWithN,
-		},
+		"knad_id": {},
+		"ip":      {Type: TransformWithN},
 	}
 	req, err := SdkRequestAutoMapping(d, r, false, transform, nil)
 
@@ -416,7 +450,7 @@ func (s *KnadService) AssociateKnadCall(d *schema.ResourceData, r *schema.Resour
 		},
 		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
 			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
-			d.SetId(d.Get("knad_id").(string) + ":" + d.Get("ip").(string))
+			d.SetId(d.Get("knad_id").(string))
 			return err
 		},
 	}

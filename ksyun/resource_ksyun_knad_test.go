@@ -13,14 +13,14 @@ func TestAccKsyunKnad_basic(t *testing.T) {
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
-		IDRefreshName: "ksyun_knad.foo",
+		IDRefreshName: "ksyun_knad.foo1",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckKnadDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccKnadConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckKnadExists("ksyun_knad.foo", &val),
+					testAccCheckKnadExists("ksyun_knad.foo1", &val),
 					testAccCheckKnadAttributes(&val),
 				),
 			},
@@ -34,21 +34,21 @@ func TestAccKsyunKnad_update(t *testing.T) {
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
-		IDRefreshName: "ksyun_knad.foo",
+		IDRefreshName: "ksyun_knad.foo1",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckKnadDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccKnadConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckKnadExists("ksyun_knad.foo", &val),
+					testAccCheckKnadExists("ksyun_knad.foo1", &val),
 					testAccCheckKnadAttributes(&val),
 				),
 			},
 			{
 				Config: testAccKnadUpdateConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckKnadExists("ksyun_knad.foo", &val),
+					testAccCheckKnadExists("ksyun_knad.foo1", &val),
 					testAccCheckKnadAttributes(&val),
 				),
 			},
@@ -68,7 +68,7 @@ func testAccCheckKnadExists(n string, val *map[string]interface{}) resource.Test
 		client := testAccProvider.Meta().(*KsyunClient)
 		knad := make(map[string]interface{})
 		knad["KnadId.1"] = rs.Primary.ID
-		knad["ProjectId.1"] = rs.Primary.Attributes["project_id"]
+		//knad["ProjectId.1"] = rs.Primary.Attributes["project_id"]
 		ptr, err := client.knadconn.DescribeKnad(&knad)
 		if err != nil {
 			return err
@@ -123,35 +123,41 @@ func testAccCheckKnadDestroy(s *terraform.State) error {
 }
 
 const testAccKnadConfig = `
-# Create an knad
-resource "ksyun_knad" "foo" {
+provider "ksyun" {
+	region = "cn-qingyangtest-1"
+}
 
+# Create an knad
+resource "ksyun_knad" "foo1" {
   link_type = "DDoS_BGP"
   ip_count = 10
   band = 30
   max_band = 30
   idc_band = 100
   duration = 1
-  knad_name = "test"
+  knad_name = "test3"
   bill_type = 1
-  service_id = "KNAD_30G"
-  project_id=0
+  service_id = "KEAD_30G"
+  project_id="0"
 }
 `
 
 const testAccKnadUpdateConfig = `
+provider "ksyun" {
+	region = "cn-qingyangtest-1"
+}
 
 # Create an knad
-resource "ksyun_knad" "foo" {
-  link_type = "DDoS_BGP"
-  ip_count = 12
+resource "ksyun_knad" "foo1" {
+   link_type = "DDoS_BGP"
+  ip_count = 10
   band = 30
   max_band = 50
   idc_band = 100
   duration = 1
-  knad_name = "test"
+  knad_name = "test3"
   bill_type = 1
-  service_id = "KNAD_30G"
-  project_id=0
+  service_id = "KEAD_30G"
+  project_id="0"
 }
 `
