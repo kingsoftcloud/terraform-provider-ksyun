@@ -1,3 +1,27 @@
+/*
+Provides a ScalingConfiguration resource.
+
+# Example Usage
+
+```hcl
+
+	resource "ksyun_scaling_configuration" "foo" {
+	  scaling_configuration_name = "tf-xym-test-1"
+	  image_id = "IMG-5465174a-6d71-4770-b8e1-917a0dd92466"
+	  instance_type = "N3.1B"
+	  password = "Aa123456"
+	}
+
+```
+
+# Import
+
+scalingConfiguration can be imported using the `id`, e.g.
+
+```
+$ terraform import ksyun_scaling_configuration.example scaling-configuration-abc123456
+```
+*/
 package ksyun
 
 import (
@@ -21,16 +45,18 @@ func resourceKsyunScalingConfiguration() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			"scaling_configuration_name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "tf-scaling-config",
-				ForceNew: false,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "tf-scaling-config",
+				ForceNew:    false,
+				Description: "The Name of the desired ScalingConfiguration.",
 			},
 
 			"image_id": {
-				Type:     schema.TypeString,
-				ForceNew: false,
-				Required: true,
+				Type:        schema.TypeString,
+				ForceNew:    false,
+				Required:    true,
+				Description: "The System Image Id of the desired ScalingConfiguration.",
 			},
 
 			"instance_type": {
@@ -40,12 +66,14 @@ func resourceKsyunScalingConfiguration() *schema.Resource {
 				ForceNew:         false,
 				ValidateFunc:     stringSplitSchemaValidateFunc(","),
 				DiffSuppressFunc: stringSplitDiffSuppressFunc(","),
+				Description:      "The KEC instance type of the desired ScalingConfiguration.",
 			},
 
 			"password": {
-				Type:      schema.TypeString,
-				Optional:  true,
-				Sensitive: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Sensitive:   true,
+				Description: "Password.",
 			},
 
 			"system_disk_type": {
@@ -53,6 +81,7 @@ func resourceKsyunScalingConfiguration() *schema.Resource {
 				Computed:     true,
 				Optional:     true,
 				ValidateFunc: validateKecSystemDiskType,
+				Description:  "The system disk type of the desired ScalingConfiguration.Valid Values:'Local_SSD', 'SSD3.0', 'EHDD'.",
 			},
 
 			"system_disk_size": {
@@ -60,18 +89,21 @@ func resourceKsyunScalingConfiguration() *schema.Resource {
 				Computed:     true,
 				Optional:     true,
 				ValidateFunc: validateKecSystemDiskSize,
+				Description:  "The system disk size of the desired ScalingConfiguration.",
 			},
 
 			"data_disk_gb": {
-				Type:     schema.TypeInt,
-				Computed: true,
-				Optional: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Optional:    true,
+				Description: "The Local Volume GB size of the desired ScalingConfiguration.",
 			},
 
 			"data_disks": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Optional: true,
+				Type:        schema.TypeList,
+				Computed:    true,
+				Optional:    true,
+				Description: "A list of data disks.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"disk_type": {
@@ -79,17 +111,20 @@ func resourceKsyunScalingConfiguration() *schema.Resource {
 							Optional:     true,
 							Computed:     true,
 							ValidateFunc: validateKecDataDiskType,
+							Description:  "The EBS Data Disk Type of the desired data_disk.Valid Values: 'SSD3.0', 'EHDD'.",
 						},
 						"disk_size": {
 							Type:         schema.TypeInt,
 							Optional:     true,
 							Computed:     true,
 							ValidateFunc: validateKecDataDiskSize,
+							Description:  "The EBS Data Disk Size of the desired data_disk.",
 						},
 						"delete_with_instance": {
-							Type:     schema.TypeBool,
-							Optional: true,
-							Computed: true,
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Computed:    true,
+							Description: "The Flag with delete EBS Data Disk when KEC Instance destroy.",
 						},
 					},
 				},
@@ -102,43 +137,50 @@ func resourceKsyunScalingConfiguration() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Set: schema.HashString,
+				Set:         schema.HashString,
+				Description: "The SSH key set of the desired ScalingConfiguration.",
 			},
 
 			"project_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "The Project Id of the desired ScalingConfiguration belong to.",
 			},
 
 			"keep_image_login": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "The Flag with image login set of the desired ScalingConfiguration.",
 			},
 
 			"instance_name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The KEC instance name of the desired ScalingConfiguration.",
 			},
 
 			"instance_name_suffix": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The kec instance name suffix of the desired ScalingConfiguration.",
 			},
 
 			"user_data": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The user data of the desired ScalingConfiguration.",
 			},
 
 			"instance_name_time_suffix": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "The kec instance name time suffix of the desired ScalingConfiguration.",
 			},
 
 			"need_monitor_agent": {
@@ -146,6 +188,7 @@ func resourceKsyunScalingConfiguration() *schema.Resource {
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validateKecInstanceAgent,
+				Description:  "The Monitor agent flag desired ScalingConfiguration.",
 			},
 
 			"need_security_agent": {
@@ -153,6 +196,7 @@ func resourceKsyunScalingConfiguration() *schema.Resource {
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validateKecInstanceAgent,
+				Description:  "The Security agent flag desired ScalingConfiguration.",
 			},
 
 			"address_band_width": {
@@ -160,49 +204,58 @@ func resourceKsyunScalingConfiguration() *schema.Resource {
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.IntAtLeast(1),
+				Description:  "The EIP BandWidth.",
 			},
 
 			"band_width_share_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The ID of BandWidthShare.",
 			},
 
 			"line_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The Line ID Of EIP.",
 			},
 
 			"address_project_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "The Project ID of EIP.",
 			},
 
 			"charge_type": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Charge type.",
 			},
 
 			"cpu": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "CPU.",
 			},
 
 			"gpu": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "GPU.",
 			},
 
 			"mem": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "Memory.",
 			},
 
 			"create_time": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The creation time.",
 			},
 		},
 	}

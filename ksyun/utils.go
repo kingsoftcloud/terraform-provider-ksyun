@@ -4,9 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"io/ioutil"
 	"log"
 	"os"
@@ -15,6 +12,10 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func SchemaSetToInstanceMap(s interface{}, prefix string, input *map[string]interface{}) {
@@ -582,14 +583,6 @@ func SdkResponseAutoResourceData(d *schema.ResourceData, resource *schema.Resour
 		for k, v := range root {
 			var value interface{}
 			var err error
-			//if v == nil {
-			//	continue
-			//}
-			//if str, ok := v.(string); ok {
-			//	if str == "" {
-			//		continue
-			//	}
-			//}
 			m := SdkResponseMapping{}
 			target := Hump2Downline(k)
 			if _, ok := extra[k]; ok {
@@ -634,7 +627,6 @@ func SdkResponseAutoResourceData(d *schema.ResourceData, resource *schema.Resour
 					log.Println(err.Error())
 					panic("ERROR: " + err.Error())
 				}
-
 			} else {
 				result[target] = value
 			}
@@ -645,11 +637,15 @@ func SdkResponseAutoResourceData(d *schema.ResourceData, resource *schema.Resour
 	} else if reflect.ValueOf(item).Kind() == reflect.Slice {
 		var result []interface{}
 		result = []interface{}{}
-		root := item.([]interface{})
-		for _, v := range root {
-			value := SdkResponseAutoResourceData(d, resource, v, extra, false)
+
+		// bugfix：直接转换为[]interface{}会panic，改用reflect处理
+		s := reflect.ValueOf(item)
+		for i := 0; i < s.Len(); i++ {
+			elem := s.Index(i)
+			value := SdkResponseAutoResourceData(d, resource, elem.Interface(), extra, false)
 			result = append(result, value)
 		}
+
 		if len(result) > 0 {
 			return result
 		}
@@ -855,4 +851,88 @@ func checkValueInSliceMap(data []interface{}, key string, value interface{}) (c 
 		}
 	}
 	return c
+}
+
+func checkValueInSlice(data []string, key string) (c bool) {
+	for _, iterK := range data {
+		if iterK == key {
+			c = true
+			return c
+		}
+	}
+	return c
+}
+
+func transInterfaceToStruct(source interface{}, target interface{}) (err error) {
+	var bytes []byte
+	bytes, err = json.Marshal(source)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(bytes, target)
+	return
+}
+
+func TransformMapValue2StringWithKey(keyPattern string, obj interface{}) error {
+	if obj == nil {
+		return fmt.Errorf("transform object must be not nil")
+	}
+	var (
+		retObj interface{}
+		err    error
+	)
+
+	switch obj.(type) {
+	case []interface{}:
+		for _, subObj := range obj.([]interface{}) {
+			retObj, err = getSdkValue(keyPattern, subObj)
+			if err != nil {
+				return fmt.Errorf("key pattern: %s not exsits in object", keyPattern)
+			}
+			if retObj == nil {
+				continue
+			}
+			transformerValueOfObj2String(retObj)
+		}
+	case map[string]interface{}:
+		retObj, err = getSdkValue(keyPattern, obj)
+		if err != nil {
+			return fmt.Errorf("key pattern: %s not exsits in object", keyPattern)
+		}
+		if retObj == nil {
+			return err
+		}
+		transformerValueOfObj2String(retObj)
+	}
+	return err
+}
+
+// transformerValueOfObj2String will convert values of object, such as map, slice, to string
+// for the nest string field of terraform resource map
+func transformerValueOfObj2String(retObj interface{}) {
+	switch retObj.(type) {
+	case map[string]interface{}:
+		iterObj := retObj.(map[string]interface{})
+		for k, v := range iterObj {
+			switch v.(type) {
+			case float64:
+				// convert float64 to string, which it will cut out the value after the decimal point
+				iterObj[k] = strconv.FormatFloat(v.(float64), 'f', 0, 64)
+			case int:
+				iterObj[k] = strconv.Itoa(v.(int))
+			}
+		}
+	case []interface{}:
+		iterObj := retObj.([]interface{})
+		for i, v := range iterObj {
+			switch v.(type) {
+			case float64:
+				// convert float64 to string, which it will cut out the value after the decimal point
+				iterObj[i] = strconv.FormatFloat(v.(float64), 'f', 0, 64)
+			case int:
+				iterObj[i] = strconv.Itoa(v.(int))
+			}
+		}
+
+	}
 }

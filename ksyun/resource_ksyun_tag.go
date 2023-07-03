@@ -1,3 +1,27 @@
+/*
+Provides a tag resource.
+
+# Example Usage
+
+```hcl
+
+	resource "ksyun_tag" "kec_tag" {
+	  key = "test_tag_key"
+	  value = "test_tag_value"
+	  resource_type = "eip"
+	  resource_id = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+	}
+
+```
+
+# Import
+
+Tag can be imported using the `id`, e.g.
+
+```
+$ terraform import ksyun_tag.kec_tag ${tag_key}:${tag_value},${resource_type}:${resource_id}
+```
+*/
 package ksyun
 
 import (
@@ -17,20 +41,24 @@ func resourceKsyunTag() *schema.Resource {
 		CustomizeDiff: resourceKsyunTagDiff(),
 		Schema: map[string]*schema.Schema{
 			"key": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Tag key.",
 			},
 			"value": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Tag value.",
 			},
 			"resource_type": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Resource type.",
 			},
 			"resource_id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Resource ID.",
 			},
 		},
 	}

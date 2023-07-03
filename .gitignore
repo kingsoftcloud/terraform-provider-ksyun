@@ -5,6 +5,10 @@ terraform-provider-ksyun
 .terraform/
 *.tfstate
 *.tfstate.*
-output_result
+output_result*
+__*
 *.log
 vendor_bk
+website_bk
+go.sum
+package.json

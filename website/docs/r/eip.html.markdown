@@ -1,6 +1,7 @@
 ---
+subcategory: "EIP"
 layout: "ksyun"
-page_title: "Ksyun: ksyun_eip"
+page_title: "ksyun: ksyun_eip"
 sidebar_current: "docs-ksyun-resource-eip"
 description: |-
   Provides an Elastic IP resource.
@@ -14,15 +15,15 @@ Provides an Elastic IP resource.
 
 ```hcl
 data "ksyun_lines" "default" {
-  output_file="output_result1"
-  line_name="BGP"
+  output_file = "output_result1"
+  line_name   = "BGP"
 }
-resource "ksyun_eip" "default1" {
-  line_id ="${data.ksyun_lines.default.lines.0.line_id}"
-  band_width =1
-  charge_type = "PrePaidByMonth"
-  purchase_time =1
-  project_id=0
+resource "ksyun_eip" "default" {
+  line_id       = "${data.ksyun_lines.default.lines.0.line_id}"
+  band_width    = 1
+  charge_type   = "PrePaidByMonth"
+  purchase_time = 1
+  project_id    = 0
 }
 ```
 
@@ -30,16 +31,35 @@ resource "ksyun_eip" "default1" {
 
 The following arguments are supported:
 
-* `line_id` - (Required, ForceNew) The id of the line.
 * `band_width` - (Required) The band width of the public address.
-* `charge_type` - (Required) The charge type of the Elastic IP address.Valid Values:'Monthly(PrePaidByMonth)', 'Peak(PostPaidByPeak)', 'Daily(PostPaidByDay)', 'TrafficMonthly(PostPaidByTransfer)', 'HourlySettlement(PostPaidByHour)', 'HourlyInstantSettlement' ,'DailyPaidByTransfer'.
-* `purchase_time` - (Optional) Purchase time. If charge_type is Monthly or PrePaidByMonth ,this is Required.
+* `charge_type` - (Required, ForceNew) The charge type of the Elastic IP address.Valid Values:'PrePaidByMonth','Monthly','PostPaidByPeak','Peak','PostPaidByDay','Daily','PostPaidByTransfer','TrafficMonthly','DailyPaidByTransfer','HourlySettlement','PostPaidByHour','HourlyInstantSettlement','PostpaidByTime'.
+* `line_id` - (Optional, ForceNew) The id of the line.
 * `project_id` - (Optional) The id of the project.
+* `purchase_time` - (Optional, ForceNew) Purchase time. If charge_type is Monthly or PrePaidByMonth, this is Required.
+* `tags` - (Optional) the tags of the resource.
 
- 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-* `public_ip` -  The Elastic IP address.
-* `id` -  The ID of the Elastic IP .
+* `id` - ID of the resource.
+* `allocation_id` - the ID of the EIP.
+* `band_width_share_id` - the ID of the BWS which the EIP associated.
+* `create_time` - creation time of the EIP.
+* `instance_id` - the ID of the EIP.
+* `instance_type` - The instance type to bind with the EIP.
+* `internet_gateway_id` - InternetGateway ID.
+* `is_band_width_share` - BWS EIP.
+* `network_interface_id` - NetworkInterface ID.
+* `public_ip` - The Elastic IP address.
+* `state` - state of the EIP.
+
+
+## Import
+
+EIP can be imported using the id, e.g.
+
+```
+$ terraform import ksyun_eip.default 67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
+```
+

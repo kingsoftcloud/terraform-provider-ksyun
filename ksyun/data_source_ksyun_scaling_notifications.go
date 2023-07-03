@@ -1,3 +1,17 @@
+/*
+This data source provides a list of ScalingNotification resources in a ScalingGroup.
+
+# Example Usage
+
+```hcl
+
+	data "ksyun_scaling_notifications" "default" {
+	  output_file="output_result"
+	  scaling_group_id = "541241314798xxxxxx"
+	}
+
+```
+*/
 package ksyun
 
 import (
@@ -11,32 +25,38 @@ func dataSourceKsyunScalingNotifications() *schema.Resource {
 		Read: dataSourceKsyunScalingNotificationsRead,
 		Schema: map[string]*schema.Schema{
 			"output_file": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "File name where to save data source results (after running `terraform plan`).",
 			},
 			"total_count": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "Total number of ScalingNotification resources that satisfy the condition.",
 			},
 
 			"scaling_group_id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "A scaling group id that the desired ScalingNotification belong to.",
 			},
 
 			"scaling_notifications": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "It is a nested type which documented below.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 
 						"scaling_group_id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ScalingGroup ID of the desired ScalingNotification belong to.",
 						},
 						"scaling_notification_id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the ScalingNotification.",
 						},
 
 						"scaling_notification_types": {
@@ -45,7 +65,8 @@ func dataSourceKsyunScalingNotifications() *schema.Resource {
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
-							Set: schema.HashString,
+							Set:         schema.HashString,
+							Description: "The List Types of the desired ScalingNotification.",
 						},
 					},
 				},

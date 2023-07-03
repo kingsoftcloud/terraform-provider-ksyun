@@ -1,3 +1,38 @@
+/*
+Provides a Subnet resource under VPC resource.
+
+# Example Usage
+
+```hcl
+
+	resource "ksyun_vpc" "example" {
+	  vpc_name   = "tf-example-vpc-01"
+	  cidr_block = "10.0.0.0/16"
+	}
+
+	resource "ksyun_subnet" "example" {
+	  subnet_name      = "tf-acc-subnet1"
+	  	cidr_block = "10.0.5.0/24"
+	      subnet_type = "Normal"
+	      dhcp_ip_from = "10.0.5.2"
+	      dhcp_ip_to = "10.0.5.253"
+	      vpc_id  = "${ksyun_vpc.test.id}"
+	      gateway_ip = "10.0.5.1"
+	      dns1 = "198.18.254.41"
+	      dns2 = "198.18.254.40"
+	      availability_zone = "cn-shanghai-2a"
+	}
+
+```
+
+# Import
+
+Subnet can be imported using the `id`, e.g.
+
+```
+$ terraform import ksyun_subnet.example fdeba8ca-8aa6-4cd0-8ffa-52ca9e9fef42
+```
+*/
 package ksyun
 
 import (
@@ -17,15 +52,17 @@ func resourceKsyunSubnet() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"availability_zone": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Optional:    true,
+				Computed:    true,
+				Description: "The name of the availability zone.",
 			},
 			"subnet_name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The name of the subnet.",
 			},
 
 			"cidr_block": {
@@ -33,6 +70,7 @@ func resourceKsyunSubnet() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validateCIDRNetworkAddress,
+				Description:  "The CIDR block assigned to the subnet.",
 			},
 
 			"subnet_type": {
@@ -44,6 +82,7 @@ func resourceKsyunSubnet() *schema.Resource {
 					"Normal",
 					"Physical",
 				}, false),
+				Description: "The type of subnet. Valid Values:'Reserve', 'Normal', 'Physical'.",
 			},
 
 			// openapi已经不支持dhcp的参数，保留这两个值兼容老用户，实际不起作用
@@ -54,6 +93,7 @@ func resourceKsyunSubnet() *schema.Resource {
 				ForceNew:     true,
 				Computed:     true,
 				ValidateFunc: validateIpAddress,
+				Description:  "DHCP end IP.",
 			},
 			"dhcp_ip_from": {
 				Type:         schema.TypeString,
@@ -62,19 +102,22 @@ func resourceKsyunSubnet() *schema.Resource {
 				ForceNew:     true,
 				Computed:     true,
 				ValidateFunc: validateIpAddress,
+				Description:  "DHCP start IP.",
 			},
 
 			"vpc_id": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Required: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Required:    true,
+				Description: "The id of the vpc.",
 			},
 
 			"gateway_ip": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Optional:    true,
+				Computed:    true,
+				Description: "The IP of gateway.",
 			},
 
 			"dns1": {
@@ -83,6 +126,7 @@ func resourceKsyunSubnet() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validateIpAddress,
 				Computed:     true,
+				Description:  "The dns of the subnet.",
 			},
 
 			"dns2": {
@@ -91,33 +135,40 @@ func resourceKsyunSubnet() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validateIpAddress,
 				Computed:     true,
+				Description:  "The dns of the subnet.",
 			},
 			"network_acl_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The id of the ACL that the desired Subnet associated to.",
 			},
 
 			"nat_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The id of the NAT that the desired Subnet associated to.",
 			},
 
 			"availability_zone_name": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The name of the availability zone.",
 			},
 
 			"create_time": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "creation time of the subnet.",
 			},
 			"subnet_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ID of the subnet.",
 			},
 			"available_ip_number": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "number of available IPs.",
 			},
 		},
 	}

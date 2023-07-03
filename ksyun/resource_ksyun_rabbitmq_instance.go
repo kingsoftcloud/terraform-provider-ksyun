@@ -1,3 +1,27 @@
+/*
+Provides an replica set Rabbitmq resource.
+
+# Example Usage
+
+```hcl
+
+	resource "ksyun_rabbitmq_instance" "default" {
+	  availability_zone     = "cn-beijing-6a"
+	  instance_name         = "my_rabbitmq_instance"
+	  instance_password     = "Shiwo1101"
+	  instance_type         = "2C4G"
+	  vpc_id                = "VpcId"
+	  subnet_id             = "VnetId"
+	  mode                  = 1
+	  engine_version        = "3.7"
+	  ssd_disk              = "5"
+	  node_num              = 3
+	  bill_type             = 87
+	  project_id            = 103800
+	}
+
+```
+*/
 package ksyun
 
 import (
@@ -27,18 +51,21 @@ func resourceKsyunRabbitmq() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"instance_name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The name of instance, which contains 6-64 characters and only support Chinese, English, numbers, '-', '_'.",
 			},
 			"engine_version": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The version of instance engine.",
 			},
 			"instance_type": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The class of instance cpu and memory.",
 			},
 			"mode": {
 				Type:     schema.TypeString,
@@ -47,31 +74,37 @@ func resourceKsyunRabbitmq() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					"1",
 				}, false),
+				Description: "The mode of instance.",
 			},
 			"ssd_disk": {
-				Type:     schema.TypeInt,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The size of instance disk, measured in GB (GigaByte).",
 			},
 			"vpc_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The id of VPC linked to the instance.",
 			},
 			"subnet_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The id of subnet linked to the instance.",
 			},
 			"instance_password": {
-				Type:      schema.TypeString,
-				Required:  true,
-				Sensitive: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Sensitive:   true,
+				Description: "The administrator password of instance.",
 			},
 			"bill_type": {
-				Type:     schema.TypeInt,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeInt,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Instance charge type,Valid values are 1 (Monthly), 87(UsageInstantSettlement).",
 			},
 			"duration": {
 				Type:     schema.TypeInt,
@@ -82,12 +115,14 @@ func resourceKsyunRabbitmq() *schema.Resource {
 					}
 					return true
 				},
-				ForceNew: true,
+				ForceNew:    true,
+				Description: "The duration of instance use, if `bill_type` is `1`, the duration is required.",
 			},
 			"project_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The project id of instance belong, if not defined `project_id`, the instance will use `0`.",
 			},
 			"node_num": {
 				Type:         schema.TypeInt,
@@ -95,23 +130,27 @@ func resourceKsyunRabbitmq() *schema.Resource {
 				Default:      3,
 				ValidateFunc: validation.IntBetween(3, 3),
 				ForceNew:     true,
+				Description:  "the number of instance node, if not defined 'node_num', the instance will use '3'.",
 			},
 			"availability_zone": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "Availability zone where instance is located.",
 			},
 			"enable_plugins": {
 				Type:             schema.TypeString,
 				Optional:         true,
 				ValidateFunc:     stringSplitSchemaValidateFunc(","),
 				DiffSuppressFunc: stringSplitDiffSuppressFunc(","),
+				Description:      "Enable plugins.",
 			},
 			"force_restart": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Set it to true to make some parameter efficient when modifying them. Default to false.",
 			},
 			//"band_width": {
 			//	Type:     schema.TypeInt,
@@ -125,100 +164,123 @@ func resourceKsyunRabbitmq() *schema.Resource {
 			//	},
 			//},
 			"enable_eip": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "If the value is true, the instance will support public ip. default is false.",
 			},
 			"cidrs": {
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: stringSplitDiffSuppressFunc(","),
 				ValidateFunc:     stringSplitSchemaValidateFunc(","),
+				Description:      "network cidrs.",
 			},
 			"project_name": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The name of the project.",
 			},
 			"instance_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ID of the instance.",
 			},
 			"engine": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "engine.",
 			},
 			"user_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "user id.",
 			},
 			"region": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "region.",
 			},
 			"status_name": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "status name.",
 			},
 			"vip": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "vip.",
 			},
 			"web_vip": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "web vip.",
 			},
 			"protocol": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "protocol.",
 			},
 			"security_group_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "security group id.",
 			},
 			"network_type": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Network type.",
 			},
 			"product_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ID of the project.",
 			},
 			"create_date": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The creation date.",
 			},
 			"expiration_date": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The expiration date.",
 			},
 			"product_what": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "product what.",
 			},
 			"mode_name": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "mode name.",
 			},
 			"eip": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "EIP address.",
 			},
 			"web_eip": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Web EIP address.",
 			},
 			"eip_egress": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The egress of the EIP.",
 			},
 			"port": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The port of the instance.",
 			},
 			"status": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the instance.",
 			},
 		},
 	}

@@ -41,6 +41,11 @@ func testAccPreCheck(t *testing.T) {
 		log.Println("[INFO] Test: Using cn-beijing-6 as test region")
 		os.Setenv("KSYUN_REGION", "cn-beijing-6")
 	}
+
+	// 这个默认影响大多数产品线的test，先去掉
+	//if v := os.Getenv("KSYUN_DOMAIN"); v == "" {
+	//	os.Setenv("KSYUN_DOMAIN", DEFAULT_ENDPOINT)
+	//}
 }
 
 func testAccCheckIDExists(n string) resource.TestCheckFunc {

@@ -1,3 +1,25 @@
+/*
+Provides an SSH key resource.
+
+# Example Usage
+
+```hcl
+
+	resource "ksyun_ssh_key" "default" {
+	  key_name="ssh_key_tf"
+	  public_key="ssh-rsa xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+	}
+
+```
+
+# Import
+
+SSH key can be imported using the id, e.g.
+
+```
+$ terraform import ksyun_ssh_key.default xxxxxxxxxxxx
+```
+*/
 package ksyun
 
 import (
@@ -17,26 +39,31 @@ func resourceKsyunSSHKey() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"key_name": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "name of the key.",
 			},
 			"key_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ID of the key.",
 			},
 			"public_key": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "public key.",
 			},
 			"private_key": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "private key.",
 			},
 			"create_time": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "creation time of the key.",
 			},
 		},
 	}

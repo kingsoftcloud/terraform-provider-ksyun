@@ -1,3 +1,25 @@
+/*
+Provides a Security Group resource.
+
+# Example Usage
+
+```hcl
+
+	resource "ksyun_security_group" "default" {
+	  vpc_id = "26231a41-4c6b-4a10-94ed-27088d5679df"
+	  security_group_name="xuan-tf--s"
+	}
+
+```
+
+# Import
+
+Security Group can be imported using the `id`, e.g.
+
+```
+$ terraform import ksyun_security_group.example xxxxxxxx-abc123456
+```
+*/
 package ksyun
 
 import (
@@ -24,14 +46,16 @@ func resourceKsyunSecurityGroup() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"vpc_id": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Required: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Required:    true,
+				Description: "The Id of the vpc.",
 			},
 
 			"security_group_name": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The name of the security group.",
 			},
 
 			"security_group_entries": {
@@ -42,14 +66,17 @@ func resourceKsyunSecurityGroup() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: entry,
 				},
+				Description: "Network security group Entries. this parameter will be deprecated, use `ksyun_security_group_entry` instead.",
 			},
 			"security_group_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ID of the security group.",
 			},
 			"create_time": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The time of creation of security group.",
 			},
 		},
 	}

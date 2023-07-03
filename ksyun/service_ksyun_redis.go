@@ -872,6 +872,9 @@ func deallocateSecurityGroup(d *schema.ResourceData, meta interface{}, sgId stri
 		logger.Debug(logger.ReqFormat, action, deallocateReq)
 		resp, err = integrationAzConf.integrationRedisAz()
 		if err == nil {
+			if (*resp)["Data"] == nil {
+				return nil
+			}
 			data := (*resp)["Data"].([]interface{})
 			if len(data) == 0 {
 				return nil

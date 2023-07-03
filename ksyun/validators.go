@@ -2,14 +2,30 @@ package ksyun
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"net"
 	"regexp"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
 
-var validateName = validation.StringMatch(
-	regexp.MustCompile(`^[A-Za-z0-9\p{Han}-_]{1,63}$`),
-	"expected value to be 1 - 63 characters and only support chinese, english, numbers, '-', '_'",
+var (
+	KrdsEnginSlice             = []string{"mysql", "percona", "consistent_mysql", "ebs_mysql"}
+	KrdsMysqlVersion           = []string{"5.7", "5.6", "5.5", "8.0"}
+	KrdsPerconaVersion         = []string{"5.6"}
+	KrdsConsistentMysqlVersion = []string{"5.7"}
+	KrdsEbsMysqlVersion        = []string{"5.7", "5.6"}
+
+	KrdsEnginVersionMap = map[string][]string{
+		"mysql":            KrdsMysqlVersion,
+		"percona":          KrdsPerconaVersion,
+		"consistent_mysql": KrdsConsistentMysqlVersion,
+		"ebs_mysql":        KrdsEbsMysqlVersion,
+	}
+
+	validateName = validation.StringMatch(
+		regexp.MustCompile(`^[A-Za-z0-9\p{Han}-_]{1,63}$`),
+		"expected value to be 1 - 63 characters and only support chinese, english, numbers, '-', '_'",
+	)
 )
 
 // validateCIDRNetworkAddress ensures that the string value is a valid CIDR that
@@ -236,7 +252,7 @@ func validatePurchaseTime(req *map[string]interface{}, purchaseTimeField string,
 	return nil
 }
 
-//校验Ks3 Bucket name
+// 校验Ks3 Bucket name
 /*
 func validateKs3BucketName(value string) error {
 	if (len(value) < 3) || (len(value) > 63) { //3~63字符之间
@@ -281,3 +297,15 @@ func validateKs3BucketLifecycleTimestamp(v interface{}, k string) (ws []string, 
 }
 
 */
+
+func validateKrdsEngine(val interface{}, k string) (ws []string, errors []error) {
+	engine := val.(string)
+	if !checkValueInSlice(KrdsEnginSlice, engine) {
+		errors = append(errors, fmt.Errorf("krds engine must be mysql, percona, consistent_mysql or ebs_mysql. but got %s", engine))
+	}
+	return
+}
+
+func validateKrdsEngineVersionWithEngine(engine, engineVersion string) bool {
+	return checkValueInSlice(KrdsEnginVersionMap[engine], engineVersion)
+}

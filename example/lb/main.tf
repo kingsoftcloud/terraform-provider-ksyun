@@ -13,6 +13,7 @@ resource "ksyun_subnet" "test" {
   availability_zone = "cn-beijing-6a"
   vpc_id            = "${ksyun_vpc.test.id}"
 }
+
 # Create Load Balancer
 resource "ksyun_lb" "default" {
   vpc_id              = "${ksyun_vpc.test.id}"

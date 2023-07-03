@@ -1,3 +1,17 @@
+/*
+This data source provides a list of ScalingActivity resources in a ScalingGroup.
+
+# Example Usage
+
+```hcl
+
+	data "ksyun_scaling_activities" "default" {
+	  output_file="output_result"
+	  scaling_group_id = "541241314798505984"
+	}
+
+```
+*/
 package ksyun
 
 import (
@@ -11,64 +25,78 @@ func dataSourceKsyunScalingActivities() *schema.Resource {
 		Read: dataSourceKsyunScalingActivitiesRead,
 		Schema: map[string]*schema.Schema{
 			"output_file": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "File name where to save data source results (after running `terraform plan`).",
 			},
 			"total_count": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "Total number of ScalingActivity resources that satisfy the condition.",
 			},
 			"scaling_group_id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "A ScalingGroup ID that the desired ScalingActivity belong to.",
 			},
 
 			"start_time": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Start Time that the desired ScalingActivity set to.",
 			},
 
 			"end_time": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The End Time that the desired ScalingActivity set to.",
 			},
 
 			"scaling_activities": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "It is a nested type which documented below.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"status": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The status of the desired ScalingActivity.",
 						},
 						"cause": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The cause of the desired ScalingActivity.",
 						},
 						"description": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The description of the desired ScalingActivity.",
 						},
 						"start_time": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The start time the desired ScalingActivity.",
 						},
 						"scaling_activity_id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the desired ScalingActivity.",
 						},
 						"end_time": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The end time of the desired ScalingActivity.",
 						},
 						"type": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The type the desired ScalingActivity.",
 						},
 						"error_code": {
-							Type:     schema.TypeInt,
-							Computed: true,
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The error code of the desired ScalingActivity.",
 						},
 						"success_instance_list": {
 							Type:     schema.TypeSet,
@@ -76,7 +104,8 @@ func dataSourceKsyunScalingActivities() *schema.Resource {
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
-							Set: schema.HashString,
+							Set:         schema.HashString,
+							Description: "The success KEC Instance ID List of the desired ScalingActivity.",
 						},
 					},
 				},

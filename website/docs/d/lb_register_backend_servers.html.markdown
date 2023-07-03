@@ -1,25 +1,25 @@
 ---
+subcategory: "SLB"
 layout: "ksyun"
-page_title: "Ksyun: ksyun_lb_register_backend_servers"
-sidebar_current: "docs-ksyun-datasource-lb-register-backend-servers"
+page_title: "ksyun: ksyun_lb_register_backend_servers"
+sidebar_current: "docs-ksyun-datasource-lb_register_backend_servers"
 description: |-
-  Provides a list of lb register backend servers in the current region.
+  Provides a list of register backend servers in the current region.
 ---
 
 # ksyun_lb_register_backend_servers
 
 Provides a list of register backend servers in the current region.
 
+#
+
 ## Example Usage
 
 ```hcl
-provider "ksyun" {
-region="cn-beijing-6"
-}
 data "ksyun_lb_register_backend_servers" "foo" {
-output_file="output_result"
-ids=[]
-backend_server_group_id=[]
+  output_file             = "output_result"
+  ids                     = []
+  backend_server_group_id = []
 }
 ```
 
@@ -27,21 +27,26 @@ backend_server_group_id=[]
 
 The following arguments are supported:
 
--  `ids` - (Optional) A list of backend service IDs.
-- `backend_server_group_id` - (Optional) The ID of backend server group.
+* `backend_server_group_id` - (Optional) A list of Register backend server IDs.
+* `ids` - (Optional) A list of Register backend server IDs, all the Register backend servers belong to this region will be retrieved if the ID is `""`.
+* `output_file` - (Optional) File name where to save data source results (after running `terraform plan`).
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-- `create_time` - The time when the backend server was created.
-- `backend_server_group_id` - The id of backend server group.
-- `register_id` - The registration ID of the binding server group. 
-- `real_server_ip` - The IP of real server.
-- `real_server_port` - The port of real server.Valid Values:1-65535.
-- `real_server_type` - The type of real server.Valid Values:'Host'.
-- `master_slave_type` - The type of real server.Only MasterSlave listener has this parameter.The Valid Values:'Master','Slave'.
-- `instance_id` - The ID of instance.
-- `network_interface_id` - The ID of network interface.
-- `real_server_state` - The state of real server.Values:'healthy','unhealthy'
-- `weight` - The weight of backend service.Valid Values:1-255
+* `register_backend_servers` - An information list of Register backend groups. Each element contains the following attributes:
+  * `backend_server_group_id` - The ID of the server.
+  * `backend_server_ip` - The IP of the server.
+  * `create_time` - creation time.
+  * `instance_id` - The ID of the instance.
+  * `network_interface_id` - The ID of the network interface.
+  * `real_server_ip` - The IP of real server.
+  * `real_server_port` - The port number of real server.
+  * `real_server_state` - The state of the real server.
+  * `real_server_type` - The type of real server.
+  * `register_id` - The registration ID of the binding server group.
+  * `weight` - The weight of backend service.
+* `total_count` - Total number of Register backend groups that satisfy the condition.
+
+

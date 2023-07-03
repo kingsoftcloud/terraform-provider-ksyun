@@ -1,3 +1,24 @@
+/*
+Provides a ScalingInstance resource.
+
+# Example Usage
+
+```hcl
+
+	resource "ksyun_scaling_instance" "foo" {
+	  scaling_group_id = "541241314798505984"
+	  scaling_instance_id = "a4ef95c5-e8f1-43f8-912a-758f15064063"
+	  protected_from_detach = 1
+	}
+
+```
+
+# Import
+
+```
+$ terraform import ksyun_scaling_instance.example scaling-instance-abc123456
+```
+*/
 package ksyun
 
 import (
@@ -36,38 +57,45 @@ func resourceKsyunScalingInstance() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"scaling_group_id": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Required: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Required:    true,
+				Description: "The ScalingGroup ID of the desired ScalingInstance belong to.",
 			},
 
 			"scaling_instance_id": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Required: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Required:    true,
+				Description: "The KEC Instance ID of the desired ScalingInstance.",
 			},
 
 			"protected_from_detach": {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: validateKecInstanceAgent,
+				Description:  "The KEC Instance Name of the desired ScalingInstance.Valid Value 0,1.",
 			},
 
 			"scaling_instance_name": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The name of the instance.",
 			},
 			"health_status": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Health status.",
 			},
 			"add_time": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The time of creation of ScalingInstance, formatted in RFC3339 time string.",
 			},
 			"creation_type": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Creation type.",
 			},
 		},
 	}

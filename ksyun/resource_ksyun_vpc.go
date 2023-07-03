@@ -1,3 +1,25 @@
+/*
+Provides a VPC resource.
+
+~> **Note**  The network segment can only be created or deleted, can not perform both of them at the same time.
+
+Example Usage
+
+```hcl
+resource "ksyun_vpc" "example" {
+  vpc_name   = "ksyun_vpc_tf"
+  cidr_block = "10.1.0.2/24"
+}
+
+Import
+
+VPC can be imported using the `id`, e.g.
+
+```
+$ terraform import ksyun_vpc.example vpc-abc123456
+```
+*/
+
 package ksyun
 
 import (
@@ -16,8 +38,9 @@ func resourceKsyunVpc() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"vpc_name": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The name of the vpc.",
 			},
 
 			"cidr_block": {
@@ -25,17 +48,20 @@ func resourceKsyunVpc() *schema.Resource {
 				Optional:     true,
 				ForceNew:     true,
 				ValidateFunc: validateCIDRNetworkAddress,
+				Description:  "The CIDR blocks of VPC.",
 			},
 
 			"is_default": {
-				Type:     schema.TypeBool,
-				ForceNew: true,
-				Default:  false,
-				Optional: true,
+				Type:        schema.TypeBool,
+				ForceNew:    true,
+				Default:     false,
+				Optional:    true,
+				Description: "Whether the VPC is default or not.",
 			},
 			"create_time": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The time of creation for VPC.",
 			},
 		},
 	}

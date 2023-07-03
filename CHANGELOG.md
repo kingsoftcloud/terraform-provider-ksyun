@@ -1,3 +1,115 @@
+## 1.4.0 (Jun 29, 2023)
+
+FEATURES:
+
+- - **New Resource:** `ksyun_krds_parameter_group` krds 参数组管理
+- - **New Resource:** `ksyun_data_guard_group`
+- - **New Resource:** `ksyun_auto_snapshot_policy` 自动快照策略管理
+- - **New Resource:** `ksyun_auto_snapshot_policy_volume_association` 自动快照策略应用到云硬盘
+- - **New Resource:** `ksyun_snapshot` EBS快照
+- - **New Data Source:** `ksyun_krds_parameter_group`
+- - **New Data Source:** `ksyun_data_guard_group`
+- - **New Data Source:** `ksyun_auto_snapshot_policy`
+- - **New Data Source:** `ksyun_auto_snapshot_policy_volume_association`
+
+BUG FIXES:
+
+- 修复kec实例升降配时的重启逻辑(ksyun_instance: instance_type)
+  - NOTE: 实例降级操作会触发实例关机
+
+## 1.3.79 (Jun 15, 2023)
+
+IMPROVEMENTS:
+
+- EBS数据盘增加ESSD_PL0类型
+
+## 1.3.78 (Jun 12, 2023)
+
+IMPROVEMENTS:
+
+- data_ksyun_snapshots: EBS快照
+- data_ksyun_local_snapshots: 本地盘快照
+
+## 1.3.77 (Jun 12, 2023)
+
+IMPROVEMENTS:
+
+- 删除redis安全组的机制优化
+- SLB监听器的健康检查字段设为Deprecated，使用ksyun_healthcheck代替
+
+## 1.3.76 (May 15, 2023)
+
+IMPROVEMENTS:
+
+- data_ksyun_images返回增加real_image_id字段
+
+## 1.3.75 (May 5, 2023)
+
+BUG FIXES:
+
+- 修复kec更配不调整套餐时参数缺少instanceType的问题
+
+## 1.3.74 (April 28, 2023)
+
+BUG FIXES:
+
+- 修复slice类型的interface映射不准确导致panic的问题
+
+## 1.3.73 (April 19, 2023)
+
+- user-agent增加provider版本
+
+## 1.3.71 (April 10, 2023)
+
+- 增加ks3文档
+
+## 1.3.70 (April 6, 2023)
+
+- ### KS3
+
+  RESOURCES:
+
+  * bucket create
+  * bucket read
+  * bucket update 
+  * bucket delete
+
+## 1.3.68 (Mar 20, 2023)
+
+BUG FIXES:
+
+- 修复EIP字段设置的BUG。
+
+## 1.3.67 (Mar 14, 2023)
+
+IMPROVEMENTS:
+
+- 基于代码description生成文档
+
+## 1.3.66 (Mar 3, 2023)
+
+BUG FIXES:
+
+- 修复redis清理安全组由于缓存数据未更新导致删除失败的问题
+
+## 1.3.65 (Mar 3, 2023)
+
+BUG FIXES:
+
+- 修复redis清理安全组panic的问题
+
+## 1.3.64 (Mar 3, 2023)
+
+IMPROVEMENTS:
+
+- redis支持delete_directly参数
+
+## 1.3.63 (Mar 1, 2023)
+
+BUG FIXES:
+
+- 去掉KRDS计费方式校验
+
 ## 1.3.62 (Dec 29, 2022)
 
 BUG FIXES:
@@ -48,11 +160,77 @@ IMPROVEMENTS:
 - instance的security_group_id增加MinItems限制
 - volume增加snapshot_id字段
 - 优化instance和volume的snapshot_id字段的diff判断（由于api不返回该字段，diff默认忽略）
+- 新增EBS类型：ESSD_PL1、ESSD_PL2、ESSD_PL3
 
 BUG FIXES:
 
 - 修复更配无法触发的问题
 - 修复机型其他属性修改触发网卡更新的问题
+
+
+## 1.3.55 (Oct 8, 2022)
+
+BUG FIXES:
+
+- 修正LB日志参数的文档错误
+- 修正LB的TAG资源类型问题
+
+
+## 1.3.54 (Sep 28, 2022)
+
+BUG FIXES:
+
+- 修正创建LB同时开启日志不生效的问题
+
+
+## 1.3.53 (Sep 28, 2022)
+
+BUG FIXES:
+
+- 更正LB日志功能的example和文档 
+
+
+## 1.3.52 (Sep 20, 2022)
+
+BUG FIXES:
+
+- 修正EBS盘未修改但触发resize的问题
+
+
+## 1.3.51 (Sep 15, 2022)
+
+BUG FIXES:
+
+- 修正KRDS的日志bug，增加KRDS绑定EIP的参数示例
+
+
+## 1.3.50 (Sep 14, 2022)
+
+BUG FIXES:
+
+- 修正KRDS磁盘参数校验的正则
+
+
+## 1.3.49 (Sep 6, 2022)
+
+BUG FIXES:
+
+- 修复云主机示例不能更新安全组的问题（不更新其他网络属性，只更新安全组）
+
+## 1.3.48 (Sep 6, 2022)
+
+BUG FIXES:
+
+- releaser配置增加windows和arm的配置
+
+
+## 1.3.47 (Sep 6, 2022)
+
+BUG FIXES:
+
+- 修复import子网不能获取到AZ属性的问题
+
+
 
 
 ## 1.1.0 (Dec 21,2020)
