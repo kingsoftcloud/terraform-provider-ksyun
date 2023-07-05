@@ -75,6 +75,26 @@ func (d *DataGuardSrv) modifyModifyDataGuardGroups(input map[string]interface{})
 	return *resp, err
 }
 
+func (d *DataGuardSrv) RemoveVmFromDataGuard(dataGuardId, instanceId string) error {
+	removeParam := map[string]interface{}{
+		"DataGuardId":  dataGuardId,
+		"InstanceId.1": instanceId,
+	}
+
+	_, err := d.GetConn().RemoveVmFromDataGuard(&removeParam)
+	return err
+}
+
+func (d *DataGuardSrv) AddVmIntoDataGuard(dataGuardId, instanceId string) error {
+	addParam := map[string]interface{}{
+		"DataGuardId":  dataGuardId,
+		"InstanceId.1": instanceId,
+	}
+
+	_, err := d.GetConn().AddVmIntoDataGuard(&addParam)
+	return err
+}
+
 func (d *DataGuardSrv) GetConn() *kec.Kec {
 	return d.client.kecconn
 }

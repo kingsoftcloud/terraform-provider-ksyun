@@ -345,6 +345,14 @@ func (s *KecService) modifyKecInstance(d *schema.ResourceData, resource *schema.
 		return err
 	}
 	callbacks = append(callbacks, networkCall)
+
+	// change an instance to another data guard group
+	modifyKecDGGCall, err := s.modifyKecInstanceDataGuardGroupCall(d, resource)
+	if err != nil {
+		return err
+	}
+	callbacks = append(callbacks, modifyKecDGGCall)
+
 	// force stop or start
 	stateCall, err := s.stopOrStartKecInstance(d)
 	if err != nil {
@@ -716,6 +724,57 @@ func (s *KecService) modifyKecInstanceName(d *schema.ResourceData, resource *sch
 			afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
 				logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
 				return err
+			},
+		}
+	}
+	return callback, err
+}
+
+func (s *KecService) modifyKecInstanceDataGuardGroupCall(d *schema.ResourceData, resource *schema.Resource) (callback ApiCall, err error) {
+	if d.HasChange("data_guard_id") {
+		changeParas := make(map[string]interface{})
+		changeParas["InstanceId"] = d.Id()
+		preDGG, wantsDGG := d.GetChange("data_guard_id")
+		changeParas["Old-DGG"], _ = If2String(preDGG)
+		changeParas["New-DGG"], _ = If2String(wantsDGG)
+		callback = ApiCall{
+			param:  &changeParas,
+			action: "ModifyVmDataGuard",
+			beforeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (bool, error) {
+				if (*call.param)["Old-DGG"] != "" {
+					conn := client.kecconn
+					removeParam := map[string]interface{}{
+						"InstanceId.1": d.Id(),
+						"DataGuardId":  (*call.param)["Old-DGG"],
+					}
+
+					resp, err := conn.RemoveVmFromDataGuard(&removeParam)
+					if err != nil {
+						return false, err
+					}
+					logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+					err = s.checkKecInstanceState(d, "", []string{"active"}, d.Timeout(schema.TimeoutUpdate))
+					if err != nil {
+						return false, err
+					}
+					return true, nil
+				}
+				return true, nil
+			},
+			executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+				if (*call.param)["New-DGG"] != "" {
+					conn := client.kecconn
+					addParam := map[string]interface{}{
+						"InstanceId.1": d.Id(),
+						"DataGuardId":  (*call.param)["New-DGG"],
+					}
+
+					return conn.AddVmIntoDataGuard(&addParam)
+				}
+				return resp, err
+			},
+			afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+				return s.checkKecInstanceState(d, "", []string{"active"}, d.Timeout(schema.TimeoutUpdate))
 			},
 		}
 	}

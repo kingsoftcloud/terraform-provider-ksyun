@@ -61,6 +61,10 @@ parameters {
 			name = "auto_increment_offset"
 			value= "2"
 		}
+		parameters {
+			name = "innodb_open_files"
+			value= "1000"
+		}
 }
 `
 
@@ -94,6 +98,10 @@ parameters {
 		parameters {
 			name = "back_log"
 			value= "65535"
+		}
+		parameters {
+			name = "innodb_open_files"
+			value= "1024"
 		}
 }
 `

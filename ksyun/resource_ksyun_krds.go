@@ -161,10 +161,11 @@ package ksyun
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"time"
 )
 
 func resourceKsyunKrds() *schema.Resource {
@@ -260,7 +261,7 @@ func resourceKsyunKrds() *schema.Resource {
 				//				//ValidateFunc: validation.StringInSlice([]string{
 				//	"DAY",
 				//	"YEAR_MONTH",
-				//}, false),
+				// }, false),
 				Description: "bill type, valid values: DAY, YEAR_MONTH, HourlyInstantSettlement. Default is DAY.",
 			},
 			"duration": {
@@ -314,6 +315,12 @@ func resourceKsyunKrds() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				Description: "project ID.",
+			},
+			"db_parameter_template_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "parameter template id",
 			},
 			"parameters": {
 				Type: schema.TypeSet,

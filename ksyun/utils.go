@@ -922,17 +922,6 @@ func transformerValueOfObj2String(retObj interface{}) {
 				iterObj[k] = strconv.Itoa(v.(int))
 			}
 		}
-	case []interface{}:
-		iterObj := retObj.([]interface{})
-		for i, v := range iterObj {
-			switch v.(type) {
-			case float64:
-				// convert float64 to string, which it will cut out the value after the decimal point
-				iterObj[i] = strconv.FormatFloat(v.(float64), 'f', 0, 64)
-			case int:
-				iterObj[i] = strconv.Itoa(v.(int))
-			}
-		}
 
 	}
 }
