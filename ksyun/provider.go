@@ -258,6 +258,15 @@ KS3
 
 	Resource
 		ksyun_ks3_bucket
+
+KNAD
+
+	Data Source
+		ksyun_knads
+
+	Resource
+		ksyun_knad
+		ksyun_knad_associate
 */
 package ksyun
 

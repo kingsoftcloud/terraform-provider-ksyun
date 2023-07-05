@@ -29,7 +29,6 @@ func (s *KnadService) ReadAndSetKnads(d *schema.ResourceData, r *schema.Resource
 		return err
 	}
 
-	//req, err := SdkRequestAutoMapping(d, r, false, transform, nil)
 	data, err := s.ReadKnads(req)
 	if err != nil {
 		return err
@@ -314,7 +313,7 @@ func is_Subset(subset []string, superset []string) bool {
 func (s *KnadService) ReadKnadAssociate(d *schema.ResourceData, knadId string, ip *schema.Set) (result map[string]interface{}, err error) {
 	data, err := s.ReadKnadIpList(d, knadId)
 	result = make(map[string]interface{})
-	var emptyMap = make(map[string]interface{})
+	//var emptyMap = make(map[string]interface{})
 	var associateIps []string //db里读出来的ips
 	//if len(data) == 0 {
 	//	return emptyMap, fmt.Errorf("instance has not band ips")
@@ -323,13 +322,13 @@ func (s *KnadService) ReadKnadAssociate(d *schema.ResourceData, knadId string, i
 	for _, v := range data {
 		associateIps = append(associateIps, v.(map[string]interface{})["Ip"].(string))
 	}
-	ipSlice := make([]string, 0) //d里获取的ip
+	/*ipSlice := make([]string, 0) //d里获取的ip
 	for _, _ip := range ip.List() {
 		ipSlice = append(ipSlice, _ip.(string))
 	}
 	if len(ipSlice) != len(associateIps) {
 		return emptyMap, fmt.Errorf("ip not associate knad")
-	}
+	}*/
 	//isFound := is_Subset(ipSlice, associateIps)
 	//
 	//if !isFound {

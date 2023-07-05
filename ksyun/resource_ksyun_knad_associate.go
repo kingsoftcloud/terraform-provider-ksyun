@@ -1,3 +1,25 @@
+/*
+Provides a Knad Association resource for associating EIP with a KNAD instance.
+
+# Example Usage
+
+```hcl
+
+	resource "ksyun_knad_associate" "default" {
+	  knad_id="knadba4d704f-35b1-3354-8d0f-65adc04796b9"
+	  ip = ["88.88.88.46","88.88.88.51"]
+	}
+
+```
+
+# Import
+
+# Knad Association can be imported using the id
+
+```
+$ terraform import ksyun_knad_associate.default ${knad_id}
+```
+*/
 package ksyun
 
 import (
@@ -17,19 +39,19 @@ func resourceKsyunKnadAssociate() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"knad_id": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Optional:    true,
+				Description: "the ID of the Knad.",
 			},
 			"ip": {
 				Type:     schema.TypeSet,
 				Optional: true,
-				//ForceNew: true,
-				//Computed: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Set: schema.HashString,
+				Set:         schema.HashString,
+				Description: "the binding ips.",
 			},
 		},
 	}

@@ -12,6 +12,6 @@ provider "ksyun" {
 }
 # Create an knadAssociate
 resource "ksyun_knad_associate" "default" {
-  knad_id="knade0e77118-86a9-3761-9c39-b30dc2c0477e"
+  knad_id="knadba4d704f-35b1-3354-8d0f-xxxxxx"
   ip = ["88.88.88.46"]
 }
