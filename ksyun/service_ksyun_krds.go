@@ -329,50 +329,52 @@ func readAndSetKrdsInstanceParameters(d *schema.ResourceData, meta interface{}) 
 
 		remote[k] = m
 	}
-	if local.Len() < 1 {
-		for k, v := range remote {
-			if v1, ok := defaultParameter[k]; ok {
-				switch v1.(map[string]interface{})["Type"] {
-				case "integer":
-					if strconv.FormatInt(int64(v1.(map[string]interface{})["Default"].(float64)), 10) != v["value"] {
-						parameters = append(parameters, v)
-					}
-				case "float":
-					if strconv.FormatFloat(v1.(map[string]interface{})["Default"].(float64), 'g', 1, 64) != v["value"] {
-						parameters = append(parameters, v)
-					}
-				case "expression":
-					if v1.(map[string]interface{})["Variable"] == "instance_memory" {
-						ramStr := strings.Replace(strings.Split(d.Get("db_instance_class").(string), "|")[0], "db.ram.", "", -1)
-						scaleStr := strings.Replace(v1.(map[string]interface{})["DefaultScaleFactor"].(string), "%", "", -1)
-						ram, _ := strconv.ParseInt(ramStr, 10, 64)
-						scale, _ := strconv.ParseFloat(scaleStr, 64)
-						defaultScaleValue := strconv.FormatInt(int64(float64(ram*1024*1024*1024)*(scale/100)), 10)
-						if defaultScaleValue != v["value"] {
-							parameters = append(parameters, v)
-						}
-					} else {
-						parameters = append(parameters, v)
-					}
-				default:
-					if v1.(map[string]interface{})["Default"] != v["value"] {
-						parameters = append(parameters, v)
-					}
-				}
+	// if local.Len() < 1 {
+	// 	for k, v := range remote {
+	// 		if v1, ok := defaultParameter[k]; ok {
+	// 			switch v1.(map[string]interface{})["Type"] {
+	// 			case "integer":
+	// 				if strconv.FormatInt(int64(v1.(map[string]interface{})["Default"].(float64)), 10) != v["value"] {
+	// 					parameters = append(parameters, v)
+	// 				}
+	// 			case "float":
+	// 				if strconv.FormatFloat(v1.(map[string]interface{})["Default"].(float64), 'g', 1, 64) != v["value"] {
+	// 					parameters = append(parameters, v)
+	// 				}
+	// 			case "expression":
+	// 				if v1.(map[string]interface{})["Variable"] == "instance_memory" {
+	// 					ramStr := strings.Replace(strings.Split(d.Get("db_instance_class").(string), "|")[0], "db.ram.", "", -1)
+	// 					scaleStr := strings.Replace(v1.(map[string]interface{})["DefaultScaleFactor"].(string), "%", "", -1)
+	// 					ram, _ := strconv.ParseInt(ramStr, 10, 64)
+	// 					scale, _ := strconv.ParseFloat(scaleStr, 64)
+	// 					defaultScaleValue := strconv.FormatInt(int64(float64(ram*1024*1024*1024)*(scale/100)), 10)
+	// 					if defaultScaleValue != v["value"] {
+	// 						parameters = append(parameters, v)
+	// 					}
+	// 				} else {
+	// 					parameters = append(parameters, v)
+	// 				}
+	// 			default:
+	// 				if v1.(map[string]interface{})["Default"] != v["value"] {
+	// 					parameters = append(parameters, v)
+	// 				}
+	// 			}
+	//
+	// 		}
+	// 	}
+	// } else {
 
-			}
-		}
-	} else {
-		for _, value := range local.List() {
-			name := value.(map[string]interface{})["name"]
-			for k, v := range remote {
-				if k == name {
-					parameters = append(parameters, v)
-					break
-				}
+	// temporary parameter should keep identical with online instance parameters
+	for _, value := range local.List() {
+		name := value.(map[string]interface{})["name"]
+		for k, v := range remote {
+			if k == name {
+				parameters = append(parameters, v)
+				break
 			}
 		}
 	}
+	// }
 
 	// if local, ok := d.GetOk("parameters"); ok {
 	// }
