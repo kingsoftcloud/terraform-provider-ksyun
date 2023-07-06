@@ -1,5 +1,5 @@
 /*
-Provides a tag resource.
+Provides an auto snapshot policy associate to volume.
 
 # Example Usage
 

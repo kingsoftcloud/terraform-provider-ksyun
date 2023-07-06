@@ -1,4 +1,15 @@
-## 1.4.0 (Unreleased)
+## 1.4.1 (unRelease)
+
+IMPROVEMENTS:
+
+- 新增kec实例移入移出容灾组操作
+- 支持krds实例使用参数组作为参数创建模版
+
+BUG FIXES:
+
+- 修复krds_parameter_group参数组参数修改时可能引发的异常
+
+## 1.4.0 (Jun 29, 2023)
 
 FEATURES:
 

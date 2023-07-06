@@ -284,10 +284,10 @@ func instanceConfig() map[string]*schema.Schema {
 			Description: "The project instance belongs to.",
 		},
 		"data_guard_id": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			ForceNew:    true,
-			Description: "Add instance being created to a disaster tolerance group.",
+			Type:     schema.TypeString,
+			Optional: true,
+			// ForceNew:    true,
+			Description: "Add instance being created to a disaster tolerance group. It will be quit the disaster tolerance group, if this field change to null.",
 		},
 		"host_name": {
 			Type:        schema.TypeString,
