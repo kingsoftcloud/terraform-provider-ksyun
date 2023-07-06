@@ -287,7 +287,7 @@ func instanceConfig() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Optional: true,
 			// ForceNew:    true,
-			Description: "Add instance being created to a disaster tolerance group.",
+			Description: "Add instance being created to a disaster tolerance group. It will be quit the disaster tolerance group, if this field change to null.",
 		},
 		"host_name": {
 			Type:        schema.TypeString,

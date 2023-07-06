@@ -320,7 +320,7 @@ func resourceKsyunKrds() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "parameter template id",
+				Description: "the id of parameter template that for the krds being created.",
 			},
 			"parameters": {
 				Type: schema.TypeSet,

@@ -44,8 +44,8 @@ resource "ksyun_krds_parameter_group" "dpg" {
 
 The following arguments are supported:
 
-* `engine_version` - (Required) krds database version. Value options:<br> - Mysql: [ 5.5, 5.6, 5.7, 8.0 ] <br> - Percona: [ 5.6 ] <br> - Consistent_mysql: [ 5.7 ] <br> - Ebs_mysql: [ 5.6, 5.7 ].
-* `engine` - (Required) krds database type. Value options: mysql|percona|consistent_mysql|ebs_mysql.
+* `engine_version` - (Required, ForceNew) krds database version. Value options:<br> - Mysql: [ 5.5, 5.6, 5.7, 8.0 ] <br> - Percona: [ 5.6 ] <br> - Consistent_mysql: [ 5.7 ] <br> - Ebs_mysql: [ 5.6, 5.7 ].
+* `engine` - (Required, ForceNew) krds database type. Value options: mysql|percona|consistent_mysql|ebs_mysql.
 * `name` - (Required) the name of krds parameter group.
 * `description` - (Optional) The description of this db parameter group.
 * `parameters` - (Optional) database parameters.
