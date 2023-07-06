@@ -4,12 +4,12 @@ layout: "ksyun"
 page_title: "ksyun: ksyun_auto_snapshot_volume_association"
 sidebar_current: "docs-ksyun-resource-auto_snapshot_volume_association"
 description: |-
-  Provides a tag resource.
+  Provides an auto snapshot policy associate to volume.
 ---
 
 # ksyun_auto_snapshot_volume_association
 
-Provides a tag resource.
+Provides an auto snapshot policy associate to volume.
 
 #
 

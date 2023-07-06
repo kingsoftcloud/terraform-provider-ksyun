@@ -48,14 +48,14 @@ func TestAccKsyunInstance_update(t *testing.T) {
 				),
 				ExpectNonEmptyPlan: true,
 			},
-			// {
-			// 	Config: testAccInstanceDemotionUpdateConfig,
-			// 	Check: resource.ComposeTestCheckFunc(
-			// 		testAccCheckInstanceExists("ksyun_instance.foo", &val),
-			// 		testAccCheckInstanceAttributes(&val),
-			// 	),
-			// 	ExpectNonEmptyPlan: true,
-			// },
+			{
+				Config: testAccInstanceDemotionUpdateConfig,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckInstanceExists("ksyun_instance.foo", &val),
+					testAccCheckInstanceAttributes(&val),
+				),
+				ExpectNonEmptyPlan: true,
+			},
 			// {
 			// 	Config: testAccInstanceUpgradeUpdateConfig,
 			// 	Check: resource.ComposeTestCheckFunc(
@@ -63,13 +63,13 @@ func TestAccKsyunInstance_update(t *testing.T) {
 			// 		testAccCheckInstanceAttributes(&val),
 			// 	),
 			// },
-			{
-				Config: testAccInstanceChangeTypeConfig,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstanceExists("ksyun_instance.foo", &val),
-					testAccCheckInstanceAttributes(&val),
-				),
-			},
+			// {
+			// 	Config: testAccInstanceChangeTypeConfig,
+			// 	Check: resource.ComposeTestCheckFunc(
+			// 		testAccCheckInstanceExists("ksyun_instance.foo", &val),
+			// 		testAccCheckInstanceAttributes(&val),
+			// 	),
+			// },
 		},
 	})
 }
@@ -162,8 +162,6 @@ resource "ksyun_subnet" "default" {
   subnet_type = "Normal"
   vpc_id  = "${ksyun_vpc.default.id}"
   gateway_ip = "10.7.0.1"
-  dns1 = "198.18.254.41"
-  dns2 = "198.18.254.40"
   availability_zone = "${data.ksyun_availability_zones.default.availability_zones.0.availability_zone_name}"
 }
 resource "ksyun_security_group" "default" {
@@ -213,14 +211,18 @@ resource "ksyun_subnet" "default" {
   subnet_type = "Normal"
   vpc_id  = "${ksyun_vpc.default.id}"
   gateway_ip = "10.7.0.1"
-  dns1 = "198.18.254.41"
-  dns2 = "198.18.254.40"
   availability_zone = "${data.ksyun_availability_zones.default.availability_zones.0.availability_zone_name}"
 }
 resource "ksyun_security_group" "default" {
   vpc_id = "${ksyun_vpc.default.id}"
   security_group_name="ksyun-security-group"
 }
+
+resource "ksyun_data_guard_group" "foo" {
+  data_guard_name = "tf_kec_move_into_dgg"
+  data_guard_type = "host"
+}
+
 resource "ksyun_instance" "foo" {
   image_id="${data.ksyun_images.centos-7_5.images.0.image_id}"
   instance_type="N3.2B"
@@ -240,7 +242,7 @@ resource "ksyun_instance" "foo" {
   instance_name="ksyun-kec-tf-demotion-update"
   sriov_net_support="false"
   project_id=0
-  data_guard_id=""
+  data_guard_id=ksyun_data_guard_group.foo.id
   key_id=[]
 }
 

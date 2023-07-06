@@ -52,7 +52,7 @@ The following arguments are supported:
 * `auto_create_ebs` - (Optional) Whether to create EBS volumes from snapshots in the custom image, default is false.
 * `data_disk_gb` - (Optional) The size of the local SSD disk.
 * `data_disks` - (Optional) The list of data disks created with instance.
-* `data_guard_id` - (Optional, ForceNew) Add instance being created to a disaster tolerance group.
+* `data_guard_id` - (Optional) Add instance being created to a disaster tolerance group. It will be quit the disaster tolerance group, if this field change to null.
 * `dns1` - (Optional) DNS1 of the primary network interface.
 * `dns2` - (Optional) DNS2 of the primary network interface.
 * `force_delete` - (Optional, **Deprecated**) this field is Deprecated and no effect for change Indicate whether to delete instance directly or not.

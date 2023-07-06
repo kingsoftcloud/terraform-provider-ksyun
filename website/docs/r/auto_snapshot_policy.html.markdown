@@ -4,12 +4,12 @@ layout: "ksyun"
 page_title: "ksyun: ksyun_auto_snapshot_policy"
 sidebar_current: "docs-ksyun-resource-auto_snapshot_policy"
 description: |-
-  Provides a tag resource.
+  Provides an auto snapshot policy resource.
 ---
 
 # ksyun_auto_snapshot_policy
 
-Provides a tag resource.
+Provides an auto snapshot policy resource.
 
 #
 
