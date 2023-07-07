@@ -1,3 +1,10 @@
+## 1.4.2 (Jul 07, 2023)
+
+IMPROVEMENTS:
+
+- `kec instance` 新增数据盘类型`ESSD_SYSTEM_PL0`,`ESSD_SYSTEM_PL1`,`ESSD_SYSTEM_PL2`
+
+
 ## 1.4.1 (Jul 06, 2023)
 
 IMPROVEMENTS:
