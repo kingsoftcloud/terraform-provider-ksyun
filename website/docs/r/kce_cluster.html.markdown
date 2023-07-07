@@ -97,7 +97,7 @@ In addition to all arguments above, the following attributes are exported:
   * `sriov_net_support` - whether support networking enhancement.
   * `system_disk` - System disk parameters.
     * `disk_size` - The size of the data disk. value range: [20, 500].
-    * `disk_type` - System disk type. `Local_SSD`, Local SSD disk. `SSD3.0`, The SSD cloud disk. `EHDD`, The EHDD cloud disk.
+    * `disk_type` - System disk type. `Local_SSD`, Local SSD disk. `SSD3.0`, The SSD cloud disk. `EHDD`, The EHDD cloud disk, `ESSD_SYSTEM_PL0`, The x7 machine type ESSD disk, `ESSD_SYSTEM_PL1`, The x7 machine type ESSD disk, `ESSD_SYSTEM_PL2`, The x7 machine type ESSD disk.
   * `tags` - the tags of the resource.
 
 
