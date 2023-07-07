@@ -92,8 +92,11 @@ func instanceConfig() map[string]*schema.Schema {
 							"SSD3.0",
 							"EHDD",
 							"Local_SSD",
+							"ESSD_SYSTEM_PL0",
+							"ESSD_SYSTEM_PL1",
+							"ESSD_SYSTEM_PL2",
 						}, false),
-						Description: "System disk type. `Local_SSD`, Local SSD disk. `SSD3.0`, The SSD cloud disk. `EHDD`, The EHDD cloud disk.",
+						Description: "System disk type. `Local_SSD`, Local SSD disk. `SSD3.0`, The SSD cloud disk. `EHDD`, The EHDD cloud disk, `ESSD_SYSTEM_PL0`, The x7 machine type ESSD disk, `ESSD_SYSTEM_PL1`, The x7 machine type ESSD disk, `ESSD_SYSTEM_PL2`, The x7 machine type ESSD disk.",
 					},
 					"disk_size": {
 						Type:         schema.TypeInt,
