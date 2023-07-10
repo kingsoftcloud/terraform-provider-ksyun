@@ -2,9 +2,10 @@ package ksyun
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"testing"
 )
 
 func TestAccKsyunSubnet_basic(t *testing.T) {
@@ -138,47 +139,50 @@ func testAccCheckSubnetDestroy(s *terraform.State) error {
 }
 
 const testAccSubnetConfig = `
+provider "ksyun" {
+	region = "cn-guangzhou-1"
+}
+
 data "ksyun_availability_zones" "default" {
-  output_file=""
-  ids=[]
 }
 resource "ksyun_vpc" "default" {
   vpc_name   = "ksyun-vpc-tf"
   cidr_block = "10.7.0.0/21"
+  provided_ipv6_cidr_block = true
 }
 resource "ksyun_subnet" "foo" {
   subnet_name      = "ksyun-subnet-tf"
   cidr_block = "10.7.0.0/21"
   subnet_type = "Normal"
-  dhcp_ip_from = "10.7.0.2"
-  dhcp_ip_to = "10.7.0.253"
   vpc_id  = "${ksyun_vpc.default.id}"
   gateway_ip = "10.7.0.1"
   dns1 = "198.18.254.41"
   dns2 = "198.18.254.40"
+  provided_ipv6_cidr_block = true
   availability_zone = "${data.ksyun_availability_zones.default.availability_zones.0.availability_zone_name}"
 }
 `
 
 const testAccSubnetUpdateConfig = `
+provider "ksyun" {
+	region = "cn-guangzhou-1"
+}
 data "ksyun_availability_zones" "default" {
-  output_file=""
-  ids=[]
 }
 resource "ksyun_vpc" "default" {
   vpc_name   = "ksyun-vpc-tf"
   cidr_block = "10.7.0.0/21"
+  provided_ipv6_cidr_block = true
 }
 resource "ksyun_subnet" "foo" {
   subnet_name      = "ksyun-subnet-tf-update"
   cidr_block = "10.7.0.0/21"
   subnet_type = "Normal"
-  dhcp_ip_from = "10.7.0.2"
-  dhcp_ip_to = "10.7.0.253"
   vpc_id  = "${ksyun_vpc.default.id}"
   gateway_ip = "10.7.0.1"
   dns1 = "198.18.254.41"
   dns2 = "198.18.254.40"
+  provided_ipv6_cidr_block = true
   availability_zone = "${data.ksyun_availability_zones.default.availability_zones.0.availability_zone_name}"
 }
 `

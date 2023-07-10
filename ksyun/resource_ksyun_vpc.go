@@ -24,6 +24,7 @@ package ksyun
 
 import (
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
@@ -51,6 +52,14 @@ func resourceKsyunVpc() *schema.Resource {
 				Description:  "The CIDR blocks of VPC.",
 			},
 
+			"provided_ipv6_cidr_block": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				ForceNew:    true,
+				Description: "whether support IPV6 CIDR blocks. <br> NOTES: providing a part of regions now.",
+			},
+
 			"is_default": {
 				Type:        schema.TypeBool,
 				ForceNew:    true,
@@ -62,6 +71,20 @@ func resourceKsyunVpc() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The time of creation for VPC.",
+			},
+			"ipv6_cidr_block_association_set": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"ipv6_cidr_block": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "the Ipv6 of this vpc bound.",
+						},
+					},
+				},
+				Description: "An Ipv6 association list of this vpc.",
 			},
 		},
 	}

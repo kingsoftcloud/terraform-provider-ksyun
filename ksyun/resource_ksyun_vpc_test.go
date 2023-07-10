@@ -2,9 +2,10 @@ package ksyun
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"testing"
 )
 
 func TestAccKsyunVPC_basic(t *testing.T) {
@@ -26,8 +27,9 @@ func TestAccKsyunVPC_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckVPCExists("ksyun_vpc.foo", &val),
 					testAccCheckVPCAttributes(&val),
-					resource.TestCheckResourceAttr("ksyun_vpc.foo", "vpc_name", "tf-acc-vpc"),
+					resource.TestCheckResourceAttr("ksyun_vpc.foo", "vpc_name", "tf-vpc-supp-ipv6"),
 					resource.TestCheckResourceAttr("ksyun_vpc.foo", "cidr_block", "192.168.0.0/16"),
+					resource.TestCheckResourceAttr("ksyun_vpc.foo", "ipv6_cidr_block_association_set.#", "1"),
 				),
 			},
 		},
@@ -53,8 +55,8 @@ func TestAccKsyunVPC_update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckVPCExists("ksyun_vpc.foo", &val),
 					testAccCheckVPCAttributes(&val),
-					//resource.TestCheckResourceAttr("ksyun_vpc.foo", "vpc_name", "tf-acc-vpc"),
-					//resource.TestCheckResourceAttr("ksyun_vpc.foo", "cidr_block", "192.168.0.0/16"),
+					// resource.TestCheckResourceAttr("ksyun_vpc.foo", "vpc_name", "tf-acc-vpc"),
+					// resource.TestCheckResourceAttr("ksyun_vpc.foo", "cidr_block", "192.168.0.0/16"),
 				),
 			},
 			{
@@ -63,7 +65,7 @@ func TestAccKsyunVPC_update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckVPCExists("ksyun_vpc.foo", &val),
 					testAccCheckVPCAttributes(&val),
-					//resource.TestCheckResourceAttr("ksyun_vpc.foo", "vpc_name", "tf-acc-vpc-1"),
+					// resource.TestCheckResourceAttr("ksyun_vpc.foo", "vpc_name", "tf-acc-vpc-1"),
 				),
 			},
 		},
@@ -143,13 +145,20 @@ func testAccCheckVPCDestroy(s *terraform.State) error {
 }
 
 const testAccVPCConfig = `
+provider "ksyun" {
+	region = "cn-guangzhou-1"
+}
 resource "ksyun_vpc" "foo" {
-	vpc_name        = "tf-acc-vpc"
+	vpc_name        = "tf-vpc-supp-ipv6"
 	cidr_block = "192.168.0.0/16"
+	provided_ipv6_cidr_block = true
 }
 `
 
 const testAccVPCConfigUpdate = `
+provider "ksyun" {
+	region = "cn-guangzhou-1"
+}
 resource "ksyun_vpc" "foo" {
 	vpc_name        = "tf-acc-vpc-1"
     cidr_block      = "192.168.0.0/16"
