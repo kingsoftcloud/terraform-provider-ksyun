@@ -1,3 +1,10 @@
+## 1.5.0 (Jul 12, 2023)
+FEATURES:
+
+- - **New Resource:** `ksyun_knad` knad 原生高防
+- - **New Resource:** `ksyun_knad_associate`
+- - **New Data Source:** `ksyun_knads` 
+
 ## 1.4.2 (Jul 07, 2023)
 
 IMPROVEMENTS:
