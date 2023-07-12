@@ -123,9 +123,6 @@ func testAccCheckKnadDestroy(s *terraform.State) error {
 }
 
 const testAccKnadConfig = `
-provider "ksyun" {
-	region = "cn-qingyangtest-1"
-}
 
 # Create an knad
 resource "ksyun_knad" "foo1" {
@@ -137,7 +134,7 @@ resource "ksyun_knad" "foo1" {
   duration = 1
   knad_name = "test3"
   bill_type = 1
-  service_id = "KEAD_30G"
+  service_id = "KNAD_30G"
   project_id="0"
 }
 `
@@ -154,7 +151,7 @@ resource "ksyun_knad" "foo1" {
   duration = 1
   knad_name = "test3"
   bill_type = 1
-  service_id = "KEAD_30G"
+  service_id = "KNAD_30G"
   project_id="0"
 }
 `
