@@ -94,6 +94,7 @@ func resourceKsyunKrdsParameterGroup() *schema.Resource {
 			"engine": {
 				Type:         schema.TypeString,
 				Required:     true,
+				ForceNew:     true,
 				ValidateFunc: validateKrdsEngine,
 				Description:  "krds database type. Value options: mysql|percona|consistent_mysql|ebs_mysql.",
 			},
@@ -101,6 +102,7 @@ func resourceKsyunKrdsParameterGroup() *schema.Resource {
 			"engine_version": {
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "krds database version. Value options:<br> - Mysql: [ 5.5, 5.6, 5.7, 8.0 ] <br> - Percona: [ 5.6 ] <br> - Consistent_mysql: [ 5.7 ] <br> - Ebs_mysql: [ 5.6, 5.7 ].",
 			},
 			"description": {

@@ -5,6 +5,23 @@ FEATURES:
 - - **New Resource:** `ksyun_knad_associate`
 - - **New Data Source:** `ksyun_knads` 
 
+## 1.4.2 (Jul 07, 2023)
+
+IMPROVEMENTS:
+
+- `kec instance` 新增系统盘类型`ESSD_SYSTEM_PL0`,`ESSD_SYSTEM_PL1`,`ESSD_SYSTEM_PL2`
+
+## 1.4.1 (Jul 06, 2023)
+
+IMPROVEMENTS:
+
+- 新增kec实例移入移出容灾组操作
+- 支持krds实例使用参数组作为参数创建模版
+
+BUG FIXES:
+
+- 修复krds_parameter_group参数组参数修改时可能引发的异常
+
 ## 1.4.0 (Jun 29, 2023)
 
 FEATURES:

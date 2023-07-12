@@ -2,10 +2,11 @@ package ksyun
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"testing"
 )
 
 func TestAccKsyunKrds_basic(t *testing.T) {
@@ -105,13 +106,34 @@ resource "ksyun_subnet" "foo" {
   subnet_name      = "ksyun-subnet-tf"
   cidr_block = "10.7.0.0/21"
   subnet_type = "Reserve"
-  dhcp_ip_from = "10.7.0.2"
-  dhcp_ip_to = "10.7.0.253"
   vpc_id  = "${ksyun_vpc.default.id}"
   gateway_ip = "10.7.0.1"
   dns1 = "198.18.254.41"
   dns2 = "198.18.254.40"
   availability_zone = "${var.available_zone}"
+}
+
+
+resource "ksyun_krds_parameter_group" "dpg_with_parameters" {
+  name  = "tf_krdpg_on_hcl_with"
+  description    = "acceptance-test"
+  engine = "mysql"
+  engine_version = "5.5"
+  parameters {
+	name = "auto_increment_increment"
+	value = "8"
+  }
+
+  parameters {
+    name = "binlog_format"
+	value = "MIXED"
+  }
+
+  parameters {
+    name = "connect_timeout"
+	value = "30"
+  }
+
 }
 
 resource "ksyun_krds" "rds_terraform_3"{
@@ -127,6 +149,7 @@ resource "ksyun_krds" "rds_terraform_3"{
   bill_type = "DAY"
   preferred_backup_time = "01:00-02:00"
   instance_has_eip = true
+  db_parameter_template_id = ksyun_krds_parameter_group.dpg_with_parameters.id
   parameters {
     name = "auto_increment_increment"
     value = "8"
@@ -135,7 +158,12 @@ resource "ksyun_krds" "rds_terraform_3"{
   parameters {
     name = "binlog_format"
     value = "ROW"
+  }  
+  parameters {
+    name = "back_log"
+    value = "65522"
   }
+
 
 }
 
