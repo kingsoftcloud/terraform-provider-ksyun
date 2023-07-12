@@ -48,6 +48,7 @@ The following arguments are supported:
 * `dns1` - (Optional) The dns of the subnet.
 * `dns2` - (Optional) The dns of the subnet.
 * `gateway_ip` - (Optional, ForceNew) The IP of gateway.
+* `provided_ipv6_cidr_block` - (Optional, ForceNew) whether support IPV6 CIDR blocks. <br> NOTES: providing a part of regions now.
 * `subnet_name` - (Optional) The name of the subnet.
 
 ## Attributes Reference
@@ -58,6 +59,8 @@ In addition to all arguments above, the following attributes are exported:
 * `availability_zone_name` - The name of the availability zone.
 * `available_ip_number` - number of available IPs.
 * `create_time` - creation time of the subnet.
+* `ipv6_cidr_block_association_set` - An Ipv6 association list of this subnet.
+  * `ipv6_cidr_block` - the Ipv6 of this subnet bound.
 * `nat_id` - The id of the NAT that the desired Subnet associated to.
 * `network_acl_id` - The id of the ACL that the desired Subnet associated to.
 * `subnet_id` - ID of the subnet.

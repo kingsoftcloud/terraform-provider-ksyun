@@ -2,6 +2,8 @@ package ksyun
 
 import (
 	"fmt"
+	"net"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -1325,12 +1327,60 @@ func (s *KecService) createNetworkInterfaceCall(d *schema.ResourceData, resource
 	return vpcService.CreateNetworkInterfaceCall(&createReq)
 }
 
+func (s *KecService) AssignPrivateIpsCall(d *schema.ResourceData, resource *schema.Resource) (callback ApiCall, err error) {
+	vpcService := VpcService{s.client}
+
+	secondaryIpsSet, ipsOk := d.GetOk("secondary_private_ips")
+	secondaryIpsCount, countOk := d.GetOk("secondary_private_ip_address_count")
+	if !countOk && !ipsOk {
+		return
+	}
+
+	assignParams := make(map[string]interface{})
+
+	if countOk {
+		assignParams["SecondaryPrivateIpAddressCount"] = secondaryIpsCount
+	}
+
+	if ipsOk {
+		secondaryIps, ok := secondaryIpsSet.(*schema.Set)
+		if ok {
+			ips := make([]interface{}, 0, secondaryIps.Len())
+			for _, ipIf := range secondaryIps.List() {
+				ip, _ := If2Map(ipIf)
+				if ip != nil {
+					ipStr := ip["ip"].(string)
+					netIp := net.ParseIP(ipStr)
+					if netIp == nil {
+						return callback, fmt.Errorf("ip %s is invalid", ipStr)
+					}
+					ips = append(ips, ipStr)
+				}
+			}
+			if len(ips) > 0 {
+				if err = transformWithN(ips, "PrivateIpAddress", SdkReqTransform{}, &assignParams); err != nil {
+					return callback, err
+				}
+			}
+		}
+	}
+
+	return vpcService.AssignPrivateIpsCall(&assignParams)
+}
+
 func (s *KecService) createNetworkInterface(d *schema.ResourceData, resource *schema.Resource) (err error) {
 	call, err := s.createNetworkInterfaceCall(d, resource)
 	if err != nil {
 		return err
 	}
-	return ksyunApiCallNew([]ApiCall{call}, d, s.client, true)
+
+	// assign secondary private ips
+	assignSecondaryIpsCall, err := s.AssignPrivateIpsCall(d, resource)
+	if err != nil {
+		return err
+	}
+
+	return ksyunApiCallNew([]ApiCall{call, assignSecondaryIpsCall}, d, s.client, true)
 }
 
 func (s *KecService) readAndSetNetworkInterface(d *schema.ResourceData, resource *schema.Resource) (err error) {
@@ -1353,8 +1403,53 @@ func (s *KecService) readAndSetNetworkInterface(d *schema.ResourceData, resource
 				return sgIds
 			},
 		},
+		"AssignedPrivateIpAddressSet": {
+			Field: "secondary_private_ips",
+			FieldRespFunc: func(i interface{}) interface{} {
+				ipsVal := reflect.ValueOf(i)
+				if ipsVal.IsNil() || ipsVal.Len() < 1 {
+					return i
+				}
+
+				if ipsVal.Kind() == reflect.Ptr {
+					ipsVal = ipsVal.Elem()
+				}
+
+				retIps := make([]map[string]interface{}, 0, ipsVal.Len())
+				switch ipsVal.Kind() {
+				case reflect.Slice:
+					assignedSet := ipsVal.Interface().([]interface{})
+					for _, assignedMapIf := range assignedSet {
+						m := map[string]interface{}{}
+						assignedMap, _ := If2Map(assignedMapIf)
+						if assignedMap == nil {
+							return i
+						}
+						m["ip"] = assignedMap["PrivateIpAddress"]
+						retIps = append(retIps, m)
+					}
+				}
+				return retIps
+			},
+		},
 	}
 	SdkResponseAutoResourceData(d, resource, data, extra)
+	_, manually := d.GetOk("secondary_private_ips")
+	_, count := d.GetOk("secondary_private_ip_address_count")
+
+	assignInfraSetIf, ok := data["AssignedPrivateIpAddressSet"]
+	assignInfraSet := make([]interface{}, 0)
+	if ok {
+		assignInfraSet, _ = If2Slice(assignInfraSetIf)
+	} else {
+		// deal with AssignedPrivateIpAddressSet field is not exist in sdk response
+		_ = d.Set("secondary_private_ips", assignInfraSet)
+	}
+	if !manually && !count {
+		// import mode
+		_ = d.Set("secondary_private_ip_address_count", len(assignInfraSet))
+	}
+
 	return err
 }
 
@@ -1430,7 +1525,15 @@ func (s *KecService) modifyNetworkInterface(d *schema.ResourceData, resource *sc
 		}
 		calls = append(calls, attrCall)
 	}
-	return ksyunApiCallNew([]ApiCall{call}, d, s.client, true)
+
+	// secondary private ip modification
+	vpcSrv := VpcService{client: s.client}
+	secondaryInfraIpCall, err := vpcSrv.ModifyNetworkInterfaceSecondaryInfraIpCall(d, resource)
+	if err != nil {
+		return err
+	}
+	calls = append(calls, secondaryInfraIpCall)
+	return ksyunApiCallNew(calls, d, s.client, true)
 }
 
 func (s *KecService) readAndSetNetworkInterfaceAttachment(d *schema.ResourceData, resource *schema.Resource) (err error) {

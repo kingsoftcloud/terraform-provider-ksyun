@@ -2,9 +2,11 @@ package ksyun
 
 import (
 	"fmt"
+	"reflect"
 	"strconv"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/mitchellh/mapstructure"
@@ -202,6 +204,25 @@ func (s *VpcService) RemoveNetworkInterfaceCall(d *schema.ResourceData) (callbac
 				}
 				return resource.RetryableError(callErr)
 			})
+		},
+		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+			return err
+		},
+	}
+	return callback, err
+}
+
+func (s *VpcService) AssignPrivateIpsCall(createReq *map[string]interface{}) (callback ApiCall, err error) {
+	callback = ApiCall{
+		param:  createReq,
+		action: "AssignPrivateIpAddress",
+		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+			(*call.param)["NetworkInterfaceId"] = d.Id()
+			conn := client.vpcconn
+			logger.Debug(logger.RespFormat, call.action, *(call.param))
+			resp, err = conn.AssignPrivateIpAddress(call.param)
+			return resp, err
 		},
 		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
 			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
@@ -452,10 +473,18 @@ func (s *VpcService) RemoveVpcCall(d *schema.ResourceData) (callback ApiCall, er
 						return resource.NonRetryableError(fmt.Errorf("error on  reading vpc when delete %q, %s", d.Id(), callErr))
 					}
 				}
-				_, callErr = call.executeCall(d, client, call)
-				if callErr == nil {
-					return nil
+				if call.process == ApiCallBeforeProcess {
+					_, callErr = call.beforeCall(d, client, call)
+					if callErr == nil {
+						return nil
+					}
+				} else if call.process == ApiCallExecuteProcess {
+					_, callErr = call.executeCall(d, client, call)
+					if callErr == nil {
+						return nil
+					}
 				}
+
 				return resource.RetryableError(callErr)
 			})
 		},
@@ -3357,4 +3386,116 @@ func (s *VpcService) DeleteRoute(routeId string) (err error) {
 	logger.Debug(logger.RespFormat, "DeleteRoute", removeReq)
 	_, err = conn.DeleteRoute(&removeReq)
 	return err
+}
+
+func (s *VpcService) ModifyNetworkInterfaceSecondaryInfraIpCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
+	reqParams := map[string]interface{}{}
+
+	handleIpSetToIpParams := func(ipsSet *schema.Set) map[string]interface{} {
+		ips := make([]interface{}, 0, ipsSet.Len())
+		ipParams := make(map[string]interface{})
+		for _, ipIf := range ipsSet.List() {
+			ipMap, _ := If2Map(ipIf)
+			if ipMap == nil {
+				continue
+			}
+			ips = append(ips, ipMap["ip"])
+		}
+
+		if err = transformWithN(ips, "PrivateIpAddress", SdkReqTransform{}, &ipParams); err != nil {
+			return nil
+		}
+		return ipParams
+	}
+
+	if _, ok := d.GetOk("secondary_private_ips"); ok && d.HasChange("secondary_private_ips") {
+		oldInfraIpSet, newInfraIpSet := d.GetChange("secondary_private_ips")
+		oldInfraIp := oldInfraIpSet.(*schema.Set)
+		newInfraIp := newInfraIpSet.(*schema.Set)
+
+		unassignIps := oldInfraIp.Difference(newInfraIp)
+		addAssignIps := newInfraIp.Difference(oldInfraIp)
+
+		reqParams["unassign"] = handleIpSetToIpParams(unassignIps)
+		reqParams["assign"] = handleIpSetToIpParams(addAssignIps)
+
+	}
+	if _, ok := d.GetOk("secondary_private_ip_address_count"); ok && d.HasChange("secondary_private_ip_address_count") {
+		oldCountRaw, newCountRaw := d.GetChange("secondary_private_ip_address_count")
+		oldCount := oldCountRaw.(int)
+		newCount := newCountRaw.(int)
+		if newCount > oldCount {
+			acquireCount := newCount - oldCount
+
+			if oldCount == 0 {
+				if currInfraIp, ok := d.GetOk("secondary_private_ips"); ok {
+					currInfraIpSet := currInfraIp.(*schema.Set)
+					reqParams["unassign"] = handleIpSetToIpParams(currInfraIpSet)
+				}
+			}
+			m := make(map[string]interface{})
+			m["SecondaryPrivateIpAddressCount"] = acquireCount
+			reqParams["assign"] = m
+		} else if newCount < oldCount {
+			unassignCount := oldCount - newCount
+			if itemSetRaw, ok := d.GetOk("secondary_private_ips"); ok {
+				itemSet := itemSetRaw.(*schema.Set)
+				if unassignCount > itemSet.Len() {
+					return callback, fmt.Errorf("invalid performing, are you try to operate secondary_private_ips and secondary_private_ip_address_count feild simultaneously? ")
+				}
+				unassignSet := schema.NewSet(func(i interface{}) int {
+					setVal := reflect.ValueOf(i)
+					switch setVal.Kind() {
+					case reflect.Map:
+						m := setVal.Interface().(map[string]interface{})
+						return hashcode.String(m["ip"].(string))
+					}
+					return -1
+
+				}, itemSet.List()[:unassignCount])
+				reqParams["unassign"] = handleIpSetToIpParams(unassignSet)
+			}
+		}
+	}
+
+	callback = ApiCall{
+		param:  &reqParams,
+		action: "ModifyNetworkInterface",
+		beforeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (bool, error) {
+			conn := client.vpcconn
+			var unAssignParams map[string]interface{}
+			if unAssignParamsRaw, ok := (*call.param)["unassign"]; ok && unAssignParamsRaw != nil {
+				unAssignParams, _ = If2Map(unAssignParamsRaw)
+				if unAssignParams == nil || len(unAssignParams) < 1 {
+					return true, nil
+				}
+				unAssignParams["NetworkInterfaceId"] = d.Id()
+				resp, err := conn.UnassignPrivateIpAddress(&unAssignParams)
+				if err != nil {
+					return false, err
+				}
+				logger.Debug(logger.RespFormat, call.action, *(call.param), resp)
+			}
+			return true, nil
+		},
+		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (*map[string]interface{}, error) {
+			conn := client.vpcconn
+			var assignParams map[string]interface{}
+			if assignParamsRaw, ok := (*call.param)["assign"]; ok && assignParamsRaw != nil {
+				assignParams, _ = If2Map(assignParamsRaw)
+				if assignParams == nil || len(assignParams) < 1 {
+					return nil, nil
+				}
+				assignParams["NetworkInterfaceId"] = d.Id()
+				resp, err := conn.AssignPrivateIpAddress(&assignParams)
+				if err != nil {
+					return nil, err
+				}
+				logger.Debug(logger.RespFormat, call.action, *(call.param), resp)
+				return resp, nil
+			}
+			return nil, nil
+		},
+	}
+	return callback, nil
 }

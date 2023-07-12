@@ -175,6 +175,20 @@ func dataSourceKsyunNetworkInterfaces() *schema.Resource {
 							Computed:    true,
 							Description: "DNS 2.",
 						},
+						"assigned_private_ip_address_set": {
+							Type:     schema.TypeSet,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"private_ip_address": {
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "Secondary Private IP.",
+									},
+								},
+							},
+							Description: "Assign secondary private ips to the network interface.",
+						},
 					},
 				},
 			},
