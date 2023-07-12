@@ -100,22 +100,18 @@ func testAccCheckKnadAssociationAssociationDestroy(s *terraform.State) error {
 }
 
 const testAccKnadAssociationAssociationConfig = `
-provider "ksyun" {
-	region = "cn-qingyangtest-1"
-}
+
 resource "ksyun_knad_associate" "foo" {
-  knad_id="knad27755d10-6a91-3e5c-ae89-7f325bc8f8af"
-  ip = ["88.88.88.35","88.88.88.46"]
+  knad_id="xxx-xxx-xxx"
+  ip = ["1.1.1.2"]
 
 }
 `
 const testAccKnadAssociationAssociationUpdateConfig = `
-provider "ksyun" {
-	region = "cn-qingyangtest-1"
-}
+
 resource "ksyun_knad_associate" "foo" {
-  knad_id="knad27755d10-6a91-3e5c-ae89-7f325bc8f8af"
-  ip = ["88.88.88.35","88.88.88.466"]
+  knad_id="xxxx-xxxx-xxx"
+  ip = ["1.1.1.1"]
 
 }
 `

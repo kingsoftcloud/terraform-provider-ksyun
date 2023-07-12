@@ -37,25 +37,8 @@ func TestAccKsyunKnadsDataSource_basic(t *testing.T) {
 const testAccDataKnadsConfig = `
 
 data "ksyun_knads" "foo" {
- ids = ["knad3f694ff7-83fe-34a4-818c-45ad7da65ef6","knadb4fe2700-8565-3266-a51a-c37a2987f73b"]
-project_id = ["0"]
-  /*service_id= "KEAD_100G"
-  band=30
-  max_band=30
-  ip_count= 10
-  bill_type= 1
-  idc_band= 100*/
-}
-`
-const testAccDataKnadsUpdateConfig = `
+ ids = ["xxxx-xxxxx"]
+project_id = []
 
-data "ksyun_knads" "foo" {
- 
-  service_id= "KEAD_50G"
-  band=30
-  max_band=30
-  ip_count= 10
-  bill_type= 1
-  idc_band= 100
 }
 `

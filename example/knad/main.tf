@@ -7,19 +7,16 @@ terraform {
   }
 }
 
-provider "ksyun" {
-  region = "cn-qingyangtest-1"
-}
 # Create an knad
 resource "ksyun_knad" "default" {
   link_type = "DDoS_BGP"
   ip_count = 10
   band = 30
-  max_band = 80
-  idc_band = 150
+  max_band = 30
+  idc_band = 100
   duration = 1
-  knad_name = "test-tf5"
+  knad_name = "terraform1"
   bill_type = 5
-  service_id = "KEAD_30G"
+  service_id = "KNAD_30G"
   project_id="0"
 }

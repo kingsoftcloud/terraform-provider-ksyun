@@ -143,9 +143,6 @@ resource "ksyun_knad" "foo1" {
 `
 
 const testAccKnadUpdateConfig = `
-provider "ksyun" {
-	region = "cn-qingyangtest-1"
-}
 
 # Create an knad
 resource "ksyun_knad" "foo1" {

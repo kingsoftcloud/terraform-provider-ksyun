@@ -7,11 +7,6 @@ terraform {
   }
 }
 
-provider "ksyun" {
-  #region = "cn-beijing-6"
-  region = "cn-qingyangtest-1"
-
-}
 
 # Get  knads
 data "ksyun_knads" "default" {
