@@ -925,3 +925,9 @@ func transformerValueOfObj2String(retObj interface{}) {
 
 	}
 }
+
+// IsStructEmpty returns true, if structure is empty
+func IsStructEmpty(raw interface{}, dest interface{}) bool {
+
+	return reflect.DeepEqual(raw, dest)
+}

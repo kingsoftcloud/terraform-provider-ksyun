@@ -44,6 +44,7 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 * `network_interfaces` - An information list of network interfaces. Each element contains the following attributes:
+  * `assigned_private_ip_address_set` - Assign secondary private ips to the network interface.
   * `d_n_s1` - DNS 1.
   * `d_n_s2` - DNS 2.
   * `id` - The id of the network interface.

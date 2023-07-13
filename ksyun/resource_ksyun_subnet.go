@@ -37,6 +37,7 @@ package ksyun
 
 import (
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
@@ -137,6 +138,13 @@ func resourceKsyunSubnet() *schema.Resource {
 				Computed:     true,
 				Description:  "The dns of the subnet.",
 			},
+			"provided_ipv6_cidr_block": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				ForceNew:    true,
+				Description: "whether support IPV6 CIDR blocks. <br> NOTES: providing a part of regions now.",
+			},
 			"network_acl_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -169,6 +177,20 @@ func resourceKsyunSubnet() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "number of available IPs.",
+			},
+			"ipv6_cidr_block_association_set": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"ipv6_cidr_block": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "the Ipv6 of this subnet bound.",
+						},
+					},
+				},
+				Description: "An Ipv6 association list of this subnet.",
 			},
 		},
 	}

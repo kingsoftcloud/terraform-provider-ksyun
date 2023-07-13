@@ -55,6 +55,8 @@ In addition to all arguments above, the following attributes are exported:
   * `dns2` - The dns2 of the subnet.
   * `gateway_ip` - The IP of gateway.
   * `id` - ID of the subnet.
+  * `ipv6_cidr_block_association_set` - An Ipv6 association list of this vpc.
+    * `ipv6_cidr_block` - the Ipv6 of this vpc bound.
   * `name` - Name of the subnet.
   * `nat_id` - The id of the NAT that the desired Subnet associated to.
   * `network_acl_id` - The id of the ACL that the desired Subnet associated to.
