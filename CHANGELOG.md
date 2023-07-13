@@ -1,3 +1,11 @@
+## 1.6.0 (Jul 13, 2023)
+
+FEATURES:
+
+- `ksyun_kec_network_interface` 弹性网卡新增辅助私网IP管理`secondary_private_ips` and `secondary_private_ip_address_count`
+- `ksyun_vpc` 支持IPv6网段
+- `ksyun_subnet` 支持IPv6网段
+
 ## 1.4.2 (Jul 07, 2023)
 
 IMPROVEMENTS:
