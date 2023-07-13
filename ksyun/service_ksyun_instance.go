@@ -1532,8 +1532,7 @@ func (s *KecService) modifyNetworkInterface(d *schema.ResourceData, resource *sc
 	if err != nil {
 		return err
 	}
-	calls = append(calls, secondaryInfraIpCall)
-	return ksyunApiCallNew(calls, d, s.client, true)
+	return ksyunApiCallNew([]ApiCall{call, secondaryInfraIpCall}, d, s.client, true)
 }
 
 func (s *KecService) readAndSetNetworkInterfaceAttachment(d *schema.ResourceData, resource *schema.Resource) (err error) {
