@@ -206,6 +206,20 @@ func dataSourceKsyunSubnets() *schema.Resource {
 							Computed:    true,
 							Description: "number of available IPs.",
 						},
+						"ipv6_cidr_block_association_set": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"ipv6_cidr_block": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "the Ipv6 of this vpc bound.",
+									},
+								},
+							},
+							Description: "An Ipv6 association list of this vpc.",
+						},
 					},
 				},
 			},

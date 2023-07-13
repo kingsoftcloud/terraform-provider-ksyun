@@ -21,3 +21,9 @@ const (
 const (
 	RetryTimeoutMinute = 10 * time.Minute
 )
+
+const (
+	ApiCallBeforeProcess = iota
+	ApiCallExecuteProcess
+	ApiCallAfterProcess
+)
