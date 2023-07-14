@@ -232,6 +232,25 @@ func (s *VpcService) AssignPrivateIpsCall(createReq *map[string]interface{}) (ca
 	return callback, err
 }
 
+func (s *VpcService) UnAssignPrivateIpsCall(removeReq *map[string]interface{}) (callback ApiCall, err error) {
+	callback = ApiCall{
+		param:  removeReq,
+		action: "UnassignPrivateIpAddress",
+		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+			(*call.param)["NetworkInterfaceId"] = d.Id()
+			conn := client.vpcconn
+			logger.Debug(logger.RespFormat, call.action, *(call.param))
+			resp, err = conn.UnassignPrivateIpAddress(call.param)
+			return resp, err
+		},
+		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+			return err
+		},
+	}
+	return callback, err
+}
+
 func (s *VpcService) CreateNetworkInterfaceCall(createReq *map[string]interface{}) (callback ApiCall, err error) {
 	callback = ApiCall{
 		param:  createReq,
