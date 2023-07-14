@@ -1455,6 +1455,11 @@ func (s *KecService) readAndSetNetworkInterface(d *schema.ResourceData, resource
 
 func (s *KecService) modifyNetworkInterfaceAttrCall(d *schema.ResourceData, resource *schema.Resource) (callback ApiCall, err error) {
 	if d.HasChange("subnet_id") || d.HasChange("private_ip_address") || d.HasChange("security_group_ids") {
+		_, isManual := d.GetOk("secondary_private_ips")
+		_, isCount := d.GetOk("secondary_private_ip_address_count")
+		if isManual || isCount {
+			return callback, fmt.Errorf("the operation, changing `subnet_id`, `security_group_ids` or `private_ip_address`, will cleanup all Secondary Private Ip, you should delete `secondary_private_ips` or `secondary_private_ip_address_count` field in your configuration")
+		}
 		transform := map[string]SdkReqTransform{
 			"subnet_id": {
 				forceUpdateParam: true,
@@ -1487,6 +1492,43 @@ func (s *KecService) modifyNetworkInterfaceAttrCall(d *schema.ResourceData, reso
 					return err
 				},
 			}
+
+			removeInfraIpFunc := func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (bool, error) {
+				vpcSrv := VpcService{client: client}
+				kniData, err := vpcSrv.ReadNetworkInterface(d, d.Id())
+				if err != nil {
+					return false, err
+				}
+				infraIpParams := make(map[string]interface{})
+				if secondaryInfraIpSet, ok := kniData["AssignedPrivateIpAddressSet"]; ok {
+					secondaryInfraIpVal := reflect.ValueOf(secondaryInfraIpSet)
+					if secondaryInfraIpVal.Kind() == reflect.Interface || secondaryInfraIpVal.Kind() == reflect.Ptr {
+						secondaryInfraIpVal = secondaryInfraIpVal.Elem()
+					}
+					ipSlice := make([]interface{}, 0, secondaryInfraIpVal.Len())
+					for _, secondaryInfraIpMapIf := range secondaryInfraIpVal.Interface().([]interface{}) {
+						infraIpMap, _ := If2Map(secondaryInfraIpMapIf)
+						if infraIpMap == nil {
+							continue
+						}
+						ipSlice = append(ipSlice, infraIpMap["PrivateIpAddress"])
+					}
+					err := transformWithN(ipSlice, "PrivateIpAddress", SdkReqTransform{}, &infraIpParams)
+					if err != nil {
+						return false, err
+					}
+					removeCall, err := vpcSrv.UnAssignPrivateIpsCall(&infraIpParams)
+					if err != nil {
+						return false, err
+					}
+					if err := ksyunApiCallNew([]ApiCall{removeCall}, d, client, true); err != nil {
+						return false, err
+					}
+				}
+				return true, nil
+			}
+
+			callback.beforeCall = removeInfraIpFunc
 		}
 	}
 	return callback, err
@@ -1532,7 +1574,8 @@ func (s *KecService) modifyNetworkInterface(d *schema.ResourceData, resource *sc
 	if err != nil {
 		return err
 	}
-	return ksyunApiCallNew([]ApiCall{call, secondaryInfraIpCall}, d, s.client, true)
+	calls = append(calls, secondaryInfraIpCall)
+	return ksyunApiCallNew(calls, d, s.client, true)
 }
 
 func (s *KecService) readAndSetNetworkInterfaceAttachment(d *schema.ResourceData, resource *schema.Resource) (err error) {

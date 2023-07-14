@@ -232,6 +232,25 @@ func (s *VpcService) AssignPrivateIpsCall(createReq *map[string]interface{}) (ca
 	return callback, err
 }
 
+func (s *VpcService) UnAssignPrivateIpsCall(removeReq *map[string]interface{}) (callback ApiCall, err error) {
+	callback = ApiCall{
+		param:  removeReq,
+		action: "UnassignPrivateIpAddress",
+		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+			(*call.param)["NetworkInterfaceId"] = d.Id()
+			conn := client.vpcconn
+			logger.Debug(logger.RespFormat, call.action, *(call.param))
+			resp, err = conn.UnassignPrivateIpAddress(call.param)
+			return resp, err
+		},
+		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+			return err
+		},
+	}
+	return callback, err
+}
+
 func (s *VpcService) CreateNetworkInterfaceCall(createReq *map[string]interface{}) (callback ApiCall, err error) {
 	callback = ApiCall{
 		param:  createReq,
@@ -322,6 +341,11 @@ func (s *VpcService) ReadVpc(d *schema.ResourceData, vpcId string) (data map[str
 	}
 	for _, v := range results {
 		data = v.(map[string]interface{})
+
+		// deal with terraform plan diff when `Ipv6CidrBlockAssociationSet` is not exist.
+		if val, ok := data["Ipv6CidrBlockAssociationSet"]; !ok {
+			data["Ipv6CidrBlockAssociationSet"] = val
+		}
 	}
 	if len(data) == 0 {
 		return data, fmt.Errorf("Vpc %s not exist ", vpcId)
@@ -551,8 +575,12 @@ func (s *VpcService) ReadSubnet(d *schema.ResourceData, subnetId string) (data m
 
 		// 手动补AvailabilityZoneName字段，解决和配置字段不能对应引发的问题
 		// 例如: import的时候读不到这个值，导致认为这个值是空，plan会发现值变化
-		if v, ok := data["AvailabilityZoneName"]; ok {
-			data["AvailabilityZone"] = v
+		if val, ok := data["AvailabilityZoneName"]; ok {
+			data["AvailabilityZone"] = val
+		}
+		// deal with terraform plan diff
+		if val, ok := data["Ipv6CidrBlockAssociationSet"]; !ok {
+			data["Ipv6CidrBlockAssociationSet"] = val
 		}
 	}
 	if len(data) == 0 {
