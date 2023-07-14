@@ -70,7 +70,6 @@ func resourceKsyunKecNetworkInterface() *schema.Resource {
 			"secondary_private_ips": {
 				Type:          schema.TypeSet,
 				Optional:      true,
-				Computed:      true,
 				ConflictsWith: []string{"secondary_private_ip_address_count"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{

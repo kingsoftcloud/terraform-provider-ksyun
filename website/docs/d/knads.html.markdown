@@ -37,16 +37,16 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 * `knads` - An information list of Knad. Each element contains the following attributes:
-  * `band` - band of the Knad.
-  * `bill_type` - The bill type of the Knad. Valid Values: 1:(Monthly),5:(DailyPaidByTransfer).
-  * `exprie_time` - exprie time of the Knad.
-  * `idc_band` - idcband of the Knad.
+  * `band` - the band of the Knad.
+  * `bill_type` - the bill type of the Knad. Valid Values: 1:(PrePaidByMonth),5:(DailyPaidByTransfer).
+  * `exprie_time` - the exprie time of the Knad.
+  * `idc_band` - the idcband of the Knad.
   * `ip_count` - the max ip count that can bind to the Knad.
-  * `knad_id` - ID of the Knad.
-  * `knad_name` - name of the Knad.
-  * `max_band` - max band of the Knad.
+  * `knad_id` - ID of the resource.
+  * `knad_name` - the name of the Knad.
+  * `max_band` - the max band of the Knad.
   * `project_id` - The id of the project.
-  * `service_id` - The service id count of the Knad.Valid Values:'KNAD_30G','KNAD_100G','KNAD_300G','KNAD_1000G',''KNAD_2000G''.
+  * `service_id` - the service id of the Knad.Valid Values:'KNAD_30G','KNAD_100G','KNAD_300G','KNAD_1000G',''KNAD_2000G''.
   * `used_ip_count` - The binding ip count of the Knad.
 
 

@@ -1,3 +1,9 @@
+## 1.6.1 (Jul 14, 2023)
+
+BUGFIX:
+
+- `ksyun_kec_network_interface` 修复弹性网卡修改子网、安全组和主私网IP操作并兼容辅助私网IP
+
 ## 1.6.0 (Jul 13, 2023)
 
 FEATURES:

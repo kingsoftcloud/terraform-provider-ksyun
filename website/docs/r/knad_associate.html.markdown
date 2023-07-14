@@ -17,8 +17,8 @@ Provides a Knad Association resource for associating EIP with a KNAD instance.
 
 ```hcl
 resource "ksyun_knad_associate" "default" {
-  knad_id = "knadba4d704f-35b1-3354-8d0f-65adc04796b9"
-  ip      = ["88.88.88.46", "88.88.88.51"]
+  knad_id = "xxxx_xxxx_xxxx"
+  ip      = ["1.1.1.1", "1.1.1.2"]
 }
 ```
 
