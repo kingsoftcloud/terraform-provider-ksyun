@@ -1455,12 +1455,10 @@ func (s *KecService) readAndSetNetworkInterface(d *schema.ResourceData, resource
 
 func (s *KecService) modifyNetworkInterfaceAttrCall(d *schema.ResourceData, resource *schema.Resource) (callback ApiCall, err error) {
 	if d.HasChange("subnet_id") || d.HasChange("private_ip_address") || d.HasChange("security_group_ids") {
-		if d.HasChange("subnet_id") || d.HasChange("security_group_ids") {
-			_, isManual := d.GetOk("secondary_private_ips")
-			_, isCount := d.GetOk("secondary_private_ip_address_count")
-			if isManual || isCount {
-				return callback, fmt.Errorf("the operation, changing subnet or security group, will cleanup all Secondary Private Ip, you should delete `secondary_private_ips` or `secondary_private_ip_address_count` field in your configuration")
-			}
+		_, isManual := d.GetOk("secondary_private_ips")
+		_, isCount := d.GetOk("secondary_private_ip_address_count")
+		if isManual || isCount {
+			return callback, fmt.Errorf("the operation, changing `subnet_id`, `security_group_ids` or `private_ip_address`, will cleanup all Secondary Private Ip, you should delete `secondary_private_ips` or `secondary_private_ip_address_count` field in your configuration")
 		}
 		transform := map[string]SdkReqTransform{
 			"subnet_id": {
