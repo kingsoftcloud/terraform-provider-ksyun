@@ -1,3 +1,66 @@
+## 1.6.1 (Jul 14, 2023)
+
+BUGFIX:
+
+- `ksyun_kec_network_interface` 修复弹性网卡修改子网、安全组和主私网IP操作并兼容辅助私网IP
+
+## 1.6.0 (Jul 13, 2023)
+
+FEATURES:
+
+- `ksyun_kec_network_interface` 弹性网卡新增辅助私网IP管理`secondary_private_ips` and `secondary_private_ip_address_count`
+- `ksyun_vpc` 支持IPv6网段
+- `ksyun_subnet` 支持IPv6网段
+
+## 1.5.0 (Jul 12, 2023)
+FEATURES:
+
+- - **New Resource:** `ksyun_knad` knad 原生高防
+- - **New Resource:** `ksyun_knad_associate`
+- - **New Data Source:** `ksyun_knads` 
+
+## 1.4.2 (Jul 07, 2023)
+
+IMPROVEMENTS:
+
+- `kec instance` 新增系统盘类型`ESSD_SYSTEM_PL0`,`ESSD_SYSTEM_PL1`,`ESSD_SYSTEM_PL2`
+
+## 1.4.1 (Jul 06, 2023)
+
+IMPROVEMENTS:
+
+- 新增kec实例移入移出容灾组操作
+- 支持krds实例使用参数组作为参数创建模版
+
+BUG FIXES:
+
+- 修复krds_parameter_group参数组参数修改时可能引发的异常
+
+## 1.4.0 (Jun 29, 2023)
+
+FEATURES:
+
+- - **New Resource:** `ksyun_krds_parameter_group` krds 参数组管理
+- - **New Resource:** `ksyun_data_guard_group`
+- - **New Resource:** `ksyun_auto_snapshot_policy` 自动快照策略管理
+- - **New Resource:** `ksyun_auto_snapshot_policy_volume_association` 自动快照策略应用到云硬盘
+- - **New Resource:** `ksyun_snapshot` EBS快照
+- - **New Data Source:** `ksyun_krds_parameter_group`
+- - **New Data Source:** `ksyun_data_guard_group`
+- - **New Data Source:** `ksyun_auto_snapshot_policy`
+- - **New Data Source:** `ksyun_auto_snapshot_policy_volume_association`
+
+BUG FIXES:
+
+- 修复kec实例升降配时的重启逻辑(ksyun_instance: instance_type)
+  - NOTE: 实例降级操作会触发实例关机
+
+## 1.3.79 (Jun 15, 2023)
+
+IMPROVEMENTS:
+
+- EBS数据盘增加ESSD_PL0类型
+
 ## 1.3.78 (Jun 12, 2023)
 
 IMPROVEMENTS:
@@ -135,6 +198,7 @@ IMPROVEMENTS:
 - instance的security_group_id增加MinItems限制
 - volume增加snapshot_id字段
 - 优化instance和volume的snapshot_id字段的diff判断（由于api不返回该字段，diff默认忽略）
+- 新增EBS类型：ESSD_PL1、ESSD_PL2、ESSD_PL3
 
 BUG FIXES:
 

@@ -31,6 +31,12 @@ The following arguments are supported:
 * `subnet_id` - (Required) The ID of the subnet which the network interface belongs to.
 * `network_interface_name` - (Optional) The name of the network interface.
 * `private_ip_address` - (Optional) Private IP.
+* `secondary_private_ip_address_count` - (Optional) The count of secondary private id address automatically assigned. <br> Notes:  `secondary_private_ip_address_count` conflict with `secondary_private_ips`.
+* `secondary_private_ips` - (Optional) Assign secondary private ips to the network interface. <br> Notes: `secondary_private_ips` conflict with `secondary_private_ip_address_count`.
+
+The `secondary_private_ips` object supports the following:
+
+* `ip` - (Required) Secondary Private IP.
 
 ## Attributes Reference
 

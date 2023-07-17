@@ -52,7 +52,7 @@ The following arguments are supported:
 * `auto_create_ebs` - (Optional) Whether to create EBS volumes from snapshots in the custom image, default is false.
 * `data_disk_gb` - (Optional) The size of the local SSD disk.
 * `data_disks` - (Optional) The list of data disks created with instance.
-* `data_guard_id` - (Optional, ForceNew) Add instance being created to a disaster tolerance group.
+* `data_guard_id` - (Optional) Add instance being created to a disaster tolerance group. It will be quit the disaster tolerance group, if this field change to null.
 * `dns1` - (Optional) DNS1 of the primary network interface.
 * `dns2` - (Optional) DNS2 of the primary network interface.
 * `force_delete` - (Optional, **Deprecated**) this field is Deprecated and no effect for change Indicate whether to delete instance directly or not.
@@ -62,7 +62,7 @@ The following arguments are supported:
 * `instance_name` - (Optional) The name of instance, which contains 2-64 characters and only support Chinese, English, numbers.
 * `instance_password` - (Optional) Password to an instance is a string of 8 to 32 characters.
 * `instance_status` - (Optional) The state of instance.
-* `instance_type` - (Optional) The type of instance to start.
+* `instance_type` - (Optional) The type of instance to start. <br> - NOTE: it's may trigger this instance to power off, if instance type will be demotion.
 * `keep_image_login` - (Optional) Keep the initial settings of the custom image.
 * `key_id` - (Optional) The certificate id of the instance.
 * `local_volume_snapshot_id` - (Optional, ForceNew) When the local data disk opens, the snapshot id is entered.
@@ -84,7 +84,7 @@ The `data_disks` object supports the following:
 The `system_disk` object supports the following:
 
 * `disk_size` - (Optional) The size of the data disk. value range: [20, 500].
-* `disk_type` - (Optional, ForceNew) System disk type. `Local_SSD`, Local SSD disk. `SSD3.0`, The SSD cloud disk. `EHDD`, The EHDD cloud disk.
+* `disk_type` - (Optional, ForceNew) System disk type. `Local_SSD`, Local SSD disk. `SSD3.0`, The SSD cloud disk. `EHDD`, The EHDD cloud disk, `ESSD_SYSTEM_PL0`, The x7 machine type ESSD disk, `ESSD_SYSTEM_PL1`, The x7 machine type ESSD disk, `ESSD_SYSTEM_PL2`, The x7 machine type ESSD disk.
 
 ## Attributes Reference
 

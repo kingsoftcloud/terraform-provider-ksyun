@@ -45,9 +45,10 @@ package ksyun
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"time"
 )
 
 func instanceConfig() map[string]*schema.Schema {
@@ -72,7 +73,7 @@ func instanceConfig() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Computed:    true,
-			Description: "The type of instance to start.",
+			Description: "The type of instance to start. <br> - NOTE: it's may trigger this instance to power off, if instance type will be demotion.",
 		},
 		"system_disk": {
 			Type:        schema.TypeList,
@@ -91,8 +92,11 @@ func instanceConfig() map[string]*schema.Schema {
 							"SSD3.0",
 							"EHDD",
 							"Local_SSD",
+							"ESSD_SYSTEM_PL0",
+							"ESSD_SYSTEM_PL1",
+							"ESSD_SYSTEM_PL2",
 						}, false),
-						Description: "System disk type. `Local_SSD`, Local SSD disk. `SSD3.0`, The SSD cloud disk. `EHDD`, The EHDD cloud disk.",
+						Description: "System disk type. `Local_SSD`, Local SSD disk. `SSD3.0`, The SSD cloud disk. `EHDD`, The EHDD cloud disk, `ESSD_SYSTEM_PL0`, The x7 machine type ESSD disk, `ESSD_SYSTEM_PL1`, The x7 machine type ESSD disk, `ESSD_SYSTEM_PL2`, The x7 machine type ESSD disk.",
 					},
 					"disk_size": {
 						Type:         schema.TypeInt,
@@ -129,6 +133,7 @@ func instanceConfig() map[string]*schema.Schema {
 							"SSD3.0",
 							"EHDD",
 							"Local_SSD",
+							"ESSD_PL0",
 							"ESSD_PL1",
 							"ESSD_PL2",
 							"ESSD_PL3",
@@ -254,10 +259,10 @@ func instanceConfig() map[string]*schema.Schema {
 		},
 		// eip和主机的绑定关系，放在绑定的resource里描述，不在vm的结构里提供这个字段
 		// 否则后绑定，资源创建完成时这个字段为空
-		//"public_ip": {
+		// "public_ip": {
 		//	Type:     schema.TypeString,
 		//	Computed: true,
-		//},
+		// },
 		"instance_name": {
 			Type:        schema.TypeString,
 			Optional:    true,
@@ -282,10 +287,10 @@ func instanceConfig() map[string]*schema.Schema {
 			Description: "The project instance belongs to.",
 		},
 		"data_guard_id": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			ForceNew:    true,
-			Description: "Add instance being created to a disaster tolerance group.",
+			Type:     schema.TypeString,
+			Optional: true,
+			// ForceNew:    true,
+			Description: "Add instance being created to a disaster tolerance group. It will be quit the disaster tolerance group, if this field change to null.",
 		},
 		"host_name": {
 			Type:        schema.TypeString,
@@ -324,11 +329,11 @@ func instanceConfig() map[string]*schema.Schema {
 			Description: "DNS2 of the primary network interface.",
 		},
 		"tags": tagsSchema(),
-		//"has_init_info": {
+		// "has_init_info": {
 		//	Type:     schema.TypeBool,
 		//	Computed: true,
-		//},
-		//some control
+		// },
+		// some control
 		"has_modify_system_disk": {
 			Type:        schema.TypeBool,
 			Computed:    true,
@@ -371,7 +376,7 @@ func instanceConfig() map[string]*schema.Schema {
 			Type:     schema.TypeBool,
 			Optional: true,
 			Default:  false,
-			//ForceNew:         true,
+			// ForceNew:         true,
 			DiffSuppressFunc: kecImportDiffSuppress,
 			Description:      "Whether to create EBS volumes from snapshots in the custom image, default is false.",
 		},

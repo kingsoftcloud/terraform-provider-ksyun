@@ -39,6 +39,8 @@ In addition to all arguments above, the following attributes are exported:
   * `cidr_block` - The CIDR blocks of VPC.
   * `create_time` - The time of creation for VPC.
   * `id` - The ID of VPC.
+  * `ipv6_cidr_block_association_set` - An Ipv6 association list of this vpc.
+    * `ipv6_cidr_block` - the Ipv6 of this vpc bound.
   * `name` - The name of VPC.
   * `vpc_id` - The ID of VPC.
   * `vpc_name` - The name of VPC.

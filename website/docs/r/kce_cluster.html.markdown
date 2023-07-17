@@ -88,7 +88,7 @@ In addition to all arguments above, the following attributes are exported:
   * `instance_name` - The name of instance, which contains 2-64 characters and only support Chinese, English, numbers.
   * `instance_password` - Password to an instance is a string of 8 to 32 characters.
   * `instance_status` - The state of instance.
-  * `instance_type` - The type of instance to start.
+  * `instance_type` - The type of instance to start. <br> - NOTE: it's may trigger this instance to power off, if instance type will be demotion.
   * `key_id` - The certificate id of the instance.
   * `local_volume_snapshot_id` - When the local data disk opens, the snapshot id is entered.
   * `network_interface_id` - ID of the network interface.
@@ -97,7 +97,7 @@ In addition to all arguments above, the following attributes are exported:
   * `sriov_net_support` - whether support networking enhancement.
   * `system_disk` - System disk parameters.
     * `disk_size` - The size of the data disk. value range: [20, 500].
-    * `disk_type` - System disk type. `Local_SSD`, Local SSD disk. `SSD3.0`, The SSD cloud disk. `EHDD`, The EHDD cloud disk.
+    * `disk_type` - System disk type. `Local_SSD`, Local SSD disk. `SSD3.0`, The SSD cloud disk. `EHDD`, The EHDD cloud disk, `ESSD_SYSTEM_PL0`, The x7 machine type ESSD disk, `ESSD_SYSTEM_PL1`, The x7 machine type ESSD disk, `ESSD_SYSTEM_PL2`, The x7 machine type ESSD disk.
   * `tags` - the tags of the resource.
 
 

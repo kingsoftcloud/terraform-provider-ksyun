@@ -25,7 +25,9 @@ package ksyun
 
 import (
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
 
 func resourceKsyunKecNetworkInterface() *schema.Resource {
@@ -64,6 +66,31 @@ func resourceKsyunKecNetworkInterface() *schema.Resource {
 				Set:         schema.HashString,
 				Description: "A list of security group IDs.",
 			},
+
+			"secondary_private_ips": {
+				Type:          schema.TypeSet,
+				Optional:      true,
+				ConflictsWith: []string{"secondary_private_ip_address_count"},
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"ip": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Secondary Private IP.",
+						},
+					},
+				},
+				Description: "Assign secondary private ips to the network interface. <br> Notes: `secondary_private_ips` conflict with `secondary_private_ip_address_count`.",
+			},
+
+			"secondary_private_ip_address_count": {
+				Type:          schema.TypeInt,
+				Optional:      true,
+				ConflictsWith: []string{"secondary_private_ips"},
+				ValidateFunc:  validation.IntBetween(1, 99),
+				Description:   "The count of secondary private id address automatically assigned. <br> Notes:  `secondary_private_ip_address_count` conflict with `secondary_private_ips`.",
+			},
+
 			"instance_id": {
 				Type:        schema.TypeString,
 				Computed:    true,

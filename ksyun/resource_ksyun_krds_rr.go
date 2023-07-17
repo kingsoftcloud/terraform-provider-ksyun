@@ -37,8 +37,9 @@ package ksyun
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 var krdsRrNotSupport = []string{
@@ -54,6 +55,7 @@ var krdsRrNotSupport = []string{
 	"preferred_backup_time",
 	"availability_zone_1",
 	"db_instance_class",
+	"db_parameter_template_id",
 }
 
 func resourceKsyunKrdsRr() *schema.Resource {
@@ -74,7 +76,7 @@ func resourceKsyunKrdsRr() *schema.Resource {
 	rrSchema["db_instance_class"] = &schema.Schema{
 		Type:     schema.TypeString,
 		Required: true,
-		//ForceNew:     true,
+		// ForceNew:     true,
 		ValidateFunc: validDbInstanceClass(),
 		Description:  "this value regex db.ram.d{1,3}|db.disk.d{1,5}, db.ram is rds random access memory size, db.disk is disk size.",
 	}
