@@ -1,3 +1,16 @@
+## 1.7.0 (unreleased)
+
+FEATURES:
+
+- - **New Resource:** `ksyun_alb` 应用型负载均衡
+- - **New Resource:** `ksyun_alb_listener` 应用型负载均衡-监听器
+- - **New Resource:** `ksyun_alb_rule_group` 应用型负载均衡-转发策略
+- - **New Resource:** `ksyun_alb_listener_cert_group` 应用型负载均衡-证书组
+- - **New Data Source:** `ksyun_albs`
+- - **New Data Source:** `ksyun_alb_listeners`
+- - **New Data Source:** `ksyun_alb_rule_groups`
+- - **New Data Source:** `ksyun_alb_listener_cert_groups`
+
 ## 1.6.1 (Jul 14, 2023)
 
 BUGFIX:
@@ -13,6 +26,7 @@ FEATURES:
 - `ksyun_subnet` 支持IPv6网段
 
 ## 1.5.0 (Jul 12, 2023)
+
 FEATURES:
 
 - - **New Resource:** `ksyun_knad` knad 原生高防
