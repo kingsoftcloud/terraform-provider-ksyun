@@ -44,8 +44,13 @@ In addition to all arguments above, the following attributes are exported:
   * `alb_version` - The version of the ALB.
   * `charge_type` - The charge type.
   * `create_time` - The creation time.
+  * `enabled_log` - whether log is enabled or not.
   * `id` - ID of the ALB.
   * `ip_version` - IP version, 'ipv4' or 'ipv6'.
+  * `klog_info` - klog info.
+    * `account_id` - account id.
+    * `log_pool_name` - log pool name.
+    * `project_name` - log project name.
   * `project_id` - The ID of the project.
   * `public_ip` - The public IP address.
   * `state` - The state of the ALB.

@@ -60,9 +60,16 @@ The following arguments are supported:
 * `charge_type` - (Required, ForceNew) The charge type, valid values: 'PrePaidByHourUsage'.
 * `vpc_id` - (Required, ForceNew) The ID of the VPC.
 * `alb_name` - (Optional) The name of the ALB.
+* `enabled_log` - (Optional) whether log is enabled or not.
 * `ip_version` - (Optional, ForceNew) IP version, 'ipv4' or 'ipv6'.
+* `klog_info` - (Optional) klog info.
 * `project_id` - (Optional) The ID of the project.
 * `state` - (Optional) The state of the ALB, valid values:'start', 'stop'.
+
+The `klog_info` object supports the following:
+
+* `log_pool_name` - (Optional) log pool name.
+* `project_name` - (Optional) log project name.
 
 ## Attributes Reference
 

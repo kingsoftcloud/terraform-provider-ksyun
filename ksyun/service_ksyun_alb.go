@@ -40,6 +40,18 @@ func (alb *AlbService) readAlbs(condition map[string]interface{}) (data []interf
 			return data, err
 		}
 		data = results.([]interface{})
+
+		for _, itemInterface := range data {
+			if item, ok := itemInterface.(map[string]interface{}); ok {
+				if klogInfoInterface, ok := item["KlogInfo"]; ok {
+					klogInfo := klogInfoInterface.(map[string]interface{})
+					if v, ok := klogInfo["LogpoolName"]; ok {
+						klogInfo["LogPoolName"] = v
+					}
+				}
+			}
+		}
+
 		return data, err
 	})
 }
@@ -100,7 +112,7 @@ func (alb *AlbService) modifyProjectCall(d *schema.ResourceData, resource *schem
 	return callback, err
 }
 
-func (abl *AlbService) modifyStateCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
+func (alb *AlbService) modifyStateCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
 	req := map[string]interface{}{}
 	req["AlbId"] = d.Id()
 	req["State"] = d.Get("state")
@@ -120,7 +132,7 @@ func (abl *AlbService) modifyStateCall(d *schema.ResourceData, r *schema.Resourc
 	}
 	return callback, err
 }
-func (abl *AlbService) modifyAlbNameCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
+func (alb *AlbService) modifyAlbNameCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
 	req := map[string]interface{}{}
 	req["AlbId"] = d.Id()
 	req["AlbName"] = d.Get("alb_name")
@@ -131,6 +143,50 @@ func (abl *AlbService) modifyAlbNameCall(d *schema.ResourceData, r *schema.Resou
 			conn := client.slbconn
 			logger.Debug(logger.RespFormat, call.action, *(call.param))
 			resp, err = conn.SetAlbName(call.param)
+			return resp, err
+		},
+		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+			return err
+		},
+	}
+	return callback, err
+}
+func (alb *AlbService) modifyAccessLogCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
+	req := map[string]interface{}{}
+
+	callback = ApiCall{
+		param:  &req,
+		action: "SetEnableAlbAccessLog",
+		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+			req["AlbId"] = d.Id()
+			req["EnabledLog"] = d.Get("enabled_log")
+			conn := client.slbconn
+			logger.Debug(logger.RespFormat, call.action, *(call.param))
+			resp, err = conn.SetEnableAlbAccessLog(call.param)
+			return resp, err
+		},
+		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+			return err
+		},
+	}
+	return callback, err
+}
+
+func (alb *AlbService) modifyAccessLogInfo(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
+	req := map[string]interface{}{}
+
+	callback = ApiCall{
+		param:  &req,
+		action: "SetAlbAccessLog",
+		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+			req["AlbId"] = d.Id()
+			req["ProjectName"] = d.Get("klog_info.0.project_name")
+			req["LogPoolName"] = d.Get("klog_info.0.log_pool_name")
+			conn := client.slbconn
+			logger.Debug(logger.RespFormat, call.action, *(call.param))
+			resp, err = conn.SetAlbAccessLog(call.param)
 			return resp, err
 		},
 		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
@@ -164,6 +220,20 @@ func (alb *AlbService) ModifyAlb(d *schema.ResourceData, r *schema.Resource) (er
 			return err
 		}
 		calls = append(calls, modifyStateCall)
+	}
+	if d.HasChange("klog_info") {
+		modifyAccessLogInfoCall, err := alb.modifyAccessLogInfo(d, r)
+		if err != nil {
+			return err
+		}
+		calls = append(calls, modifyAccessLogInfoCall)
+	}
+	if d.HasChange("enabled_log") {
+		modifyEnabledLogCall, err := alb.modifyAccessLogCall(d, r)
+		if err != nil {
+			return err
+		}
+		calls = append(calls, modifyEnabledLogCall)
 	}
 
 	//tagService := TagService{s.client}
@@ -358,6 +428,7 @@ func (alb *AlbService) createAlbCall(d *schema.ResourceData, r *schema.Resource)
 				return err
 			}
 			d.SetId(id.(string))
+
 			_, err = alb.checkState(d, "", []string{"active"}, d.Timeout(schema.TimeoutUpdate))
 			return
 		},
@@ -365,9 +436,29 @@ func (alb *AlbService) createAlbCall(d *schema.ResourceData, r *schema.Resource)
 	return
 }
 func (alb *AlbService) CreateAlb(d *schema.ResourceData, r *schema.Resource) (err error) {
+	calls := []ApiCall{}
 	call, err := alb.createAlbCall(d, r)
 	if err != nil {
 		return err
 	}
-	return ksyunApiCallNew([]ApiCall{call}, d, alb.client, true)
+	calls = append(calls, call)
+
+	if _, ok := d.GetOk("klog_info"); ok {
+		callLogInfo, err := alb.modifyAccessLogInfo(d, r)
+		if err != nil {
+			return err
+		}
+		calls = append(calls, callLogInfo)
+	}
+	if v, ok := d.GetOk("enabled_log"); ok {
+		if v.(bool) {
+			callEnableLog, err := alb.modifyAccessLogCall(d, r)
+			if err != nil {
+				return err
+			}
+			calls = append(calls, callEnableLog)
+		}
+	}
+
+	return ksyunApiCallNew(calls, d, alb.client, true)
 }

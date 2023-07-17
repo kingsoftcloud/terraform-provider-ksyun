@@ -13,7 +13,7 @@ resource "ksyun_subnet" "test" {
 
 resource "ksyun_security_group" "test" {
   vpc_id              = ksyun_vpc.test.id
-  security_group_name = "tf-alb-test-sg"
+  security_group_name = "tf_sg"
 }
 
 resource "ksyun_security_group_entry" "test" {

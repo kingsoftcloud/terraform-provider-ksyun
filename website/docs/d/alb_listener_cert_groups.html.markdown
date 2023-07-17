@@ -17,7 +17,9 @@ This data source provides a list of ALB listener cert group resources according 
 
 ```hcl
 data "ksyun_alb_listener_cert_groups" "default" {
-  output_file = "output_result"
+  output_file     = "output_result"
+  ids             = []
+  alb_listener_id = []
 }
 ```
 

@@ -144,6 +144,36 @@ func dataSourceKsyunAlbs() *schema.Resource {
 							Computed:    true,
 							Description: "The status of the ALB.",
 						},
+						"enabled_log": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "whether log is enabled or not.",
+						},
+						"klog_info": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							MaxItems:    1,
+							Description: "klog info.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"account_id": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "account id.",
+									},
+									"log_pool_name": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "log pool name.",
+									},
+									"project_name": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "log project name.",
+									},
+								},
+							},
+						},
 					},
 				},
 			},

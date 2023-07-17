@@ -7,9 +7,13 @@ resource "ksyun_alb" "test" {
   charge_type = "PrePaidByHourUsage"
   vpc_id      = ksyun_vpc.test.id
   project_id  = 0
+  enabled_log = false
+#  klog_info {
+#    log_pool_name = "log_pool_name"
+#    project_name = "project_name"
+#  }
 }
 
-# HTTPS的监听器指定默认证书
 data "ksyun_certificates" "default" {
 }
 
@@ -20,7 +24,7 @@ resource "ksyun_alb_listener" "test" {
   protocol           = "HTTPS"
   port               = 8099
   alb_listener_state = "start"
-  certificate_id     = data.ksyun_certificates.default.certificates.0.certificate_id
+    certificate_id     = data.ksyun_certificates.default.certificates.0.certificate_id
   http_protocol      = "HTTP1.1"
   session {
     cookie_type                = "RewriteCookie"
@@ -46,7 +50,7 @@ resource "ksyun_alb_rule_group" "default" {
   listener_sync = "on"
 }
 
-# 创建证书组
+
 data "ksyun_certificates" "listener_cert" {
   name_regex = "test"
 }
