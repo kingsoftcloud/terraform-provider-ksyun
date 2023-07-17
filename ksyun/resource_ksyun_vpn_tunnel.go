@@ -28,6 +28,7 @@ package ksyun
 
 import (
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
@@ -54,10 +55,48 @@ func resourceKsyunVpnTunnel() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					"GreOverIpsec",
 					"Ipsec",
+					"RouteIpsec",
 				}, false),
 				Required:    true,
 				ForceNew:    true,
-				Description: "The bandWidth of the vpn tunnel.Valid Values:'GreOverIpsec','Ipsec'.",
+				Description: "The bandWidth of the vpn tunnel. Valid Values: VPN-v1: 'GreOverIpsec' or 'Ipsec'; VPN-v2: `RouteIpsec` or `Ipsec`.",
+			},
+
+			"ha_mode": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "active_active",
+				ForceNew: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					"active_active",
+					"active_standby",
+				}, false),
+				Description: "The high-availability mode of vpn tunnel. **Notes: this parameters is valid in vpn2.0** <br> Valid values: `active_active` valid only when type as `Ipsec`; `active_active` and `active_standby` valid only when type as `RouteIpsec`",
+			},
+			"open_health_check": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "The switch of vpn tunnel health check. **Notes: that's valid only when vpn-v2.0 and tunnel type is `RouteIpsec`**.",
+			},
+
+			"local_peer_ip": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				ValidateFunc: validation.Any(
+					validation.IsIPAddress,
+				),
+				Description: "The local ip in kingsoft cloud.",
+			},
+
+			"customer_peer_ip": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				ValidateFunc: validation.Any(
+					validation.IsIPAddress,
+				),
+				Description: "The ip of customer.",
 			},
 
 			"vpn_gre_ip": {
@@ -120,7 +159,16 @@ func resourceKsyunVpnTunnel() *schema.Resource {
 				ForceNew:    true,
 				Description: "The pre_shared_key of the vpn tunnel.",
 			},
-
+			"ike_version": {
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					"v1",
+					"v2",
+				}, false),
+				Description: "the version of Ike.",
+			},
 			"ike_authen_algorithm": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -202,6 +250,11 @@ func resourceKsyunVpnTunnel() *schema.Resource {
 				ValidateFunc: validation.IntBetween(120, 2592000),
 				Computed:     true,
 				Description:  "The ipsec_lifetime_second of the vpn tunnel.",
+			},
+			"vpn_gateway_version": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "the version of vpn gateway.",
 			},
 		},
 	}

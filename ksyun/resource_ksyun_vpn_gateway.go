@@ -26,6 +26,7 @@ package ksyun
 
 import (
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
@@ -66,6 +67,16 @@ func resourceKsyunVpnGateway() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 				Description: "The id of the vpc.",
+			},
+			"vpn_gateway_version": {
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					"1.0",
+					"2.0",
+				}, false),
+				Description: "the version of vpn gateway.",
 			},
 
 			"charge_type": {

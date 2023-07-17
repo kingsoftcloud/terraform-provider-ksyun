@@ -125,6 +125,11 @@ func dataSourceKsyunVpnGateways() *schema.Resource {
 							Computed:    true,
 							Description: "HA Gateway IP address.",
 						},
+						"vpn_gateway_version": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The version of vpn gateway.",
+						},
 
 						"remote_cidr_set": {
 							Type:        schema.TypeList,

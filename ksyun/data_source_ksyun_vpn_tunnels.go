@@ -139,6 +139,65 @@ func dataSourceKsyunVpnTunnels() *schema.Resource {
 							Computed:    true,
 							Description: "VPN tunnel name.",
 						},
+						"vpn_gwl_name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The VPN gateway name.",
+						},
+
+						"vpn_gateway_version": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The VPN gateway version.",
+						},
+
+						"vpn_m_tunnel_state": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "The state of master-vpn-tunnel .",
+						},
+						"vpn_s_tunnel_state": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "The state of second-vpn-tunnel .",
+						},
+						"ha_mode": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The high-availability mode of vpn tunnel.",
+						},
+						"ike_version": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The version of ike.",
+						},
+						"local_peer_ip": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The peer ip of kingsoft cloud.",
+						},
+						"customer_peer_ip": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The peer ip of customer.",
+						},
+
+						"vpn_m_tunnel_create_time": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The creation time of first-vpn-tunnel.",
+						},
+						"vpn_s_tunnel_create_time": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The creation time of second-vpn-tunnel.",
+						},
+
+						"open_health_check": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "The switch of health check.",
+						},
 
 						"pre_shared_key": {
 							Type:        schema.TypeString,
@@ -204,7 +263,7 @@ func dataSourceKsyunVpnTunnels() *schema.Resource {
 							},
 						},
 
-						"create_time": {
+						"vpn_tunnel_create_time": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "creation time.",

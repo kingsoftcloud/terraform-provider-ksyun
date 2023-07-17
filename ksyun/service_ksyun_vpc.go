@@ -3192,6 +3192,9 @@ func (s *VpcService) ReadAndSetVpnTunnels(d *schema.ResourceData, r *schema.Reso
 					return result
 				},
 			},
+			"CreateTime": {
+				Field: "vpn_tunnel_create_time",
+			},
 		},
 	})
 }
