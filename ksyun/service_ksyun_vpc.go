@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
@@ -1283,18 +1284,55 @@ func (s *VpcService) ReadNatAssociate(d *schema.ResourceData, natId string, subn
 	return data, err
 }
 
-func (s *VpcService) ReadAndSetNatAssociate(d *schema.ResourceData, r *schema.Resource) (err error) {
-	data, err := s.ReadNatAssociate(d, d.Get("nat_id").(string), d.Get("subnet_id").(string))
-	if err != nil {
-		return err
+func (s *VpcService) ReadNatAssociateInstance(d *schema.ResourceData, natId string, networkInterfaceId string) (data map[string]interface{}, err error) {
+	data, err = s.ReadNat(d, natId)
+	if items, ok := data["AssociateInstanceSet"]; ok {
+		if len(items.([]interface{})) == 0 {
+			return data, fmt.Errorf("NetworkInterface %s not exist in Nat %s ", networkInterfaceId, natId)
+		}
+		found := false
+		for _, item := range items.([]interface{}) {
+			if item.(map[string]interface{})["NetworkInterfaceId"] == networkInterfaceId {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return data, fmt.Errorf("NetworkInterface %s not exist in Nat %s ", networkInterfaceId, natId)
+		}
+	} else {
+		return data, fmt.Errorf("NetworkInterface %s not exist in Nat %s ", networkInterfaceId, natId)
 	}
-	data["SubnetId"] = d.Get("subnet_id")
+	return data, err
+}
+
+func (s *VpcService) ReadAndSetNatAssociate(d *schema.ResourceData, r *schema.Resource) (err error) {
+	var data map[string]interface{}
+	if subnetId, subnetExist := d.GetOk("subnet_id"); subnetExist {
+		data, err = s.ReadNatAssociate(d, d.Get("nat_id").(string), subnetId.(string))
+		if err != nil {
+			return err
+		}
+		data["SubnetId"] = subnetId
+	}
+	if networkInterfaceId, niExist := d.GetOk("network_interface_id"); niExist {
+		_, err = s.ReadNatAssociateInstance(d, d.Get("nat_id").(string), networkInterfaceId.(string))
+		if err != nil {
+			return err
+		}
+		data["NetworkInterfaceId"] = networkInterfaceId
+	}
+
 	SdkResponseAutoResourceData(d, r, data, nil)
 	return err
 }
 
 func (s *VpcService) CreateNatAssociateCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
-	req, err := SdkRequestAutoMapping(d, r, false, nil, nil)
+	trans := map[string]SdkReqTransform{
+		"subnet_id": {},
+	}
+
+	req, err := SdkRequestAutoMapping(d, r, false, trans, nil)
 	if err != nil {
 		return callback, err
 	}
@@ -1309,7 +1347,44 @@ func (s *VpcService) CreateNatAssociateCall(d *schema.ResourceData, r *schema.Re
 		},
 		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
 			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
-			d.SetId(d.Get("nat_id").(string) + ":" + d.Get("subnet_id").(string))
+			idSlice := []string{
+				d.Get("nat_id").(string),
+				d.Get("subnet_id").(string),
+				d.Get("network_interface_id").(string),
+			}
+			d.SetId(strings.Join(idSlice, ":"))
+			return err
+		},
+	}
+	return callback, err
+}
+
+func (s *VpcService) CreateNatAssociateInstanceCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
+	trans := map[string]SdkReqTransform{
+		"network_interface_id": {},
+	}
+
+	req, err := SdkRequestAutoMapping(d, r, false, trans, nil)
+	if err != nil {
+		return callback, err
+	}
+	callback = ApiCall{
+		param:  &req,
+		action: "AssociateInstance",
+		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+			conn := client.vpcconn
+			logger.Debug(logger.RespFormat, call.action, *(call.param))
+			resp, err = conn.AssociateInstance(call.param)
+			return resp, err
+		},
+		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+			idSlice := []string{
+				d.Get("nat_id").(string),
+				d.Get("subnet_id").(string),
+				d.Get("network_interface_id").(string),
+			}
+			d.SetId(strings.Join(idSlice, ":"))
 			return err
 		},
 	}
@@ -1317,11 +1392,24 @@ func (s *VpcService) CreateNatAssociateCall(d *schema.ResourceData, r *schema.Re
 }
 
 func (s *VpcService) CreateNatAssociate(d *schema.ResourceData, r *schema.Resource) (err error) {
-	call, err := s.CreateNatAssociateCall(d, r)
-	if err != nil {
-		return err
+	var apiCallProcess []ApiCall
+	if _, ok := d.GetOk("subnet_id"); ok {
+		call, err := s.CreateNatAssociateCall(d, r)
+		if err != nil {
+			return err
+		}
+		apiCallProcess = append(apiCallProcess, call)
 	}
-	return ksyunApiCallNew([]ApiCall{call}, d, s.client, true)
+
+	if _, ok := d.GetOk("network_interface_id"); ok {
+		call, err := s.CreateNatAssociateInstanceCall(d, r)
+		if err != nil {
+			return err
+		}
+		apiCallProcess = append(apiCallProcess, call)
+	}
+
+	return ksyunApiCallNew(apiCallProcess, d, s.client, true)
 }
 
 func (s *VpcService) RemoveNatAssociateCall(d *schema.ResourceData, natId string, subnetId string) (callback ApiCall, err error) {
@@ -1364,11 +1452,16 @@ func (s *VpcService) RemoveNatAssociateCall(d *schema.ResourceData, natId string
 }
 
 func (s *VpcService) RemoveNatAssociate(d *schema.ResourceData) (err error) {
-	call, err := s.RemoveNatAssociateCall(d, d.Get("nat_id").(string), d.Get("subnet_id").(string))
-	if err != nil {
-		return err
+	var apiCallProcess []ApiCall
+	if subnetId, ok := d.GetOk("subnet_id"); ok {
+		call, err := s.RemoveNatAssociateCall(d, d.Get("nat_id").(string), subnetId.(string))
+		if err != nil {
+			return err
+		}
+		apiCallProcess = append(apiCallProcess, call)
 	}
-	return ksyunApiCallNew([]ApiCall{call}, d, s.client, true)
+
+	return ksyunApiCallNew(apiCallProcess, d, s.client, true)
 }
 
 func (s *VpcService) ReadNetworkAcls(condition map[string]interface{}) (data []interface{}, err error) {
