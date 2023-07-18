@@ -148,12 +148,9 @@ func (a *ApiProcess) SetClient(client *KsyunClient) {
 	a.client = client
 }
 
-func NewApiProcess(ctx context.Context, d *schema.ResourceData, client *KsyunClient, dryRun bool, goRoutineNum int) ApiProcess {
-	mulNum := 0
-	if goRoutineNum > 0 {
-		// print warnings message
-		mulNum = goRoutineNum
-	}
+// NewApiProcess returns a ApiProcess, but now it doesn't support concurrency
+func NewApiProcess(ctx context.Context, d *schema.ResourceData, client *KsyunClient, dryRun bool) ApiProcess {
+	mulNum := 1
 
 	p := ApiProcess{
 		ApiProcessQueue: []ApiCall{},
@@ -169,7 +166,8 @@ func NewApiProcess(ctx context.Context, d *schema.ResourceData, client *KsyunCli
 	return p
 }
 
-func (a *ApiProcess) Run() []error {
+// ConRun will process ApiProcess concurrently
+func (a *ApiProcess) ConRun() []error {
 	// receive errs
 	go func() {
 		for callErr := range a.errCh {
@@ -201,4 +199,8 @@ func (a *ApiProcess) Run() []error {
 	}
 	a.wg.Wait()
 	return a.errors
+}
+
+func (a *ApiProcess) Run() error {
+	return ksyunApiCallNew(a.ApiProcessQueue, a.d, a.client, a.DryRun)
 }
