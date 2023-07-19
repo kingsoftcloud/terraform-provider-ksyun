@@ -456,6 +456,7 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_krds_parameter_group":             resourceKsyunKrdsParameterGroup(),
 			"ksyun_knad":                             resourceKsyunKnad(),
 			"ksyun_knad_associate":                   resourceKsyunKnadAssociate(),
+			"ksyun_nat_instance_associate":           resourceKsyunNatInstanceAssociation(),
 		},
 		ConfigureFunc: providerConfigure,
 	}

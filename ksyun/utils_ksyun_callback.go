@@ -27,19 +27,19 @@ type afterCallFunc func(d *schema.ResourceData, client *KsyunClient, resp *map[s
 type beforeCallFunc func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (bool, error)
 
 type ApiProcess struct {
-	ApiProcessQueue []ApiCall
-	DryRun          bool
-	Ctx             context.Context
-	MulNum          int
+	DryRun bool
+	Ctx    context.Context
+	MulNum int
 
 	d      *schema.ResourceData
 	client *KsyunClient
 
-	wg           *sync.WaitGroup
-	errCh        chan error
-	concurrentCh chan struct{}
-	earlyStop    chan struct{}
-	errors       []error
+	apiProcessQueue []ApiCall
+	wg              *sync.WaitGroup
+	errCh           chan error
+	concurrentCh    chan struct{}
+	earlyStop       chan struct{}
+	errors          []error
 }
 
 func ksyunApiCall(api []ksyunApiCallFunc, d *schema.ResourceData, meta interface{}) (err error) {
@@ -130,7 +130,7 @@ func (c *ApiCall) RightNow(d *schema.ResourceData, client *KsyunClient, isDryRun
 }
 
 func (a *ApiProcess) PutCalls(candidate ...ApiCall) {
-	a.ApiProcessQueue = append(a.ApiProcessQueue, candidate...)
+	a.apiProcessQueue = append(a.apiProcessQueue, candidate...)
 }
 
 func (a *ApiProcess) SetD(d *schema.ResourceData) {
@@ -153,7 +153,7 @@ func NewApiProcess(ctx context.Context, d *schema.ResourceData, client *KsyunCli
 	mulNum := 1
 
 	p := ApiProcess{
-		ApiProcessQueue: []ApiCall{},
+		apiProcessQueue: []ApiCall{},
 		d:               d,
 		client:          client,
 		DryRun:          dryRun,
@@ -176,7 +176,7 @@ func (a *ApiProcess) ConRun() []error {
 	}()
 
 	// concurrency api call run
-	for _, call := range a.ApiProcessQueue {
+	for _, call := range a.apiProcessQueue {
 		select {
 		case <-a.Ctx.Done():
 			a.errors = append(a.errors, fmt.Errorf("stop api call early"))
@@ -202,5 +202,5 @@ func (a *ApiProcess) ConRun() []error {
 }
 
 func (a *ApiProcess) Run() error {
-	return ksyunApiCallNew(a.ApiProcessQueue, a.d, a.client, a.DryRun)
+	return ksyunApiCallNew(a.apiProcessQueue, a.d, a.client, a.DryRun)
 }

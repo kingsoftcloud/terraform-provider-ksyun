@@ -33,6 +33,7 @@ package ksyun
 
 import (
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
@@ -97,7 +98,7 @@ func resourceKsyunNat() *schema.Resource {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Default:      1,
-				ValidateFunc: validation.IntBetween(1, 10),
+				ValidateFunc: validation.IntBetween(1, 20),
 				Description:  "The Counts of Nat Ip, value range:[1, 10], Default is 1.",
 			},
 
@@ -105,7 +106,7 @@ func resourceKsyunNat() *schema.Resource {
 				Type:         schema.TypeInt,
 				Required:     true,
 				ValidateFunc: validation.IntBetween(1, 15000),
-				//Default:      1,
+				// Default:      1,
 				Description: "The BandWidth of Nat Ip, value range:[1, 15000], Default is 1.",
 			},
 
