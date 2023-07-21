@@ -60,6 +60,47 @@ func (r *RouteFilter) GetFilterParams() (map[string]interface{}, error) {
 	return *req, err
 }
 
+type BandwidthLimitFilter struct {
+	// PrivateIp of the instance ip
+	PrivateIpAddress string `mapstructure:"private-ip-address"`
+
+	// NetworkInterfaceId, the network interface belong to instance
+	NetworkInterfaceId string `mapstructure:"network-interface-id"`
+
+	// instanceType destination cidr blocks
+	InstanceType string `mapstructure:"instance-type"`
+}
+
+// Filler convert structure to map[string]string
+func (r *BandwidthLimitFilter) Filler() (data map[string]string) {
+	err := mapstructure.Decode(r, &data)
+	if err != nil {
+		return nil
+	}
+	return data
+}
+
+func (r *BandwidthLimitFilter) GetFilterParams() (map[string]interface{}, error) {
+	req := &map[string]interface{}{}
+	var (
+		index int
+		err   error
+	)
+
+	filterMap := r.Filler()
+	for k, v := range filterMap {
+		if v == "" {
+			continue
+		}
+		index++
+		index, err = transformWithFilter(v, k, SdkReqTransform{}, index, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return *req, err
+}
+
 func (s *VpcService) ReadNetworkInterfaces(condition map[string]interface{}) (data []interface{}, err error) {
 	var (
 		resp                    *map[string]interface{}
@@ -1409,6 +1450,46 @@ func (s *VpcService) ReadAndSetNatAssociate(d *schema.ResourceData, r *schema.Re
 	SdkResponseAutoResourceData(d, r, data, nil)
 	return err
 }
+func (s *VpcService) ReadAndSetNatBandwidthLimit(d *schema.ResourceData, r *schema.Resource) (err error) {
+	data, err := s.ReadNatBandwidthLimit(d)
+	SdkResponseAutoResourceData(d, r, data, nil)
+	return err
+}
+
+func (s *VpcService) ReadNatBandwidthLimit(d *schema.ResourceData) (data map[string]interface{}, err error) {
+	kniId := d.Get("network_interface_id").(string)
+	natId := d.Get("nat_id").(string)
+
+	filter := BandwidthLimitFilter{
+		NetworkInterfaceId: kniId,
+	}
+	req, err := filter.GetFilterParams()
+	if err != nil {
+		return data, err
+	}
+
+	req["NatId"] = natId
+	conn := s.client.vpcconn
+	action := "DescribeNatRateLimit"
+	logger.Debug(logger.RespFormat, action, req)
+	resp, err := conn.DescribeNatRateLimit(&req)
+	if err != nil {
+		return data, err
+	}
+	bandwidthLimitSet, err := getSdkValue("NatNetworkInterfaceSet", *resp)
+	if err != nil {
+		return data, err
+	}
+
+	if bandwidthLimitSet != nil {
+		bwlVal := reflect.ValueOf(bandwidthLimitSet)
+		if bwlVal.Len() < 1 {
+			return data, fmt.Errorf("there is not a nat bandwidth limit rule relate to kni %s", kniId)
+		}
+		data = bwlVal.Index(0).Interface().(map[string]interface{})
+	}
+	return data, err
+}
 
 func (s *VpcService) CreateNatAssociateCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
 	req, err := SdkRequestAutoMapping(d, r, false, nil, nil)
@@ -1460,6 +1541,34 @@ func (s *VpcService) CreateNatAssociateInstanceCall(d *schema.ResourceData, r *s
 	return callback, err
 }
 
+func (s *VpcService) CreateNatInstanceBandwidthLimitCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
+	req, err := SdkRequestAutoMapping(d, r, false, nil, nil)
+	if err != nil {
+		return callback, err
+	}
+	callback = ApiCall{
+		param:  &req,
+		action: "CreateNatRateLimit",
+		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+			conn := client.vpcconn
+			logger.Debug(logger.RespFormat, call.action, *(call.param))
+			resp, err = conn.CreateNatRateLimit(call.param)
+			return resp, err
+		},
+		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+			limitId, _ := getSdkValue("NatRateLimit.NatRateLimitId", *resp)
+			if limitId == nil {
+				return fmt.Errorf("limitId is not exist")
+			}
+			limitIdStr, _ := If2String(limitId)
+			d.SetId(limitIdStr)
+			return err
+		},
+	}
+	return callback, err
+}
+
 func (s *VpcService) CreateNatAssociate(d *schema.ResourceData, r *schema.Resource) (err error) {
 	call, err := s.CreateNatAssociateCall(d, r)
 	if err != nil {
@@ -1471,6 +1580,16 @@ func (s *VpcService) CreateNatAssociate(d *schema.ResourceData, r *schema.Resour
 func (s *VpcService) CreateNatInstanceAssociate(d *schema.ResourceData, r *schema.Resource) (err error) {
 	apiProcess := NewApiProcess(context.Background(), d, s.client, true)
 	call, err := s.CreateNatAssociateInstanceCall(d, r)
+	if err != nil {
+		return err
+	}
+	apiProcess.PutCalls(call)
+	return apiProcess.Run()
+}
+
+func (s *VpcService) CreateNatInstanceBandwidthLimit(d *schema.ResourceData, r *schema.Resource) (err error) {
+	apiProcess := NewApiProcess(context.Background(), d, s.client, true)
+	call, err := s.CreateNatInstanceBandwidthLimitCall(d, r)
 	if err != nil {
 		return err
 	}
@@ -1555,6 +1674,43 @@ func (s *VpcService) RemoveNatInstanceAssociateCall(d *schema.ResourceData, natI
 	}
 	return callback, err
 }
+func (s *VpcService) RemoveNatInstanceBandwidthLimitCall(d *schema.ResourceData) (callback ApiCall, err error) {
+	removeReq := map[string]interface{}{
+		"NatRateLimitId": d.Id(),
+	}
+	callback = ApiCall{
+		param:  &removeReq,
+		action: "DeleteNatRateLimit",
+		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+			conn := client.vpcconn
+			logger.Debug(logger.RespFormat, call.action, *(call.param))
+			resp, err = conn.DeleteNatRateLimit(call.param)
+			return resp, err
+		},
+		callError: func(d *schema.ResourceData, client *KsyunClient, call ApiCall, baseErr error) error {
+			return resource.Retry(15*time.Minute, func() *resource.RetryError {
+				_, callErr := s.ReadNatBandwidthLimit(d)
+				if callErr != nil {
+					if notFoundError(callErr) {
+						return nil
+					} else {
+						return resource.NonRetryableError(fmt.Errorf("error on reading nat bandwidth limit when delete %q, %s", d.Id(), callErr))
+					}
+				}
+				_, callErr = call.executeCall(d, client, call)
+				if callErr != nil {
+					return retryError(callErr)
+				}
+				return nil
+			})
+		},
+		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+			return err
+		},
+	}
+	return callback, err
+}
 
 func (s *VpcService) RemoveNatAssociate(d *schema.ResourceData) (err error) {
 	call, err := s.RemoveNatAssociateCall(d, d.Get("nat_id").(string), d.Get("subnet_id").(string))
@@ -1572,6 +1728,33 @@ func (s *VpcService) RemoveNatInstanceAssociate(d *schema.ResourceData) (err err
 	}
 	apiProcess.PutCalls(call)
 	return apiProcess.Run()
+}
+
+func (s *VpcService) RemoveNatInstanceBandwidthLimit(d *schema.ResourceData) (err error) {
+	apiProcess := NewApiProcess(context.Background(), d, s.client, true)
+	call, err := s.RemoveNatInstanceBandwidthLimitCall(d)
+	if err != nil {
+		return err
+	}
+	apiProcess.PutCalls(call)
+	return apiProcess.Run()
+}
+func (s *VpcService) UpdateNatBandwidthLimit(d *schema.ResourceData) (err error) {
+	if d.HasChange("bandwidth_limit") {
+		newLimit := d.Get("bandwidth_limit").(int)
+		adjustParams := map[string]interface{}{
+			"NatRateLimitId": d.Id(),
+			"BandwidthLimit": newLimit,
+		}
+		conn := s.client.vpcconn
+		action := "ModifyNatRateLimit"
+		resp, err := conn.ModifyNatRateLimit(&adjustParams)
+		if err != nil {
+			return err
+		}
+		logger.Debug(logger.RespFormat, action, adjustParams, *resp)
+	}
+	return err
 }
 
 func (s *VpcService) ReadNetworkAcls(condition map[string]interface{}) (data []interface{}, err error) {

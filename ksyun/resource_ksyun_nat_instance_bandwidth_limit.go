@@ -58,21 +58,21 @@ resource "ksyun_subnet" "foo" {
   availability_zone = "${data.ksyun_availability_zones.default.availability_zones.0.availability_zone_name}"
 }
 
-resource "ksyun_nat_instance_associate" "foo" {
+resource "ksyun_nat_associate" "foo" {
+	  nat_id = "${ksyun_nat.foo.id}"
+	  network_interface_id = "${ksyun_instance.foo.network_interface_id}"
+}
+
+resource "ksyun_nat_instance_bandwidth_limit" "foo" {
   nat_id = "${ksyun_nat.foo.id}"
   network_interface_id = "${ksyun_instance.foo.network_interface_id}"
+  bandwidth_limit = 1
 }
 
 ```
 
-# Import
-
-nat associate can be imported using the `id`, e.g.
-
-```
-$ terraform import ksyun_nat_instance_associate.foo $nat_id:$network_interface_id
-```
 */
+
 package ksyun
 
 import (
@@ -82,14 +82,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
 
-func resourceKsyunNatInstanceAssociation() *schema.Resource {
+func resourceKsyunNatInstanceBandwidthLimit() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceKsyunNatInstanceAssociationCreate,
-		Read:   resourceKsyunNatInstanceAssociationRead,
-		Delete: resourceKsyunNatInstanceAssociationDelete,
-		Importer: &schema.ResourceImporter{
-			State: importNatAssociate,
-		},
+		Create: resourceKsyunNatInstanceBandwidthLimitCreate,
+		Read:   resourceKsyunNatInstanceBandwidthLimitRead,
+		Update: resourceKsyunNatInstanceBandwidthLimitUpdate,
+		Delete: resourceKsyunNatInstanceBandwidthLimitDelete,
 
 		Schema: map[string]*schema.Schema{
 			"nat_id": {
@@ -105,32 +103,58 @@ func resourceKsyunNatInstanceAssociation() *schema.Resource {
 				ValidateFunc: validation.IsUUID,
 				Description:  "The id of network interface that belong to instance.",
 			},
+			"bandwidth_limit": {
+				Type:         schema.TypeInt,
+				Required:     true,
+				ValidateFunc: validation.IntBetween(1, 25000),
+				Description:  "The bandwidth limit of network interface that belong to instance.",
+			},
+			"private_ip_address": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "the private ip of network interface.",
+			},
+			"instance_type": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "the type of instance. Values: epc or kec.",
+			},
 		},
 	}
 }
-func resourceKsyunNatInstanceAssociationCreate(d *schema.ResourceData, meta interface{}) (err error) {
+func resourceKsyunNatInstanceBandwidthLimitCreate(d *schema.ResourceData, meta interface{}) (err error) {
 	vpcService := VpcService{meta.(*KsyunClient)}
-	err = vpcService.CreateNatInstanceAssociate(d, resourceKsyunNatInstanceAssociation())
+	err = vpcService.CreateNatInstanceBandwidthLimit(d, resourceKsyunNatInstanceBandwidthLimit())
 	if err != nil {
-		return fmt.Errorf("error on creating nat instance associate %q, %s", d.Id(), err)
+		return fmt.Errorf("error on creating  nat instance bandwidth limit %q, %s", d.Id(), err)
 	}
-	return resourceKsyunNatInstanceAssociationRead(d, meta)
+	return resourceKsyunNatInstanceBandwidthLimitRead(d, meta)
 }
 
-func resourceKsyunNatInstanceAssociationRead(d *schema.ResourceData, meta interface{}) (err error) {
+func resourceKsyunNatInstanceBandwidthLimitRead(d *schema.ResourceData, meta interface{}) (err error) {
 	vpcService := VpcService{meta.(*KsyunClient)}
-	err = vpcService.ReadAndSetNatAssociate(d, resourceKsyunNatInstanceAssociation())
+	err = vpcService.ReadAndSetNatBandwidthLimit(d, resourceKsyunNatInstanceBandwidthLimit())
 	if err != nil {
-		return fmt.Errorf("error on reading nat instance associate %q, %s", d.Id(), err)
+		return fmt.Errorf("error on reading  nat instance bandwidth limit %q, %s", d.Id(), err)
 	}
 	return err
 }
 
-func resourceKsyunNatInstanceAssociationDelete(d *schema.ResourceData, meta interface{}) (err error) {
-	vpcService := VpcService{meta.(*KsyunClient)}
-	err = vpcService.RemoveNatInstanceAssociate(d)
+func resourceKsyunNatInstanceBandwidthLimitUpdate(d *schema.ResourceData, meta interface{}) (err error) {
+	vpcService := VpcService{client: meta.(*KsyunClient)}
+	err = vpcService.UpdateNatBandwidthLimit(d)
 	if err != nil {
-		return fmt.Errorf("error on deleting nat instance associate %q, %s", d.Id(), err)
+		return fmt.Errorf("error on updating nat instance bandwidth limit %q, %s", d.Id(), err)
+	}
+
+	return err
+}
+
+func resourceKsyunNatInstanceBandwidthLimitDelete(d *schema.ResourceData, meta interface{}) (err error) {
+	vpcService := VpcService{meta.(*KsyunClient)}
+	err = vpcService.RemoveNatInstanceBandwidthLimit(d)
+	if err != nil {
+		return fmt.Errorf("error on deleting  nat instance bandwidth limit %q, %s", d.Id(), err)
 	}
 	return err
 }
