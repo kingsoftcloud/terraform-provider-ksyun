@@ -3,7 +3,9 @@ package ksyun
 import (
 	"fmt"
 	"net"
+	"reflect"
 	"regexp"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
@@ -26,6 +28,8 @@ var (
 		regexp.MustCompile(`^[A-Za-z0-9\p{Han}-_]{1,63}$`),
 		"expected value to be 1 - 63 characters and only support chinese, english, numbers, '-', '_'",
 	)
+
+	AnyPortType = "Any"
 )
 
 // validateCIDRNetworkAddress ensures that the string value is a valid CIDR that
@@ -308,4 +312,25 @@ func validateKrdsEngine(val interface{}, k string) (ws []string, errors []error)
 
 func validateKrdsEngineVersionWithEngine(engine, engineVersion string) bool {
 	return checkValueInSlice(KrdsEnginVersionMap[engine], engineVersion)
+}
+
+func validatePort(v interface{}, k string) (ws []string, errors []error) {
+	value := 0
+	switch t := v.(type) {
+	case string:
+		isAny := reflect.DeepEqual(t, AnyPortType)
+		if isAny {
+			return
+		}
+		value, _ = strconv.Atoi(t)
+	case int:
+		value = t
+	default:
+		errors = append(errors, fmt.Errorf("%q data type error ", k))
+		return
+	}
+	if value < 1 || value > 65535 {
+		errors = append(errors, fmt.Errorf("%q must be a valid port between 1 and 65535", k))
+	}
+	return
 }

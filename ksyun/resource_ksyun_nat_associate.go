@@ -32,9 +32,27 @@ Provides a Nat Associate resource under VPC resource.
 	  availability_zone = "cn-beijing-6a"
 	}
 
+    resource "ksyun_instance" "foo" {
+      image_id="${data.ksyun_images.centos-7_5.images.0.image_id}"
+      instance_type="N3.2B"
+
+      subnet_id="${ksyun_subnet.foo.id}"
+      instance_password="Xuan663222"
+      keep_image_login=false
+      charge_type="Daily"
+      purchase_time=1
+      security_group_id=["${ksyun_security_group.default.id}"]
+      instance_name="ksyun-kec-tf-nat"
+      sriov_net_support="false"
+	}
+
 	resource "ksyun_nat_associate" "foo" {
 	  nat_id = "${ksyun_nat.foo.id}"
 	  subnet_id = "${ksyun_subnet.test.id}"
+	}
+	resource "ksyun_nat_associate" "associate_ins" {
+	  nat_id = "${ksyun_nat.foo.id}"
+	  network_interface_id = "${ksyun_instance.foo.network_interface_id}"
 	}
 
 ```
@@ -93,7 +111,7 @@ func resourceKsyunNatAssociation() *schema.Resource {
 				ValidateFunc:  validation.IsUUID,
 				ConflictsWith: []string{"subnet_id"},
 				AtLeastOneOf:  []string{"subnet_id", "network_interface_id"},
-				Description:   "The id of network interface that belong to instance. Notes: Because of there is one resource in the association, conflict with `subnet_id`",
+				Description:   "The id of network interface that belong to instance. Notes: Because of there is one resource in the association, conflict with `subnet_id`.",
 			},
 		},
 	}

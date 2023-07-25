@@ -1,5 +1,5 @@
 /*
-Provides a Association of Nat and Instance resource under VPC resource.
+Provides a bandwidth limit rule of Nat and Instance resource under VPC resource.
 
 # Example Usage
 
@@ -31,14 +31,13 @@ resource "ksyun_instance" "foo" {
   security_group_id=["${ksyun_security_group.default.id}"]
   instance_name="ksyun-kec-tf-nat"
   sriov_net_support="false"
-  project_id=100012
 }
 
 resource "ksyun_nat" "foo" {
   nat_name = "ksyun-nat-tf"
   nat_mode = "Subnet"
   nat_type = "public"
-  band_width = 1
+  band_width = 10
   charge_type = "DailyPaidByTransfer"
   vpc_id = "${ksyun_vpc.foo.id}"
 }

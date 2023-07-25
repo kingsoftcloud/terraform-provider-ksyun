@@ -1,10 +1,8 @@
-// Copyright 2022 NotOne Lv <aiphalv0010@gmail.com>. All rights reserved.
-// Use of this source code is governed by a MIT style
-// license that can be found in the LICENSE file.
-
 package ksyun
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestTransformWithFilter(t *testing.T) {
 	m := map[string]string{
@@ -39,4 +37,25 @@ func TestRouteFilter(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Logf("route request parameters: +%v", reqParams)
+}
+
+func TestStructureConverter(t *testing.T) {
+	bb := NewDescribeDnatsParams()
+	bb.DnatIds = append(bb.DnatIds, "dasdasdas")
+	m := map[string]interface{}{}
+	if err := StructureConverter(bb, &m); err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("mapstructure: +%v", m)
+}
+func TestStructureConverter2(t *testing.T) {
+	s := CreateDnatParams{
+		NatIp: "dd",
+	}
+	m := map[string]interface{}{}
+
+	if err := StructureConverter(s, &m); err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("+%v", m)
 }

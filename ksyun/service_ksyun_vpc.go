@@ -11,94 +11,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/mitchellh/mapstructure"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
 )
 
 type VpcService struct {
 	client *KsyunClient
-}
-
-type RouteFilter struct {
-	// VpcId the id of vpc
-	VpcId string `mapstructure:"vpc-id"`
-
-	// InstanceId, the next route of the instance(kec)
-	InstanceId string `mapstructure:"instance-id"`
-
-	// DestCidrBlock destination cidr blocks
-	DestCidrBlock string `mapstructure:"destination-cidr-block"`
-}
-
-// Filler convert structure to map[string]string
-func (r *RouteFilter) Filler() (data map[string]string) {
-	err := mapstructure.Decode(r, &data)
-	if err != nil {
-		return nil
-	}
-	return data
-}
-
-func (r *RouteFilter) GetFilterParams() (map[string]interface{}, error) {
-	req := &map[string]interface{}{}
-	var (
-		index int
-		err   error
-	)
-
-	filterMap := r.Filler()
-	for k, v := range filterMap {
-		if v == "" {
-			continue
-		}
-		index++
-		index, err = transformWithFilter(v, k, SdkReqTransform{}, index, req)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return *req, err
-}
-
-type BandwidthLimitFilter struct {
-	// PrivateIp of the instance ip
-	PrivateIpAddress string `mapstructure:"private-ip-address"`
-
-	// NetworkInterfaceId, the network interface belong to instance
-	NetworkInterfaceId string `mapstructure:"network-interface-id"`
-
-	// instanceType destination cidr blocks
-	InstanceType string `mapstructure:"instance-type"`
-}
-
-// Filler convert structure to map[string]string
-func (r *BandwidthLimitFilter) Filler() (data map[string]string) {
-	err := mapstructure.Decode(r, &data)
-	if err != nil {
-		return nil
-	}
-	return data
-}
-
-func (r *BandwidthLimitFilter) GetFilterParams() (map[string]interface{}, error) {
-	req := &map[string]interface{}{}
-	var (
-		index int
-		err   error
-	)
-
-	filterMap := r.Filler()
-	for k, v := range filterMap {
-		if v == "" {
-			continue
-		}
-		index++
-		index, err = transformWithFilter(v, k, SdkReqTransform{}, index, req)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return *req, err
 }
 
 func (s *VpcService) ReadNetworkInterfaces(condition map[string]interface{}) (data []interface{}, err error) {
@@ -519,7 +436,10 @@ func (s *VpcService) RemoveVpcCall(d *schema.ResourceData) (callback ApiCall, er
 			routeFilter := RouteFilter{
 				VpcId: d.Id(),
 			}
-			if err := s.FilterRouteAndRemove(routeFilter); err != nil {
+			describeParams := DescribeRoutesParam{
+				Filter: routeFilter,
+			}
+			if err := s.FilterRouteAndRemove(describeParams); err != nil {
 				return false, err
 			}
 			return true, nil
@@ -1463,12 +1383,17 @@ func (s *VpcService) ReadNatBandwidthLimit(d *schema.ResourceData) (data map[str
 	filter := BandwidthLimitFilter{
 		NetworkInterfaceId: kniId,
 	}
-	req, err := filter.GetFilterParams()
+	describeParams := DescribeNatRateLimitParam{
+		Filter: filter,
+		NatId:  natId,
+	}
+
+	req := make(map[string]interface{})
+	err = StructureConverter(describeParams, &req)
 	if err != nil {
 		return data, err
 	}
 
-	req["NatId"] = natId
 	conn := s.client.vpcconn
 	action := "DescribeNatRateLimit"
 	logger.Debug(logger.RespFormat, action, req)
@@ -3756,12 +3681,13 @@ func (s *VpcService) ReadAndSetAvailabilityZones(d *schema.ResourceData, r *sche
 	})
 }
 
-func (s *VpcService) FilterRouteAndRemove(filter RouteFilter) error {
-	if IsStructEmpty(filter, RouteFilter{}) {
-		return fmt.Errorf("RouteFilter is empty")
+func (s *VpcService) FilterRouteAndRemove(filter DescribeRoutesParam) error {
+	if IsStructEmpty(filter, DescribeRoutesParam{}) {
+		return fmt.Errorf("DescribeRoutesParam is empty")
 	}
 
-	queryParams, err := filter.GetFilterParams()
+	queryParams := make(map[string]interface{})
+	err := StructureConverter(filter, &queryParams)
 	if err != nil {
 		return fmt.Errorf("describe route parameters is invalid, details: %s", err)
 	}

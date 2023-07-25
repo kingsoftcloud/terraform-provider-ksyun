@@ -45,16 +45,19 @@ func testAccCheckNatInstanceBandwidthLimitExists(n string, val *map[string]inter
 		}
 
 		client := testAccProvider.Meta().(*KsyunClient)
-		Nat := make(map[string]interface{})
+		natMap := make(map[string]interface{})
 		bwlFilter := BandwidthLimitFilter{
 			NetworkInterfaceId: rs.Primary.Attributes["network_interface_id"],
 		}
-		Nat, err := bwlFilter.GetFilterParams()
+		describeParams := DescribeNatRateLimitParam{
+			Filter: bwlFilter,
+		}
+		err := StructureConverter(describeParams, &natMap)
 		if err != nil {
 			return err
 		}
-		Nat["NatId"] = rs.Primary.Attributes["nat_id"]
-		ptr, err := client.vpcconn.DescribeNatRateLimit(&Nat)
+		natMap["NatId"] = rs.Primary.Attributes["nat_id"]
+		ptr, err := client.vpcconn.DescribeNatRateLimit(&natMap)
 
 		if err != nil {
 			return err
