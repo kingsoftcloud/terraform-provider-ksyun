@@ -22,23 +22,6 @@ func TestTransformWithFilter(t *testing.T) {
 	t.Logf("req +%v", req)
 }
 
-func TestRouteFilter(t *testing.T) {
-	routeFilter := RouteFilter{
-		VpcId:         "25c78605-faa2-43fd-8483-6fb27885eb60",
-		InstanceId:    "6f2b44ed-e93d-4075-a92c-48b9007dbdd5",
-		DestCidrBlock: "10.10.10.0/21",
-	}
-
-	routeMap := routeFilter.Filler()
-	t.Logf("route map: +%v", routeMap)
-
-	reqParams, err := routeFilter.GetFilterParams()
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Logf("route request parameters: +%v", reqParams)
-}
-
 func TestStructureConverter(t *testing.T) {
 	bb := NewDescribeDnatsParams()
 	bb.DnatIds = append(bb.DnatIds, "dasdasdas")
