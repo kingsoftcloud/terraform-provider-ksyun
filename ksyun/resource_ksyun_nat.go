@@ -99,7 +99,7 @@ func resourceKsyunNat() *schema.Resource {
 				Optional:     true,
 				Default:      1,
 				ValidateFunc: validation.IntBetween(1, 20),
-				Description:  "The Counts of Nat Ip, value range:[1, 10], Default is 1.",
+				Description:  "The Counts of Nat Ip, value range:[1, 20], Default is 1.",
 			},
 
 			"band_width": {

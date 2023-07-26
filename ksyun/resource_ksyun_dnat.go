@@ -1,5 +1,5 @@
 /*
-Provides a Nat Associate resource under VPC resource.
+Provides a Dnat resource under VPC resource.
 
 # Example Usage
 
@@ -104,11 +104,7 @@ func resourceKsyunDnat() *schema.Resource {
 				ForceNew:    true,
 				Description: "The id of the Nat.",
 			},
-			"dnat_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The id of the Subnet. Notes: Because of there is one resource in the association, conflict with `network_interface_id`.",
-			},
+
 			"dnat_name": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -151,6 +147,12 @@ func resourceKsyunDnat() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "the description of this dnat rule.",
+			},
+
+			"dnat_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The id of the Subnet. Notes: Because of there is one resource in the association, conflict with `network_interface_id`.",
 			},
 		},
 	}

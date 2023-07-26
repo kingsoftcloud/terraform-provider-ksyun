@@ -1192,7 +1192,7 @@ func (s *VpcService) ModifyNatIpCall(d *schema.ResourceData, r *schema.Resource)
 						logger.Debug(logger.RespFormat, call.action, *(call.param))
 						resp, err = conn.DeleteNatIp(call.param)
 						if err != nil {
-							if isExpectError(err, []string{"IsUsed"}) {
+							if isExpectError(err, []string{"IsUsed", "NatIpIsUsedByDnat"}) {
 								continue
 							}
 							// it will retry, if sdk returns Payment.CreateOrderFailed. because the previous sub-order is not finished.
@@ -1206,6 +1206,10 @@ func (s *VpcService) ModifyNatIpCall(d *schema.ResourceData, r *schema.Resource)
 						descendCount--
 
 						time.Sleep(500 * time.Millisecond)
+					}
+
+					if descendCount > 0 {
+						err = fmt.Errorf("there are %d nat ip cannot be removed, because of they are in used", descendCount)
 					}
 
 					return resp, err

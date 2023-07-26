@@ -4,12 +4,12 @@ layout: "ksyun"
 page_title: "ksyun: ksyun_dnat"
 sidebar_current: "docs-ksyun-resource-dnat"
 description: |-
-  Provides a Nat Associate resource under VPC resource.
+  Provides a Dnat resource under VPC resource.
 ---
 
 # ksyun_dnat
 
-Provides a Nat Associate resource under VPC resource.
+Provides a Dnat resource under VPC resource.
 
 #
 
