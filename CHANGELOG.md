@@ -1,3 +1,13 @@
+## 1.7.0 (Jul 26, 2023)
+
+FEATURES:
+
+- `ksyun_nat` 新增Nat Ip 管理 `nat_ip`
+- `ksyun_nat_associate` 支持nat绑定主机网卡
+- **New Resource:** `ksyun_nat_instance_bandwidth_limit` 新增nat 服务器限速
+- **New Resource:** `ksyun_dnat` 新增dnat规则管理
+- **New Data Source:** `ksyun_dnats`
+
 ## 1.6.1 (Jul 14, 2023)
 
 BUGFIX:
