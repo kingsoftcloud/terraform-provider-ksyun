@@ -83,7 +83,7 @@ resource "ksyun_dnat" "foo" {
 
 The following arguments are supported:
 
-* `ip_protocol` - (Required, ForceNew) the protocol of dnat port, Valid Options: `Any`, `TCP` and `UDP`. <br> Notes: `public_port` and `private_port` will be invalid, when `ip_protocol` is `Any`. Instead, you will set ports.
+* `ip_protocol` - (Required, ForceNew) the protocol of dnat port, Valid Options: `Any`, `TCP` and `UDP`. <br> Notes: `public_port` and `private_port` must be set as `Any`, when `ip_protocol` is `Any`. Instead, you should set ports.
 * `nat_id` - (Required, ForceNew) The id of the Nat.
 * `nat_ip` - (Required) the nat ip of nat.
 * `private_ip_address` - (Required) the private ip of instance in the identical vpc.
