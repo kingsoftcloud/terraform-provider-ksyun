@@ -43,9 +43,27 @@ resource "ksyun_subnet" "test" {
   availability_zone = "cn-beijing-6a"
 }
 
+resource "ksyun_instance" "foo" {
+  image_id      = "${data.ksyun_images.centos-7_5.images.0.image_id}"
+  instance_type = "N3.2B"
+
+  subnet_id         = "${ksyun_subnet.foo.id}"
+  instance_password = "Xuan663222"
+  keep_image_login  = false
+  charge_type       = "Daily"
+  purchase_time     = 1
+  security_group_id = ["${ksyun_security_group.default.id}"]
+  instance_name     = "ksyun-kec-tf-nat"
+  sriov_net_support = "false"
+}
+
 resource "ksyun_nat_associate" "foo" {
   nat_id    = "${ksyun_nat.foo.id}"
   subnet_id = "${ksyun_subnet.test.id}"
+}
+resource "ksyun_nat_associate" "associate_ins" {
+  nat_id               = "${ksyun_nat.foo.id}"
+  network_interface_id = "${ksyun_instance.foo.network_interface_id}"
 }
 ```
 
@@ -54,7 +72,8 @@ resource "ksyun_nat_associate" "foo" {
 The following arguments are supported:
 
 * `nat_id` - (Required, ForceNew) The id of the Nat.
-* `subnet_id` - (Required, ForceNew) The id of the Subnet.
+* `network_interface_id` - (Optional, ForceNew) The id of network interface that belong to instance. Notes: Because of there is one resource in the association, conflict with `subnet_id`.
+* `subnet_id` - (Optional, ForceNew) The id of the Subnet. Notes: Because of there is one resource in the association, conflict with `network_interface_id`.
 
 ## Attributes Reference
 
@@ -66,9 +85,14 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-nat associate can be imported using the `id`, e.g.
+nat associate can be imported using the `id`, the id format must be `{nat_id}:{resource_id}`, resource_id range `subnet_id`, `natwork_interface_id` e.g.
 
+## Import Subnet association
 ```
-$ terraform import ksyun_nat_associate.example $nat_id:$subnet_id
+$ terraform import ksyun_nat_associate.example $nat_id:subnet-$subnet_id
+```
+## Import NetworkInterface association
+```
+$ terraform import ksyun_nat_associate.example $nat_id:kni-$network_interface_id
 ```
 

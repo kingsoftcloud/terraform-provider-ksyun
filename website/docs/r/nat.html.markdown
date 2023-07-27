@@ -39,7 +39,7 @@ The following arguments are supported:
 * `nat_mode` - (Required, ForceNew) Mode of the NAT, valid values: 'Vpc', 'Subnet'.
 * `vpc_id` - (Required, ForceNew) ID of the VPC.
 * `charge_type` - (Optional, ForceNew) charge type, valid values: 'Monthly', 'Peak', 'Daily', 'PostPaidByAdvanced95Peak', 'DailyPaidByTransfer'. Default is DailyPaidByTransfer.
-* `nat_ip_number` - (Optional) The Counts of Nat Ip, value range:[1, 10], Default is 1.
+* `nat_ip_number` - (Optional) The Counts of Nat Ip, value range:[1, 20], Default is 1.
 * `nat_line_id` - (Optional) ID of the line.
 * `nat_name` - (Optional) Name of the NAT.
 * `nat_type` - (Optional, ForceNew) Type of the NAT, valid values: 'public'.

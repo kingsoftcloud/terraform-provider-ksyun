@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/mitchellh/mapstructure"
 )
 
 func SchemaSetToInstanceMap(s interface{}, prefix string, input *map[string]interface{}) {
@@ -318,6 +319,9 @@ func transformListUnique(v interface{}, k string, t SdkReqTransform, req *map[st
 		}
 	}
 	return nil
+}
+func TransformerWithFilter(v interface{}, k string, t SdkReqTransform, index int, req *map[string]interface{}) (int, error) {
+	return transformWithFilter(v, k, t, index, req)
 }
 
 func transformWithFilter(v interface{}, k string, t SdkReqTransform, index int, req *map[string]interface{}) (int, error) {
@@ -930,4 +934,88 @@ func transformerValueOfObj2String(retObj interface{}) {
 func IsStructEmpty(raw interface{}, dest interface{}) bool {
 
 	return reflect.DeepEqual(raw, dest)
+}
+
+func StructureConverter(s interface{}, m *map[string]interface{}) error {
+	sVal := reflect.ValueOf(s)
+
+	if sVal.Kind() == reflect.Ptr || m == nil {
+		return fmt.Errorf("converting structure is pointer or output map is nil")
+	}
+
+	if sVal.Kind() != reflect.Struct {
+		return fmt.Errorf("converting interface must be struct")
+	}
+
+	// it's basic convert
+	convertConfig := &mapstructure.DecoderConfig{
+		IgnoreUntaggedFields: true,
+		ZeroFields:           false,
+		Metadata:             nil,
+		Result:               m,
+	}
+
+	decoder, err := mapstructure.NewDecoder(convertConfig)
+	if err != nil {
+		return err
+	}
+	if err := decoder.Decode(s); err != nil {
+		return err
+	}
+
+	// specify to custom type such as list, filter
+	for i := 0; i < sVal.NumField(); i++ {
+		fieldType := sVal.Type().Field(i)
+		fieldVal := sVal.Field(i)
+		transType := fieldType.Tag.Get("type")
+		mapstructureTag := fieldType.Tag.Get("mapstructure")
+		tagName := strings.Split(mapstructureTag, ",")[0]
+		if fieldVal.IsZero() {
+			delete(*m, tagName)
+			continue
+		}
+
+		switch transType {
+		case "list":
+			if err := transformWithN(fieldVal.Interface(), tagName, SdkReqTransform{}, m); err != nil {
+				return err
+			}
+			delete(*m, tagName)
+		case "filter":
+			if err := getFilterParams(fieldVal.Interface(), m); err != nil {
+				return err
+			}
+			delete(*m, tagName)
+		}
+	}
+
+	return nil
+}
+
+func getFilterParams(input interface{}, req *map[string]interface{}) error {
+	filterMap := make(map[string]interface{})
+	var (
+		index = 1
+		err   error
+	)
+
+	if err := mapstructure.Decode(input, &filterMap); err != nil {
+		return err
+	}
+
+	for k, v := range filterMap {
+		if v == "" {
+			continue
+		}
+		compatibleV := []interface{}{v}
+		index, err = transformWithFilter(compatibleV, k, SdkReqTransform{}, index, req)
+		if err != nil {
+			return err
+		}
+	}
+	return err
+}
+
+func MapstructureFiller(m interface{}, s interface{}) error {
+	return mapstructure.Decode(m, s)
 }
