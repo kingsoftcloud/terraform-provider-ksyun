@@ -115,7 +115,7 @@ func resourceKsyunDnat() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.StringInSlice([]string{"Any", "TCP", "UDP"}, false),
-				Description:  "the protocol of dnat port, Valid Options: `Any`, `TCP` and `UDP`. <br> Notes: `public_port` and `private_port` will be invalid, when `ip_protocol` is `Any`. Instead, you will set ports.",
+				Description:  "the protocol of dnat port, Valid Options: `Any`, `TCP` and `UDP`. <br> Notes: `public_port` and `private_port` must be set as `Any`, when `ip_protocol` is `Any`. Instead, you should set ports.",
 			},
 			"nat_ip": {
 				Type:         schema.TypeString,
