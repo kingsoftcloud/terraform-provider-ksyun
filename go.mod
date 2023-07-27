@@ -3,14 +3,14 @@ module github.com/terraform-providers/terraform-provider-ksyun
 go 1.17
 
 require (
-	github.com/KscSDK/ksc-sdk-go v0.2.4
+	github.com/KscSDK/ksc-sdk-go v0.2.7
 	github.com/aws/aws-sdk-go v1.25.3
 	github.com/client9/misspell v0.3.4
 	github.com/fatih/color v1.7.0
 	github.com/golangci/golangci-lint v1.23.7
 	github.com/hashicorp/hcl/v2 v2.0.0
 	github.com/hashicorp/terraform-plugin-sdk v1.7.0
-	github.com/mitchellh/mapstructure v1.1.2
+	github.com/mitchellh/mapstructure v1.5.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.7.0
 	github.com/wilac-pv/ksyun-ks3-go-sdk v1.0.10-0.20230324081615-1ff86b7ab10e
