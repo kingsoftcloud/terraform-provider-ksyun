@@ -2,10 +2,11 @@ package ksyun
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
-	"time"
 )
 
 type BareMetalService struct {
@@ -657,6 +658,55 @@ func (s *BareMetalService) ModifyBareMetalProjectCall(d *schema.ResourceData, re
 	return callback, err
 }
 
+// ModifyBareMetalStatusCall deal with instance start or stop
+func (s *BareMetalService) ModifyBareMetalStatusCall(d *schema.ResourceData, resource *schema.Resource) (callback ApiCall, err error) {
+
+	if _, ok := d.GetOk("host_status"); ok && d.HasChange("host_status") {
+		hostStatus := d.Get("host_status").(string)
+		updateReq := map[string]interface{}{
+			"HostId": d.Id(),
+		}
+
+		callback = ApiCall{
+			param: &updateReq,
+		}
+		switch hostStatus {
+		case "Running":
+			callback.action = "StartEpc"
+			callback.executeCall = func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+				conn := client.epcconn
+				logger.Debug(logger.RespFormat, call.action, *(call.param))
+				return conn.StartEpc(call.param)
+			}
+		case "Stopped":
+			callback.action = "StopEpc"
+			callback.executeCall = func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+				conn := client.epcconn
+				logger.Debug(logger.RespFormat, call.action, *(call.param))
+				return conn.StopEpc(call.param)
+			}
+		default:
+			return ApiCall{}, fmt.Errorf("host status' value is not espected")
+		}
+		callback.afterCall = func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) error {
+			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+			checkState := "Running"
+			if call.action == "StartEpc" {
+				checkState = "Running"
+			} else if call.action == "StopEpc" {
+				checkState = "Stopped"
+			}
+			err = s.CheckBareMetalState(d, "", []string{checkState}, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return err
+			}
+			return err
+		}
+	}
+
+	return callback, err
+}
+
 func (s *BareMetalService) ModifyBareMetal(d *schema.ResourceData, resource *schema.Resource) (err error) {
 	var (
 		callbacks []ApiCall
@@ -720,6 +770,12 @@ func (s *BareMetalService) ModifyBareMetal(d *schema.ResourceData, resource *sch
 		return err
 	}
 	callbacks = append(callbacks, projectCall)
+
+	startOrStopEpcCall, err := s.ModifyBareMetalStatusCall(d, resource)
+	if err != nil {
+		return err
+	}
+	callbacks = append(callbacks, startOrStopEpcCall)
 	// dryRun
 	return ksyunApiCallNew(callbacks, d, s.client, true)
 }

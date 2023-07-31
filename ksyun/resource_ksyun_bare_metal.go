@@ -36,9 +36,10 @@ package ksyun
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"time"
 )
 
 func resourceKsyunBareMetal() *schema.Resource {
@@ -79,6 +80,16 @@ func resourceKsyunBareMetal() *schema.Resource {
 				}, false),
 				Default:     "NoChange",
 				Description: "The HyperThread status of the Bare Metal. Valid Values:'Open','Close','NoChange'.Default is 'NoChange'.",
+			},
+			"host_status": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					"Running",
+					"Stopped",
+				}, false),
+				Description: "The status of Bare Metal instance. That can set your Bare Metal instance status, `Running` or `Stopped`, on ksyun. In detail, the instance will start, when `host_status` is `Running` but its status is `Stopped` on ksyun. Similarly, the instance will be power off, when `host_status` is `Stopped` but its status is `Running` on ksyun. <br> Value Options: `Running`, `Stopped`.",
 			},
 			"raid": {
 				Type:     schema.TypeString,
