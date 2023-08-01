@@ -42,7 +42,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-Tag can be imported using the `id`, e.g.
+Data guard group can be imported using the `id`, e.g.
 
 ```
 $ terraform import ksyun_data_guard_group.foo "data_guard_id"

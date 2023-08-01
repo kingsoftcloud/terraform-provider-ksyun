@@ -20,3 +20,14 @@ func TestRetryError(t *testing.T) {
 	}
 
 }
+
+func TestIsContains(t *testing.T) {
+	err := awserr.New(" Payment.CreateOrderFailed", "Product has expired, please re-select merchandise", nil)
+	requestFailure := awserr.NewRequestFailure(err, 400, "61a74b83-5693-4d1c-a2d2-6e0d3eaa6d69")
+	if isExpectError(requestFailure, []string{"CreateOrderFailed"}) {
+		t.Log("true")
+	} else {
+		t.Log("false")
+	}
+
+}

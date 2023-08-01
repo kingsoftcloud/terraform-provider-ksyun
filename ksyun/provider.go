@@ -63,12 +63,15 @@ VPC
 		ksyun_security_groups
 		ksyun_subnet_allocated_ip_addresses
 		ksyun_subnet_available_addresses
+		ksyun_dnats
 
 	Resource
 		ksyun_vpc
 		ksyun_subnet
 		ksyun_nat
 		ksyun_nat_associate
+        ksyun_nat_instance_bandwidth_limit
+		ksyun_dnat
 		ksyun_network_acl
 		ksyun_network_acl_entry
 		ksyun_network_acl_associate
@@ -282,6 +285,7 @@ KNAD
 		ksyun_knad
 		ksyun_knad_associate
 */
+
 package ksyun
 
 import (
@@ -403,6 +407,7 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_krds_parameter_group":             dataSourceKsyunKrdsParameterGroup(),
 			"ksyun_auto_snapshot_volume_association": dataSourceKsyunAutoSnapshotVolumeAssociation(),
 			"ksyun_knads":                            dataSourceKsyunKnads(),
+			"ksyun_dnats":                            dataSourceKsyunDnats(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"ksyun_alb":                              resourceKsyunAlb(),
@@ -478,6 +483,8 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_krds_parameter_group":             resourceKsyunKrdsParameterGroup(),
 			"ksyun_knad":                             resourceKsyunKnad(),
 			"ksyun_knad_associate":                   resourceKsyunKnadAssociate(),
+			"ksyun_nat_instance_bandwidth_limit":     resourceKsyunNatInstanceBandwidthLimit(),
+			"ksyun_dnat":                             resourceKsyunDnat(),
 		},
 		ConfigureFunc: providerConfigure,
 	}
