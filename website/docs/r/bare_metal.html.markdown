@@ -72,6 +72,7 @@ The following arguments are supported:
 * `project_id` - (Optional) The project id of the Bare Metal.Default is '0'.
 * `raid_id` - (Optional) The Raid template id of Bare Metal.Conflict raid. If you don't set raid,raid_id is Required. If you want to use raid_id,you must in user white list.
 * `raid` - (Optional) The Raid type of the Bare Metal. Valid Values:'Raid0','Raid1','Raid5','Raid10','Raid50','SRaid0'. Conflict raid_id. If you don't set raid_id,raid is Required.
+* `roce_network` - (Optional) The value of roce network that indicates acquiring whether an instance supplied roce network. Valid Options: `Open` and `Close`.
 * `security_agent` - (Optional) The security agent choice of the Bare Metal. Valid Values:'classic','no'. Default is 'no'.
 * `server_ip` - (Optional) The pxe server ip of the Bare Metal.Only effective on modify and host type is COLO.
 * `system_file_type` - (Optional) The system disk file type of the Bare Metal.Valid Values:'EXT4','XFS'.Default is 'EXT4'.

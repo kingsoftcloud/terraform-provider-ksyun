@@ -511,6 +511,8 @@ func (s *BareMetalService) ReinstallBareMetalCall(d *schema.ResourceData, resour
 		"server_ip":                    {Ignore: true},
 		"path":                         {Ignore: true},
 		"force_re_install":             {Ignore: true},
+		"host_status":                  {Ignore: true},
+		"roce_network":                 {Ignore: true},
 	}
 	if d.HasChange("force_re_install") && d.Get("force_re_install").(bool) {
 		transform["image_id"] = SdkReqTransform{

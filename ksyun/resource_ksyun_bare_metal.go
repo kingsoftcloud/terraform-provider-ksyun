@@ -81,6 +81,15 @@ func resourceKsyunBareMetal() *schema.Resource {
 				Default:     "NoChange",
 				Description: "The HyperThread status of the Bare Metal. Valid Values:'Open','Close','NoChange'.Default is 'NoChange'.",
 			},
+			"roce_network": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					"Open",
+					"Close",
+				}, false),
+				Description: "The value of roce network that indicates acquiring whether an instance supplied roce network. Valid Options: `Open` and `Close`.",
+			},
 			"host_status": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -393,6 +402,9 @@ func resourceKsyunBareMetalRead(d *schema.ResourceData, meta interface{}) (err e
 
 func resourceKsyunBareMetalUpdate(d *schema.ResourceData, meta interface{}) (err error) {
 	bareMetalService := BareMetalService{meta.(*KsyunClient)}
+	if d.HasChange("roce_network") {
+		return fmt.Errorf("argument `roce_network` cannot be modified for now")
+	}
 	err = bareMetalService.ModifyBareMetal(d, resourceKsyunBareMetal())
 	if err != nil {
 		return fmt.Errorf("error on updating bare metal %q, %s", d.Id(), err)
