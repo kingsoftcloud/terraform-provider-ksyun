@@ -1,3 +1,11 @@
+## 1.7.1 (Aug 3, 2023)
+
+IMPROVEMENTS:
+
+- `ksyun_bare_metal` 新增裸金属开机/关机操作
+- `ksyun_bare_metal` 支持创建roce网络机型
+
+
 ## 1.7.0 (Jul 26, 2023)
 
 FEATURES:
