@@ -31,7 +31,7 @@ import (
 	"github.com/KscSDK/ksc-sdk-go/service/tag"
 	"github.com/KscSDK/ksc-sdk-go/service/tagv2"
 	"github.com/KscSDK/ksc-sdk-go/service/vpc"
-	"github.com/aws/aws-sdk-go/aws/request"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/terraform-providers/terraform-provider-ksyun/ksyun/internal/pkg/network"
 	"github.com/wilac-pv/ksyun-ks3-go-sdk/ks3"
 )
@@ -57,17 +57,10 @@ func (c *Config) Client() (*KsyunClient, error) {
 	client.region = c.Region
 	cli := ksc.NewClient(c.AccessKey, c.SecretKey)
 
-	// register http client
-	httpClient := GetKsyunClient(c)
-	cli.Config.WithHTTPClient(&httpClient)
+	registerClient(cli, c)
 	// 重试去掉
 	var MaxRetries = c.MaxRetries
 	cli.Config.MaxRetries = &MaxRetries
-
-	var retryer request.Retryer = &network.KsyunRetryer{
-		NumMaxRetries: MaxRetries,
-	}
-	cli.Config.Retryer = retryer
 	cfg := &ksc.Config{
 		Region: &c.Region,
 	}
@@ -133,7 +126,18 @@ func (client *KsyunClient) WithKs3Client(do func(*ks3.Client) (interface{}, erro
 	return do(client.ks3conn)
 }
 
-func GetKsyunClient(c *Config) http.Client {
+func registerClient(cli *session.Session, c *Config) {
+
+	// register http client
+	httpClient := getKsyunClient(c)
+	cli.Config.WithHTTPClient(&httpClient)
+
+	cli.Config.Retryer = network.GetKsyunRetryer(c.MaxRetries)
+
+	cli.Handlers.CompleteAttempt.PushBackNamed(network.NetErrorHandler)
+}
+
+func getKsyunClient(c *Config) http.Client {
 	tp := &http.Transport{
 		Proxy: func(r *http.Request) (*url.URL, error) {
 			if c.HttpProxy != "" {

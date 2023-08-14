@@ -37,6 +37,12 @@ type KsyunRetryer struct {
 
 var _ request.Retryer = (*KsyunRetryer)(nil)
 
+func GetKsyunRetryer(maxRetries int) request.Retryer {
+	return &KsyunRetryer{
+		NumMaxRetries: maxRetries,
+	}
+}
+
 func (k *KsyunRetryer) RetryRules(r *request.Request) time.Duration {
 	// retry delay
 	return 500 * time.Millisecond
@@ -131,7 +137,6 @@ func shouldRetryError(origErr error) bool {
 		// here we don't know the error; so we deny a retry.
 		return false
 	}
-	return false
 }
 
 func isErrCode(err error, codes []string) bool {
