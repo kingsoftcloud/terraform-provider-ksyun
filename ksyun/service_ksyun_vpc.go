@@ -462,6 +462,10 @@ func (s *VpcService) RemoveVpcCall(d *schema.ResourceData) (callback ApiCall, er
 				}
 				if call.process == ApiCallBeforeProcess {
 					_, callErr = call.beforeCall(d, client, call)
+					if callErr != nil {
+						return resource.RetryableError(callErr)
+					}
+					_, callErr = call.executeCall(d, client, call)
 					if callErr == nil {
 						return nil
 					}
