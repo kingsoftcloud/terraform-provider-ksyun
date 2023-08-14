@@ -1,12 +1,11 @@
 package network
 
 import (
-	"errors"
-	"fmt"
 	"net"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/request"
+	"github.com/terraform-providers/terraform-provider-ksyun/ksyun/internal/pkg/infraerrs"
 )
 
 // NetErrorHandler will deal with network error, returns a ksyun custom error.
@@ -24,15 +23,8 @@ func handeNetError(origErr error) error {
 	switch err := origErr.(type) {
 	case awserr.Error:
 		nestErr := err.OrigErr()
-		if orig, ok := nestErr.(*net.OpError); ok {
-			dealErr := &net.OpError{
-				Op:     orig.Op,
-				Addr:   orig.Addr,
-				Net:    orig.Net,
-				Source: orig.Source,
-				Err:    errors.New(fmt.Sprintf("%s, 您的网络似乎不太稳定.", orig.Err.Error())),
-			}
-			newErr := awserr.New(err.Code(), err.Message(), dealErr)
+		if orig, ok := nestErr.(*net.OpError); ok && err.Code() == "RequestError" {
+			newErr := awserr.New(err.Code(), infraerrs.GetKsyunNetworkOpErrorMessage(err.Message()), orig)
 			return newErr
 		}
 	}

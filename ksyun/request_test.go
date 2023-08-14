@@ -71,19 +71,51 @@ var (
 	errConnectionResetStub = errors.New("connection reset")
 )
 
+type mockAddr struct {
+	addr string
+}
+
+func (a mockAddr) Network() string {
+	return "tcp"
+}
+func (a mockAddr) String() string {
+	return a.addr
+}
+
 var (
 	errNetOpErrorResetStub = &net.OpError{
 		Op:  "read",
-		Err: errors.New("connection reset"),
+		Net: "tcp",
+		Addr: mockAddr{
+			addr: "120.92.15.230:80",
+		},
+		Source: mockAddr{
+			addr: "127.0.0.1:23333",
+		},
+		Err: errors.New("read: connection reset by peer"),
 	}
 
 	errNetOpErrorDialStub = &net.OpError{
 		Op:  "dial",
+		Net: "tcp",
+		Addr: mockAddr{
+			addr: "120.92.15.230:80",
+		},
+		Source: mockAddr{
+			addr: "127.0.0.1:23333",
+		},
 		Err: errors.New("connection reset"),
 	}
 
 	errNetOpErrorBrokenPipeStub = &net.OpError{
 		Op:  "write",
+		Net: "tcp",
+		Addr: mockAddr{
+			addr: "120.92.15.230:80",
+		},
+		Source: mockAddr{
+			addr: "127.0.0.1:23333",
+		},
 		Err: errors.New("broken pipe"),
 	}
 )
@@ -118,7 +150,8 @@ func TestConnectionReset(t *testing.T) {
 			ExpectAttempts: 6,
 		},
 		"read with OpError": {
-			Err:            errNetOpErrorResetStub,
+			Err: errNetOpErrorResetStub,
+
 			ExpectAttempts: 1,
 		},
 		"dial with OpError": {
@@ -136,6 +169,7 @@ func TestConnectionReset(t *testing.T) {
 				r.HTTPResponse.Body = &connResetCloser{
 					Err: c.Err,
 				}
+				r.Error = awserr.New("RequestError", "send request failed", c.Err)
 			})
 
 			handlers.Sign.PushBackNamed(v4.SignRequestHandler)
@@ -183,14 +217,15 @@ func TestConnectionReset(t *testing.T) {
 			if err == nil {
 				t.Error("Expected error 'SerializationError', but received nil")
 			}
-			if aerr, ok := err.(awserr.Error); ok && aerr.Code() != request.ErrCodeSerialization {
-				t.Errorf("Expected 'SerializationError', but received %q", aerr.Code())
+			if aerr, ok := err.(awserr.Error); ok && aerr.Code() != "RequestError" {
+				t.Errorf("Expected 'RequestError', but received %q", aerr.Code())
 			} else if !ok {
 				t.Errorf("Expected 'awserr.Error', but received %v", reflect.TypeOf(err))
 			} else if aerr.OrigErr().Error() != osErr.Error() {
 				t.Logf("Raw OpError %q, Handled OpError %q", osErr.Error(), aerr.OrigErr().Error())
 			}
 
+			t.Logf(err.Error())
 			if e, a := c.ExpectAttempts, count; e != a {
 				t.Errorf("Expected %v, but received %v", e, a)
 			}

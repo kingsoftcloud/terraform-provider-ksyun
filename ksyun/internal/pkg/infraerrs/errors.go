@@ -5,6 +5,10 @@ import (
 	"strings"
 )
 
+const (
+	NetworkOpErrorMessage = "您的网络似乎不太稳定，请确认网络正常后重试"
+)
+
 // IsContains returns whether value is within object
 func IsContains(obj interface{}, value interface{}) bool {
 	vv := reflect.ValueOf(obj)
@@ -43,4 +47,8 @@ func IsContains(obj interface{}, value interface{}) bool {
 	default:
 		return reflect.DeepEqual(obj, value)
 	}
+}
+
+func GetKsyunNetworkOpErrorMessage(origMessage string) string {
+	return NetworkOpErrorMessage + ", Occur at: " + origMessage
 }
