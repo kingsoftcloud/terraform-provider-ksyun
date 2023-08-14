@@ -1,3 +1,8 @@
+## 1.7.2 (Aug 14, 2023)
+
+BUGFIX:
+- `ksyun_vpc` 修复可能触发的无法删除vpc的操作
+
 ## 1.7.1 (Aug 3, 2023)
 
 IMPROVEMENTS:
