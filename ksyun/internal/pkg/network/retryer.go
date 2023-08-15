@@ -99,7 +99,7 @@ func shouldRetryError(origErr error) bool {
 				return false
 			}
 		}
-		if infraerrs.IsContains(err, retryableErrorCodes) {
+		if infraerrs.IsExpectError(err, retryableErrorCodes) {
 			return true
 		}
 

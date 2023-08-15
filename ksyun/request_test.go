@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"net/url"
 	"reflect"
 	"testing"
 	"time"
@@ -118,6 +119,12 @@ var (
 		},
 		Err: errors.New("broken pipe"),
 	}
+
+	errUrlError = &url.Error{
+		Op:  "Get",
+		URL: "http://krds.api.ksyun.com/?Action=DescribeDBParameterGroup&Version=2016-07-01",
+		Err: errNetOpErrorResetStub,
+	}
 )
 
 func TestConnectionReset(t *testing.T) {
@@ -157,6 +164,10 @@ func TestConnectionReset(t *testing.T) {
 		"dial with OpError": {
 			Err:            errNetOpErrorDialStub,
 			ExpectAttempts: 6,
+		},
+		"read with UrlError": {
+			Err:            errUrlError,
+			ExpectAttempts: 1,
 		},
 	}
 	for name, c := range cases {
@@ -215,7 +226,7 @@ func TestConnectionReset(t *testing.T) {
 			req.ApplyOptions(request.WithResponseReadTimeout(time.Second))
 			err := req.Send()
 			if err == nil {
-				t.Error("Expected error 'SerializationError', but received nil")
+				t.Error("Expected error 'RequestError', but received nil")
 			}
 			if aerr, ok := err.(awserr.Error); ok && aerr.Code() != "RequestError" {
 				t.Errorf("Expected 'RequestError', but received %q", aerr.Code())

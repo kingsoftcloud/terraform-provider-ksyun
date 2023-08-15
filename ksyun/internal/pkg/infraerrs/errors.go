@@ -3,11 +3,38 @@ package infraerrs
 import (
 	"reflect"
 	"strings"
+
+	"github.com/aws/aws-sdk-go/aws/awserr"
 )
 
 const (
 	NetworkOpErrorMessage = "您的网络似乎不太稳定，请确认网络正常后重试"
 )
+
+// IsExpectError returns whether error is expected error
+func IsExpectError(err error, expectError []string) bool {
+	e, ok := err.(awserr.RequestFailure)
+	if !ok {
+		return false
+	}
+
+	longCode := e.Code()
+	if IsContains(expectError, longCode) {
+		return true
+	}
+
+	if strings.Contains(longCode, ".") {
+		shortCodeSlice := strings.Split(longCode, ".")
+		for _, shortCode := range shortCodeSlice {
+			if IsContains(expectError, shortCode) {
+				return true
+			}
+		}
+
+	}
+
+	return false
+}
 
 // IsContains returns whether value is within object
 func IsContains(obj interface{}, value interface{}) bool {

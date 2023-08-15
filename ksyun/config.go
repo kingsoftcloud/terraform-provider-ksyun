@@ -130,14 +130,14 @@ func registerClient(cli *session.Session, c *Config) {
 
 	// register http client
 	httpClient := getKsyunClient(c)
-	cli.Config.WithHTTPClient(&httpClient)
+	cli.Config.WithHTTPClient(httpClient)
 
 	cli.Config.Retryer = network.GetKsyunRetryer(c.MaxRetries)
 
 	cli.Handlers.CompleteAttempt.PushBackNamed(network.NetErrorHandler)
 }
 
-func getKsyunClient(c *Config) http.Client {
+func getKsyunClient(c *Config) *http.Client {
 	tp := &http.Transport{
 		Proxy: func(r *http.Request) (*url.URL, error) {
 			if c.HttpProxy != "" {
@@ -161,7 +161,7 @@ func getKsyunClient(c *Config) http.Client {
 		DisableKeepAlives:     c.HttpKeepAlive,
 	}
 
-	httpClient := http.Client{
+	httpClient := &http.Client{
 		Timeout:   3 * time.Minute, // a completed request, includes tcp connect, received response, elapsed time.
 		Transport: tp,
 	}

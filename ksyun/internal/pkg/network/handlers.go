@@ -2,6 +2,7 @@ package network
 
 import (
 	"net"
+	"net/url"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/request"
@@ -22,12 +23,27 @@ var NetErrorHandler = request.NamedHandler{
 func handeNetError(origErr error) error {
 	switch err := origErr.(type) {
 	case awserr.Error:
-		nestErr := err.OrigErr()
-		if orig, ok := nestErr.(*net.OpError); ok && err.Code() == "RequestError" {
-			newErr := awserr.New(err.Code(), infraerrs.GetKsyunNetworkOpErrorMessage(err.Message()), orig)
+		if err.Code() == "RequestError" && isNetworkError(origErr) {
+			newErr := awserr.New(err.Code(), infraerrs.GetKsyunNetworkOpErrorMessage(err.Message()), err.OrigErr())
 			return newErr
 		}
 	}
 
 	return origErr
+}
+
+func isNetworkError(origErr error) bool {
+	switch err := origErr.(type) {
+	case awserr.Error:
+		return isNetworkError(err.OrigErr())
+
+	case *url.Error:
+		return isNetworkError(err.Err)
+	case temporary:
+		if _, ok := err.(*net.OpError); ok {
+			return true
+		}
+
+	}
+	return false
 }
