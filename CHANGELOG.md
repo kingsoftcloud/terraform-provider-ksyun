@@ -1,3 +1,13 @@
+## 1.8.0 (Aug 16, 2023)
+
+FEATURES:
+
+- `provider` 新增`http_httpalive` `max_retries` `http_proxy` 配置参数
+
+IMPROVEMENTS:
+
+- `provider` 增加网络异常重试
+
 ## 1.7.2 (Aug 14, 2023)
 
 BUGFIX:

@@ -135,7 +135,7 @@ provider "ksyun" {}
 
 Usage:
 
-```hcl
+```shell
 $ export KSYUN_ACCESS_KEY="your_public_key"
 $ export KSYUN_SECRET_KEY="your_private_key"
 $ export KSYUN_REGION="cn-beijing-6"
@@ -149,20 +149,28 @@ In addition to [generic `provider` arguments](https://www.terraform.io/docs/conf
 (e.g. `alias` and `version`), the following arguments are supported in the Ksyun
  `provider` block:
 
-* `public_key` - (Required) This is the Ksyun public key. It must be provided, but
+* `access_key` - (Required) This is the Ksyun public key. It must be provided, but
   it can also be sourced from the `KSYUN_ACCESS_KEY` environment variable.
 
-* `private_key` - (Required) This is the Ksyun private key. It must be provided, but
+* `secret_key` - (Required) This is the Ksyun private key. It must be provided, but
   it can also be sourced from the `KSYUN_SECRET_KEY` environment variable.
 
 * `region` - (Required) This is the Ksyun region. It must be provided, but
   it can also be sourced from the `KSYUN_REGION` environment variables.
 
-* `max_retries` - (Optional) This is the max retry attempts number. Default max retry attempts number is `0`.
+* `max_retries` - (Optional) This is the max retry attempts number. Default max retry attempts number is `3`.
 
 * `insecure` - (Optional) This is a switch to disable/enable https. (Default: `false`, means enable https).
 
 * `domain` - (Optional) This is the base url of KSYUN API endpoint. (Default: `api.ksyun.com`) Setup to corresponding base URL if you are using private cloud or other delicated regions. 
+
+* `dry_run` - (Optional, Boolean) Whether enable `dry_run` while operating SDK. 
+
+* `ignore_service` - (Optional, Boolean) Whether ignore customer's service. 
+
+* `http_keepalive` - (Optional, Boolean) Whether use http keepalive, if false, disables HTTP keep-alives and will only use the connection to the server for a single HTTP request. 
+
+* `http_proxy` - (Optional) Indicating a http proxy server that the cyber traffic via. 
 
 ## Testing
 
