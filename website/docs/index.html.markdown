@@ -158,7 +158,7 @@ In addition to [generic `provider` arguments](https://www.terraform.io/docs/conf
 * `region` - (Required) This is the Ksyun region. It must be provided, but
   it can also be sourced from the `KSYUN_REGION` environment variables.
 
-* `max_retries` - (Optional) This is the max retry attempts number. Default max retry attempts number is `0`.
+* `max_retries` - (Optional) This is the max retry attempts number. Default max retry attempts number is `3`.
 
 * `insecure` - (Optional) This is a switch to disable/enable https. (Default: `false`, means enable https).
 

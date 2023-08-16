@@ -338,7 +338,8 @@ func Provider() terraform.ResourceProvider {
 			"max_retries": {
 				Type:         schema.TypeInt,
 				Optional:     true,
-				ValidateFunc: validation.IntBetween(0, 5),
+				Default:      3,
+				ValidateFunc: validation.IntBetween(0, 99),
 			},
 			"http_proxy": {
 				Type:     schema.TypeString,
