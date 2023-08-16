@@ -3,6 +3,7 @@ package network
 import (
 	"net"
 	"net/url"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/request"
@@ -41,6 +42,23 @@ func isNetworkError(origErr error) bool {
 		return isNetworkError(err.Err)
 	case temporary:
 		if _, ok := err.(*net.OpError); ok {
+			return true
+		}
+
+	}
+	return false
+}
+
+func IsReadConnectionReset(origErr error) bool {
+	switch err := origErr.(type) {
+	case awserr.Error:
+		return IsReadConnectionReset(err.OrigErr())
+
+	case *url.Error:
+		return IsReadConnectionReset(err.Err)
+	case temporary:
+		if netErr, ok := err.(*net.OpError); ok &&
+			strings.Contains(netErr.Error(), "read: connection reset") {
 			return true
 		}
 
