@@ -12,7 +12,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/client"
 	"github.com/aws/aws-sdk-go/aws/client/metadata"
 	"github.com/aws/aws-sdk-go/aws/corehandlers"
 	"github.com/aws/aws-sdk-go/aws/request"
@@ -193,7 +192,6 @@ func TestConnectionReset(t *testing.T) {
 
 			cfg := unit.Session.Config.Copy()
 			cfg.MaxRetries = aws.Int(5)
-			cfg.Retryer = network.GetKsyunRetryer(*cfg.MaxRetries)
 			cfg.SleepDelay = func(time.Duration) {}
 
 			op := &request.Operation{
@@ -216,7 +214,7 @@ func TestConnectionReset(t *testing.T) {
 				*cfg,
 				meta,
 				handlers,
-				client.DefaultRetryer{NumMaxRetries: 5},
+				network.GetKsyunRetryer(*cfg.MaxRetries),
 				op,
 				&struct{}{},
 				&struct{}{},
