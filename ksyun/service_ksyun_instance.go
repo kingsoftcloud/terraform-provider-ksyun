@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-ksyun/ksyun/internal/pkg/network"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
 )
 
@@ -198,6 +199,7 @@ func (s *KecService) readKecNetworkInterface(networkInterfaceId string) (data ma
 func (s *KecService) readKecInstance(d *schema.ResourceData, instanceId string, allProject bool) (data map[string]interface{}, err error) {
 	var (
 		kecInstanceResults []interface{}
+		retryCount         = 3
 	)
 	if instanceId == "" {
 		instanceId = d.Id()
@@ -205,20 +207,38 @@ func (s *KecService) readKecInstance(d *schema.ResourceData, instanceId string, 
 	req := map[string]interface{}{
 		"InstanceId.1": instanceId,
 	}
+
+getProjectLabel:
 	if allProject {
 		err = addProjectInfoAll(d, &req, s.client)
 		if err != nil {
+			if network.IsReadConnectionReset(err) && retryCount > 0 {
+				retryCount--
+				goto getProjectLabel
+			}
 			return data, err
 		}
 	} else {
 		err = addProjectInfo(d, &req, s.client)
 		if err != nil {
+			if network.IsReadConnectionReset(err) && retryCount > 0 {
+				retryCount--
+				goto getProjectLabel
+			}
 			return data, err
 		}
 	}
 
+	// reset retry count
+	retryCount = 3
+readInstanceLabel:
 	kecInstanceResults, err = s.readKecInstances(req)
 	if err != nil {
+		// goto retry label, if err is `read: connection reset by peer`
+		if network.IsReadConnectionReset(err) && retryCount > 0 {
+			retryCount--
+			goto readInstanceLabel
+		}
 		return data, err
 	}
 	for _, v := range kecInstanceResults {
@@ -474,7 +494,7 @@ func transKecInstanceParams(d *schema.ResourceData, resource *schema.Resource) (
 	})
 }
 
-func (s *KecService) createKecInstanceCommon(d *schema.ResourceData, resource *schema.Resource) (callback ApiCall, err error) {
+func (s *KecService) createKecInstanceCommon(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
 	// transform := map[string]SdkReqTransform{
 	//	"key_id": {
 	//		Type: TransformWithN,
@@ -500,7 +520,7 @@ func (s *KecService) createKecInstanceCommon(d *schema.ResourceData, resource *s
 	// createReq, err := SdkRequestAutoMapping(d, resource, false, transform, nil, SdkReqParameter{
 	//	onlyTransform: false,
 	// })
-	createReq, err := transKecInstanceParams(d, resource)
+	createReq, err := transKecInstanceParams(d, r)
 	if err != nil {
 		return callback, err
 	}
@@ -537,7 +557,7 @@ func (s *KecService) createKecInstanceCommon(d *schema.ResourceData, resource *s
 			if err != nil {
 				return err
 			}
-			return s.readAndSetKecInstance(d, resource, true)
+			return s.readAndSetKecInstance(d, r, true)
 		},
 	}
 	return callback, err
