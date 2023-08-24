@@ -36,9 +36,10 @@ package ksyun
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"time"
 )
 
 func resourceKsyunBareMetal() *schema.Resource {
@@ -79,6 +80,25 @@ func resourceKsyunBareMetal() *schema.Resource {
 				}, false),
 				Default:     "NoChange",
 				Description: "The HyperThread status of the Bare Metal. Valid Values:'Open','Close','NoChange'.Default is 'NoChange'.",
+			},
+			"roce_network": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					"Open",
+					"Close",
+				}, false),
+				Description: "The value of roce network that indicates acquiring whether an instance supplied roce network. Valid Options: `Open` and `Close`.",
+			},
+			"host_status": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					"Running",
+					"Stopped",
+				}, false),
+				Description: "The status of Bare Metal instance. That can set your Bare Metal instance status, `Running` or `Stopped`, on ksyun. In detail, the instance will start, when `host_status` is `Running` but its status is `Stopped` on ksyun. Similarly, the instance will be power off, when `host_status` is `Stopped` but its status is `Running` on ksyun. <br> Value Options: `Running`, `Stopped`.",
 			},
 			"raid": {
 				Type:     schema.TypeString,
@@ -382,6 +402,9 @@ func resourceKsyunBareMetalRead(d *schema.ResourceData, meta interface{}) (err e
 
 func resourceKsyunBareMetalUpdate(d *schema.ResourceData, meta interface{}) (err error) {
 	bareMetalService := BareMetalService{meta.(*KsyunClient)}
+	if d.HasChange("roce_network") {
+		return fmt.Errorf("argument `roce_network` cannot be modified for now")
+	}
 	err = bareMetalService.ModifyBareMetal(d, resourceKsyunBareMetal())
 	if err != nil {
 		return fmt.Errorf("error on updating bare metal %q, %s", d.Id(), err)

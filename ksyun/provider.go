@@ -289,7 +289,10 @@ KNAD
 package ksyun
 
 import (
+	"net/url"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
@@ -339,6 +342,30 @@ func Provider() terraform.ResourceProvider {
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("KSYUN_DOMAIN_IGNORE_SERVICE", false),
 				Description: descriptions["ignore_service"],
+			},
+			"http_keepalive": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				Description: "Whether use http keepalive, if false, disables HTTP keep-alives and will only use the connection to the server for a single HTTP request",
+			},
+			"max_retries": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Default:      3,
+				ValidateFunc: validation.IntBetween(0, 99),
+			},
+			"http_proxy": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ValidateFunc: func(i interface{}, s string) (ret []string, errs []error) {
+					ip := i.(string)
+					_, err := url.Parse(ip)
+					if err != nil {
+						errs = append(errs, err)
+					}
+					return
+				},
 			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
@@ -491,6 +518,10 @@ func Provider() terraform.ResourceProvider {
 }
 
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
+	var retryNum = 3
+	if mr, ok := d.GetOk("max_retries"); ok {
+		retryNum = mr.(int)
+	}
 	config := Config{
 		AccessKey:     d.Get("access_key").(string),
 		SecretKey:     d.Get("secret_key").(string),
@@ -499,6 +530,9 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		Domain:        d.Get("domain").(string),
 		DryRun:        d.Get("dry_run").(bool),
 		IgnoreService: d.Get("ignore_service").(bool),
+		HttpKeepAlive: d.Get("http_keepalive").(bool),
+		MaxRetries:    retryNum,
+		HttpProxy:     d.Get("http_proxy").(string),
 	}
 	client, err := config.Client()
 	return client, err

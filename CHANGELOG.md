@@ -1,4 +1,4 @@
-## 1.8.0 (unreleased)
+## unknown (unreleased)
 
 FEATURES:
 
@@ -10,6 +10,29 @@ FEATURES:
 - - **New Data Source:** `ksyun_alb_listeners`
 - - **New Data Source:** `ksyun_alb_rule_groups`
 - - **New Data Source:** `ksyun_alb_listener_cert_groups`
+
+## 1.8.0 (Aug 16, 2023)
+
+FEATURES:
+
+- `provider` 新增`http_httpalive` `max_retries` `http_proxy` 配置参数
+
+IMPROVEMENTS:
+
+- `provider` 增加网络异常重试
+
+## 1.7.2 (Aug 14, 2023)
+
+BUGFIX:
+- `ksyun_vpc` 修复可能触发的无法删除vpc的操作
+
+## 1.7.1 (Aug 3, 2023)
+
+IMPROVEMENTS:
+
+- `ksyun_bare_metal` 新增裸金属开机/关机操作
+- `ksyun_bare_metal` 支持创建roce网络机型
+
 
 ## 1.7.0 (Jul 26, 2023)
 
