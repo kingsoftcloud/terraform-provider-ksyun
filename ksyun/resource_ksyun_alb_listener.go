@@ -22,6 +22,7 @@ package ksyun
 
 import (
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
@@ -95,7 +96,7 @@ func resourceKsyunAlbListener() *schema.Resource {
 			},
 			"alb_listener_state": {
 				Type:         schema.TypeString,
-				Required:     true,
+				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"start", "stop"}, false),
 				Description:  "The state of listener.Valid Values:'start', 'stop'.",
 			},
@@ -113,13 +114,13 @@ func resourceKsyunAlbListener() *schema.Resource {
 				MinItems:    1,
 				Optional:    true,
 				Computed:    true,
-				Description: "session.",
+				Description: "Whether keeps session. Specific `session` block, if keeps session.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"session_state": {
 							Type:     schema.TypeString,
 							Optional: true,
-							//Default:  "stop",
+							// Default:  "stop",
 							ValidateFunc: validation.StringInSlice([]string{
 								"start",
 								"stop",
@@ -129,14 +130,14 @@ func resourceKsyunAlbListener() *schema.Resource {
 						"session_persistence_period": {
 							Type:     schema.TypeInt,
 							Optional: true,
-							//Default:      3600,
+							// Default:      3600,
 							ValidateFunc: validation.IntBetween(1, 86400),
 							Description:  "Session hold timeout. Valid Values:1-86400.",
 						},
 						"cookie_type": {
 							Type:     schema.TypeString,
 							Optional: true,
-							//Default:  "ImplantCookie",
+							// Default:  "ImplantCookie",
 							ValidateFunc: validation.StringInSlice([]string{
 								"ImplantCookie",
 								"RewriteCookie",
@@ -146,7 +147,7 @@ func resourceKsyunAlbListener() *schema.Resource {
 						"cookie_name": {
 							Type:     schema.TypeString,
 							Optional: true,
-							//Computed:    true,
+							// Computed:    true,
 							Description: "The name of cookie.",
 						},
 					},
@@ -182,9 +183,9 @@ func resourceKsyunAlbListener() *schema.Resource {
 				Description: "The creation time.",
 			},
 
-			//HealthCheckId
+			// HealthCheckId
 
-			//"alb_listener_acl_id"
+			// "alb_listener_acl_id"
 		},
 	}
 }

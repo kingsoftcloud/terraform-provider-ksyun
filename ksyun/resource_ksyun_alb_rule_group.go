@@ -19,6 +19,7 @@ package ksyun
 
 import (
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
@@ -59,20 +60,22 @@ func resourceKsyunAlbRuleGroup() *schema.Resource {
 			"alb_rule_set": {
 				Type:        schema.TypeList,
 				MinItems:    1,
+				MaxItems:    1,
 				Required:    true,
-				Description: "Rule set.",
+				Description: "Rule set, define strategies for being load-balance of backend server.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"alb_rule_type": {
+						"domain": {
 							Type:         schema.TypeString,
-							Required:     true,
-							ValidateFunc: validation.StringInSlice([]string{"domain", "url"}, false),
-							Description:  "Rule type. valid values: 'domain', 'url'.",
+							Optional:     true,
+							AtLeastOneOf: []string{"alb_rule_set.0.url"},
+							Description:  "The domain rule, Value is specific domain.",
 						},
-						"alb_rule_value": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Rule value.",
+						"url": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							AtLeastOneOf: []string{"alb_rule_set.0.domain"},
+							Description:  "Specific url path for accessing alb.",
 						},
 					},
 				},

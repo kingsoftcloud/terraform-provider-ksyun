@@ -2,11 +2,12 @@ package ksyun
 
 import (
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
-	"strings"
-	"time"
 )
 
 type AlbListenerService struct {
@@ -209,7 +210,7 @@ func (s *AlbListenerService) modifyListenerCall(d *schema.ResourceData, r *schem
 	if err != nil {
 		return callback, err
 	}
-	//特殊处理下"Session."
+	// 特殊处理下"Session."
 	for k, v := range req {
 		if strings.HasPrefix(k, "Session.") {
 			req[strings.Replace(k, "Session.", "", -1)] = v

@@ -2,10 +2,11 @@ package ksyun
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
-	"time"
 )
 
 type AlbRuleGroup struct {
@@ -14,21 +15,27 @@ type AlbRuleGroup struct {
 
 func (s *AlbRuleGroup) createRuleGroupCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
 	transform := map[string]SdkReqTransform{
-		//"alb_rule_set": {mappings: map[string]string{
+		// "alb_rule_set": {mappings: map[string]string{
 		//	"alb_rule_type":  "AlbRuleType",
 		//	"alb_rule_value": "AlbRuleValue",
-		//}, Type: TransformListN},
+		// }, Type: TransformListN},
 	}
 	req, err := SdkRequestAutoMapping(d, r, false, transform, nil, SdkReqParameter{
 		onlyTransform: false,
 	})
 
-	albRuleSet := []map[string]interface{}{}
+	var albRuleSet []map[string]interface{}
 	for _, item := range req["AlbRuleSet"].([]interface{}) {
-		albRuleSet = append(albRuleSet, map[string]interface{}{
-			"AlbRuleType":  item.(map[string]interface{})["alb_rule_type"],
-			"AlbRuleValue": item.(map[string]interface{})["alb_rule_value"],
-		})
+		for t, v := range item.(map[string]interface{}) {
+			if v == "" {
+				continue
+			}
+			albRuleSet = append(albRuleSet, map[string]interface{}{
+				"AlbRuleType":  t,
+				"AlbRuleValue": v,
+			})
+		}
+
 	}
 	req["AlbRuleSet"] = albRuleSet
 
@@ -155,7 +162,29 @@ func (s *AlbRuleGroup) ReadAndSetRuleGroup(d *schema.ResourceData, r *schema.Res
 	if err != nil {
 		return err
 	}
-	extra := map[string]SdkResponseMapping{}
+	extra := map[string]SdkResponseMapping{
+		"AlbRuleSet": {
+			Field: "alb_rule_set",
+			FieldRespFunc: func(i interface{}) interface{} {
+				v, ok := i.([]interface{})
+				if !ok {
+					return i
+				}
+				var (
+					ruleSet []map[string]interface{}
+					rule    = make(map[string]interface{})
+				)
+
+				for _, item := range v {
+					if itemVal, ok := item.(map[string]interface{}); ok {
+						rule[itemVal["AlbRuleType"].(string)] = itemVal["AlbRuleValue"]
+					}
+				}
+				ruleSet = append(ruleSet, rule)
+				return ruleSet
+			},
+		},
+	}
 	SdkResponseAutoResourceData(d, r, data, extra)
 	return
 }
@@ -214,6 +243,23 @@ func (s *AlbRuleGroup) modifyRuleGroupCall(d *schema.ResourceData, r *schema.Res
 	logger.Debug(logger.ReqFormat, "modifyRuleGroupCall", req)
 	if err != nil {
 		return callback, err
+	}
+
+	var albRuleSet []map[string]interface{}
+	for _, item := range req["AlbRuleSet"].([]interface{}) {
+		for t, v := range item.(map[string]interface{}) {
+			if v == "" {
+				continue
+			}
+			albRuleSet = append(albRuleSet, map[string]interface{}{
+				"AlbRuleType":  t,
+				"AlbRuleValue": v,
+			})
+		}
+
+	}
+	if albRuleSet != nil && len(albRuleSet) > 0 {
+		req["AlbRuleSet"] = albRuleSet
 	}
 
 	if len(req) > 0 {

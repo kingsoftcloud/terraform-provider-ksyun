@@ -53,6 +53,7 @@ package ksyun
 
 import (
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
@@ -76,8 +77,8 @@ func resourceKsyunAlb() *schema.Resource {
 			},
 			"alb_version": {
 				Type: schema.TypeString,
-				//Optional:     true,
-				//Computed:     true,
+				// Optional:     true,
+				// Computed:     true,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.StringInSlice([]string{"standard", "advanced"}, false),
@@ -85,12 +86,12 @@ func resourceKsyunAlb() *schema.Resource {
 			},
 			"alb_type": {
 				Type: schema.TypeString,
-				//Optional:     true,
-				//Computed:     true,
+				// Optional:     true,
+				// Computed:     true,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.StringInSlice([]string{"public", "internal"}, false),
-				Description:  "The type of the ALB, valid values:'public', 'internal''.",
+				Description:  "The type of the ALB, valid values:'public', 'internal'.",
 			},
 			"vpc_id": {
 				Type:        schema.TypeString,
@@ -132,11 +133,11 @@ func resourceKsyunAlb() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "The state of the ALB, valid values:'start', 'stop'.",
+				Description: "The state of the ALB, Valid Values:'start', 'stop'.",
 			},
 			"status": {
 				Type: schema.TypeString,
-				//Optional:    true,
+				// Optional:    true,
 				Computed:    true,
 				Description: "The status of the ALB.",
 			},
@@ -145,14 +146,14 @@ func resourceKsyunAlb() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Computed:    true,
-				Description: "whether log is enabled or not.",
+				Description: "Whether log is enabled or not. Specific `klog_info` field when `enabled_log` is true.",
 			},
 			"klog_info": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Computed:    true,
 				MaxItems:    1,
-				Description: "klog info.",
+				Description: "Indicate klog info, including log-project-name and log-pool-name, that use to bind log service for this alb process.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"account_id": {
