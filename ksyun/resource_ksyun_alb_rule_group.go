@@ -60,22 +60,21 @@ func resourceKsyunAlbRuleGroup() *schema.Resource {
 			"alb_rule_set": {
 				Type:        schema.TypeList,
 				MinItems:    1,
-				MaxItems:    1,
+				MaxItems:    2,
 				Required:    true,
 				Description: "Rule set, define strategies for being load-balance of backend server.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"domain": {
+						"alb_rule_type": {
 							Type:         schema.TypeString,
-							Optional:     true,
-							AtLeastOneOf: []string{"alb_rule_set.0.url"},
-							Description:  "The domain rule, Value is specific domain.",
+							Required:     true,
+							ValidateFunc: validation.StringInSlice([]string{"domain", "url"}, false),
+							Description:  "Rule type. valid values: 'domain', 'url'.",
 						},
-						"url": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							AtLeastOneOf: []string{"alb_rule_set.0.domain"},
-							Description:  "Specific url path for accessing alb.",
+						"alb_rule_value": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Rule value.",
 						},
 					},
 				},

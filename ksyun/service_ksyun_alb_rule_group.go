@@ -26,16 +26,10 @@ func (s *AlbRuleGroup) createRuleGroupCall(d *schema.ResourceData, r *schema.Res
 
 	var albRuleSet []map[string]interface{}
 	for _, item := range req["AlbRuleSet"].([]interface{}) {
-		for t, v := range item.(map[string]interface{}) {
-			if v == "" {
-				continue
-			}
-			albRuleSet = append(albRuleSet, map[string]interface{}{
-				"AlbRuleType":  t,
-				"AlbRuleValue": v,
-			})
-		}
-
+		albRuleSet = append(albRuleSet, map[string]interface{}{
+			"AlbRuleType":  item.(map[string]interface{})["alb_rule_type"],
+			"AlbRuleValue": item.(map[string]interface{})["alb_rule_value"],
+		})
 	}
 	req["AlbRuleSet"] = albRuleSet
 
@@ -162,29 +156,7 @@ func (s *AlbRuleGroup) ReadAndSetRuleGroup(d *schema.ResourceData, r *schema.Res
 	if err != nil {
 		return err
 	}
-	extra := map[string]SdkResponseMapping{
-		"AlbRuleSet": {
-			Field: "alb_rule_set",
-			FieldRespFunc: func(i interface{}) interface{} {
-				v, ok := i.([]interface{})
-				if !ok {
-					return i
-				}
-				var (
-					ruleSet []map[string]interface{}
-					rule    = make(map[string]interface{})
-				)
-
-				for _, item := range v {
-					if itemVal, ok := item.(map[string]interface{}); ok {
-						rule[itemVal["AlbRuleType"].(string)] = itemVal["AlbRuleValue"]
-					}
-				}
-				ruleSet = append(ruleSet, rule)
-				return ruleSet
-			},
-		},
-	}
+	extra := map[string]SdkResponseMapping{}
 	SdkResponseAutoResourceData(d, r, data, extra)
 	return
 }
@@ -247,17 +219,12 @@ func (s *AlbRuleGroup) modifyRuleGroupCall(d *schema.ResourceData, r *schema.Res
 
 	var albRuleSet []map[string]interface{}
 	for _, item := range req["AlbRuleSet"].([]interface{}) {
-		for t, v := range item.(map[string]interface{}) {
-			if v == "" {
-				continue
-			}
-			albRuleSet = append(albRuleSet, map[string]interface{}{
-				"AlbRuleType":  t,
-				"AlbRuleValue": v,
-			})
-		}
-
+		albRuleSet = append(albRuleSet, map[string]interface{}{
+			"AlbRuleType":  item.(map[string]interface{})["alb_rule_type"],
+			"AlbRuleValue": item.(map[string]interface{})["alb_rule_value"],
+		})
 	}
+
 	if albRuleSet != nil && len(albRuleSet) > 0 {
 		req["AlbRuleSet"] = albRuleSet
 	}
