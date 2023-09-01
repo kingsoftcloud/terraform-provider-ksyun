@@ -1,7 +1,9 @@
 package ksyun
 
 import (
+	"errors"
 	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -156,6 +158,50 @@ func (s *AlbRuleGroup) ReadAndSetRuleGroup(d *schema.ResourceData, r *schema.Res
 	if err != nil {
 		return err
 	}
+
+	// get defines set
+	albRuleSet := d.Get("alb_rule_set").([]interface{})
+
+	// get response set
+	retRuleSet, ok := data["AlbRuleSet"].([]interface{})
+	if !ok {
+		return errors.New("parse alb rule group response error")
+	}
+
+	var storeRuleSet []map[string]interface{}
+	for _, albRuleIf := range albRuleSet {
+		albRule, ok := albRuleIf.(map[string]interface{})
+		if !ok {
+			return errors.New("parse alb rule group response error")
+		}
+		for t, v := range albRule {
+			if t != "alb_rule_type" {
+				continue
+			}
+			m := make(map[string]interface{}, 2)
+			for _, retItem := range retRuleSet {
+				retM := retItem.(map[string]interface{})
+				for rt, rv := range retM {
+					if reflect.DeepEqual(rt, "AlbRuleType") && reflect.DeepEqual(v, rv) {
+						m["alb_rule_value"] = retM["AlbRuleValue"]
+						m["alb_rule_type"] = rv
+						storeRuleSet = append(storeRuleSet, m)
+						goto breakDouble
+					}
+
+				}
+
+			}
+		}
+	breakDouble:
+	}
+
+	if err := d.Set("alb_rule_set", storeRuleSet); err != nil {
+		return err
+	}
+	// alb rule set by manual set
+	delete(data, "AlbRuleSet")
+
 	extra := map[string]SdkResponseMapping{}
 	SdkResponseAutoResourceData(d, r, data, extra)
 	return
@@ -217,16 +263,18 @@ func (s *AlbRuleGroup) modifyRuleGroupCall(d *schema.ResourceData, r *schema.Res
 		return callback, err
 	}
 
-	var albRuleSet []map[string]interface{}
-	for _, item := range req["AlbRuleSet"].([]interface{}) {
-		albRuleSet = append(albRuleSet, map[string]interface{}{
-			"AlbRuleType":  item.(map[string]interface{})["alb_rule_type"],
-			"AlbRuleValue": item.(map[string]interface{})["alb_rule_value"],
-		})
-	}
+	if albRuleSetParams, ok := req["AlbRuleSet"]; ok {
+		var albRuleSet []map[string]interface{}
+		for _, item := range albRuleSetParams.([]interface{}) {
+			albRuleSet = append(albRuleSet, map[string]interface{}{
+				"AlbRuleType":  item.(map[string]interface{})["alb_rule_type"],
+				"AlbRuleValue": item.(map[string]interface{})["alb_rule_value"],
+			})
+		}
 
-	if albRuleSet != nil && len(albRuleSet) > 0 {
-		req["AlbRuleSet"] = albRuleSet
+		if albRuleSet != nil && len(albRuleSet) > 0 {
+			req["AlbRuleSet"] = albRuleSet
+		}
 	}
 
 	if len(req) > 0 {

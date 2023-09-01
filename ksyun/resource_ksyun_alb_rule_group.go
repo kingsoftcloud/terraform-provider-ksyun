@@ -78,6 +78,7 @@ func resourceKsyunAlbRuleGroup() *schema.Resource {
 						},
 					},
 				},
+				// StateFunc: albRuleSetStateFunc(albRuleSetLessFunc),
 			},
 			"listener_sync": {
 				Type:        schema.TypeString,

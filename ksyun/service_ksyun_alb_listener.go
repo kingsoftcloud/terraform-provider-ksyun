@@ -264,7 +264,7 @@ func (s *AlbListenerService) ModifyListener(d *schema.ResourceData, r *schema.Re
 	return
 }
 
-func (s AlbListenerService) ReadAndSetAlbListeners(d *schema.ResourceData, r *schema.Resource) (err error) {
+func (s *AlbListenerService) ReadAndSetAlbListeners(d *schema.ResourceData, r *schema.Resource) (err error) {
 	transform := map[string]SdkReqTransform{
 		"ids": {
 			mapping: "AlbListenerId",
