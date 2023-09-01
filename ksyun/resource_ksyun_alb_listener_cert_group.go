@@ -18,10 +18,12 @@ ALB Listener Cert Group can be imported using the `id`, e.g.
 $ terraform import ksyun_alb_listener_cert_group.example vserver-abcdefg
 ```
 */
+
 package ksyun
 
 import (
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
@@ -50,9 +52,9 @@ func resourceKsyunAlbListenerCertGroup() *schema.Resource {
 			"certificate": {
 				Type:     schema.TypeList,
 				Optional: true,
-				//Computed:    true,
+				// Computed:    true,
 				Description: "The certificate included in the cert group.",
-				//DiffSuppressFunc: func(k, oldV, newV string, d *schema.ResourceData) bool {
+				// DiffSuppressFunc: func(k, oldV, newV string, d *schema.ResourceData) bool {
 				//	logger.Debug(logger.ReqFormat, "certificateDiffSuppressFunc k", k)
 				//	logger.Debug(logger.ReqFormat, "certificateDiffSuppressFunc old", oldV)
 				//	logger.Debug(logger.ReqFormat, "certificateDiffSuppressFunc new", newV)
@@ -62,7 +64,7 @@ func resourceKsyunAlbListenerCertGroup() *schema.Resource {
 				//		}
 				//	}
 				//	return false
-				//},
+				// },
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"certificate_id": {

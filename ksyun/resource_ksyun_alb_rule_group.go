@@ -9,7 +9,7 @@ Provides a ALB rule group resource.
 
 # Import
 
-BWS can be imported using the id, e.g.
+`ksyun_alb_rule_group` can be imported using the id, e.g.
 
 ```
 $ terraform import ksyun_alb_rule_group.default 67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx

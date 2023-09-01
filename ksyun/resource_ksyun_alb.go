@@ -43,7 +43,7 @@ Provides a ALB resource.
 
 # Import
 
-BWS can be imported using the id, e.g.
+`ksyun_alb` can be imported using the id, e.g.
 
 ```
 $ terraform import ksyun_alb.default 67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx

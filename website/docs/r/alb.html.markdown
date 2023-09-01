@@ -55,16 +55,16 @@ resource "ksyun_eip_associate" "eip_bind" {
 
 The following arguments are supported:
 
-* `alb_type` - (Required, ForceNew) The type of the ALB, valid values:'public', 'internal''.
+* `alb_type` - (Required, ForceNew) The type of the ALB, valid values:'public', 'internal'.
 * `alb_version` - (Required, ForceNew) The version of the ALB. valid values:'standard', 'advanced'.
 * `charge_type` - (Required, ForceNew) The charge type, valid values: 'PrePaidByHourUsage'.
 * `vpc_id` - (Required, ForceNew) The ID of the VPC.
 * `alb_name` - (Optional) The name of the ALB.
-* `enabled_log` - (Optional) whether log is enabled or not.
+* `enabled_log` - (Optional) Whether log is enabled or not. Specific `klog_info` field when `enabled_log` is true.
 * `ip_version` - (Optional, ForceNew) IP version, 'ipv4' or 'ipv6'.
-* `klog_info` - (Optional) klog info.
+* `klog_info` - (Optional) Indicate klog info, including log-project-name and log-pool-name, that use to bind log service for this alb process.
 * `project_id` - (Optional) The ID of the project.
-* `state` - (Optional) The state of the ALB, valid values:'start', 'stop'.
+* `state` - (Optional) The state of the ALB, Valid Values:'start', 'stop'.
 
 The `klog_info` object supports the following:
 

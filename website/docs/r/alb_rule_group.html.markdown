@@ -24,7 +24,7 @@ Provides a ALB rule group resource.
 The following arguments are supported:
 
 * `alb_listener_id` - (Required, ForceNew) The ID of the ALB listener.
-* `alb_rule_set` - (Required) Rule set.
+* `alb_rule_set` - (Required) Rule set, define strategies for being load-balance of backend server.
 * `backend_server_group_id` - (Required) The ID of the backend server group.
 * `listener_sync` - (Required) Whether to synchronize the health check, session persistence, and load balancing algorithm of the listener. valid values: 'on', 'off'.
 * `alb_rule_group_name` - (Optional) The name of the ALB rule group.
