@@ -1,12 +1,7 @@
-
-
-
 # 查询ALB
 data "ksyun_albs" "default" {
   # 过滤条件：alb的ID
   ids = []
-  # 过滤条件：项目制ID
-  project_id=[]
   # 过滤条件：vpcID
   vpc_id = []
   # 过滤条件：状态
