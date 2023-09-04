@@ -15,6 +15,11 @@ type AlbRuleGroup struct {
 	client *KsyunClient
 }
 
+var (
+	albRuleGroupSessionNecessary = []string{"cookie_type", "session_persistence_period"}
+	albRuleGroupHealthNecessary  = []string{"interval", "timeout", "healthy_threshold", "unhealthy_threshold", "url_path", "host_name"}
+)
+
 func (s *AlbRuleGroup) createRuleGroupCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
 	transform := map[string]SdkReqTransform{
 		// "alb_rule_set": {mappings: map[string]string{
@@ -34,6 +39,10 @@ func (s *AlbRuleGroup) createRuleGroupCall(d *schema.ResourceData, r *schema.Res
 		})
 	}
 	req["AlbRuleSet"] = albRuleSet
+
+	if _, ok := req["HostName"]; !ok {
+		req["HostName"] = d.Get("host_name")
+	}
 
 	if err != nil {
 		return callback, err
@@ -202,6 +211,12 @@ func (s *AlbRuleGroup) ReadAndSetRuleGroup(d *schema.ResourceData, r *schema.Res
 	// alb rule set by manual set
 	delete(data, "AlbRuleSet")
 
+	if v, ok := data["CookieType"]; ok {
+		if v != "RewriteCookie" {
+			delete(data, "CookieName")
+		}
+	}
+
 	extra := map[string]SdkResponseMapping{}
 	SdkResponseAutoResourceData(d, r, data, extra)
 	return
@@ -255,6 +270,33 @@ func (s *AlbRuleGroup) RemoveRuleGroup(d *schema.ResourceData) (err error) {
 
 func (s *AlbRuleGroup) modifyRuleGroupCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
 	transform := map[string]SdkReqTransform{}
+
+	if _, n := d.GetChange("listener_sync"); n == "off" {
+		transform["session_state"] = SdkReqTransform{
+			forceUpdateParam: true,
+		}
+		transform["health_check_state"] = SdkReqTransform{
+			forceUpdateParam: true,
+		}
+		transform["method"] = SdkReqTransform{
+			forceUpdateParam: true,
+		}
+		if d.Get("session_state") == "start" {
+			for _, s := range albRuleGroupSessionNecessary {
+				transform[s] = SdkReqTransform{
+					forceUpdateParam: true,
+				}
+			}
+		}
+		if d.Get("health_check_state") == "start" {
+			for _, s := range albRuleGroupHealthNecessary {
+				transform[s] = SdkReqTransform{
+					forceUpdateParam: true,
+				}
+			}
+		}
+	}
+
 	req, err := SdkRequestAutoMapping(d, r, true, transform, nil, SdkReqParameter{
 		onlyTransform: false,
 	})

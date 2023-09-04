@@ -142,6 +142,7 @@ package ksyun
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
@@ -225,14 +226,16 @@ func resourceKsyunAlbRuleGroup() *schema.Resource {
 					"start",
 					"stop",
 				}, false),
-				Description: "The state of session. Valid Values:'start', 'stop'.",
+				DiffSuppressFunc: AlbRuleGroupSyncOffDiffSuppressFunc,
+				Description:      "The state of session. Valid Values:'start', 'stop'. Should set it value, when `listener_sync` is off.",
 			},
 			"session_persistence_period": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validation.IntBetween(1, 86400),
-				Description:  "Session hold timeout. Valid Values:1-86400.",
+				Type:             schema.TypeInt,
+				Optional:         true,
+				Computed:         true,
+				ValidateFunc:     validation.IntBetween(1, 86400),
+				DiffSuppressFunc: AlbRuleGroupSyncOffDiffSuppressFunc,
+				Description:      "Session hold timeout. Valid Values:1-86400. Should set it value, when `listener_sync` is off.",
 			},
 			"cookie_type": {
 				Type:     schema.TypeString,
@@ -242,13 +245,15 @@ func resourceKsyunAlbRuleGroup() *schema.Resource {
 					"ImplantCookie",
 					"RewriteCookie",
 				}, false),
-				Description: "The type of cookie, valid values: 'ImplantCookie','RewriteCookie'.",
+				DiffSuppressFunc: AlbRuleGroupSyncOffDiffSuppressFunc,
+				Description:      "The type of cookie, valid values: 'ImplantCookie','RewriteCookie'.",
 			},
 			"cookie_name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The name of cookie.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				Computed:         true,
+				Description:      "The name of cookie. Should set it value, when `listener_sync` is off and `cookie_type` is `RewriteCookie`.",
+				DiffSuppressFunc: AlbRuleGroupSyncOffDiffSuppressFunc,
 			},
 			"health_check_state": {
 				Type:     schema.TypeString,
@@ -258,54 +263,67 @@ func resourceKsyunAlbRuleGroup() *schema.Resource {
 					"start",
 					"stop",
 				}, false),
-				Description: "Status maintained by health examination.Valid Values:'start', 'stop'.",
+				DiffSuppressFunc: AlbRuleGroupSyncOffDiffSuppressFunc,
+				Description:      "Status maintained by health examination.Valid Values:'start', 'stop'. Should set it value, when `listener_sync` is off.",
 			},
 			"interval": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validation.IntBetween(1, 1000),
-				Description:  "Interval of health examination.Valid Values:1-3600. Default is 5.",
+				Type:             schema.TypeInt,
+				Optional:         true,
+				Computed:         true,
+				ValidateFunc:     validation.IntBetween(1, 1000),
+				DiffSuppressFunc: AlbRuleGroupSyncOffDiffSuppressFunc,
+				Description:      "Interval of health examination.Valid Values:1-3600. Should set it value, when `listener_sync` is off.",
 			},
 			"timeout": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validation.IntBetween(1, 3600),
-				Description:  "Health check timeout.Valid Values:1-3600. Default is 4.",
+				Type:             schema.TypeInt,
+				Optional:         true,
+				Computed:         true,
+				ValidateFunc:     validation.IntBetween(1, 3600),
+				DiffSuppressFunc: AlbRuleGroupSyncOffDiffSuppressFunc,
+				Description:      "Health check timeout.Valid Values:1-3600. Should set it value, when `listener_sync` is off.",
 			},
 			"healthy_threshold": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validation.IntBetween(1, 10),
-				Description:  "Health threshold.Valid Values:1-10. Default is 5.",
+				Type:             schema.TypeInt,
+				Optional:         true,
+				Computed:         true,
+				ValidateFunc:     validation.IntBetween(1, 10),
+				DiffSuppressFunc: AlbRuleGroupSyncOffDiffSuppressFunc,
+				Description:      "Health threshold.Valid Values:1-10. Should set it value, when `listener_sync` is off.",
 			},
 			"unhealthy_threshold": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validation.IntBetween(1, 10),
-				Description:  "Unhealthy threshold.Valid Values:1-10. Default is 4.",
+				Type:             schema.TypeInt,
+				Optional:         true,
+				Computed:         true,
+				ValidateFunc:     validation.IntBetween(1, 10),
+				DiffSuppressFunc: AlbRuleGroupSyncOffDiffSuppressFunc,
+				Description:      "Unhealthy threshold.Valid Values:1-10. Should set it value, when `listener_sync` is off.",
 			},
 			"url_path": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validation.StringIsNotEmpty,
-				Description:  "Link to HTTP type listener health check.",
+				Type:     schema.TypeString,
+				Optional: true,
+				// Computed:         true,
+				Default:          "/",
+				ValidateFunc:     validation.StringIsNotEmpty,
+				DiffSuppressFunc: AlbRuleGroupSyncOffDiffSuppressFunc,
+				Description:      "Link to HTTP type listener health check. Should set it value, when `listener_sync` is off.",
 			},
 			"host_name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The service host name of the health check, which is available only for the HTTP or HTTPS health check.",
+				Type:     schema.TypeString,
+				Optional: true,
+				// Computed:         true,
+				Default:          "",
+				DiffSuppressFunc: AlbRuleGroupSyncOffDiffSuppressFunc,
+				Description:      "The service host name of the health check, which is available only for the HTTP or HTTPS health check. Should set it value, when `listener_sync` is off.",
 			},
 		},
 	}
 }
 
 func resourceKsyunAlbRuleGroupCreate(d *schema.ResourceData, meta interface{}) (err error) {
+	if indispensableErr := checkIndispensableParams(d); indispensableErr != nil {
+		return indispensableErr
+	}
+
 	s := AlbRuleGroup{meta.(*KsyunClient)}
 	err = s.CreateAlbRuleGroup(d, resourceKsyunAlbRuleGroup())
 	if err != nil {
@@ -322,6 +340,11 @@ func resourceKsyunAlbRuleGroupRead(d *schema.ResourceData, meta interface{}) (er
 	return
 }
 func resourceKsyunAlbRuleGroupUpdate(d *schema.ResourceData, meta interface{}) (err error) {
+	// check indispensable parameters such as session_state, health_check_state
+	if indispensableErr := checkIndispensableParams(d); indispensableErr != nil {
+		return indispensableErr
+	}
+
 	s := AlbRuleGroup{meta.(*KsyunClient)}
 	err = s.ModifyRuleGroup(d, resourceKsyunAlbRuleGroup())
 	if err != nil {
@@ -337,4 +360,49 @@ func resourceKsyunAlbRuleGroupDelete(d *schema.ResourceData, meta interface{}) (
 		return fmt.Errorf("error on deleting rule group %q, %s", d.Id(), err)
 	}
 	return
+}
+
+func checkIndispensableParams(d *schema.ResourceData) error {
+
+	errFormat := "`%s` cannot be blank, when `listener_sync` is off and `%s` is start. Should be set it value"
+	if d.Get("listener_sync").(string) == "off" {
+		if state, ok := d.GetOk("session_state"); !ok {
+			return fmt.Errorf("`session_state` cannot be blank, when `listener_sync` is off. Should be set it value")
+		} else if state == "start" {
+			sessionIndispensables := albRuleGroupSessionNecessary
+			var errAssembly []string
+			for _, sI := range sessionIndispensables {
+				if _, ok := d.GetOk(sI); !ok {
+					errAssembly = append(errAssembly, sI)
+				}
+			}
+			if errAssembly != nil && len(errAssembly) > 0 {
+				return fmt.Errorf(errFormat, strings.Join(errAssembly, ", "), "session_state")
+			}
+
+			if d.Get("cookie_type").(string) == "RewriteCookie" {
+				if _, ok := d.GetOk("cookie_name"); !ok {
+					return fmt.Errorf("`cookie_name` cannot be blank, when `listener_sync` is off and `cookie_type` is RewriteCookie. Should be set it value")
+				}
+			}
+		}
+		if state, ok := d.GetOk("health_check_state"); !ok {
+			return fmt.Errorf("`health_check_state` cannot be blank, when `listener_sync` is off. Should be set it value")
+		} else if state == "start" {
+			healthIndispensables := albRuleGroupHealthNecessary
+			var errAssembly []string
+			for _, hI := range healthIndispensables {
+				if stringSliceContains([]string{"url_path", "host_name"}, hI) {
+					continue
+				}
+				if _, ok := d.GetOk(hI); !ok {
+					errAssembly = append(errAssembly, hI)
+				}
+			}
+			if errAssembly != nil && len(errAssembly) > 0 {
+				return fmt.Errorf(errFormat, strings.Join(errAssembly, ", "), "health_check_state")
+			}
+		}
+	}
+	return nil
 }
