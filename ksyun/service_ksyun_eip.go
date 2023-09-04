@@ -358,7 +358,6 @@ func (s *EipService) CreateAddressAssociateCall(d *schema.ResourceData, r *schem
 		},
 		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
 			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
-			// TODO: 绑定状态检测
 			allocationId := d.Get("allocation_id").(string)
 			if err := s.checkEipAssociatedState(d, allocationId, []string{"associate"}, d.Timeout(schema.TimeoutCreate)); err != nil {
 				return fmt.Errorf("waiting for eip associated caused an error: %s", err)

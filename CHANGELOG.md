@@ -1,4 +1,4 @@
-## unknown (unreleased)
+## 1.9.0 (Sep 4, 2023)
 
 FEATURES:
 
@@ -10,6 +10,10 @@ FEATURES:
 - - **New Data Source:** `ksyun_alb_listeners`
 - - **New Data Source:** `ksyun_alb_rule_groups`
 - - **New Data Source:** `ksyun_alb_listener_cert_groups`
+
+BUGFIX:
+
+- `ksyun_eip_associate` 修复在ForceNew更新时触发的eip绑定状态不一致
 
 ## 1.8.0 (Aug 16, 2023)
 
