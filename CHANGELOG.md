@@ -1,3 +1,20 @@
+## 1.9.0 (Sep 5, 2023)
+
+FEATURES:
+
+- - **New Resource:** `ksyun_alb` 应用型负载均衡
+- - **New Resource:** `ksyun_alb_listener` 应用型负载均衡-监听器
+- - **New Resource:** `ksyun_alb_rule_group` 应用型负载均衡-转发策略
+- - **New Resource:** `ksyun_alb_listener_cert_group` 应用型负载均衡-证书组
+- - **New Data Source:** `ksyun_albs`
+- - **New Data Source:** `ksyun_alb_listeners`
+- - **New Data Source:** `ksyun_alb_rule_groups`
+- - **New Data Source:** `ksyun_alb_listener_cert_groups`
+
+BUGFIX:
+
+- `ksyun_eip_associate` 修复在ForceNew更新时触发的eip绑定状态不一致
+
 ## 1.8.0 (Aug 16, 2023)
 
 FEATURES:
@@ -46,6 +63,7 @@ FEATURES:
 - `ksyun_subnet` 支持IPv6网段
 
 ## 1.5.0 (Jul 12, 2023)
+
 FEATURES:
 
 - - **New Resource:** `ksyun_knad` knad 原生高防

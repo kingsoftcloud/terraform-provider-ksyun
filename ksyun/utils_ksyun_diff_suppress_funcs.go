@@ -1,13 +1,14 @@
 package ksyun
 
 import (
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
-	"strings"
 )
 
-//重要提示
-//拦截器 返回false代表不拦截变更 反正则拦截变更
+// 重要提示
+// 拦截器 返回false代表不拦截变更 反正则拦截变更
 // 不要使用isNewResource() 判断是否是新建资源还是更新资源，因为这是内置机制，新建资源时候isNewResource()也是false 需要用d.id()替代
 
 func purchaseTimeDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bool {
@@ -38,10 +39,10 @@ func chargeSchemaDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bo
 }
 
 func kecDiskSnapshotIdDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
-	//logger.Debug("test", "test", d.Id(), k, strings.Contains(k, "disk_snapshot_id"))
+	// logger.Debug("test", "test", d.Id(), k, strings.Contains(k, "disk_snapshot_id"))
 	if d.Id() != "" {
 		if strings.Contains(k, "disk_snapshot_id") {
-			//logger.Debug("test1", "test", 123)
+			// logger.Debug("test1", "test", 123)
 			return true
 		}
 	}
@@ -49,7 +50,7 @@ func kecDiskSnapshotIdDiffSuppress(k, old, new string, d *schema.ResourceData) b
 }
 
 func kecImportDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
-	//由于一些字段暂时无法支持从查询中返回 所以现在设立做特殊处理拦截变更 用来适配导入的场景 后续支持后在对导入场景做优化
+	// 由于一些字段暂时无法支持从查询中返回 所以现在设立做特殊处理拦截变更 用来适配导入的场景 后续支持后在对导入场景做优化
 	if d.Id() != "" {
 		if k == "local_volume_snapshot_id" {
 			return true
@@ -126,6 +127,59 @@ func loadBalancerDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bo
 		return true
 	}
 	return false
+}
+
+func AlbListenerDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bool {
+	// if k == "certificate_id" || k == "tls_cipher_policy" || k == "enable_http2" {
+	//	return true
+	// }
+	// if d.Get("listener_protocol") != "HTTP" && k == "redirect_listener_id" {
+	//	return true
+	// }
+	// if d.Get("listener_protocol") != "HTTPS" && d.Get("listener_protocol") != "HTTP" &&
+	//	(k == "http_protocol" ||
+	//		k == "health_check.0.host_name" ||
+	//		k == "health_check.0.url_path" ||
+	//		k == "health_check.0.is_default_host_name" ||
+	//		k == "session.0.cookie_type" ||
+	//		k == "session.0.cookie_name") {
+	//	return true
+	// }
+	if k == "session.0.cookie_name" && d.Get("session.0.cookie_type") != "RewriteCookie" {
+		return true
+	}
+	// if k == "health_check.0.host_name" && d.Get("health_check.0.is_default_host_name").(bool) {
+	//	return true
+	// }
+	return false
+}
+
+// AlbRuleGroupSyncOffDiffSuppressFunc find field difference when `listener_sync` is off
+func AlbRuleGroupSyncOffDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bool {
+	if d.Get("listener_sync").(string) == "on" {
+		return true
+	}
+	switch k {
+	case "cookie_type", "session_persistence_period":
+		if n := d.Get("session_state"); n == "start" {
+			return false
+		}
+	case "interval", "timeout", "healthy_threshold", "unhealthy_threshold", "url_path", "host_name":
+		if n := d.Get("health_check_state"); n == "start" {
+			return false
+		}
+	case "cookie_name":
+		if n := d.Get("session_state"); n == "start" {
+			if d.Get("cookie_type") == "RewriteCookie" {
+				return false
+			}
+		}
+
+	case "session_state", "health_check_state":
+		return false
+	}
+
+	return true
 }
 
 func lbListenerDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bool {

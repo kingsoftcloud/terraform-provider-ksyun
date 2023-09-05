@@ -2,10 +2,11 @@ package ksyun
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
-	"time"
 )
 
 type EipService struct {
@@ -357,7 +358,12 @@ func (s *EipService) CreateAddressAssociateCall(d *schema.ResourceData, r *schem
 		},
 		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
 			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
-			d.SetId(d.Get("allocation_id").(string) + ":" + d.Get("instance_id").(string) + ":" + d.Get("network_interface_id").(string))
+			allocationId := d.Get("allocation_id").(string)
+			if err := s.checkEipAssociatedState(d, allocationId, []string{"associate"}, d.Timeout(schema.TimeoutCreate)); err != nil {
+				return fmt.Errorf("waiting for eip associated caused an error: %s", err)
+			}
+			// set id
+			d.SetId(allocationId + ":" + d.Get("instance_id").(string) + ":" + d.Get("network_interface_id").(string))
 			return err
 		},
 	}
@@ -462,4 +468,37 @@ func (s *EipService) ReadAndSetLines(d *schema.ResourceData, r *schema.Resource)
 		idFiled:     "LineId",
 		targetField: "lines",
 	})
+}
+
+func (s *EipService) checkEipAssociatedState(d *schema.ResourceData, instanceId string, target []string, timeout time.Duration) (err error) {
+	stateConf := &resource.StateChangeConf{
+		Pending:      []string{},
+		Target:       target,
+		Refresh:      s.eipStateRefreshFunc(d, instanceId),
+		Timeout:      timeout,
+		PollInterval: 5 * time.Second,
+		Delay:        10 * time.Second,
+		MinTimeout:   1 * time.Second,
+	}
+	_, err = stateConf.WaitForState()
+	return err
+}
+
+func (s *EipService) eipStateRefreshFunc(d *schema.ResourceData, instanceId string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		var (
+			err error
+		)
+		data, err := s.ReadAddress(d, instanceId)
+		if err != nil {
+			return nil, "", err
+		}
+
+		status, err := getSdkValue("State", data)
+		if err != nil {
+			return nil, "", err
+		}
+
+		return data, status.(string), nil
+	}
 }
