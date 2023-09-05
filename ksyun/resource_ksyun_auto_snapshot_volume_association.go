@@ -13,7 +13,7 @@ Provides an auto snapshot policy associate to volume.
 
 # Import
 
-Tag can be imported using the `id`, e.g.
+ksyun_auto_snapshot_volume_association can be imported using the `id`, e.g.
 
 ```
 $ terraform import ksyun_auto_snapshot_volume_association.foo ${auto_snapshot_policy_id}:${attach_volume_id}

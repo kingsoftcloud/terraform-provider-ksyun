@@ -118,6 +118,20 @@ SLB
 		ksyun_lb_listener_server
 		ksyun_lb_rule
 
+ALB
+
+	Data Source
+		ksyun_albs
+		ksyun_alb_listeners
+		ksyun_alb_rule_groups
+		ksyun_alb_listener_cert_groups
+
+	Resource
+		ksyun_alb
+		ksyun_alb_listener
+		ksyun_alb_rule_group
+		ksyun_alb_listener_cert_group
+
 SSH key
 
 	Data Source
@@ -355,12 +369,16 @@ func Provider() terraform.ResourceProvider {
 			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"ksyun_lines":         dataSourceKsyunLines(),
-			"ksyun_eips":          dataSourceKsyunEips(),
-			"ksyun_slbs":          dataSourceKsyunLbs(),
-			"ksyun_lbs":           dataSourceKsyunLbs(),
-			"ksyun_listeners":     dataSourceKsyunListeners(),
-			"ksyun_health_checks": dataSourceKsyunHealthChecks(),
+			"ksyun_albs":                     dataSourceKsyunAlbs(),
+			"ksyun_alb_listeners":            dataSourceKsyunAlbListeners(),
+			"ksyun_alb_rule_groups":          dataSourceKsyunAlbRuleGroups(),
+			"ksyun_alb_listener_cert_groups": dataSourceKsyunAlbListenerCertGroups(),
+			"ksyun_lines":                    dataSourceKsyunLines(),
+			"ksyun_eips":                     dataSourceKsyunEips(),
+			"ksyun_slbs":                     dataSourceKsyunLbs(),
+			"ksyun_lbs":                      dataSourceKsyunLbs(),
+			"ksyun_listeners":                dataSourceKsyunListeners(),
+			"ksyun_health_checks":            dataSourceKsyunHealthChecks(),
 			// 注册两个同样的data，应该去掉一个。。。文档保留ksyun_lb_listener_servers
 			"ksyun_listener_servers":                 dataSourceKsyunLbListenerServers(),
 			"ksyun_lb_listener_servers":              dataSourceKsyunLbListenerServers(),
@@ -419,6 +437,10 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_dnats":                            dataSourceKsyunDnats(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
+			"ksyun_alb":                              resourceKsyunAlb(),
+			"ksyun_alb_listener":                     resourceKsyunAlbListener(),
+			"ksyun_alb_rule_group":                   resourceKsyunAlbRuleGroup(),
+			"ksyun_alb_listener_cert_group":          resourceKsyunAlbListenerCertGroup(),
 			"ksyun_eip":                              resourceKsyunEip(),
 			"ksyun_eip_associate":                    resourceKsyunEipAssociation(),
 			"ksyun_lb":                               resourceKsyunLb(),
