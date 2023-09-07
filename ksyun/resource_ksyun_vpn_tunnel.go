@@ -28,13 +28,31 @@ package ksyun
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
 
-func resourceKsyunVpnTunnel() *schema.Resource {
-	return &schema.Resource{
+func resourceKsyunVpnTunnel() (r *schema.Resource) {
+	defer func() {
+		if r != nil {
+			for k, s := range r.Schema {
+				if isV2Attr, isV1Attr := stringSliceContains(vpnV2Attribute, k), stringSliceContains(vpnV1Attribute, k); isV2Attr || isV1Attr {
+					s.DiffSuppressFunc = vpnV2ParamsDiffSuppressFunc
+
+					if isV1Attr {
+						s.Description += " Notes: it's invalid when version is 2.0."
+					}
+					if isV2Attr {
+						s.Description += " Notes: it's invalid when version is 1.0."
+					}
+				}
+			}
+		}
+	}()
+	r = &schema.Resource{
 		Create: resourceKsyunVpnTunnelCreate,
 		Update: resourceKsyunVpnTunnelUpdate,
 		Read:   resourceKsyunVpnTunnelRead,
@@ -55,11 +73,12 @@ func resourceKsyunVpnTunnel() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					"GreOverIpsec",
 					"Ipsec",
-					"RouteIpsec",
+					"route_ipsec",
+					"ipsec",
 				}, false),
 				Required:    true,
 				ForceNew:    true,
-				Description: "The bandWidth of the vpn tunnel. Valid Values: VPN-v1: 'GreOverIpsec' or 'Ipsec'; VPN-v2: `RouteIpsec` or `Ipsec`.",
+				Description: "The bandWidth of the vpn tunnel. Valid Values: VPN-v1: 'GreOverIpsec' or 'Ipsec'; VPN-v2: `route_ipsec` or `ipsec`.",
 			},
 
 			"ha_mode": {
@@ -71,32 +90,32 @@ func resourceKsyunVpnTunnel() *schema.Resource {
 					"active_active",
 					"active_standby",
 				}, false),
-				Description: "The high-availability mode of vpn tunnel. **Notes: this parameters is valid in vpn2.0** <br> Valid values: `active_active` valid only when type as `Ipsec`; `active_active` and `active_standby` valid only when type as `RouteIpsec`",
+				Description: "The high-availability mode of vpn tunnel. Valid values: `active_active` valid only when type as `Ipsec`; `active_active` and `active_standby` valid only when type as `route_ipsec`.",
 			},
 			"open_health_check": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Description: "The switch of vpn tunnel health check. **Notes: that's valid only when vpn-v2.0 and tunnel type is `RouteIpsec`**.",
+				Description: "The switch of vpn tunnel health check. **Notes: that's valid only when vpn-v2.0 and tunnel type is `route_ipsec`**.",
 			},
 
 			"local_peer_ip": {
 				Type:     schema.TypeString,
 				Optional: true,
-				ForceNew: true,
+				// ForceNew: true,
 				ValidateFunc: validation.Any(
-					validation.IsIPAddress,
+					validation.IsCIDR,
 				),
-				Description: "The local ip in kingsoft cloud.",
+				Description: "The local IP in Kingsoft Cloud with CIDR indicated.",
 			},
 
 			"customer_peer_ip": {
 				Type:     schema.TypeString,
 				Optional: true,
-				ForceNew: true,
+				// ForceNew: true,
 				ValidateFunc: validation.Any(
-					validation.IsIPAddress,
+					validation.IsCIDR,
 				),
-				Description: "The ip of customer.",
+				Description: "The IP of customer with CIDR indicated.",
 			},
 
 			"vpn_gre_ip": {
@@ -106,7 +125,7 @@ func resourceKsyunVpnTunnel() *schema.Resource {
 				ValidateFunc: validation.Any(
 					validation.IsIPAddress,
 				),
-				Description: "The vpn_gre_ip of the vpn tunnel.If type is GreOverIpsec, Required.",
+				Description: "The vpn_gre_ip of the vpn tunnel. If type is GreOverIpsec and Vpn-Gateway-Version is 1.0, Required.",
 			},
 
 			"ha_vpn_gre_ip": {
@@ -116,7 +135,7 @@ func resourceKsyunVpnTunnel() *schema.Resource {
 				ValidateFunc: validation.Any(
 					validation.IsIPAddress,
 				),
-				Description: "The ha_vpn_gre_ip of the vpn tunnel.If type is GreOverIpsec,Required.",
+				Description: "The ha_vpn_gre_ip of the vpn tunnel.If type is GreOverIpsec,Required and Vpn-Gateway-Version is 1.0, Required.",
 			},
 
 			"customer_gre_ip": {
@@ -126,7 +145,7 @@ func resourceKsyunVpnTunnel() *schema.Resource {
 				ValidateFunc: validation.Any(
 					validation.IsIPAddress,
 				),
-				Description: "The customer_gre_ip of the vpn tunnel.If type is GreOverIpsec,Required.",
+				Description: "The customer_gre_ip of the vpn tunnel.If type is GreOverIpsec and Vpn-Gateway-Version is 1.0, Required.",
 			},
 
 			"ha_customer_gre_ip": {
@@ -136,7 +155,7 @@ func resourceKsyunVpnTunnel() *schema.Resource {
 				ValidateFunc: validation.Any(
 					validation.IsIPAddress,
 				),
-				Description: "The ha_customer_gre_ip of the vpn tunnel.If type is GreOverIpsec,Required.",
+				Description: "The ha_customer_gre_ip of the vpn tunnel.If type is GreOverIpsec and Vpn-Gateway-Version is 1.0, Required.",
 			},
 
 			"vpn_gateway_id": {
@@ -161,7 +180,7 @@ func resourceKsyunVpnTunnel() *schema.Resource {
 			},
 			"ike_version": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 				ForceNew: true,
 				ValidateFunc: validation.StringInSlice([]string{
 					"v1",
@@ -252,16 +271,39 @@ func resourceKsyunVpnTunnel() *schema.Resource {
 				Description:  "The ipsec_lifetime_second of the vpn tunnel.",
 			},
 			"vpn_gateway_version": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "the version of vpn gateway.",
+				Type: schema.TypeString,
+				// Computed:    true,
+				Required: true,
+				ValidateFunc: validation.StringInSlice(
+					[]string{"1.0", "2.0"},
+					false,
+				),
+				Description: "the version of vpn gateway. The version must be identical with `vpn_gate_way_version` of `ksyun_vpn_gateway`.",
 			},
 		},
 	}
+	return r
 }
 
 func resourceKsyunVpnTunnelCreate(d *schema.ResourceData, meta interface{}) (err error) {
+	if err := checkVpnType(d); err != nil {
+		return err
+	}
+
 	vpcService := VpcService{meta.(*KsyunClient)}
+
+	vpnGateway, readGWErr := vpcService.ReadVpnGateway(d, d.Get("vpn_gateway_id").(string))
+	if readGWErr != nil {
+		return readGWErr
+	}
+	if v, ok := vpnGateway["VpnGatewayVersion"]; !ok {
+		return fmt.Errorf("an error caused by checking vpn version of gateway and tunnel")
+	} else {
+		if v != d.Get("vpn_gateway_version") {
+			return fmt.Errorf("vpn_gateway_version is inidentical with `ksyun_vpn_gateway`, should keeping same with ksyun_vpn_gateway.vpn_gateway_version")
+		}
+	}
+
 	err = vpcService.CreateVpnTunnel(d, resourceKsyunVpnTunnel())
 	if err != nil {
 		return fmt.Errorf("error on creating vpn tunnel  %q, %s", d.Id(), err)
@@ -279,6 +321,14 @@ func resourceKsyunVpnTunnelRead(d *schema.ResourceData, meta interface{}) (err e
 }
 
 func resourceKsyunVpnTunnelUpdate(d *schema.ResourceData, meta interface{}) (err error) {
+	if err := checkVpnType(d); err != nil {
+		return err
+	}
+	// check cannot be changed field
+	if err := bannedPartialParamsChanges(d); err != nil {
+		return err
+	}
+
 	vpcService := VpcService{meta.(*KsyunClient)}
 	err = vpcService.ModifyVpnTunnel(d, resourceKsyunVpnTunnel())
 	if err != nil {
@@ -294,4 +344,56 @@ func resourceKsyunVpnTunnelDelete(d *schema.ResourceData, meta interface{}) (err
 		return fmt.Errorf("error on deleting vpn tunnel  %q, %s", d.Id(), err)
 	}
 	return err
+}
+
+// checkVpnVersionParams check parameters when vpn version diff
+func checkVpnType(d *schema.ResourceData) error {
+	isV2 := d.Get("vpn_gateway_version") == "2.0"
+	vpnType := d.Get("type")
+	_, ikeVersionExist := d.GetOk("ike_version")
+	haMode := d.Get("ha_mode")
+	var errs []error
+	if isV2 {
+		if !ikeVersionExist {
+			errs = append(errs, fmt.Errorf("`ike_version` cannot be blank, when `vpn_gateway_version` is 2.0. Should be set it value"))
+		}
+
+		switch vpnType {
+		case "GreOverIpsec":
+			errs = append(errs, fmt.Errorf("type GreOverIpsec is valid with vpn1.0, `route_ipsec` and `ipsec` is valid with vpn2.0"))
+		case "route_ipsec":
+			_, localExist := d.GetOk("local_peer_ip")
+			_, customerExist := d.GetOk("customer_peer_ip")
+			if !localExist || !customerExist {
+				errs = append(errs, fmt.Errorf("`customer_peer_ip` and `local_peer_ip` cannot be blank, when `vpn_gateway_version` is 2.0 and vpn type is route_ipsec"))
+			}
+		case "ipsec", "Ipsec":
+			if haMode == "active_standby" {
+				errs = append(errs, fmt.Errorf("value of ha_mode filed only as 'active_active', when `vpn_gateway_version` is 2.0 and vpn type is ipsec"))
+			}
+		}
+
+	} else {
+		if vpnType == "route_ipsec" {
+			errs = append(errs, fmt.Errorf("type route_ipsec is valid with vpn2.0, GreOverIpsec and Ipsec is valid with vpn1.0"))
+		}
+
+		if haMode == "active_standby" {
+			errs = append(errs, fmt.Errorf("value of ha_mode filed only as 'active_active', when `vpn_gateway_version` is 2.0 and vpn type is ipsec"))
+		}
+
+	}
+	if errs != nil && len(errs) > 0 {
+		return multierror.Append(nil, errs...)
+	}
+
+	return nil
+}
+
+func bannedPartialParamsChanges(d *schema.ResourceData) error {
+	bannedList := []string{"customer_peer_ip", "local_peer_ip"}
+	if d.HasChanges(bannedList...) {
+		return fmt.Errorf("%s cannot be changed. if you need change it, you should create manually a new resource", strings.Join(bannedList, ", "))
+	}
+	return nil
 }

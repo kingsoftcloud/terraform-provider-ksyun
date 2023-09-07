@@ -1,13 +1,14 @@
 package ksyun
 
 import (
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
-	"strings"
 )
 
-//重要提示
-//拦截器 返回false代表不拦截变更 反正则拦截变更
+// 重要提示
+// 拦截器 返回false代表不拦截变更 反正则拦截变更
 // 不要使用isNewResource() 判断是否是新建资源还是更新资源，因为这是内置机制，新建资源时候isNewResource()也是false 需要用d.id()替代
 
 func purchaseTimeDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bool {
@@ -38,10 +39,10 @@ func chargeSchemaDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bo
 }
 
 func kecDiskSnapshotIdDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
-	//logger.Debug("test", "test", d.Id(), k, strings.Contains(k, "disk_snapshot_id"))
+	// logger.Debug("test", "test", d.Id(), k, strings.Contains(k, "disk_snapshot_id"))
 	if d.Id() != "" {
 		if strings.Contains(k, "disk_snapshot_id") {
-			//logger.Debug("test1", "test", 123)
+			// logger.Debug("test1", "test", 123)
 			return true
 		}
 	}
@@ -49,7 +50,7 @@ func kecDiskSnapshotIdDiffSuppress(k, old, new string, d *schema.ResourceData) b
 }
 
 func kecImportDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
-	//由于一些字段暂时无法支持从查询中返回 所以现在设立做特殊处理拦截变更 用来适配导入的场景 后续支持后在对导入场景做优化
+	// 由于一些字段暂时无法支持从查询中返回 所以现在设立做特殊处理拦截变更 用来适配导入的场景 后续支持后在对导入场景做优化
 	if d.Id() != "" {
 		if k == "local_volume_snapshot_id" {
 			return true
@@ -223,6 +224,21 @@ func bareMetalDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bool 
 	}
 	if d.Id() == "" && (k == "host_status" || k == "force_re_install") {
 		return true
+	}
+	return false
+}
+
+func vpnV2ParamsDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bool {
+	isV2 := d.Get("vpn_gateway_version") == "2.0"
+	// is vpn version 1
+	if stringSliceContains(vpnV1Attribute, k) {
+		if isV2 {
+			return true
+		}
+	} else if stringSliceContains(vpnV2Attribute, k) {
+		if !isV2 {
+			return true
+		}
 	}
 	return false
 }

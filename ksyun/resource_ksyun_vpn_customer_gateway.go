@@ -25,6 +25,7 @@ package ksyun
 
 import (
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
@@ -60,6 +61,12 @@ func resourceKsyunVpnCustomerGateway() *schema.Resource {
 			},
 
 			"customer_gateway_mame": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The name of the vpn customer gateway.",
+				Removed:     "this field has been replaced by `customer_gateway_name`.",
+			},
+			"customer_gateway_name": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The name of the vpn customer gateway.",
