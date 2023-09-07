@@ -27,3 +27,5 @@ const (
 	ApiCallExecuteProcess
 	ApiCallAfterProcess
 )
+
+type ParamsList []interface{}

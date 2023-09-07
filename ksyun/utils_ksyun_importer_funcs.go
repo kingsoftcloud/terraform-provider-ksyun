@@ -33,14 +33,25 @@ func importNatAssociate(d *schema.ResourceData, meta interface{}) ([]*schema.Res
 		return []*schema.ResourceData{d}, fmt.Errorf("import id must split with ':'")
 	}
 
+	resource := strings.Split(items[1], "-")
+	if !checkValueInSlice([]string{"subnet", "kni"}, resource[0]) {
+		return []*schema.ResourceData{d}, fmt.Errorf("resource id is invalid, e.g `742a4a6d-xxx:subnet-5c7b7925-xxxx` or `742a4a6d-xxx:kni-5c7b7925-xxxx`")
+	}
+
+	id := strings.Join(resource[1:], "-")
+
+	if resource[0] == "subnet" {
+		_ = d.Set("subnet_id", id)
+	}
+	if resource[0] == "kni" {
+		_ = d.Set("network_interface_id", id)
+	}
 	err = d.Set("nat_id", items[0])
 	if err != nil {
 		return []*schema.ResourceData{d}, err
 	}
-	err = d.Set("subnet_id", items[1])
-	if err != nil {
-		return []*schema.ResourceData{d}, err
-	}
+
+	d.SetId(strings.Join([]string{items[0], id}, ":"))
 	return []*schema.ResourceData{d}, nil
 }
 

@@ -2,6 +2,12 @@ package ksyun
 
 import (
 	"fmt"
+	"net"
+	"net/http"
+	"net/url"
+	"sync"
+	"time"
+
 	"github.com/KscSDK/ksc-sdk-go/ksc"
 	"github.com/KscSDK/ksc-sdk-go/ksc/utils"
 	"github.com/KscSDK/ksc-sdk-go/service/bws"
@@ -25,8 +31,9 @@ import (
 	"github.com/KscSDK/ksc-sdk-go/service/tag"
 	"github.com/KscSDK/ksc-sdk-go/service/tagv2"
 	"github.com/KscSDK/ksc-sdk-go/service/vpc"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/terraform-providers/terraform-provider-ksyun/ksyun/internal/pkg/network"
 	"github.com/wilac-pv/ksyun-ks3-go-sdk/ks3"
-	"sync"
 )
 
 // Config is the configuration of ksyun meta data
@@ -38,17 +45,21 @@ type Config struct {
 	Domain        string
 	DryRun        bool
 	IgnoreService bool
+	HttpKeepAlive bool
+	MaxRetries    int
+	HttpProxy     string
 }
 
 // Client will returns a client with connections for all product
 func (c *Config) Client() (*KsyunClient, error) {
 	var client KsyunClient
-	//init ksc client info
+	// init ksc client info
 	client.region = c.Region
 	cli := ksc.NewClient(c.AccessKey, c.SecretKey)
 
+	registerClient(cli, c)
 	// 重试去掉
-	var MaxRetries int = 0
+	var MaxRetries = c.MaxRetries
 	cli.Config.MaxRetries = &MaxRetries
 	cfg := &ksc.Config{
 		Region: &c.Region,
@@ -84,7 +95,7 @@ func (c *Config) Client() (*KsyunClient, error) {
 	client.kcev2conn = kcev2.SdkNew(cli, cfg, url)
 	client.knadconn = knad.SdkNew(cli, cfg, url)
 
-	//懒加载ks3-client 所以不在此初始化
+	// 懒加载ks3-client 所以不在此初始化
 	return &client, nil
 }
 
@@ -113,4 +124,46 @@ func (client *KsyunClient) WithKs3Client(do func(*ks3.Client) (interface{}, erro
 		client.ks3conn = ks3conn
 	}
 	return do(client.ks3conn)
+}
+
+func registerClient(cli *session.Session, c *Config) {
+
+	// register http client
+	httpClient := getKsyunClient(c)
+	cli.Config.WithHTTPClient(httpClient)
+
+	cli.Config.Retryer = network.GetKsyunRetryer(c.MaxRetries)
+
+	cli.Handlers.CompleteAttempt.PushBackNamed(network.NetErrorHandler)
+}
+
+func getKsyunClient(c *Config) *http.Client {
+	tp := &http.Transport{
+		Proxy: func(r *http.Request) (*url.URL, error) {
+			if c.HttpProxy != "" {
+				proxyUrl, err := url.Parse(c.HttpProxy)
+				if err != nil {
+					return nil, fmt.Errorf("error parsing HTTP proxy URL: %w", err)
+				}
+				return http.ProxyURL(proxyUrl)(r)
+			}
+			return http.ProxyFromEnvironment(r)
+		},
+		DialContext: (&net.Dialer{
+			Timeout:   30 * time.Second, // dial connect timeout
+			KeepAlive: 5 * time.Second,  // the interval probes time between the ends of network
+		}).DialContext,
+		ForceAttemptHTTP2:     false,
+		MaxIdleConns:          30,
+		IdleConnTimeout:       60 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 3 * time.Second,
+		DisableKeepAlives:     c.HttpKeepAlive,
+	}
+
+	httpClient := &http.Client{
+		Timeout:   3 * time.Minute, // a completed request, includes tcp connect, received response, elapsed time.
+		Transport: tp,
+	}
+	return httpClient
 }

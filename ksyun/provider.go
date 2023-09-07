@@ -63,12 +63,15 @@ VPC
 		ksyun_security_groups
 		ksyun_subnet_allocated_ip_addresses
 		ksyun_subnet_available_addresses
+		ksyun_dnats
 
 	Resource
 		ksyun_vpc
 		ksyun_subnet
 		ksyun_nat
 		ksyun_nat_associate
+        ksyun_nat_instance_bandwidth_limit
+		ksyun_dnat
 		ksyun_network_acl
 		ksyun_network_acl_entry
 		ksyun_network_acl_associate
@@ -114,6 +117,20 @@ SLB
 		ksyun_lb_listener_associate_acl
 		ksyun_lb_listener_server
 		ksyun_lb_rule
+
+ALB
+
+	Data Source
+		ksyun_albs
+		ksyun_alb_listeners
+		ksyun_alb_rule_groups
+		ksyun_alb_listener_cert_groups
+
+	Resource
+		ksyun_alb
+		ksyun_alb_listener
+		ksyun_alb_rule_group
+		ksyun_alb_listener_cert_group
 
 SSH key
 
@@ -268,10 +285,14 @@ KNAD
 		ksyun_knad
 		ksyun_knad_associate
 */
+
 package ksyun
 
 import (
+	"net/url"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
@@ -322,14 +343,42 @@ func Provider() terraform.ResourceProvider {
 				DefaultFunc: schema.EnvDefaultFunc("KSYUN_DOMAIN_IGNORE_SERVICE", false),
 				Description: descriptions["ignore_service"],
 			},
+			"http_keepalive": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				Description: "Whether use http keepalive, if false, disables HTTP keep-alives and will only use the connection to the server for a single HTTP request",
+			},
+			"max_retries": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Default:      3,
+				ValidateFunc: validation.IntBetween(0, 99),
+			},
+			"http_proxy": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ValidateFunc: func(i interface{}, s string) (ret []string, errs []error) {
+					ip := i.(string)
+					_, err := url.Parse(ip)
+					if err != nil {
+						errs = append(errs, err)
+					}
+					return
+				},
+			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"ksyun_lines":         dataSourceKsyunLines(),
-			"ksyun_eips":          dataSourceKsyunEips(),
-			"ksyun_slbs":          dataSourceKsyunLbs(),
-			"ksyun_lbs":           dataSourceKsyunLbs(),
-			"ksyun_listeners":     dataSourceKsyunListeners(),
-			"ksyun_health_checks": dataSourceKsyunHealthChecks(),
+			"ksyun_albs":                     dataSourceKsyunAlbs(),
+			"ksyun_alb_listeners":            dataSourceKsyunAlbListeners(),
+			"ksyun_alb_rule_groups":          dataSourceKsyunAlbRuleGroups(),
+			"ksyun_alb_listener_cert_groups": dataSourceKsyunAlbListenerCertGroups(),
+			"ksyun_lines":                    dataSourceKsyunLines(),
+			"ksyun_eips":                     dataSourceKsyunEips(),
+			"ksyun_slbs":                     dataSourceKsyunLbs(),
+			"ksyun_lbs":                      dataSourceKsyunLbs(),
+			"ksyun_listeners":                dataSourceKsyunListeners(),
+			"ksyun_health_checks":            dataSourceKsyunHealthChecks(),
 			// 注册两个同样的data，应该去掉一个。。。文档保留ksyun_lb_listener_servers
 			"ksyun_listener_servers":                 dataSourceKsyunLbListenerServers(),
 			"ksyun_lb_listener_servers":              dataSourceKsyunLbListenerServers(),
@@ -385,8 +434,13 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_krds_parameter_group":             dataSourceKsyunKrdsParameterGroup(),
 			"ksyun_auto_snapshot_volume_association": dataSourceKsyunAutoSnapshotVolumeAssociation(),
 			"ksyun_knads":                            dataSourceKsyunKnads(),
+			"ksyun_dnats":                            dataSourceKsyunDnats(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
+			"ksyun_alb":                              resourceKsyunAlb(),
+			"ksyun_alb_listener":                     resourceKsyunAlbListener(),
+			"ksyun_alb_rule_group":                   resourceKsyunAlbRuleGroup(),
+			"ksyun_alb_listener_cert_group":          resourceKsyunAlbListenerCertGroup(),
 			"ksyun_eip":                              resourceKsyunEip(),
 			"ksyun_eip_associate":                    resourceKsyunEipAssociation(),
 			"ksyun_lb":                               resourceKsyunLb(),
@@ -456,12 +510,18 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_krds_parameter_group":             resourceKsyunKrdsParameterGroup(),
 			"ksyun_knad":                             resourceKsyunKnad(),
 			"ksyun_knad_associate":                   resourceKsyunKnadAssociate(),
+			"ksyun_nat_instance_bandwidth_limit":     resourceKsyunNatInstanceBandwidthLimit(),
+			"ksyun_dnat":                             resourceKsyunDnat(),
 		},
 		ConfigureFunc: providerConfigure,
 	}
 }
 
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
+	var retryNum = 3
+	if mr, ok := d.GetOk("max_retries"); ok {
+		retryNum = mr.(int)
+	}
 	config := Config{
 		AccessKey:     d.Get("access_key").(string),
 		SecretKey:     d.Get("secret_key").(string),
@@ -470,6 +530,9 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		Domain:        d.Get("domain").(string),
 		DryRun:        d.Get("dry_run").(bool),
 		IgnoreService: d.Get("ignore_service").(bool),
+		HttpKeepAlive: d.Get("http_keepalive").(bool),
+		MaxRetries:    retryNum,
+		HttpProxy:     d.Get("http_proxy").(string),
 	}
 	client, err := config.Client()
 	return client, err

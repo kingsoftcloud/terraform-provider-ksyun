@@ -32,26 +32,52 @@ Provides a Nat Associate resource under VPC resource.
 	  availability_zone = "cn-beijing-6a"
 	}
 
+    resource "ksyun_instance" "foo" {
+      image_id="${data.ksyun_images.centos-7_5.images.0.image_id}"
+      instance_type="N3.2B"
+
+      subnet_id="${ksyun_subnet.foo.id}"
+      instance_password="Xuan663222"
+      keep_image_login=false
+      charge_type="Daily"
+      purchase_time=1
+      security_group_id=["${ksyun_security_group.default.id}"]
+      instance_name="ksyun-kec-tf-nat"
+      sriov_net_support="false"
+	}
+
 	resource "ksyun_nat_associate" "foo" {
 	  nat_id = "${ksyun_nat.foo.id}"
 	  subnet_id = "${ksyun_subnet.test.id}"
+	}
+	resource "ksyun_nat_associate" "associate_ins" {
+	  nat_id = "${ksyun_nat.foo.id}"
+	  network_interface_id = "${ksyun_instance.foo.network_interface_id}"
 	}
 
 ```
 
 # Import
 
-nat associate can be imported using the `id`, e.g.
+nat associate can be imported using the `id`, the id format must be `{nat_id}:{resource_id}`, resource_id range `subnet_id`, `natwork_interface_id` e.g.
 
+## Import Subnet association
 ```
-$ terraform import ksyun_nat_associate.example $nat_id:$subnet_id
+$ terraform import ksyun_nat_associate.example $nat_id:subnet-$subnet_id
+```
+## Import NetworkInterface association
+```
+$ terraform import ksyun_nat_associate.example $nat_id:kni-$network_interface_id
 ```
 */
+
 package ksyun
 
 import (
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
 
 func resourceKsyunNatAssociation() *schema.Resource {
@@ -71,20 +97,40 @@ func resourceKsyunNatAssociation() *schema.Resource {
 				Description: "The id of the Nat.",
 			},
 			"subnet_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The id of the Subnet.",
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"network_interface_id"},
+				AtLeastOneOf:  []string{"subnet_id", "network_interface_id"},
+				Description:   "The id of the Subnet. Notes: Because of there is one resource in the association, conflict with `network_interface_id`.",
+			},
+			"network_interface_id": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				ValidateFunc:  validation.IsUUID,
+				ConflictsWith: []string{"subnet_id"},
+				AtLeastOneOf:  []string{"subnet_id", "network_interface_id"},
+				Description:   "The id of network interface that belong to instance. Notes: Because of there is one resource in the association, conflict with `subnet_id`.",
 			},
 		},
 	}
 }
 func resourceKsyunNatAssociationCreate(d *schema.ResourceData, meta interface{}) (err error) {
 	vpcService := VpcService{meta.(*KsyunClient)}
-	err = vpcService.CreateNatAssociate(d, resourceKsyunNatAssociation())
-	if err != nil {
-		return fmt.Errorf("error on creating nat associate %q, %s", d.Id(), err)
+	if _, isSubnet := d.GetOk("subnet_id"); isSubnet {
+		err = vpcService.CreateNatAssociate(d, resourceKsyunNatAssociation())
+		if err != nil {
+			return fmt.Errorf("error on creating nat associate %q, %s", d.Id(), err)
+		}
 	}
+
+	if _, isKni := d.GetOk("network_interface_id"); isKni {
+		if err = vpcService.CreateNatInstanceAssociate(d, resourceKsyunNatAssociation()); err != nil {
+			return err
+		}
+	}
+
 	return resourceKsyunNatAssociationRead(d, meta)
 }
 
@@ -101,7 +147,11 @@ func resourceKsyunNatAssociationDelete(d *schema.ResourceData, meta interface{})
 	vpcService := VpcService{meta.(*KsyunClient)}
 	err = vpcService.RemoveNatAssociate(d)
 	if err != nil {
-		return fmt.Errorf("error on deleting nat associate %q, %s", d.Id(), err)
+		return fmt.Errorf("error on deleting nat subnet associate %q, %s", d.Get("subnet_id"), err)
+	}
+
+	if err = vpcService.RemoveNatInstanceAssociate(d); err != nil {
+		return fmt.Errorf("error on deleting nat network interface associated %q, %s", d.Get("network_interface_id"), err)
 	}
 	return err
 }

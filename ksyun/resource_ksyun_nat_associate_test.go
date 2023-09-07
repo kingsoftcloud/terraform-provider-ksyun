@@ -2,11 +2,12 @@ package ksyun
 
 import (
 	"fmt"
+	"strings"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
-	"strings"
-	"testing"
 )
 
 func TestAccKsyunNatAssociation_basic(t *testing.T) {
@@ -136,9 +137,33 @@ func testAccCheckNatAssociationDestroy(s *terraform.State) error {
 }
 
 const testAccNatAssociationConfig = `
-resource "ksyun_vpc" "test" {
-  vpc_name = "ksyun-vpc-tf"
-  cidr_block = "10.0.0.0/16"
+
+data "ksyun_images" "centos-7_5" {
+  platform= "centos-7.5"
+}
+data "ksyun_availability_zones" "default" {
+}
+
+resource "ksyun_security_group" "default" {
+  vpc_id = "${ksyun_vpc.foo.id}"
+  security_group_name="ksyun-security-group-nat"
+}
+
+resource "ksyun_instance" "foo" {
+  image_id="${data.ksyun_images.centos-7_5.images.0.image_id}"
+  instance_type="N3.2B"
+
+  #max_count=1
+  #min_count=1
+  subnet_id="${ksyun_subnet.foo.id}"
+  instance_password="Xuan663222"
+  keep_image_login=false
+  charge_type="Daily"
+  purchase_time=1
+  security_group_id=["${ksyun_security_group.default.id}"]
+  instance_name="ksyun-kec-tf-nat"
+  sriov_net_support="false"
+  project_id=100012
 }
 
 resource "ksyun_nat" "foo" {
@@ -147,24 +172,26 @@ resource "ksyun_nat" "foo" {
   nat_type = "public"
   band_width = 1
   charge_type = "DailyPaidByTransfer"
-  vpc_id = "${ksyun_vpc.test.id}"
+  vpc_id = "${ksyun_vpc.foo.id}"
+}
+resource "ksyun_vpc" "foo" {
+	vpc_name        = "tf-vpc-nat"
+	cidr_block = "10.0.5.0/24"
 }
 
-resource "ksyun_subnet" "test" {
-  subnet_name      = "tf-acc-subnet1"
+resource "ksyun_subnet" "foo" {
+  subnet_name      = "tf-acc-nat-subnet1"
   cidr_block = "10.0.5.0/24"
   subnet_type = "Normal"
-  dhcp_ip_from = "10.0.5.2"
-  dhcp_ip_to = "10.0.5.253"
-  vpc_id  = "${ksyun_vpc.test.id}"
+  vpc_id  = "${ksyun_vpc.foo.id}"
   gateway_ip = "10.0.5.1"
   dns1 = "198.18.254.41"
   dns2 = "198.18.254.40"
-  availability_zone = "cn-beijing-6a"
+  availability_zone = "${data.ksyun_availability_zones.default.availability_zones.0.availability_zone_name}"
 }
 
 resource "ksyun_nat_associate" "foo" {
   nat_id = "${ksyun_nat.foo.id}"
-  subnet_id = "${ksyun_subnet.test.id}"
+  network_interface_id = "${ksyun_instance.foo.network_interface_id}"
 }
 `

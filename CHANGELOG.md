@@ -1,3 +1,53 @@
+## 1.9.0 (Sep 5, 2023)
+
+FEATURES:
+
+- - **New Resource:** `ksyun_alb` 应用型负载均衡
+- - **New Resource:** `ksyun_alb_listener` 应用型负载均衡-监听器
+- - **New Resource:** `ksyun_alb_rule_group` 应用型负载均衡-转发策略
+- - **New Resource:** `ksyun_alb_listener_cert_group` 应用型负载均衡-证书组
+- - **New Data Source:** `ksyun_albs`
+- - **New Data Source:** `ksyun_alb_listeners`
+- - **New Data Source:** `ksyun_alb_rule_groups`
+- - **New Data Source:** `ksyun_alb_listener_cert_groups`
+
+BUGFIX:
+
+- `ksyun_eip_associate` 修复在ForceNew更新时触发的eip绑定状态不一致
+
+## 1.8.0 (Aug 16, 2023)
+
+FEATURES:
+
+- `provider` 新增`http_httpalive` `max_retries` `http_proxy` 配置参数
+
+IMPROVEMENTS:
+
+- `provider` 增加网络异常重试
+
+## 1.7.2 (Aug 14, 2023)
+
+BUGFIX:
+- `ksyun_vpc` 修复可能触发的无法删除vpc的操作
+
+## 1.7.1 (Aug 3, 2023)
+
+IMPROVEMENTS:
+
+- `ksyun_bare_metal` 新增裸金属开机/关机操作
+- `ksyun_bare_metal` 支持创建roce网络机型
+
+
+## 1.7.0 (Jul 26, 2023)
+
+FEATURES:
+
+- `ksyun_nat` 新增Nat Ip 管理 `nat_ip`
+- `ksyun_nat_associate` 支持nat绑定主机网卡
+- **New Resource:** `ksyun_nat_instance_bandwidth_limit` 新增nat 服务器限速
+- **New Resource:** `ksyun_dnat` 新增dnat规则管理
+- **New Data Source:** `ksyun_dnats`
+
 ## 1.6.1 (Jul 14, 2023)
 
 BUGFIX:
@@ -13,6 +63,7 @@ FEATURES:
 - `ksyun_subnet` 支持IPv6网段
 
 ## 1.5.0 (Jul 12, 2023)
+
 FEATURES:
 
 - - **New Resource:** `ksyun_knad` knad 原生高防

@@ -14,10 +14,11 @@ const (
 	NotFound         = "Notfound"
 	ResourceNotfound = "ResourceNotfound"
 	InternalError    = "INTERNAL_FAILURE"
+	ServiceTimeout   = "ServiceTimeout"
 )
 
 // retryableErrorCode is retryable error code
-var retryableErrorCode = []string{InternalError}
+var retryableErrorCode = []string{ServiceTimeout}
 
 type ProviderError struct {
 	errorCode string
@@ -146,10 +147,13 @@ func isExpectError(err error, expectError []string) bool {
 	}
 
 	if strings.Contains(longCode, ".") {
-		shortCode := strings.Split(longCode, ".")[0]
-		if IsContains(expectError, shortCode) {
-			return true
+		shortCodeSlice := strings.Split(longCode, ".")
+		for _, shortCode := range shortCodeSlice {
+			if IsContains(expectError, shortCode) {
+				return true
+			}
 		}
+
 	}
 
 	return false
