@@ -3524,6 +3524,14 @@ func (s *VpcService) CreateVpnTunnelCall(d *schema.ResourceData, r *schema.Resou
 			mapping: "IkeDHGroup",
 		},
 	}
+
+	if d.Get("vpn_gateway_version") == "2.0" {
+		transform["type"] = SdkReqTransform{
+			ValueFunc: func(data *schema.ResourceData) (interface{}, bool) {
+				return Hump2Downline(data.Get("type").(string)), true
+			},
+		}
+	}
 	req, err := SdkRequestAutoMapping(d, r, false, transform, nil, SdkReqParameter{
 		false,
 	})

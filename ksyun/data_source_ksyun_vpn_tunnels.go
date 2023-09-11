@@ -235,16 +235,32 @@ func dataSourceKsyunVpnTunnels() *schema.Resource {
 							Description: "IPsec authen algorithm.",
 						},
 
-						"ipsec_life_time_traffic": {
+						"ipsec_lifetime_traffic": {
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "IPsec lifetime traffic.",
 						},
 
-						"ipsec_life_time_second": {
+						"ipsec_lifetime_second": {
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "IPsec lifetime second.",
+						},
+						"health_check_local_peer_cider": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "the local peer cider of health checking.",
+						},
+						"health_check_remote_peer_cider": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The remote peer cider of health checking.",
+						},
+
+						"enable_nat_traversal": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "The switch of nat traversal.",
 						},
 
 						"extra_cidr_set": {

@@ -292,6 +292,12 @@ func vpnV2ParamsDiffSuppressFunc(k, old, new string, d *schema.ResourceData) boo
 		if !isV2 {
 			return true
 		}
+		switch k {
+		case "local_peer_ip", "customer_peer_ip":
+			if d.Get("type") != "RouteIpsec" {
+				return true
+			}
+		}
 	}
 	return false
 }

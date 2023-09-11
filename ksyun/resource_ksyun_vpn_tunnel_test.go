@@ -53,7 +53,7 @@ resource "ksyun_vpn_customer_gateway" "default" {
 
 resource "ksyun_vpn_tunnel" "default" {
   vpn_tunnel_name = "tf-${var.suffix}-vpn-tunnel"
-  type = "route_ipsec"
+  type = "RouteIpsec"
   vpn_gateway_version = "2.0"
   vpn_gateway_id = ksyun_vpn_gateway.default.id
   customer_gateway_id = ksyun_vpn_customer_gateway.default.id

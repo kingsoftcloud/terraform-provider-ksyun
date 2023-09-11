@@ -36,22 +36,6 @@ import (
 )
 
 func resourceKsyunVpnTunnel() (r *schema.Resource) {
-	defer func() {
-		if r != nil {
-			for k, s := range r.Schema {
-				if isV2Attr, isV1Attr := stringSliceContains(vpnV2Attribute, k), stringSliceContains(vpnV1Attribute, k); isV2Attr || isV1Attr {
-					s.DiffSuppressFunc = vpnV2ParamsDiffSuppressFunc
-
-					if isV1Attr {
-						s.Description += " Notes: it's invalid when version is 2.0."
-					}
-					if isV2Attr {
-						s.Description += " Notes: it's invalid when version is 1.0."
-					}
-				}
-			}
-		}
-	}()
 	r = &schema.Resource{
 		Create: resourceKsyunVpnTunnelCreate,
 		Update: resourceKsyunVpnTunnelUpdate,
@@ -73,12 +57,11 @@ func resourceKsyunVpnTunnel() (r *schema.Resource) {
 				ValidateFunc: validation.StringInSlice([]string{
 					"GreOverIpsec",
 					"Ipsec",
-					"route_ipsec",
-					"ipsec",
+					"RouteIpsec",
 				}, false),
 				Required:    true,
 				ForceNew:    true,
-				Description: "The bandWidth of the vpn tunnel. Valid Values: VPN-v1: 'GreOverIpsec' or 'Ipsec'; VPN-v2: `route_ipsec` or `ipsec`.",
+				Description: "The bandWidth of the vpn tunnel. Valid Values: VPN-v1: 'GreOverIpsec' or 'Ipsec'; VPN-v2: `RouteIpsec` or `Ipsec`.",
 			},
 
 			"ha_mode": {
@@ -90,12 +73,13 @@ func resourceKsyunVpnTunnel() (r *schema.Resource) {
 					"active_active",
 					"active_standby",
 				}, false),
-				Description: "The high-availability mode of vpn tunnel. Valid values: `active_active` valid only when type as `Ipsec`; `active_active` and `active_standby` valid only when type as `route_ipsec`.",
+				Description: "The high-availability mode of vpn tunnel. Valid values: `active_active` valid only when type as `Ipsec`; `active_active` and `active_standby` valid only when type as `RouteIpsec`.",
 			},
 			"open_health_check": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Description: "The switch of vpn tunnel health check. **Notes: that's valid only when vpn-v2.0 and tunnel type is `route_ipsec`**.",
+				ForceNew:    true,
+				Description: "The switch of vpn tunnel health check. **Notes: that's valid only when vpn-v2.0 and tunnel type is `RouteIpsec`**.",
 			},
 
 			"local_peer_ip": {
@@ -280,7 +264,46 @@ func resourceKsyunVpnTunnel() (r *schema.Resource) {
 				),
 				Description: "the version of vpn gateway. The version must be identical with `vpn_gate_way_version` of `ksyun_vpn_gateway`.",
 			},
+			// computed parameters
+			"vpn_m_tunnel_create_time": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "the vpn first tunnel created time.",
+			},
+			"vpn_s_tunnel_create_time": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "the vpn second tunnel created time.",
+			},
+			"vpn_m_tunnel_state": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "the vpn first tunnel state.",
+			},
+			"vpn_s_tunnel_state": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "the vpn second tunnel state.",
+			},
+			"vpn_tunnel_create_time": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "the vpn tunnel created time.",
+			},
 		},
+	}
+
+	for k, s := range r.Schema {
+		if isV2Attr, isV1Attr := stringSliceContains(vpnV2Attribute, k), stringSliceContains(vpnV1Attribute, k); isV2Attr || isV1Attr {
+			s.DiffSuppressFunc = vpnV2ParamsDiffSuppressFunc
+
+			if isV1Attr {
+				s.Description += " Notes: it's invalid when version is 2.0."
+			}
+			if isV2Attr {
+				s.Description += " Notes: it's invalid when version is 1.0."
+			}
+		}
 	}
 	return r
 }
@@ -348,41 +371,55 @@ func resourceKsyunVpnTunnelDelete(d *schema.ResourceData, meta interface{}) (err
 
 // checkVpnVersionParams check parameters when vpn version diff
 func checkVpnType(d *schema.ResourceData) error {
-	isV2 := d.Get("vpn_gateway_version") == "2.0"
-	vpnType := d.Get("type")
-	_, ikeVersionExist := d.GetOk("ike_version")
-	haMode := d.Get("ha_mode")
-	var errs []error
+	var (
+		isV2               = d.Get("vpn_gateway_version") == "2.0"
+		vpnType            = d.Get("type")
+		haMode             = d.Get("ha_mode")
+		_, hcoExist        = d.GetOk("open_health_check")
+		_, ikeVersionExist = d.GetOk("ike_version")
+
+		isAllowHealthCheckOpen = false
+		errs                   []error
+	)
+
 	if isV2 {
 		if !ikeVersionExist {
-			errs = append(errs, fmt.Errorf("`ike_version` cannot be blank, when `vpn_gateway_version` is 2.0. Should be set it value"))
+			errs = append(errs, fmt.Errorf("ike_version cannot be blank, when vpn_gateway_version is 2.0. Should be set it value"))
 		}
 
 		switch vpnType {
 		case "GreOverIpsec":
-			errs = append(errs, fmt.Errorf("type GreOverIpsec is valid with vpn1.0, `route_ipsec` and `ipsec` is valid with vpn2.0"))
-		case "route_ipsec":
+			errs = append(errs, fmt.Errorf("type GreOverIpsec and Ipsec is valid with vpn1.0, RouteIpsec and ipsec is valid with vpn2.0"))
+		case "RouteIpsec":
+			// allow open_health_check field valid
+			isAllowHealthCheckOpen = true
+
 			_, localExist := d.GetOk("local_peer_ip")
 			_, customerExist := d.GetOk("customer_peer_ip")
 			if !localExist || !customerExist {
-				errs = append(errs, fmt.Errorf("`customer_peer_ip` and `local_peer_ip` cannot be blank, when `vpn_gateway_version` is 2.0 and vpn type is route_ipsec"))
+				errs = append(errs, fmt.Errorf("customer_peer_ip and local_peer_ip cannot be blank, when vpn_gateway_version is 2.0 and vpn type is RouteIpsec"))
 			}
-		case "ipsec", "Ipsec":
+		case "Ipsec":
 			if haMode == "active_standby" {
-				errs = append(errs, fmt.Errorf("value of ha_mode filed only as 'active_active', when `vpn_gateway_version` is 2.0 and vpn type is ipsec"))
+				errs = append(errs, fmt.Errorf("value of ha_mode filed only as active_active, when vpn_gateway_version is 2.0 and vpn type is Ipsec"))
 			}
 		}
 
 	} else {
-		if vpnType == "route_ipsec" {
-			errs = append(errs, fmt.Errorf("type route_ipsec is valid with vpn2.0, GreOverIpsec and Ipsec is valid with vpn1.0"))
+		if vpnType == "RouteIpsec" {
+			errs = append(errs, fmt.Errorf("type RouteIpsec and Ipsec is valid with vpn2.0, GreOverIpsec and Ipsec is valid with vpn1.0"))
 		}
 
 		if haMode == "active_standby" {
-			errs = append(errs, fmt.Errorf("value of ha_mode filed only as 'active_active', when `vpn_gateway_version` is 2.0 and vpn type is ipsec"))
+			errs = append(errs, fmt.Errorf("value of ha_mode filed only as active_active, when vpn_gateway_version is 2.0 and vpn type is Ipsec"))
 		}
 
 	}
+
+	if !isAllowHealthCheckOpen && hcoExist {
+		errs = append(errs, fmt.Errorf("open_health_check is valid, when vpn_gateway_version is 2.0 and vpn type is RouteIpsec"))
+	}
+
 	if errs != nil && len(errs) > 0 {
 		return multierror.Append(nil, errs...)
 	}
@@ -393,7 +430,7 @@ func checkVpnType(d *schema.ResourceData) error {
 func bannedPartialParamsChanges(d *schema.ResourceData) error {
 	bannedList := []string{"customer_peer_ip", "local_peer_ip"}
 	if d.HasChanges(bannedList...) {
-		return fmt.Errorf("%s cannot be changed. if you need change it, you should create manually a new resource", strings.Join(bannedList, ", "))
+		return fmt.Errorf("%s cannot be changed. if you need change it, you should create manually it as a new resource", strings.Join(bannedList, ", "))
 	}
 	return nil
 }
