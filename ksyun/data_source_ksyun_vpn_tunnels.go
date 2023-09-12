@@ -154,12 +154,12 @@ func dataSourceKsyunVpnTunnels() *schema.Resource {
 						"vpn_m_tunnel_state": {
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "The state of master-vpn-tunnel .",
+							Description: "The state of master-vpn-tunnel.",
 						},
 						"vpn_s_tunnel_state": {
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "The state of second-vpn-tunnel .",
+							Description: "The state of second-vpn-tunnel.",
 						},
 						"ha_mode": {
 							Type:        schema.TypeString,

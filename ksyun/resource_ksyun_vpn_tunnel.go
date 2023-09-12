@@ -5,14 +5,27 @@ Provides a Vpn Tunnel resource.
 
 ```hcl
 
-	resource "ksyun_vpn_tunnel" "default" {
-	  vpn_tunnel_name   = "ksyun_vpn_tunnel_tf_1"
-	  type = "Ipsec"
-	  vpn_gateway_id = "9b3d361e-f65b-464b-947a-fafb5cfb10d2"
-	  customer_gateway_id = "7f5a5c91-4814-41bf-b9d6-d9d811f4df0f"
-	  ike_dh_group = 2
-	  pre_shared_key = "123456789abcd"
-	}
+# create Vpn Tunnel with Vpn 1.0
+resource "ksyun_vpn_tunnel" "tunnel-vpn1" {
+  vpn_tunnel_name   = "tf_vpn_tunnel_vpn1"
+  type = "Ipsec"
+  vpn_gateway_id = "9b3d361e-f65b-464b-947a-fafb5cfb10d2"
+  customer_gateway_id = "7f5a5c91-4814-41bf-b9d6-d9d811f4df0f"
+  ike_dh_group = 2
+  pre_shared_key = "123456789abcd"
+}
+
+# create Vpn Tunnel with Vpn 2.0
+resource "ksyun_vpn_tunnel" "tunnel-vpn2" {
+  vpn_gateway_version = "2.0" # choose vpn gateway version
+  vpn_tunnel_name   = "tf_vpn_tunnel_vpn2"
+  type = "Ipsec"
+  ike_version = "v1"
+  vpn_gateway_id = "9b3d361e-f65b-464b-947a-fafb5cfb10d2"
+  customer_gateway_id = "7f5a5c91-4814-41bf-b9d6-d9d811f4df0f"
+  ike_dh_group = 2
+  pre_shared_key = "123456789abcd"
+}
 
 ```
 
@@ -24,6 +37,7 @@ Vpn Tunnel can be imported using the `id`, e.g.
 $ terraform import ksyun_vpn_tunnel.default $id
 ```
 */
+
 package ksyun
 
 import (
@@ -257,12 +271,14 @@ func resourceKsyunVpnTunnel() (r *schema.Resource) {
 			"vpn_gateway_version": {
 				Type: schema.TypeString,
 				// Computed:    true,
-				Required: true,
+				Optional: true,
+				ForceNew: true,
 				ValidateFunc: validation.StringInSlice(
 					[]string{"1.0", "2.0"},
 					false,
 				),
-				Description: "the version of vpn gateway. The version must be identical with `vpn_gate_way_version` of `ksyun_vpn_gateway`.",
+				Default:     "1.0",
+				Description: "The version of vpn gateway. The version must be identical with `vpn_gate_way_version` of `ksyun_vpn_gateway`.",
 			},
 			// computed parameters
 			"vpn_m_tunnel_create_time": {
@@ -298,10 +314,10 @@ func resourceKsyunVpnTunnel() (r *schema.Resource) {
 			s.DiffSuppressFunc = vpnV2ParamsDiffSuppressFunc
 
 			if isV1Attr {
-				s.Description += " Notes: it's invalid when version is 2.0."
+				s.Description += " Notes: it's valid when vpn gateway version is 1.0."
 			}
 			if isV2Attr {
-				s.Description += " Notes: it's invalid when version is 1.0."
+				s.Description += " Notes: it's valid when vpn gateway version is 2.0."
 			}
 		}
 	}
@@ -323,7 +339,7 @@ func resourceKsyunVpnTunnelCreate(d *schema.ResourceData, meta interface{}) (err
 		return fmt.Errorf("an error caused by checking vpn version of gateway and tunnel")
 	} else {
 		if v != d.Get("vpn_gateway_version") {
-			return fmt.Errorf("vpn_gateway_version is inidentical with `ksyun_vpn_gateway`, should keeping same with ksyun_vpn_gateway.vpn_gateway_version")
+			return fmt.Errorf("vpn_gateway_version is not identical with `ksyun_vpn_gateway`, should keep same with ksyun_vpn_gateway.vpn_gateway_version")
 		}
 	}
 

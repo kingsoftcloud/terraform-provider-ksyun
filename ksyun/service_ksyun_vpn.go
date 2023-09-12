@@ -2,6 +2,7 @@ package ksyun
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
@@ -65,7 +66,68 @@ func (v *VpnSrv) CreateVpnGatewayRouteCall(d *schema.ResourceData, r *schema.Res
 }
 
 func (v *VpnSrv) ReadAndSetVpnGatewayRoute(d *schema.ResourceData, r *schema.Resource) error {
+	data, err := v.ReadVpnGatewayRoute(d.Get("vpn_gateway_id").(string))
+	if err != nil {
+		return err
+	}
+
+	SdkResponseAutoResourceData(d, r, data, nil)
 	return nil
+}
+
+func (v *VpnSrv) ReadVpnGatewayRoute(vpnGatewayId string) (data map[string]interface{}, err error) {
+	var (
+		results []interface{}
+	)
+
+	req := map[string]interface{}{
+		"VpnGatewayId": vpnGatewayId,
+	}
+	results, err = v.DescribeVpnGatewayRoutes(req)
+	if err != nil {
+		return data, err
+	}
+	for _, v := range results {
+		data = v.(map[string]interface{})
+	}
+	if len(data) == 0 {
+		return data, fmt.Errorf("vpn gateway route %s not exist ", vpnGatewayId)
+	}
+	return data, err
+}
+
+func (v *VpnSrv) DescribeVpnGatewayRoutes(condition map[string]interface{}) (data []interface{}, err error) {
+	var (
+		resp    *map[string]interface{}
+		results interface{}
+	)
+
+	return pageQuery(condition, "MaxResults", "NextToken", 200, 1, func(condition map[string]interface{}) ([]interface{}, error) {
+		conn := v.client.vpcconn
+		action := "DescribeVpnGatewayRoutes"
+		logger.Debug(logger.ReqFormat, action, condition)
+		if condition == nil {
+			resp, err = conn.DescribeVpnGatewayRoutes(nil)
+			if err != nil {
+				return data, err
+			}
+		} else {
+			resp, err = conn.DescribeVpnGatewayRoutes(&condition)
+			if err != nil {
+				return data, err
+			}
+		}
+
+		results, err = getSdkValue("VpnGatewayRouteSet", *resp)
+		if err != nil {
+			return data, err
+		}
+		if results == nil {
+			return []interface{}{}, nil
+		}
+		data = results.([]interface{})
+		return data, err
+	})
 }
 
 func (v *VpnSrv) RemoveVpnGatewayRoute(d *schema.ResourceData) error {
@@ -95,4 +157,36 @@ func (v *VpnSrv) RemoveVpnGatewayRouteCall(d *schema.ResourceData) (callback Api
 	}
 
 	return callback, err
+}
+
+func (v *VpnSrv) ReadAndSetVpnGatewayRoutes(d *schema.ResourceData, r *schema.Resource) error {
+	transform := map[string]SdkReqTransform{
+		"vpn_gateway_id": {
+			mapping: "VpnGatewayId",
+			Type:    TransformDefault,
+		},
+		"next_hop_types": {
+			mapping: "nexthop",
+			Type:    TransformWithFilter,
+		},
+		"cidr_blocks": {
+			mapping: "cidr-block",
+			Type:    TransformWithFilter,
+		},
+	}
+	req, err := mergeDataSourcesReq(d, r, transform)
+	if err != nil {
+		return err
+	}
+	data, err := v.DescribeVpnGatewayRoutes(req)
+	if err != nil {
+		return err
+	}
+
+	return mergeDataSourcesResp(d, r, ksyunDataSource{
+		collection:  data,
+		idFiled:     "VpnGatewayRouteId",
+		targetField: "vpn_gateway_routes",
+		extra:       nil,
+	})
 }

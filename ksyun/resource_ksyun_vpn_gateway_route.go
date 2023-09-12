@@ -1,20 +1,20 @@
 /*
 Provides a Vpn Gateway Route resource under VPC resource.
+**Notes:** `ksyun_vpn_gateway_route` only valid when Vpn 2.0
 
 # Example Usage
 
 ```hcl
 
-```
+resource "ksyun_vpn_gateway_route" "default1" {
+  vpn_gateway_id = "450a71b0-ea20-****-*****"
+  next_hop_type = "vpc"
+  destination_cidr_block = "10.7.255.0/30"
+}
 
-# Import
-
-Vpn Gateway Route can be imported using the `id`, e.g.
-
-```
-$ terraform import ksyun_vpn_gateway.default $id
 ```
 */
+
 package ksyun
 
 import (
@@ -24,7 +24,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
 
-func resourceKsyunVpnGatewayRouteRoute() *schema.Resource {
+func resourceKsyunVpnGatewayRoute() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceKsyunVpnGatewayRouteCreate,
 		Read:   resourceKsyunVpnGatewayRouteRead,
@@ -41,10 +41,13 @@ func resourceKsyunVpnGatewayRouteRoute() *schema.Resource {
 			},
 
 			"destination_cidr_block": {
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:     schema.TypeString,
+				Required: true,
+				ValidateFunc: validation.Any(
+					validation.IsCIDR,
+				),
 				ForceNew:    true,
-				Description: "The id of the vpc.",
+				Description: "The destination cidr block.",
 			},
 			"next_hop_type": {
 				Type:     schema.TypeString,
@@ -54,14 +57,21 @@ func resourceKsyunVpnGatewayRouteRoute() *schema.Resource {
 					"vpn_tunnel",
 					"vpc",
 				}, false),
-				Description: "the type of next hop.",
+				Description: "The type of next hop. Valid Values: `vpn_tunnel`, `vpc`.",
 			},
 
 			"next_hop_instance_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The charge type of the vpn gateway.Valid Values:'Monthly','Daily'.",
+				Type: schema.TypeString,
+				// Required:    true,
+				Optional: true,
+				ForceNew: true,
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					if d.Get("next_hop_type") == "vpn_tunnel" {
+						return false
+					}
+					return true
+				},
+				Description: "The instance id of next hop, which must be set when `next_hop_type` is `vpn_tunnel.",
 			},
 		},
 	}
@@ -87,7 +97,7 @@ func resourceKsyunVpnGatewayRouteCreate(d *schema.ResourceData, meta interface{}
 	}
 
 	vpnService := NewVpnSrv(meta.(*KsyunClient))
-	err = vpnService.CreateVpnGatewayRoute(d, resourceKsyunVpnGateway())
+	err = vpnService.CreateVpnGatewayRoute(d, resourceKsyunVpnGatewayRoute())
 	if err != nil {
 		return fmt.Errorf("error on creating vpn gateway  %q, %s", d.Id(), err)
 	}
@@ -96,7 +106,7 @@ func resourceKsyunVpnGatewayRouteCreate(d *schema.ResourceData, meta interface{}
 
 func resourceKsyunVpnGatewayRouteRead(d *schema.ResourceData, meta interface{}) (err error) {
 	vpnService := NewVpnSrv(meta.(*KsyunClient))
-	err = vpnService.ReadAndSetVpnGatewayRoute(d, resourceKsyunVpnGateway())
+	err = vpnService.ReadAndSetVpnGatewayRoute(d, resourceKsyunVpnGatewayRoute())
 	if err != nil {
 		return fmt.Errorf("error on reading vpn gateway  %q, %s", d.Id(), err)
 	}
