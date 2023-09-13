@@ -37,6 +37,7 @@ In addition to all arguments above, the following attributes are exported:
 
 * `total_count` - Total number of resources that satisfy the condition.
 * `vpn_tunnels` - It is a nested type which documented below.
+  * `create_time` - creation time.
   * `customer_gateway_id` - Customer gateway ID.
   * `customer_gre_ip` - Customer gre IP.
   * `customer_peer_ip` - The peer ip of customer.
