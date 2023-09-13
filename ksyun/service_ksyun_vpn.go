@@ -3,6 +3,7 @@ package ksyun
 import (
 	"context"
 	"fmt"
+	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
@@ -71,7 +72,18 @@ func (v *VpnSrv) ReadAndSetVpnGatewayRoute(d *schema.ResourceData, r *schema.Res
 		return err
 	}
 
-	SdkResponseAutoResourceData(d, r, data, nil)
+	var currResult []interface{}
+	for _, routeIf := range data {
+		routeId, err := getSdkValue("VpnGatewayRouteId", routeIf)
+		if err != nil {
+			return err
+		}
+		if reflect.DeepEqual(routeId, d.Id()) {
+			currResult = append(currResult, routeIf)
+		}
+	}
+
+	SdkResponseAutoResourceData(d, r, currResult, nil)
 	return nil
 }
 

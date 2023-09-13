@@ -99,7 +99,7 @@ func resourceKsyunVpnGatewayRouteCreate(d *schema.ResourceData, meta interface{}
 	vpnService := NewVpnSrv(meta.(*KsyunClient))
 	err = vpnService.CreateVpnGatewayRoute(d, resourceKsyunVpnGatewayRoute())
 	if err != nil {
-		return fmt.Errorf("error on creating vpn gateway  %q, %s", d.Id(), err)
+		return fmt.Errorf("error on creating vpn gateway route %q, %s", d.Id(), err)
 	}
 	return resourceKsyunVpnGatewayRouteRead(d, meta)
 }
@@ -108,7 +108,7 @@ func resourceKsyunVpnGatewayRouteRead(d *schema.ResourceData, meta interface{}) 
 	vpnService := NewVpnSrv(meta.(*KsyunClient))
 	err = vpnService.ReadAndSetVpnGatewayRoute(d, resourceKsyunVpnGatewayRoute())
 	if err != nil {
-		return fmt.Errorf("error on reading vpn gateway  %q, %s", d.Id(), err)
+		return fmt.Errorf("error on reading vpn gateway route %q, %s", d.Id(), err)
 	}
 	return err
 }
@@ -117,7 +117,7 @@ func resourceKsyunVpnGatewayRouteDelete(d *schema.ResourceData, meta interface{}
 	vpcService := NewVpnSrv(meta.(*KsyunClient))
 	err = vpcService.RemoveVpnGatewayRoute(d)
 	if err != nil {
-		return fmt.Errorf("error on deleting vpn gateway  %q, %s", d.Id(), err)
+		return fmt.Errorf("error on deleting vpn gateway route %q, %s", d.Id(), err)
 	}
 	return err
 }

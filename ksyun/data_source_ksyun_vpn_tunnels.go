@@ -284,6 +284,11 @@ func dataSourceKsyunVpnTunnels() *schema.Resource {
 							Computed:    true,
 							Description: "creation time.",
 						},
+						"create_time": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "creation time.",
+						},
 					},
 				},
 			},

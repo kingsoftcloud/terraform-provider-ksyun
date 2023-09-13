@@ -364,9 +364,9 @@ func resourceKsyunVpnTunnelUpdate(d *schema.ResourceData, meta interface{}) (err
 		return err
 	}
 	// check cannot be changed field
-	if err := bannedPartialParamsChanges(d); err != nil {
-		return err
-	}
+	// if err := bannedPartialParamsChanges(d); err != nil {
+	// 	return err
+	// }
 
 	vpcService := VpcService{meta.(*KsyunClient)}
 	err = vpcService.ModifyVpnTunnel(d, resourceKsyunVpnTunnel())
