@@ -367,6 +367,10 @@ func Provider() terraform.ResourceProvider {
 					return
 				},
 			},
+			"debug": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"ksyun_albs":                     dataSourceKsyunAlbs(),
@@ -533,6 +537,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		HttpKeepAlive: d.Get("http_keepalive").(bool),
 		MaxRetries:    retryNum,
 		HttpProxy:     d.Get("http_proxy").(string),
+		Debug:         d.Get("debug").(bool),
 	}
 	client, err := config.Client()
 	return client, err

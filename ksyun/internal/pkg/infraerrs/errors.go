@@ -1,6 +1,7 @@
 package infraerrs
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 
@@ -78,4 +79,9 @@ func IsContains(obj interface{}, value interface{}) bool {
 
 func GetKsyunNetworkOpErrorMessage(origMessage string) string {
 	return NetworkOpErrorMessage + ", Occur at: " + origMessage
+}
+
+func AssembleTraceIdError(traceId string) error {
+	traceError := fmt.Errorf("caused error trace id: %s", traceId)
+	return traceError
 }

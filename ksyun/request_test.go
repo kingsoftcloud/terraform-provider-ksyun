@@ -189,6 +189,8 @@ func TestConnectionReset(t *testing.T) {
 			handlers.UnmarshalError.PushBackNamed(jsonrpc.UnmarshalErrorHandler)
 			handlers.AfterRetry.PushBackNamed(corehandlers.AfterRetryHandler)
 			handlers.CompleteAttempt.PushBackNamed(network.NetErrorHandler)
+			handlers.Sign.PushBackNamed(network.ReqUniqueIdHandler)
+			handlers.CompleteAttempt.PushBackNamed(network.DebugTraceError)
 
 			cfg := unit.Session.Config.Copy()
 			cfg.MaxRetries = aws.Int(5)
