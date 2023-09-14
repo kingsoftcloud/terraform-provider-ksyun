@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/KscSDK/ksc-sdk-go/ksc/kscquery"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/client/metadata"
@@ -17,7 +18,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 	v4 "github.com/aws/aws-sdk-go/aws/signer/v4"
 	"github.com/aws/aws-sdk-go/awstesting/unit"
-	"github.com/aws/aws-sdk-go/private/protocol/jsonrpc"
 	"github.com/terraform-providers/terraform-provider-ksyun/ksyun/internal/pkg/network"
 )
 
@@ -82,6 +82,11 @@ func (a mockAddr) String() string {
 	return a.addr
 }
 
+const (
+	DescribeVpcs = "DescribeVpcs"
+	CreateVpc    = "CreateVpc"
+)
+
 var (
 	errNetOpErrorResetStub = &net.OpError{
 		Op:  "read",
@@ -129,44 +134,53 @@ var (
 func TestConnectionReset(t *testing.T) {
 	cases := map[string]struct {
 		Err            error
+		Action         string
 		ExpectAttempts int
 	}{
 		"accept with temporary": {
 			Err:            errAcceptConnectionResetStub,
+			Action:         DescribeVpcs,
 			ExpectAttempts: 6,
 		},
 		"read not temporary": {
 			Err:            errReadConnectionResetStub,
+			Action:         CreateVpc,
 			ExpectAttempts: 1,
 		},
 		"write with temporary": {
 			Err:            errWriteConnectionResetStub,
+			Action:         CreateVpc,
 			ExpectAttempts: 6,
 		},
 		"write broken pipe with temporary": {
 			Err:            errWriteBrokenPipeStub,
+			Action:         DescribeVpcs,
 			ExpectAttempts: 6,
 		},
 		"generic connection reset": {
 			Err:            errConnectionResetStub,
+			Action:         DescribeVpcs,
 			ExpectAttempts: 6,
 		},
 		"write broken pipe with OpError": {
 			Err:            errNetOpErrorBrokenPipeStub,
+			Action:         CreateVpc,
 			ExpectAttempts: 6,
 		},
 		"read with OpError": {
-			Err: errNetOpErrorResetStub,
-
-			ExpectAttempts: 1,
+			Err:            errNetOpErrorResetStub,
+			Action:         DescribeVpcs,
+			ExpectAttempts: 6,
 		},
 		"dial with OpError": {
 			Err:            errNetOpErrorDialStub,
+			Action:         CreateVpc,
 			ExpectAttempts: 6,
 		},
 		"read with UrlError": {
 			Err:            errUrlError,
-			ExpectAttempts: 1,
+			Action:         DescribeVpcs,
+			ExpectAttempts: 6,
 		},
 	}
 	for name, c := range cases {
@@ -183,22 +197,21 @@ func TestConnectionReset(t *testing.T) {
 			})
 
 			handlers.Sign.PushBackNamed(v4.SignRequestHandler)
-			handlers.Build.PushBackNamed(jsonrpc.BuildHandler)
-			handlers.Unmarshal.PushBackNamed(jsonrpc.UnmarshalHandler)
-			handlers.UnmarshalMeta.PushBackNamed(jsonrpc.UnmarshalMetaHandler)
-			handlers.UnmarshalError.PushBackNamed(jsonrpc.UnmarshalErrorHandler)
+			// handlers.Build.PushBackNamed(jsonrpc.BuildHandler)
+			// handlers.Unmarshal.PushBackNamed(jsonrpc.UnmarshalHandler)
+			// handlers.UnmarshalMeta.PushBackNamed(jsonrpc.UnmarshalMetaHandler)
+			// handlers.UnmarshalError.PushBackNamed(jsonrpc.UnmarshalErrorHandler)
 			handlers.AfterRetry.PushBackNamed(corehandlers.AfterRetryHandler)
 			handlers.CompleteAttempt.PushBackNamed(network.NetErrorHandler)
-			handlers.Sign.PushBackNamed(network.ReqUniqueIdHandler)
-			handlers.CompleteAttempt.PushBackNamed(network.DebugTraceError)
+			handlers.Build.PushBackNamed(kscquery.BuildHandler)
 
 			cfg := unit.Session.Config.Copy()
 			cfg.MaxRetries = aws.Int(5)
 			cfg.SleepDelay = func(time.Duration) {}
 
 			op := &request.Operation{
-				Name:       "op",
-				HTTPMethod: "POST",
+				Name:       c.Action,
+				HTTPMethod: "GET",
 				HTTPPath:   "/",
 			}
 
@@ -216,6 +229,7 @@ func TestConnectionReset(t *testing.T) {
 				*cfg,
 				meta,
 				handlers,
+				// retry with any describe actions
 				network.GetKsyunRetryer(*cfg.MaxRetries),
 				op,
 				&struct{}{},

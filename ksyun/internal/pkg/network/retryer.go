@@ -66,6 +66,9 @@ func (k *KsyunRetryer) ShouldRetry(r *request.Request) bool {
 		return true
 	}
 
+	if isDescribeActionRetry(r) {
+		return true
+	}
 	// customs retry condition
 	return shouldRetryError(r.Error) || isErrConnectionReset(r.Error)
 }
@@ -145,6 +148,30 @@ func isErrCode(err error, codes []string) bool {
 			if code == aerr.Code() {
 				return true
 			}
+		}
+	}
+
+	return false
+}
+
+// isDescribeActionRetry deals with retry of describing actions while requesting process
+func isDescribeActionRetry(r *request.Request) bool {
+	if r.Error == nil {
+		return false
+	}
+
+	switch err := r.Error.(type) {
+	case awserr.Error:
+		if err.Code() == "RequestError" {
+			httpReq := r.HTTPRequest
+
+			body, _ := url.ParseQuery(httpReq.URL.RawQuery)
+
+			action := body.Get("Action")
+			if strings.Contains(action, "Describe") {
+				return true
+			}
+
 		}
 	}
 
