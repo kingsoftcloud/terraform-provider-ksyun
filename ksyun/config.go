@@ -48,6 +48,8 @@ type Config struct {
 	HttpKeepAlive bool
 	MaxRetries    int
 	HttpProxy     string
+
+	Debug bool
 }
 
 // Client will returns a client with connections for all product
@@ -135,6 +137,11 @@ func registerClient(cli *session.Session, c *Config) {
 	cli.Config.Retryer = network.GetKsyunRetryer(c.MaxRetries)
 
 	cli.Handlers.CompleteAttempt.PushBackNamed(network.NetErrorHandler)
+
+	if c.Debug {
+		cli.Handlers.Sign.PushBackNamed(network.ReqUniqueIdHandler)
+		cli.Handlers.CompleteAttempt.PushBackNamed(network.DebugTraceError)
+	}
 }
 
 func getKsyunClient(c *Config) *http.Client {
