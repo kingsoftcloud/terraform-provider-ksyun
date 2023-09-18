@@ -55,7 +55,7 @@ func (c *Config) Client() (*KsyunClient, error) {
 	}
 	client.config = c
 	url := &utils.UrlInfo{
-		UseSSL:                      false,
+		UseSSL:                      true,
 		Locate:                      false,
 		CustomerDomain:              c.Domain,
 		CustomerDomainIgnoreService: c.IgnoreService,
