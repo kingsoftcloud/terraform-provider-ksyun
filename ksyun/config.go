@@ -139,7 +139,7 @@ func registerClient(cli *session.Session, c *Config) {
 	cli.Handlers.CompleteAttempt.PushBackNamed(network.NetErrorHandler)
 
 	// TODO: output request's information when it encounters the special error that reset connection.
-	cli.Handlers.CompleteAttempt.PushBackNamed(network.OutputResetError)
+	// cli.Handlers.CompleteAttempt.PushBackNamed(network.OutputResetError)
 
 	if c.HandleBody {
 		cli.Handlers.Sign.PushBackNamed(network.HandleRequestBody)
