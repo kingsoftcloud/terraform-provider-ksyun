@@ -1,8 +1,11 @@
 package network
 
 import (
+	"fmt"
+	"io/ioutil"
 	"net"
 	"net/url"
+	"reflect"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -18,6 +21,51 @@ var NetErrorHandler = request.NamedHandler{
 			return
 		}
 		r.Error = handeNetError(r.Error)
+	},
+}
+
+var OutputResetError = request.NamedHandler{
+	Name: "ksyun.OutputResetError",
+	Fn: func(r *request.Request) {
+		if r.Error == nil {
+			return
+		}
+		if isErrConnectionReset(r.Error) {
+			fmt.Printf("Request: %v", r)
+		}
+	},
+}
+
+var HandleRequestBody = request.NamedHandler{
+	Name: "ksyun.HandleRequestBody",
+	Fn: func(r *request.Request) {
+		cType := r.HTTPRequest.Header.Get("Content-Type")
+		if cType == "" {
+			r.HTTPRequest.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		} else {
+			r.HTTPRequest.Header.Set("Content-Type", strings.ReplaceAll(cType, "; charset=utf-8", ""))
+		}
+		if r.HTTPRequest.Method == "GET" {
+			r.HTTPRequest.Body = ioutil.NopCloser(r.GetBody())
+			return
+		}
+		body := url.Values{
+			"Action":  {r.Operation.Name},
+			"Version": {r.ClientInfo.APIVersion},
+		}
+
+		if reflect.TypeOf(r.Params) == reflect.TypeOf(&map[string]interface{}{}) {
+			m := *(r.Params).(*map[string]interface{})
+			for k, v := range m {
+				if reflect.TypeOf(v).String() == "string" {
+					body.Add(k, v.(string))
+				} else {
+					body.Add(k, fmt.Sprintf("%v", v))
+				}
+			}
+		}
+		reader := strings.NewReader(body.Encode())
+		r.HTTPRequest.Body = ioutil.NopCloser(reader)
 	},
 }
 
