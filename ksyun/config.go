@@ -160,13 +160,13 @@ func getKsyunClient(c *Config) *http.Client {
 		},
 		DialContext: (&net.Dialer{
 			Timeout:   30 * time.Second, // dial connect timeout
-			KeepAlive: 5 * time.Second,  // the interval probes time between the ends of network
+			KeepAlive: 30 * time.Second, // the interval probes time between the ends of network
 		}).DialContext,
 		ForceAttemptHTTP2:     false,
 		MaxIdleConns:          100,
 		IdleConnTimeout:       90 * time.Second,
 		TLSHandshakeTimeout:   10 * time.Second,
-		ExpectContinueTimeout: 3 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
 		DisableKeepAlives:     c.HttpKeepAlive,
 	}
 

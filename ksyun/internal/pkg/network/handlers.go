@@ -42,8 +42,6 @@ var HandleRequestBody = request.NamedHandler{
 		cType := r.HTTPRequest.Header.Get("Content-Type")
 		if cType == "" {
 			r.HTTPRequest.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-		} else {
-			r.HTTPRequest.Header.Set("Content-Type", strings.ReplaceAll(cType, "; charset=utf-8", ""))
 		}
 		if r.HTTPRequest.Method == "GET" {
 			r.HTTPRequest.Body = ioutil.NopCloser(r.GetBody())
