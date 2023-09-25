@@ -1,3 +1,9 @@
+## 1.9.1 (Sep 25, 2023)
+
+BUGFIX:
+
+- `ksyun_bws_associate` 修复读取remote associations未处理异常而出现的空指针异常
+
 ## 1.9.0 (Sep 5, 2023)
 
 FEATURES:
