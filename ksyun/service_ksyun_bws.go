@@ -2,10 +2,11 @@ package ksyun
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
-	"time"
 )
 
 type BwsService struct {
@@ -285,6 +286,9 @@ func (s *BwsService) RemoveBandWidthShare(d *schema.ResourceData) (err error) {
 
 func (s *BwsService) ReadBandWidthShareAssociate(d *schema.ResourceData, bwsId string, allocationId string) (result map[string]interface{}, err error) {
 	data, err := s.ReadBandWidthShare(d, bwsId)
+	if err != nil {
+		return nil, err
+	}
 	result = make(map[string]interface{})
 	if len(data["AssociateBandWidthShareInfoSet"].([]interface{})) == 0 {
 		return data, fmt.Errorf("AllocationId %s not associate in BandWidthShare %s ", allocationId, bwsId)
@@ -309,12 +313,15 @@ func (s *BwsService) ReadBandWidthShareAssociate(d *schema.ResourceData, bwsId s
 
 func (s *BwsService) ReadAndSetAssociateBandWidthShare(d *schema.ResourceData, r *schema.Resource) (err error) {
 	data, err := s.ReadBandWidthShareAssociate(d, d.Get("band_width_share_id").(string), d.Get("allocation_id").(string))
+	if err != nil {
+		return err
+	}
 	SdkResponseAutoResourceData(d, r, data, nil)
 	return err
 }
 
 func (s *BwsService) AssociateBandWidthShareCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
-	//read eip
+	// read eip
 	eipService := EipService{s.client}
 	eipData, err := eipService.ReadAddress(d, d.Get("allocation_id").(string))
 	if err != nil {
