@@ -49,7 +49,6 @@ type Config struct {
 	MaxRetries    int
 	HttpProxy     string
 	UseSSL        bool
-	HandleBody    bool
 }
 
 // Client will returns a client with connections for all product
@@ -141,9 +140,7 @@ func registerClient(cli *session.Session, c *Config) {
 	// TODO: output request's information when it encounters the special error that reset connection.
 	// cli.Handlers.CompleteAttempt.PushBackNamed(network.OutputResetError)
 
-	if c.HandleBody {
-		cli.Handlers.Sign.PushBackNamed(network.HandleRequestBody)
-	}
+	cli.Handlers.Sign.PushBackNamed(network.HandleRequestBody)
 }
 
 func getKsyunClient(c *Config) *http.Client {
@@ -167,7 +164,7 @@ func getKsyunClient(c *Config) *http.Client {
 		IdleConnTimeout:       90 * time.Second,
 		TLSHandshakeTimeout:   10 * time.Second,
 		ExpectContinueTimeout: 1 * time.Second,
-		DisableKeepAlives:     c.HttpKeepAlive,
+		DisableKeepAlives:     !c.HttpKeepAlive,
 	}
 
 	httpClient := &http.Client{
