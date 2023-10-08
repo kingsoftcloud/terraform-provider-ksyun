@@ -539,6 +539,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		HttpKeepAlive: d.Get("http_keepalive").(bool),
 		MaxRetries:    retryNum,
 		HttpProxy:     d.Get("http_proxy").(string),
+		UseSSL:        d.Get("force_https").(bool),
 	}
 	client, err := config.Client()
 	return client, err
