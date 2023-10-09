@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"net"
 	"net/url"
-	"reflect"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -39,31 +38,14 @@ var OutputResetError = request.NamedHandler{
 var HandleRequestBody = request.NamedHandler{
 	Name: "ksyun.HandleRequestBody",
 	Fn: func(r *request.Request) {
-		cType := r.HTTPRequest.Header.Get("Content-Type")
-		if cType == "" {
-			r.HTTPRequest.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-		}
 		if r.HTTPRequest.Method == "GET" {
-			r.HTTPRequest.Body = ioutil.NopCloser(r.GetBody())
 			return
 		}
-		body := url.Values{
-			"Action":  {r.Operation.Name},
-			"Version": {r.ClientInfo.APIVersion},
-		}
+		body := r.Body
 
-		if reflect.TypeOf(r.Params) == reflect.TypeOf(&map[string]interface{}{}) {
-			m := *(r.Params).(*map[string]interface{})
-			for k, v := range m {
-				if reflect.TypeOf(v).String() == "string" {
-					body.Add(k, v.(string))
-				} else {
-					body.Add(k, fmt.Sprintf("%v", v))
-				}
-			}
-		}
-		reader := strings.NewReader(body.Encode())
-		r.HTTPRequest.Body = ioutil.NopCloser(reader)
+		// r.HTTPRequest.Body = &CustomReader{body}
+		r.HTTPRequest.Body = ioutil.NopCloser(body)
+
 	},
 }
 
