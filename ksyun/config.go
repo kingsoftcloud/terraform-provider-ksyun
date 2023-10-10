@@ -2,6 +2,9 @@ package ksyun
 
 import (
 	"fmt"
+	"io/ioutil"
+	"sync"
+
 	"github.com/KscSDK/ksc-sdk-go/ksc"
 	"github.com/KscSDK/ksc-sdk-go/ksc/utils"
 	"github.com/KscSDK/ksc-sdk-go/service/bws"
@@ -25,8 +28,8 @@ import (
 	"github.com/KscSDK/ksc-sdk-go/service/tag"
 	"github.com/KscSDK/ksc-sdk-go/service/tagv2"
 	"github.com/KscSDK/ksc-sdk-go/service/vpc"
+	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/wilac-pv/ksyun-ks3-go-sdk/ks3"
-	"sync"
 )
 
 // Config is the configuration of ksyun meta data
@@ -43,10 +46,18 @@ type Config struct {
 // Client will returns a client with connections for all product
 func (c *Config) Client() (*KsyunClient, error) {
 	var client KsyunClient
-	//init ksc client info
+	// init ksc client info
 	client.region = c.Region
 	cli := ksc.NewClient(c.AccessKey, c.SecretKey)
 
+	cli.Handlers.Sign.PushFront(func(request *request.Request) {
+		if request.HTTPRequest.Method == "GET" {
+			return
+		}
+		body := request.Body
+
+		request.HTTPRequest.Body = ioutil.NopCloser(body)
+	})
 	// 重试去掉
 	var MaxRetries int = 0
 	cli.Config.MaxRetries = &MaxRetries
@@ -84,7 +95,7 @@ func (c *Config) Client() (*KsyunClient, error) {
 	client.kcev2conn = kcev2.SdkNew(cli, cfg, url)
 	client.knadconn = knad.SdkNew(cli, cfg, url)
 
-	//懒加载ks3-client 所以不在此初始化
+	// 懒加载ks3-client 所以不在此初始化
 	return &client, nil
 }
 
