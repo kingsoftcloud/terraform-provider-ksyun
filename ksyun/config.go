@@ -48,6 +48,7 @@ type Config struct {
 	HttpKeepAlive bool
 	MaxRetries    int
 	HttpProxy     string
+	UseSSL        bool
 }
 
 // Client will returns a client with connections for all product
@@ -66,7 +67,7 @@ func (c *Config) Client() (*KsyunClient, error) {
 	}
 	client.config = c
 	url := &utils.UrlInfo{
-		UseSSL:                      false,
+		UseSSL:                      c.UseSSL,
 		Locate:                      false,
 		CustomerDomain:              c.Domain,
 		CustomerDomainIgnoreService: c.IgnoreService,
@@ -135,6 +136,11 @@ func registerClient(cli *session.Session, c *Config) {
 	cli.Config.Retryer = network.GetKsyunRetryer(c.MaxRetries)
 
 	cli.Handlers.CompleteAttempt.PushBackNamed(network.NetErrorHandler)
+
+	// TODO: output request's information when it encounters the special error that reset connection.
+	// cli.Handlers.CompleteAttempt.PushBackNamed(network.OutputResetError)
+
+	cli.Handlers.Sign.PushBackNamed(network.HandleRequestBody)
 }
 
 func getKsyunClient(c *Config) *http.Client {
@@ -151,14 +157,14 @@ func getKsyunClient(c *Config) *http.Client {
 		},
 		DialContext: (&net.Dialer{
 			Timeout:   30 * time.Second, // dial connect timeout
-			KeepAlive: 5 * time.Second,  // the interval probes time between the ends of network
+			KeepAlive: 30 * time.Second, // the interval probes time between the ends of network
 		}).DialContext,
 		ForceAttemptHTTP2:     false,
-		MaxIdleConns:          30,
-		IdleConnTimeout:       60 * time.Second,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
 		TLSHandshakeTimeout:   10 * time.Second,
-		ExpectContinueTimeout: 3 * time.Second,
-		DisableKeepAlives:     c.HttpKeepAlive,
+		ExpectContinueTimeout: 1 * time.Second,
+		DisableKeepAlives:     !c.HttpKeepAlive,
 	}
 
 	httpClient := &http.Client{

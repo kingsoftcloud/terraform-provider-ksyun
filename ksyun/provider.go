@@ -351,6 +351,12 @@ func Provider() terraform.ResourceProvider {
 				Default:     true,
 				Description: "Whether use http keepalive, if false, disables HTTP keep-alives and will only use the connection to the server for a single HTTP request",
 			},
+			"force_https": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Force use https protocol for communication between sdk and remote server.",
+			},
 			"max_retries": {
 				Type:         schema.TypeInt,
 				Optional:     true,
@@ -537,6 +543,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		HttpKeepAlive: d.Get("http_keepalive").(bool),
 		MaxRetries:    retryNum,
 		HttpProxy:     d.Get("http_proxy").(string),
+		UseSSL:        d.Get("force_https").(bool),
 	}
 	client, err := config.Client()
 	return client, err

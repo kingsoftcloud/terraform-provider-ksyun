@@ -53,3 +53,18 @@ type KsyunClient struct {
 
 	config *Config
 }
+
+func (client *KsyunClient) GetVpcClient() *vpc.Vpc {
+	return client.vpcconn
+}
+func (client *KsyunClient) GetKecClient() *kec.Kec {
+	return client.kecconn
+}
+
+func (client *KsyunClient) GetEipClient() *eip.Eip {
+	return client.eipconn
+}
+
+func (client *KsyunClient) GetIamClient() *iam.Iam {
+	return client.iamconn
+}
