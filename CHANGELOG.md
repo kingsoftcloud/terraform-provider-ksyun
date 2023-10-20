@@ -1,3 +1,10 @@
+## 1.10.1 (Oct 20, 2023)
+
+IMPROVEMENTS:
+
+- `provider` 新增`force_https`字段
+- 优化http post请求发送tcp包数量，避免connection reset异常
+
 ## 1.10.0 (Oct 20, 2023)
 
 FEATURES:
