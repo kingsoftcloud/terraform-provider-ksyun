@@ -139,6 +139,65 @@ func dataSourceKsyunVpnTunnels() *schema.Resource {
 							Computed:    true,
 							Description: "VPN tunnel name.",
 						},
+						"vpn_gwl_name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The VPN gateway name.",
+						},
+
+						"vpn_gateway_version": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The VPN gateway version.",
+						},
+
+						"vpn_m_tunnel_state": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "The state of master-vpn-tunnel.",
+						},
+						"vpn_s_tunnel_state": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "The state of second-vpn-tunnel.",
+						},
+						"ha_mode": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The high-availability mode of vpn tunnel.",
+						},
+						"ike_version": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The version of ike.",
+						},
+						"local_peer_ip": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The peer ip of kingsoft cloud.",
+						},
+						"customer_peer_ip": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The peer ip of customer.",
+						},
+
+						"vpn_m_tunnel_create_time": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The creation time of first-vpn-tunnel.",
+						},
+						"vpn_s_tunnel_create_time": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The creation time of second-vpn-tunnel.",
+						},
+
+						"open_health_check": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "The switch of health check.",
+						},
 
 						"pre_shared_key": {
 							Type:        schema.TypeString,
@@ -176,16 +235,32 @@ func dataSourceKsyunVpnTunnels() *schema.Resource {
 							Description: "IPsec authen algorithm.",
 						},
 
-						"ipsec_life_time_traffic": {
+						"ipsec_lifetime_traffic": {
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "IPsec lifetime traffic.",
 						},
 
-						"ipsec_life_time_second": {
+						"ipsec_lifetime_second": {
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "IPsec lifetime second.",
+						},
+						"health_check_local_peer_cider": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "the local peer cider of health checking.",
+						},
+						"health_check_remote_peer_cider": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The remote peer cider of health checking.",
+						},
+
+						"enable_nat_traversal": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "The switch of nat traversal.",
 						},
 
 						"extra_cidr_set": {
@@ -204,6 +279,11 @@ func dataSourceKsyunVpnTunnels() *schema.Resource {
 							},
 						},
 
+						"vpn_tunnel_create_time": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "creation time.",
+						},
 						"create_time": {
 							Type:        schema.TypeString,
 							Computed:    true,

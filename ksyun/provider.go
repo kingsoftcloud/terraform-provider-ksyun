@@ -86,11 +86,13 @@ VPN
 		ksyun_vpn_gateways
 		ksyun_vpn_customer_gateways
 		ksyun_vpn_tunnels
+		ksyun_vpn_gateway_routes
 
 	Resource
 		ksyun_vpn_gateway
 		ksyun_vpn_customer_gateway
 		ksyun_vpn_tunnel
+		ksyun_vpn_gateway_route
 
 SLB
 
@@ -435,6 +437,7 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_auto_snapshot_volume_association": dataSourceKsyunAutoSnapshotVolumeAssociation(),
 			"ksyun_knads":                            dataSourceKsyunKnads(),
 			"ksyun_dnats":                            dataSourceKsyunDnats(),
+			"ksyun_vpn_gateway_routes":               dataSourceKsyunVpnGatewayRoutes(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"ksyun_alb":                              resourceKsyunAlb(),
@@ -512,6 +515,7 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_knad_associate":                   resourceKsyunKnadAssociate(),
 			"ksyun_nat_instance_bandwidth_limit":     resourceKsyunNatInstanceBandwidthLimit(),
 			"ksyun_dnat":                             resourceKsyunDnat(),
+			"ksyun_vpn_gateway_route":                resourceKsyunVpnGatewayRoute(),
 		},
 		ConfigureFunc: providerConfigure,
 	}

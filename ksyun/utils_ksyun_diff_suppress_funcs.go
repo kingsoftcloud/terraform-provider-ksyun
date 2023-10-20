@@ -280,3 +280,24 @@ func bareMetalDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bool 
 	}
 	return false
 }
+
+func vpnV2ParamsDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bool {
+	isV2 := d.Get("vpn_gateway_version") == "2.0"
+	// is vpn version 1
+	if stringSliceContains(vpnV1Attribute, k) {
+		if isV2 {
+			return true
+		}
+	} else if stringSliceContains(vpnV2Attribute, k) {
+		if !isV2 {
+			return true
+		}
+		switch k {
+		case "local_peer_ip", "customer_peer_ip":
+			if d.Get("type") != "RouteIpsec" {
+				return true
+			}
+		}
+	}
+	return false
+}

@@ -1,3 +1,15 @@
+## 1.10.0 (Oct 20, 2023)
+
+FEATURES:
+
+- - **New Resource:** `ksyun_vpn_gateway_route` Vpn网关路由，仅在Vpn2.0时生效
+- - **New Data Source:** `ksyun_vpn_gateway_routes`
+
+IMPROVEMENTS:
+
+- `ksyun_vpn_gateway` 支持VPN2.0
+- `ksyun_vpn_gateway_tunnel` 支持VPN2.0
+
 ## 1.9.1 (Sep 25, 2023)
 
 BUGFIX:

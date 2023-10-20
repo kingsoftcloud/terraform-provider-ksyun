@@ -19,7 +19,7 @@ Provides a Vpn Customer Gateway resource.
 resource "ksyun_vpn_customer_gateway" "default" {
   customer_gateway_address    = "100.0.0.2"
   ha_customer_gateway_address = "100.0.2.2"
-  customer_gateway_mame       = "ksyun_vpn_cus_gw"
+  customer_gateway_name       = "ksyun_vpn_cus_gw"
 }
 ```
 
@@ -28,8 +28,9 @@ resource "ksyun_vpn_customer_gateway" "default" {
 The following arguments are supported:
 
 * `customer_gateway_address` - (Required) The customer gateway address of the vpn customer gateway.
-* `customer_gateway_mame` - (Required) The name of the vpn customer gateway.
+* `customer_gateway_name` - (Required) The name of the vpn customer gateway.
 * `ha_customer_gateway_address` - (Required) The ha customer gateway address of the vpn customer gateway.
+* `customer_gateway_mame` - (Optional) The name of the vpn customer gateway. **Warning this field was removed**.
 
 ## Attributes Reference
 
