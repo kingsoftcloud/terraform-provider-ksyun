@@ -1,4 +1,4 @@
-## unreleased
+## 1.10.0 (Oct 20, 2023)
 
 FEATURES:
 
@@ -9,6 +9,12 @@ IMPROVEMENTS:
 
 - `ksyun_vpn_gateway` 支持VPN2.0
 - `ksyun_vpn_gateway_tunnel` 支持VPN2.0
+
+## 1.9.1 (Sep 25, 2023)
+
+BUGFIX:
+
+- `ksyun_bws_associate` 修复读取remote associations未处理异常而出现的空指针异常
 
 ## 1.9.0 (Sep 5, 2023)
 
