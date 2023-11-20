@@ -301,3 +301,18 @@ func vpnV2ParamsDiffSuppressFunc(k, old, new string, d *schema.ResourceData) boo
 	}
 	return false
 }
+
+func pdnsZoneRecordDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bool {
+	t := d.Get("type")
+	if !(t == "SRV" || t == "MX") {
+		return true
+	}
+
+	switch k {
+	case "weight", "port":
+		if t != "SRV" {
+			return true
+		}
+	}
+	return false
+}

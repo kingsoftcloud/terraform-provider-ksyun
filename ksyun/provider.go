@@ -444,6 +444,10 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_knads":                            dataSourceKsyunKnads(),
 			"ksyun_dnats":                            dataSourceKsyunDnats(),
 			"ksyun_vpn_gateway_routes":               dataSourceKsyunVpnGatewayRoutes(),
+
+			// private_dns
+			"ksyun_private_dns_zone":    dataSourceKsyunPrivateDnsZones(),
+			"ksyun_private_dns_records": dataSourceKsyunPrivateDnsRecords(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"ksyun_alb":                              resourceKsyunAlb(),
@@ -522,6 +526,11 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_nat_instance_bandwidth_limit":     resourceKsyunNatInstanceBandwidthLimit(),
 			"ksyun_dnat":                             resourceKsyunDnat(),
 			"ksyun_vpn_gateway_route":                resourceKsyunVpnGatewayRoute(),
+
+			// private dns
+			"ksyun_private_dns_zone":                resourceKsyunPrivateDnsZone(),
+			"ksyun_private_dns_record":              resourceKsyunPrivateDnsRecord(),
+			"ksyun_private_dns_zone_vpc_attachment": resourceKsyunPrivateDnsZoneVpcAttachment(),
 		},
 		ConfigureFunc: providerConfigure,
 	}
