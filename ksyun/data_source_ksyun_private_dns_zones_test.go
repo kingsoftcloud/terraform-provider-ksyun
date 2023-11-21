@@ -16,7 +16,7 @@ func TestAccKsyunPdnsZoneDataSource_basic(t *testing.T) {
 			{
 				Config: testAccDataPdnsZoneConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIDExists("data.ksyun_private_dns_zone.foo"),
+					testAccCheckIDExists("data.ksyun_private_dns_zones.foo"),
 				),
 			},
 		},
@@ -25,7 +25,7 @@ func TestAccKsyunPdnsZoneDataSource_basic(t *testing.T) {
 
 const testAccDataPdnsZoneConfig = `
 
-data "ksyun_private_dns_zone" "foo" {
+data "ksyun_private_dns_zones" "foo" {
   output_file = "pdns_output_result"
   zone_ids = []
 }

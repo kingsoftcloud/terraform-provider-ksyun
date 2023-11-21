@@ -43,7 +43,7 @@ func resourceKsyunPrivateDnsRecord() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "The record name of private dns",
+				Description: "The record name of private dns.",
 			},
 			"zone_id": {
 				Type:        schema.TypeString,
@@ -82,7 +82,7 @@ func resourceKsyunPrivateDnsRecord() *schema.Resource {
 				Computed:         true,
 				Optional:         true,
 				ForceNew:         true,
-				Description:      "Record priority. Value range: 0~65535. Required, when type is `SRV` or `MX`.",
+				Description:      "Record priority. Value range: [SRV|0~65535], [MX|1~100]. Required, when type is `SRV` or `MX`.",
 				DiffSuppressFunc: pdnsZoneRecordDiffSuppressFunc,
 				ValidateFunc:     validation.IntBetween(1, 65535),
 			},

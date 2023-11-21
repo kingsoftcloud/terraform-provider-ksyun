@@ -5,7 +5,7 @@ This data source provides a list of Private Dns Zone.
 
 ```hcl
 
-data "ksyun_private_dns_zone" "foo" {
+data "ksyun_private_dns_zones" "foo" {
   output_file = "pdns_output_result"
   zone_ids = []
 }
@@ -45,12 +45,12 @@ func dataSourceKsyunPrivateDnsZones() *schema.Resource {
 			"total_count": {
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "Total number of ALBs that satisfy the condition.",
+				Description: "Total number of Private Dns Zone that satisfy the condition.",
 			},
 			"zones": {
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "An information list of ALB. Each element contains the following attributes:",
+				Description: "An information list of Private Dns Zone. Each element contains the following attributes:",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"zone_id": {

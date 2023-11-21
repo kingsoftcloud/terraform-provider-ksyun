@@ -46,7 +46,7 @@ func resourceKsyunPrivateDnsZone() *schema.Resource {
 				Type:        schema.TypeString,
 				ForceNew:    true,
 				Required:    true,
-				Description: "The zone name of private dns",
+				Description: "The zone name of private dns.",
 			},
 			"zone_ttl": {
 				Type:         schema.TypeInt,
@@ -73,7 +73,7 @@ func resourceKsyunPrivateDnsZone() *schema.Resource {
 					"TrafficMonthly",
 				}, false),
 				DiffSuppressFunc: chargeSchemaDiffSuppressFunc,
-				Description:      "The charge type of the Private Dns Zone.",
+				Description:      "The charge type of the Private Dns Zone. Values: `TrafficMonthly`.",
 			},
 
 			"bind_vpc_set": {

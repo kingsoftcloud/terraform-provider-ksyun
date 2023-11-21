@@ -5,12 +5,12 @@ This data source provides a list of Private Dns Record resources according to th
 
 ```hcl
 
-	data "ksyun_private_dns_records" "default" {
+data "ksyun_private_dns_records" "default" {
   output_file = "pdns_records_output_result"
   zone_id = "a5ae6bf0-0ff4-xxxxxx-xxxxx-xxxxxxxxxx"
   region_name = ["cn-beijing-6"]
   record_ids = []
-	}
+}
 
 ```
 */
@@ -56,7 +56,7 @@ func dataSourceKsyunPrivateDnsRecords() *schema.Resource {
 					),
 				},
 				Set:         schema.HashString,
-				Description: "A list of the filter values that is region name. Such `cn-beijing-6`",
+				Description: "A list of the filter values that is region name. Such `cn-beijing-6`.",
 			},
 
 			"output_file": {
@@ -68,7 +68,7 @@ func dataSourceKsyunPrivateDnsRecords() *schema.Resource {
 			"total_count": {
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "Total number of ALBs that satisfy the condition.",
+				Description: "Total number of Private Dns Record that satisfy the condition.",
 			},
 			"records": {
 				Type:        schema.TypeList,
@@ -106,7 +106,7 @@ func dataSourceKsyunPrivateDnsRecords() *schema.Resource {
 									"record_value": {
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Record value",
+										Description: "Record value.",
 									},
 									"priority": {
 										Type:        schema.TypeInt,

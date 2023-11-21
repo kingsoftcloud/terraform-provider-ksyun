@@ -64,6 +64,8 @@ VPC
 		ksyun_subnet_allocated_ip_addresses
 		ksyun_subnet_available_addresses
 		ksyun_dnats
+		ksyun_private_dns_records
+		ksyun_private_dns_zones
 
 	Resource
 		ksyun_vpc
@@ -79,6 +81,9 @@ VPC
 		ksyun_security_group
 		ksyun_security_group_entry
 		ksyun_kec_network_interface
+		ksyun_private_dns_zone
+		ksyun_private_dns_record
+		ksyun_private_dns_zone_vpc_attachment
 
 VPN
 
@@ -446,7 +451,7 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_vpn_gateway_routes":               dataSourceKsyunVpnGatewayRoutes(),
 
 			// private_dns
-			"ksyun_private_dns_zone":    dataSourceKsyunPrivateDnsZones(),
+			"ksyun_private_dns_zones":   dataSourceKsyunPrivateDnsZones(),
 			"ksyun_private_dns_records": dataSourceKsyunPrivateDnsRecords(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
