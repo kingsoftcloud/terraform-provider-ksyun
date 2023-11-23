@@ -64,6 +64,8 @@ VPC
 		ksyun_subnet_allocated_ip_addresses
 		ksyun_subnet_available_addresses
 		ksyun_dnats
+		ksyun_private_dns_records
+		ksyun_private_dns_zones
 
 	Resource
 		ksyun_vpc
@@ -79,6 +81,9 @@ VPC
 		ksyun_security_group
 		ksyun_security_group_entry
 		ksyun_kec_network_interface
+		ksyun_private_dns_zone
+		ksyun_private_dns_record
+		ksyun_private_dns_zone_vpc_attachment
 
 VPN
 
@@ -351,6 +356,12 @@ func Provider() terraform.ResourceProvider {
 				Default:     true,
 				Description: "Whether use http keepalive, if false, disables HTTP keep-alives and will only use the connection to the server for a single HTTP request",
 			},
+			"force_https": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Force use https protocol for communication between sdk and remote server.",
+			},
 			"max_retries": {
 				Type:         schema.TypeInt,
 				Optional:     true,
@@ -438,6 +449,10 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_knads":                            dataSourceKsyunKnads(),
 			"ksyun_dnats":                            dataSourceKsyunDnats(),
 			"ksyun_vpn_gateway_routes":               dataSourceKsyunVpnGatewayRoutes(),
+
+			// private_dns
+			"ksyun_private_dns_zones":   dataSourceKsyunPrivateDnsZones(),
+			"ksyun_private_dns_records": dataSourceKsyunPrivateDnsRecords(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"ksyun_alb":                              resourceKsyunAlb(),
@@ -516,6 +531,11 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_nat_instance_bandwidth_limit":     resourceKsyunNatInstanceBandwidthLimit(),
 			"ksyun_dnat":                             resourceKsyunDnat(),
 			"ksyun_vpn_gateway_route":                resourceKsyunVpnGatewayRoute(),
+
+			// private dns
+			"ksyun_private_dns_zone":                resourceKsyunPrivateDnsZone(),
+			"ksyun_private_dns_record":              resourceKsyunPrivateDnsRecord(),
+			"ksyun_private_dns_zone_vpc_attachment": resourceKsyunPrivateDnsZoneVpcAttachment(),
 		},
 		ConfigureFunc: providerConfigure,
 	}
@@ -537,6 +557,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		HttpKeepAlive: d.Get("http_keepalive").(bool),
 		MaxRetries:    retryNum,
 		HttpProxy:     d.Get("http_proxy").(string),
+		UseSSL:        d.Get("force_https").(bool),
 	}
 	client, err := config.Client()
 	return client, err

@@ -1,3 +1,20 @@
+## 1.11.0 (Nov 23, 2023)
+
+FEATURES:
+
+- - **New Resource:** `ksyun_private_dns_zone` 内网DNS2.0
+- - **New Resource:** `ksyun_private_dns_record` 内网DNS解析记录
+- - **New Resource:** `ksyun_private_dns_zone_vpc_attachment` 内网DNS Zone绑定VPC
+- - **New Data Source:** `ksyun_private_dns_records` 
+- - **New Data Source:** `data_source_ksyun_private_dns_zone` 
+
+## 1.10.1 (Oct 20, 2023)
+
+IMPROVEMENTS:
+
+- `provider` 新增`force_https`字段
+- 优化http post请求发送tcp包数量，避免connection reset异常
+
 ## 1.10.0 (Oct 20, 2023)
 
 FEATURES:

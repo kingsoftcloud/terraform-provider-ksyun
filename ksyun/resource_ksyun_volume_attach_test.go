@@ -19,7 +19,7 @@ func TestAccKsyunVolumeAttach_basic(t *testing.T) {
 		CheckDestroy: testAccCheckVolumeAttachDestory,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccVolumeAttachConfig,
+				Config: attachConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckVolumeAttachExists("ksyun_volume_attach.foo"),
 				),
@@ -137,5 +137,21 @@ resource "ksyun_volume" "default" {
 resource "ksyun_volume_attach" "foo" {
 volume_id="${ksyun_volume.default.id}"
 instance_id="${ksyun_instance.default.id}"
+}
+`
+
+const attachConfig = `
+resource "ksyun_volume" "default" {
+  volume_name="ksyun_volume_tf_test"
+  volume_type="SSD3.0"
+  size=10
+  charge_type="Daily"
+  availability_zone="cn-beijing-6a"
+  volume_desc="ksyun_volume_tf_test"
+}
+
+resource "ksyun_volume_attach" "foo" {
+volume_id=ksyun_volume.default.id
+instance_id="3f0c35a4-2294-4152-a864-676c4913c45a"
 }
 `

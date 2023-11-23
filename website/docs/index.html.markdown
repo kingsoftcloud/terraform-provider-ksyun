@@ -168,6 +168,8 @@ In addition to [generic `provider` arguments](https://www.terraform.io/docs/conf
 
 * `ignore_service` - (Optional, Boolean) Whether ignore customer's service. 
 
+* `force_https` - (Optional, Boolean) Force use https protocol for communication between sdk and remote server.
+
 * `http_keepalive` - (Optional, Boolean) Whether use http keepalive, if false, disables HTTP keep-alives and will only use the connection to the server for a single HTTP request. 
 
 * `http_proxy` - (Optional) Indicating a http proxy server that the cyber traffic via. 
