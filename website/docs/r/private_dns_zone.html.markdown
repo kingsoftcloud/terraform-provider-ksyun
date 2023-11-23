@@ -30,7 +30,7 @@ The following arguments are supported:
 * `charge_type` - (Required, ForceNew) The charge type of the Private Dns Zone. Values: `TrafficMonthly`.
 * `zone_name` - (Required, ForceNew) The zone name of private dns.
 * `project_id` - (Optional, ForceNew) ID of the project.
-* `zone_ttl` - (Optional) The zone cache time. The smaller the value, the faster the record will take effect. Value range: 1~86400s.
+* `zone_ttl` - (Optional) The zone cache time. The smaller the value, the faster the record will take effect. Value range: 60~86400s.
 
 ## Attributes Reference
 

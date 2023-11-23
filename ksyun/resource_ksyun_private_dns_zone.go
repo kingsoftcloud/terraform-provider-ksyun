@@ -54,7 +54,7 @@ func resourceKsyunPrivateDnsZone() *schema.Resource {
 				Computed:     true,
 				ValidateFunc: validation.IntBetween(60, 86400),
 				Description: "The zone cache time. The smaller the value, the faster the record will take effect." +
-					" Value range: 1~86400s.",
+					" Value range: 60~86400s.",
 			},
 
 			"project_id": {

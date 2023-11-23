@@ -41,7 +41,7 @@ The following arguments are supported:
 * `zone_id` - (Required, ForceNew) Private Dns Zone ID.
 * `port` - (Optional, ForceNew) The port of record in which is associated with domain or ip. Required, when type is `SRV`.
 * `priority` - (Optional, ForceNew) Record priority. Value range: [SRV|0~65535], [MX|1~100]. Required, when type is `SRV` or `MX`.
-* `record_ttl` - (Optional) Record cache time. The smaller the value, the faster the record will take effect. Value range: 1~86400s.
+* `record_ttl` - (Optional) Record cache time. The smaller the value, the faster the record will take effect. Value range: 60~86400s.
 * `weight` - (Optional, ForceNew) Record weight. Value range: 0~65535. Required, when type is `SRV`.
 
 ## Attributes Reference

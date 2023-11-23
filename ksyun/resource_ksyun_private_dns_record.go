@@ -58,7 +58,7 @@ func resourceKsyunPrivateDnsRecord() *schema.Resource {
 				Computed:     true,
 				ValidateFunc: validation.IntBetween(60, 86400),
 				Description: "Record cache time. The smaller the value, the faster the record will take effect." +
-					" Value range: 1~86400s.",
+					" Value range: 60~86400s.",
 			},
 
 			"type": {
@@ -84,7 +84,7 @@ func resourceKsyunPrivateDnsRecord() *schema.Resource {
 				ForceNew:         true,
 				Description:      "Record priority. Value range: [SRV|0~65535], [MX|1~100]. Required, when type is `SRV` or `MX`.",
 				DiffSuppressFunc: pdnsZoneRecordDiffSuppressFunc,
-				ValidateFunc:     validation.IntBetween(1, 65535),
+				ValidateFunc:     validation.IntBetween(0, 65535),
 			},
 			"weight": {
 				Type:             schema.TypeInt,
