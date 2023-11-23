@@ -15,6 +15,7 @@ import (
 	"github.com/KscSDK/ksc-sdk-go/service/knad"
 	"github.com/KscSDK/ksc-sdk-go/service/krds"
 	"github.com/KscSDK/ksc-sdk-go/service/mongodb"
+	"github.com/KscSDK/ksc-sdk-go/service/pdns"
 	"github.com/KscSDK/ksc-sdk-go/service/rabbitmq"
 	"github.com/KscSDK/ksc-sdk-go/service/sks"
 	"github.com/KscSDK/ksc-sdk-go/service/slb"
@@ -50,6 +51,7 @@ type KsyunClient struct {
 	kceconn       *kce.Kce             `json:"kceconn,omitempty"`
 	kcev2conn     *kcev2.Kcev2         `json:"kcev2conn,omitempty"`
 	knadconn      *knad.Knad           `json:"knadconn,omitempty"`
+	pdnsconn      *pdns.Pdns           `json:"pdnsconn,omitempty"`
 
 	config *Config
 }

@@ -1019,3 +1019,15 @@ func getFilterParams(input interface{}, req *map[string]interface{}) error {
 func MapstructureFiller(m interface{}, s interface{}) error {
 	return mapstructure.Decode(m, s)
 }
+
+func AssembleIds(ids ...string) (s string) {
+	if len(ids) < 1 {
+		return s
+	}
+
+	return strings.Join(ids, ":")
+}
+
+func DisassembleIds(aId string) []string {
+	return strings.Split(aId, ":")
+}

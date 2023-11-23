@@ -24,6 +24,7 @@ import (
 	"github.com/KscSDK/ksc-sdk-go/service/knad"
 	"github.com/KscSDK/ksc-sdk-go/service/krds"
 	"github.com/KscSDK/ksc-sdk-go/service/mongodb"
+	"github.com/KscSDK/ksc-sdk-go/service/pdns"
 	"github.com/KscSDK/ksc-sdk-go/service/rabbitmq"
 	"github.com/KscSDK/ksc-sdk-go/service/sks"
 	"github.com/KscSDK/ksc-sdk-go/service/slb"
@@ -95,6 +96,7 @@ func (c *Config) Client() (*KsyunClient, error) {
 	client.kceconn = kce.SdkNew(cli, cfg, url)
 	client.kcev2conn = kcev2.SdkNew(cli, cfg, url)
 	client.knadconn = knad.SdkNew(cli, cfg, url)
+	client.pdnsconn = pdns.SdkNew(cli, cfg, url)
 
 	// 懒加载ks3-client 所以不在此初始化
 	return &client, nil
