@@ -131,18 +131,39 @@ func importLoadBalancerAclEntry(d *schema.ResourceData, meta interface{}) ([]*sc
 func importLoadBalancerAclAssociate(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	var err error
 	items := strings.Split(d.Id(), ":")
+	if len(items) < 3 {
+		return []*schema.ResourceData{d}, fmt.Errorf("import id must split with ':', e.g. Alb:listener_id:load_balancer_acl_id")
+	}
+	err = d.Set("lb_type", items[0])
+	if err != nil {
+		return []*schema.ResourceData{d}, err
+	}
+	err = d.Set("listener_id", items[1])
+	if err != nil {
+		return []*schema.ResourceData{d}, err
+	}
+	err = d.Set("load_balancer_acl_id", items[2])
+	if err != nil {
+		return []*schema.ResourceData{d}, err
+	}
+	d.SetId(strings.Join(items[1:], ":"))
+	return []*schema.ResourceData{d}, nil
+}
+func importHealthcheck(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	var err error
+	items := strings.Split(d.Id(), ":")
 	if len(items) < 2 {
-		return []*schema.ResourceData{d}, fmt.Errorf("import id must split with ':'")
+		return []*schema.ResourceData{d}, fmt.Errorf("import id must split with ':', e.g. Alb:healthcheck_id")
+	}
+	err = d.Set("lb_type", items[0])
+	if err != nil {
+		return []*schema.ResourceData{d}, err
+	}
+	err = d.Set("listener_id", items[1])
+	if err != nil {
+		return []*schema.ResourceData{d}, err
 	}
 
-	err = d.Set("listener_id", items[0])
-	if err != nil {
-		return []*schema.ResourceData{d}, err
-	}
-	err = d.Set("load_balancer_acl_id", items[1])
-	if err != nil {
-		return []*schema.ResourceData{d}, err
-	}
 	return []*schema.ResourceData{d}, nil
 }
 

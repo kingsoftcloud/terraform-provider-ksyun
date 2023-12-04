@@ -39,6 +39,7 @@ The following arguments are supported:
 * `host_name` - (Optional) The service host name of the health check, which is available only for the HTTP or HTTPS health check.
 * `interval` - (Optional) Interval of health examination.Valid Values:1-3600. Default is 5.
 * `is_default_host_name` - (Optional) Whether the host name is default or not.
+* `lb_type` - (Optional, ForceNew) The type of listener. Valid Value: `Alb` and `Slb`. Default: `Slb`.
 * `timeout` - (Optional) Health check timeout.Valid Values:1-3600. Default is 4.
 * `unhealthy_threshold` - (Optional) Unhealthy threshold.Valid Values:1-10. Default is 4.
 * `url_path` - (Optional) Link to HTTP type listener health check.
@@ -57,6 +58,6 @@ In addition to all arguments above, the following attributes are exported:
 HealthCheck can be imported using the id, e.g.
 
 ```
-$ terraform import ksyun_healthcheck.default 67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
+$ terraform import ksyun_healthcheck.default ${lb_type}:67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
 ```
 

@@ -38,6 +38,7 @@ The `health_check` object supports the following:
 * `healthy_threshold` - (Optional) Health threshold.Valid Values:1-10. Default is 5.
 * `host_name` - (Optional) hostname of the health check.
 * `interval` - (Optional) Interval of health examination.Valid Values:1-3600. Default is 5.
+* `lb_type` - (Optional) The type of listener. Valid Value: `Alb` and `Slb`. Default: `Slb`.
 * `timeout` - (Optional) Health check timeout.Valid Values:1-3600. Default is 4.
 * `unhealthy_threshold` - (Optional) Unhealthy threshold.Valid Values:1-10. Default is 4.
 * `url_path` - (Optional) Link to HTTP type listener health check.

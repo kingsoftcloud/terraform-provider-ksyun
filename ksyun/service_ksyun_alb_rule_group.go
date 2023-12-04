@@ -297,6 +297,12 @@ func (s *AlbRuleGroup) modifyRuleGroupCall(d *schema.ResourceData, r *schema.Res
 		}
 	}
 
+	if d.HasChange("redirect_http_code") {
+		transform["redirect_alb_listener_id"] = SdkReqTransform{
+			forceUpdateParam: true,
+		}
+	}
+
 	req, err := SdkRequestAutoMapping(d, r, true, transform, nil, SdkReqParameter{
 		onlyTransform: false,
 	})

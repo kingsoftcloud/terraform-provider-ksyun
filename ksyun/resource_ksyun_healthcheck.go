@@ -24,13 +24,14 @@ Provides an Health Check resource.
 HealthCheck can be imported using the id, e.g.
 
 ```
-$ terraform import ksyun_healthcheck.default 67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
+$ terraform import ksyun_healthcheck.default ${lb_type}:67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
 ```
 */
 package ksyun
 
 import (
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
@@ -42,7 +43,7 @@ func resourceKsyunHealthCheck() *schema.Resource {
 		Update: resourceKsyunHealthCheckUpdate,
 		Delete: resourceKsyunHealthCheckDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			State: importHealthcheck,
 		},
 		Schema: map[string]*schema.Schema{
 			"listener_id": {
@@ -71,7 +72,7 @@ func resourceKsyunHealthCheck() *schema.Resource {
 			"interval": {
 				Type:         schema.TypeInt,
 				Optional:     true,
-				ValidateFunc: validation.IntBetween(1, 1000),
+				ValidateFunc: validation.IntBetween(1, 3600),
 				Default:      5,
 				Description:  "Interval of health examination.Valid Values:1-3600. Default is 5.",
 			},
@@ -110,6 +111,17 @@ func resourceKsyunHealthCheck() *schema.Resource {
 				DiffSuppressFunc: lbHealthCheckDiffSuppressFunc,
 				Description:      "The service host name of the health check, which is available only for the HTTP or HTTPS health check.",
 			},
+
+			"lb_type": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "Slb",
+				ForceNew: true,
+				ValidateFunc: validation.StringInSlice([]string{"Alb", "Slb"},
+					false),
+				Description: "The type of listener. Valid Value: `Alb` and `Slb`. Default: `Slb`.",
+			},
+
 			"health_check_id": {
 				Type:        schema.TypeString,
 				Computed:    true,

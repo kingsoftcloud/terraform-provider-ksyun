@@ -43,6 +43,15 @@ resource "ksyun_security_group_entry" "example" {
 }
 
 # ---------------------------------------------
+# alb backend server group for default forward rule group
+resource "ksyun_alb_backend_server_group" "foo" {
+  name                = "tf-alb-bsg"
+  vpc_id              = ksyun_vpc.example.id
+  upstream_keepalive  = "adaptation"
+  backend_server_type = "Host"
+}
+
+# ---------------------------------------------
 # resource ksyun alb
 resource "ksyun_alb" "example" {
   alb_name    = "tf-alb-example-1"
@@ -68,12 +77,17 @@ resource "ksyun_alb_listener" "example" {
   port               = 8099
   alb_listener_state = "start"
   certificate_id     = data.ksyun_certificates.listener_cert.certificates.0.certificate_id
-  http_protocol      = "HTTP1.1"
+
   session {
     cookie_type                = "ImplantCookie"
     cookie_name                = "KLBRSIDdad"
     session_state              = "start"
     session_persistence_period = 3100
+  }
+
+  # default forward rule setting
+  default_forward_rule {
+    backend_server_group_id = ksyun_alb_backend_server_group.foo.id
   }
 }
 ```
@@ -88,12 +102,19 @@ The following arguments are supported:
 * `alb_listener_name` - (Optional) The name of the listener.
 * `alb_listener_state` - (Optional) The state of listener.Valid Values:'start', 'stop'.
 * `certificate_id` - (Optional) The ID of certificate.
+* `default_forward_rule` - (Optional) The default forward rule group.
 * `enable_http2` - (Optional) whether enable to HTTP2.
 * `http_protocol` - (Optional) Backend Protocol, valid values:'HTTP1.0','HTTP1.1'.
 * `method` - (Optional) Forwarding mode of listener. Valid Values:'RoundRobin', 'LeastConnections'.
-* `redirect_alb_listener_id` - (Optional) The ID of the redirect ALB listener.
+* `redirect_alb_listener_id` - (Optional, **Deprecated**) This parameter is moved to 'default_forward_rule' block. The ID of the redirect ALB listener.
 * `session` - (Optional) Whether keeps session. Specific `session` block, if keeps session.
 * `tls_cipher_policy` - (Optional) TLS cipher policy, valid values:'TlsCipherPolicy1.0','TlsCipherPolicy1.1','TlsCipherPolicy1.2','TlsCipherPolicy1.2-strict','TlsCipherPolicy1.2-moststrict'.
+
+The `default_forward_rule` object supports the following:
+
+* `backend_server_group_id` - (Optional) The backend server group id for default forward rule group.
+* `redirect_alb_listener_id` - (Optional) The ID of the alternative redirect ALB listener.
+* `redirect_http_code` - (Optional) The http code for redirect action.
 
 The `session` object supports the following:
 
@@ -109,6 +130,7 @@ In addition to all arguments above, the following attributes are exported:
 * `id` - ID of the resource.
 * `alb_listener_id` - The ID of listener.
 * `create_time` - The creation time.
+* `redirect_listener_name` - The redirect listener name.
 
 
 ## Import
