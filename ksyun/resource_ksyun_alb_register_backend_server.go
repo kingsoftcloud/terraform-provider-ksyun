@@ -1,5 +1,5 @@
 /*
-Provides a lb register alb backend server resource.
+Provides alb register alb backend server group resource.
 
 # Example Usage
 

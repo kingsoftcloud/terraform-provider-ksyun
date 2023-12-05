@@ -1,3 +1,18 @@
+## unrelease
+
+FEATURES:
+
+- - **New Resource:** `ksyun_alb_backend_server_group` 应用型负载均衡上游服务器组
+- - **New Resource:** `ksyun_alb_listener_associate_acl` 应用型负载均衡-Alb Acl绑定alb监听器
+- - **New Resource:** `ksyun_alb_register_backend_server` 应用型负载均衡-服务器注册服务器组
+- - **New Data Source:** `ksyun_alb_backend_server_groups`
+
+IMPROVEMENTS:
+
+- `ksyun_healthcheck` 新增`lb_type`兼容alb
+- `ksyun_alb_rule_group` 新增`redirect_http_code` `redirect_alb_listener_id` 重定向alb监听器
+- `ksyun_alb_listener` 新增`default_forward_rule`默认转发策略
+
 ## 1.9.0 (Sep 5, 2023)
 
 FEATURES:

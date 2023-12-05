@@ -4,12 +4,12 @@ layout: "ksyun"
 page_title: "ksyun: ksyun_alb_register_backend_server"
 sidebar_current: "docs-ksyun-resource-alb_register_backend_server"
 description: |-
-  Provides a lb register alb backend server resource.
+  Provides alb register alb backend server group resource.
 ---
 
 # ksyun_alb_register_backend_server
 
-Provides a lb register alb backend server resource.
+Provides alb register alb backend server group resource.
 
 #
 
