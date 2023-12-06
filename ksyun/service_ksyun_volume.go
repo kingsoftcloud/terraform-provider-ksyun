@@ -2,11 +2,12 @@ package ksyun
 
 import (
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
-	"strings"
-	"time"
 )
 
 type EbsService struct {
@@ -306,8 +307,8 @@ func (s *EbsService) ModifyVolumeResizeCall(d *schema.ResourceData, r *schema.Re
 
 func (s *EbsService) ModifyVolume(d *schema.ResourceData, r *schema.Resource) (err error) {
 
-	//a := d.HasChange("project_id")
-	//b := d.HasChange("volume_desc")
+	// a := d.HasChange("project_id")
+	// b := d.HasChange("volume_desc")
 
 	projectCall, err := s.ModifyVolumeProjectCall(d, r)
 	if err != nil {
@@ -422,9 +423,9 @@ func (s *EbsService) CreateVolumeAttachCall(d *schema.ResourceData, r *schema.Re
 			return resp, err
 		},
 		callError: func(d *schema.ResourceData, client *KsyunClient, call ApiCall, baseErr error) error {
-			return resource.Retry(5*time.Minute, func() *resource.RetryError {
-				errMessage := strings.ToLower(baseErr.Error())
-				if strings.Contains(errMessage, "OperationFailedWithTradeInstanceError") {
+			return resource.Retry(15*time.Minute, func() *resource.RetryError {
+				// errMessage := strings.ToLower(baseErr.Error())
+				if strings.Contains(baseErr.Error(), "OperationFailedWithTradeInstanceError") {
 					_, callErr := call.executeCall(d, client, call)
 					if callErr == nil {
 						return nil

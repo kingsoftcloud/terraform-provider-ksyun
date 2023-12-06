@@ -17,6 +17,41 @@ BUGFIX:
 
 - `ksyun_alb_listener` 更正tls 1.3参数
 
+## 1.11.0 (Nov 23, 2023)
+
+FEATURES:
+
+- - **New Resource:** `ksyun_private_dns_zone` 内网DNS2.0
+- - **New Resource:** `ksyun_private_dns_record` 内网DNS解析记录
+- - **New Resource:** `ksyun_private_dns_zone_vpc_attachment` 内网DNS Zone绑定VPC
+- - **New Data Source:** `ksyun_private_dns_records` 
+- - **New Data Source:** `data_source_ksyun_private_dns_zone` 
+
+## 1.10.1 (Oct 20, 2023)
+
+IMPROVEMENTS:
+
+- `provider` 新增`force_https`字段
+- 优化http post请求发送tcp包数量，避免connection reset异常
+
+## 1.10.0 (Oct 20, 2023)
+
+FEATURES:
+
+- - **New Resource:** `ksyun_vpn_gateway_route` Vpn网关路由，仅在Vpn2.0时生效
+- - **New Data Source:** `ksyun_vpn_gateway_routes`
+
+IMPROVEMENTS:
+
+- `ksyun_vpn_gateway` 支持VPN2.0
+- `ksyun_vpn_gateway_tunnel` 支持VPN2.0
+
+## 1.9.1 (Sep 25, 2023)
+
+BUGFIX:
+
+- `ksyun_bws_associate` 修复读取remote associations未处理异常而出现的空指针异常
+
 ## 1.9.0 (Sep 5, 2023)
 
 FEATURES:

@@ -1,64 +1,55 @@
 /*
-This data source provides a list of VPN gateways.
+This data source provides a list of VPN GatewayRoutes.
 
 # Example Usage
 
 ```hcl
 
-	data "ksyun_vpn_gateways" "default" {
+	data "ksyun_vpn_gateway_routes" "default" {
 	  output_file="output_result"
-	  ids=[]
+
+	  # specify vpn_gateway_id to query vpn_gateway_routes
+	  vpn_gateway_id = ""
 	}
 
 ```
 */
+
 package ksyun
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
 
-func dataSourceKsyunVpnGateways() *schema.Resource {
+func dataSourceKsyunVpnGatewayRoutes() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceKsyunVpnGatewaysRead,
+		Read: dataSourceKsyunVpnGatewayRoutesRead,
 
 		Schema: map[string]*schema.Schema{
-			"ids": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Set:         schema.HashString,
+			"vpn_gateway_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
 				Description: "A list of VPN gateway IDs, all the resources belong to this region will be retrieved if the ID is `\"\"`.",
 			},
 
-			"vpc_ids": {
+			"next_hop_types": {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
 				Set:         schema.HashString,
-				Description: "A list of VPC IDs.",
+				Description: "A list of the next hop type.",
 			},
 
-			"project_ids": {
+			"cidr_blocks": {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
 				Set:         schema.HashString,
-				Description: "A list of project IDs.",
-			},
-
-			"name_regex": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validation.StringIsValidRegExp,
-				Description:  "A regex string to filter results by name.",
+				Description: "A list of cidr block.",
 			},
 
 			"output_file": {
@@ -72,79 +63,46 @@ func dataSourceKsyunVpnGateways() *schema.Resource {
 				Computed:    true,
 				Description: "Total number of resources that satisfy the condition.",
 			},
-			"vpn_gateways": {
+			"vpn_gateway_routes": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "It is a nested type which documented below.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"id": {
+						"vpn_gateway_route_id": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The ID of the gateway.",
+						},
+
+						"destination_cidr_block": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The ID of the gateway.",
+						},
+
+						"route_type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name of the gateway.",
+						},
+
+						"next_hop_type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name of the gateway.",
+						},
+
+						"next_hop_instance_name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Band width.",
 						},
 
 						"vpn_gateway_id": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The ID of the gateway.",
-						},
-
-						"name": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The name of the gateway.",
-						},
-
-						"vpn_gateway_name": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The name of the gateway.",
-						},
-
-						"band_width": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "Band width.",
-						},
-
-						"vpc_id": {
-							Type:        schema.TypeString,
-							Computed:    true,
 							Description: "VPC ID.",
-						},
-
-						"gateway_address": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Gateway IP address.",
-						},
-
-						"ha_gateway_address": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "HA Gateway IP address.",
-						},
-						"vpn_gateway_version": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The version of vpn gateway.",
-						},
-
-						"remote_cidr_set": {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Optional:    true,
-							Description: "A list of remote cidrs.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"cidr_block": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Cidr block.",
-									},
-								},
-							},
 						},
 
 						"create_time": {
@@ -158,7 +116,7 @@ func dataSourceKsyunVpnGateways() *schema.Resource {
 		},
 	}
 }
-func dataSourceKsyunVpnGatewaysRead(d *schema.ResourceData, meta interface{}) error {
-	vpcService := VpcService{meta.(*KsyunClient)}
-	return vpcService.ReadAndSetVpnGateways(d, dataSourceKsyunVpnGateways())
+func dataSourceKsyunVpnGatewayRoutesRead(d *schema.ResourceData, meta interface{}) error {
+	vpnService := VpnSrv{meta.(*KsyunClient)}
+	return vpnService.ReadAndSetVpnGatewayRoutes(d, dataSourceKsyunVpnGatewayRoutes())
 }

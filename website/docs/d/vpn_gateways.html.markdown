@@ -49,5 +49,6 @@ In addition to all arguments above, the following attributes are exported:
   * `vpc_id` - VPC ID.
   * `vpn_gateway_id` - The ID of the gateway.
   * `vpn_gateway_name` - The name of the gateway.
+  * `vpn_gateway_version` - The version of vpn gateway.
 
 

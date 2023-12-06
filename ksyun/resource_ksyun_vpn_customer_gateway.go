@@ -8,7 +8,7 @@ Provides a Vpn Customer Gateway resource.
 	resource "ksyun_vpn_customer_gateway" "default" {
 	  customer_gateway_address   = "100.0.0.2"
 	  ha_customer_gateway_address = "100.0.2.2"
-	  customer_gateway_mame = "ksyun_vpn_cus_gw"
+	  customer_gateway_name = "ksyun_vpn_cus_gw"
 	}
 
 ```
@@ -25,6 +25,7 @@ package ksyun
 
 import (
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
@@ -60,6 +61,12 @@ func resourceKsyunVpnCustomerGateway() *schema.Resource {
 			},
 
 			"customer_gateway_mame": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The name of the vpn customer gateway. **Warning this field was removed**.",
+				Removed:     "this field has been replaced by `customer_gateway_name`.",
+			},
+			"customer_gateway_name": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The name of the vpn customer gateway.",

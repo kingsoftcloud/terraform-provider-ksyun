@@ -1,6 +1,8 @@
 package network
 
 import (
+	"fmt"
+	"io/ioutil"
 	"net"
 	"net/url"
 	"strings"
@@ -18,6 +20,32 @@ var NetErrorHandler = request.NamedHandler{
 			return
 		}
 		r.Error = handeNetError(r.Error)
+	},
+}
+
+var OutputResetError = request.NamedHandler{
+	Name: "ksyun.OutputResetError",
+	Fn: func(r *request.Request) {
+		if r.Error == nil {
+			return
+		}
+		if isErrConnectionReset(r.Error) {
+			fmt.Printf("Request: %v", r)
+		}
+	},
+}
+
+var HandleRequestBody = request.NamedHandler{
+	Name: "ksyun.HandleRequestBody",
+	Fn: func(r *request.Request) {
+		if r.HTTPRequest.Method == "GET" {
+			return
+		}
+		body := r.Body
+
+		// r.HTTPRequest.Body = &CustomReader{body}
+		r.HTTPRequest.Body = ioutil.NopCloser(body)
+
 	},
 }
 
