@@ -25,6 +25,7 @@ package ksyun
 
 import (
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
@@ -37,6 +38,10 @@ func resourceKsyunBackendServerGroup() *schema.Resource {
 		} else {
 			v.ForceNew = false
 			v.DiffSuppressFunc = nil
+		}
+		switch k {
+		case "http_method":
+			v.Optional = false
 		}
 	}
 	entry["host_name"] = &schema.Schema{

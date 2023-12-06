@@ -112,6 +112,14 @@ func resourceKsyunHealthCheck() *schema.Resource {
 				Description:      "The service host name of the health check, which is available only for the HTTP or HTTPS health check.",
 			},
 
+			"http_method": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The http requests' method. Valid Value: GET|HEAD.",
+				ValidateFunc: validation.StringInSlice([]string{"GET", "HEAD"},
+					false),
+			},
+
 			"lb_type": {
 				Type:     schema.TypeString,
 				Optional: true,

@@ -9,9 +9,13 @@ FEATURES:
 
 IMPROVEMENTS:
 
-- `ksyun_healthcheck` 新增`lb_type`兼容alb
+- `ksyun_healthcheck` 新增`lb_type`兼容alb; 新增`http_method` 参数
 - `ksyun_alb_rule_group` 新增`redirect_http_code` `redirect_alb_listener_id` 重定向alb监听器
 - `ksyun_alb_listener` 新增`default_forward_rule`默认转发策略
+
+BUGFIX:
+
+- `ksyun_alb_listener` 更正tls 1.3参数
 
 ## 1.9.0 (Sep 5, 2023)
 

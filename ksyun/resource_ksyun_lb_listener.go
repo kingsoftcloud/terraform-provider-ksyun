@@ -41,6 +41,7 @@ package ksyun
 
 import (
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
@@ -235,7 +236,7 @@ func resourceKsyunListener() *schema.Resource {
 				Description: "The ID of LB ACL.",
 				// 设置optional+computed造成通过这个值可以绑定和修改，但是不能解绑，因此不设置computed
 				// 但是需要注意，用ksyun_lb_listener_associate_acl会导致这个值必须设置，否则plan的时候会提示change
-				//Computed: true,
+				// Computed: true,
 			},
 
 			"listener_id": {

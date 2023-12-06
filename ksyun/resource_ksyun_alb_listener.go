@@ -161,9 +161,9 @@ func resourceKsyunAlbListener() *schema.Resource {
 					"TlsCipherPolicy1.1",
 					"TlsCipherPolicy1.2",
 					"TlsCipherPolicy1.2-strict",
-					"TlsCipherPolicy1.2-moststrict",
+					"TlsCipherPolicy1.2-most-strict-with1.3",
 				}, false),
-				Description: "TLS cipher policy, valid values:'TlsCipherPolicy1.0','TlsCipherPolicy1.1','TlsCipherPolicy1.2','TlsCipherPolicy1.2-strict','TlsCipherPolicy1.2-moststrict'.",
+				Description: "TLS cipher policy, valid values:'TlsCipherPolicy1.0','TlsCipherPolicy1.1','TlsCipherPolicy1.2','TlsCipherPolicy1.2-strict','TlsCipherPolicy1.2-most-strict-with1.3'.",
 			},
 			"alb_listener_state": {
 				Type:         schema.TypeString,
@@ -284,6 +284,8 @@ func resourceKsyunAlbListener() *schema.Resource {
 					},
 				},
 			},
+
+			// TODO: 个性化配置
 
 			"alb_listener_id": {
 				Type:        schema.TypeString,
