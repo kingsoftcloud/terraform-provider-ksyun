@@ -56,6 +56,10 @@ func resourceKsyunListener() *schema.Resource {
 			v.ForceNew = false
 			v.DiffSuppressFunc = nil
 		}
+		switch k {
+		case "lb_type":
+			delete(entry, k)
+		}
 	}
 	return &schema.Resource{
 		Create: resourceKsyunListenerCreate,

@@ -60,6 +60,10 @@ func resourceKsyunSlbRule() *schema.Resource {
 		switch k {
 		case "http_method":
 			v.Optional = false
+			v.Computed = true
+			v.ValidateFunc = nil
+		case "lb_type":
+			delete(entry, k)
 		}
 	}
 	return &schema.Resource{

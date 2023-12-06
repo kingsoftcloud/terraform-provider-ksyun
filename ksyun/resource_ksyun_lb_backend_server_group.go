@@ -42,6 +42,10 @@ func resourceKsyunBackendServerGroup() *schema.Resource {
 		switch k {
 		case "http_method":
 			v.Optional = false
+			v.Computed = true
+			v.ValidateFunc = nil
+		case "lb_type":
+			delete(entry, k)
 		}
 	}
 	entry["host_name"] = &schema.Schema{

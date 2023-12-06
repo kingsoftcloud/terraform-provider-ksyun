@@ -49,6 +49,8 @@ func resourceKsyunAlbBackendServerGroup() *schema.Resource {
 		switch k {
 		case "http_method":
 			v.Optional = false
+			v.Computed = true
+			v.ValidateFunc = nil
 		}
 	}
 	entry["host_name"] = &schema.Schema{

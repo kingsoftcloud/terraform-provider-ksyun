@@ -159,11 +159,11 @@ func importHealthcheck(d *schema.ResourceData, meta interface{}) ([]*schema.Reso
 	if err != nil {
 		return []*schema.ResourceData{d}, err
 	}
-	err = d.Set("listener_id", items[1])
+	err = d.Set("health_check_id", items[1])
 	if err != nil {
 		return []*schema.ResourceData{d}, err
 	}
-
+	d.SetId(items[1])
 	return []*schema.ResourceData{d}, nil
 }
 
