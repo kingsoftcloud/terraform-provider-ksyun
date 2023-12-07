@@ -30,7 +30,6 @@ resource "ksyun_alb_backend_server_group" "foo" {
 
 resource "ksyun_alb_register_backend_server" "foo" {
   backend_server_group_id = ksyun_alb_backend_server_group.foo.id
-  network_interface_id    = ksyun_instance.test.network_interface_id
   backend_server_ip       = ksyun_instance.test.private_ip_address
   port                    = 8080
   weight                  = 40
