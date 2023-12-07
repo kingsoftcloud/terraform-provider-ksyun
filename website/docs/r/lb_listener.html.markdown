@@ -63,6 +63,7 @@ The `health_check` object supports the following:
 * `health_check_state` - (Optional) Status maintained by health examination.Valid Values:'start', 'stop'.
 * `healthy_threshold` - (Optional) Health threshold.Valid Values:1-10. Default is 5.
 * `host_name` - (Optional) The service host name of the health check, which is available only for the HTTP or HTTPS health check.
+* `http_method` - (Optional) The http requests' method. Valid Value: GET|HEAD.
 * `interval` - (Optional) Interval of health examination.Valid Values:1-3600. Default is 5.
 * `is_default_host_name` - (Optional) Whether the host name is default or not.
 * `timeout` - (Optional) Health check timeout.Valid Values:1-3600. Default is 4.

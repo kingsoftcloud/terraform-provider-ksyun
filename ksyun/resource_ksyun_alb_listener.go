@@ -31,6 +31,15 @@ resource "ksyun_security_group_entry" "example" {
 }
 
 # ---------------------------------------------
+# alb backend server group for default forward rule group
+resource "ksyun_alb_backend_server_group" "foo" {
+  name="tf-alb-bsg"
+  vpc_id=ksyun_vpc.example.id
+  upstream_keepalive="adaptation"
+  backend_server_type="Host"
+}
+
+# ---------------------------------------------
 # resource ksyun alb
 resource "ksyun_alb" "example" {
   alb_name    = "tf-alb-example-1"
@@ -56,12 +65,17 @@ resource "ksyun_alb_listener" "example" {
   port               = 8099
   alb_listener_state = "start"
   certificate_id     = data.ksyun_certificates.listener_cert.certificates.0.certificate_id
-  http_protocol      = "HTTP1.1"
+
   session {
     cookie_type                = "ImplantCookie"
     cookie_name                = "KLBRSIDdad"
     session_state              = "start"
     session_persistence_period = 3100
+  }
+
+  # default forward rule setting
+  default_forward_rule {
+    backend_server_group_id = ksyun_alb_backend_server_group.foo.id
   }
 }
 ```
@@ -147,9 +161,9 @@ func resourceKsyunAlbListener() *schema.Resource {
 					"TlsCipherPolicy1.1",
 					"TlsCipherPolicy1.2",
 					"TlsCipherPolicy1.2-strict",
-					"TlsCipherPolicy1.2-moststrict",
+					"TlsCipherPolicy1.2-most-strict-with1.3",
 				}, false),
-				Description: "TLS cipher policy, valid values:'TlsCipherPolicy1.0','TlsCipherPolicy1.1','TlsCipherPolicy1.2','TlsCipherPolicy1.2-strict','TlsCipherPolicy1.2-moststrict'.",
+				Description: "TLS cipher policy, valid values:'TlsCipherPolicy1.0','TlsCipherPolicy1.1','TlsCipherPolicy1.2','TlsCipherPolicy1.2-strict','TlsCipherPolicy1.2-most-strict-with1.3'.",
 			},
 			"alb_listener_state": {
 				Type:         schema.TypeString,
@@ -163,6 +177,7 @@ func resourceKsyunAlbListener() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				Description: "The ID of the redirect ALB listener.",
+				Deprecated:  "This parameter is moved to 'default_forward_rule' block.",
 			},
 
 			"session": {
@@ -227,7 +242,50 @@ func resourceKsyunAlbListener() *schema.Resource {
 					"HTTP1.1",
 				}, false),
 				Description: "Backend Protocol, valid values:'HTTP1.0','HTTP1.1'.",
+				// Deprecated:  "This attribution was deprecated.",
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					return true
+				},
 			},
+
+			"default_forward_rule": {
+				Type:         schema.TypeList,
+				MaxItems:     1,
+				AtLeastOneOf: []string{"default_forward_rule"},
+				Optional:     true,
+				Description:  "The default forward rule group.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"backend_server_group_id": {
+							Type:          schema.TypeString,
+							Optional:      true,
+							ConflictsWith: []string{"default_forward_rule.0.redirect_alb_listener_id"},
+							AtLeastOneOf:  []string{"default_forward_rule.0.backend_server_group_id", "default_forward_rule.0.redirect_alb_listener_id"},
+							Description:   "The backend server group id for default forward rule group.",
+						},
+						"redirect_alb_listener_id": {
+							Type:          schema.TypeString,
+							Optional:      true,
+							ConflictsWith: []string{"default_forward_rule.0.backend_server_group_id"},
+							AtLeastOneOf:  []string{"default_forward_rule.0.backend_server_group_id", "default_forward_rule.0.redirect_alb_listener_id"},
+							Description:   "The ID of the alternative redirect ALB listener.",
+						},
+						"redirect_http_code": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The http code for redirect action.",
+						},
+
+						"alb_rule_group_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The default alb rule group id.",
+						},
+					},
+				},
+			},
+
+			// TODO: 个性化配置
 
 			"alb_listener_id": {
 				Type:        schema.TypeString,
@@ -238,6 +296,11 @@ func resourceKsyunAlbListener() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The creation time.",
+			},
+			"redirect_listener_name": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The redirect listener name.",
 			},
 
 			// HealthCheckId
@@ -255,14 +318,20 @@ func resourceKsyunAlbListenerCreate(d *schema.ResourceData, meta interface{}) (e
 	}
 	return resourceKsyunAlbListenerRead(d, meta)
 }
+
 func resourceKsyunAlbListenerRead(d *schema.ResourceData, meta interface{}) (err error) {
 	s := AlbListenerService{meta.(*KsyunClient)}
 	err = s.ReadAndSetListener(d, resourceKsyunAlbListener())
 	if err != nil {
 		return fmt.Errorf("error on reading ALB listener %q, %s", d.Id(), err)
 	}
+	err = s.ReadAndSetDefaultBackendGroup(d, resourceKsyunAlbListener())
+	if err != nil {
+		return fmt.Errorf("error on reading default backend server group %s", err)
+	}
 	return
 }
+
 func resourceKsyunAlbListenerUpdate(d *schema.ResourceData, meta interface{}) (err error) {
 	s := AlbListenerService{meta.(*KsyunClient)}
 	err = s.ModifyListener(d, resourceKsyunAlbListener())
@@ -272,6 +341,7 @@ func resourceKsyunAlbListenerUpdate(d *schema.ResourceData, meta interface{}) (e
 	err = resourceKsyunAlbListenerRead(d, meta)
 	return
 }
+
 func resourceKsyunAlbListenerDelete(d *schema.ResourceData, meta interface{}) (err error) {
 	s := AlbListenerService{meta.(*KsyunClient)}
 	err = s.RemoveListener(d)

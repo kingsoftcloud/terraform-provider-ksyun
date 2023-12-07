@@ -132,12 +132,16 @@ ALB
 		ksyun_alb_listeners
 		ksyun_alb_rule_groups
 		ksyun_alb_listener_cert_groups
+        ksyun_alb_backend_server_groups
 
 	Resource
 		ksyun_alb
 		ksyun_alb_listener
 		ksyun_alb_rule_group
 		ksyun_alb_listener_cert_group
+		ksyun_alb_backend_server_group
+		ksyun_alb_register_backend_server
+		ksyun_alb_listener_associate_acl
 
 SSH key
 
@@ -448,6 +452,7 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_auto_snapshot_volume_association": dataSourceKsyunAutoSnapshotVolumeAssociation(),
 			"ksyun_knads":                            dataSourceKsyunKnads(),
 			"ksyun_dnats":                            dataSourceKsyunDnats(),
+			"ksyun_alb_backend_server_groups":        dataSourceKsyunAlbBackendServerGroups(),
 			"ksyun_vpn_gateway_routes":               dataSourceKsyunVpnGatewayRoutes(),
 
 			// private_dns
@@ -530,6 +535,9 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_knad_associate":                   resourceKsyunKnadAssociate(),
 			"ksyun_nat_instance_bandwidth_limit":     resourceKsyunNatInstanceBandwidthLimit(),
 			"ksyun_dnat":                             resourceKsyunDnat(),
+			"ksyun_alb_backend_server_group":         resourceKsyunAlbBackendServerGroup(),
+			"ksyun_alb_register_backend_server":      resourceKsyunRegisterAlbBackendServer(),
+			"ksyun_alb_listener_associate_acl":       resourceKsyunAlbListenerAssociateAcl(),
 			"ksyun_vpn_gateway_route":                resourceKsyunVpnGatewayRoute(),
 
 			// private dns

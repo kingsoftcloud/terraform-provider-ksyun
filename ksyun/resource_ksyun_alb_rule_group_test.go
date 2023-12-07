@@ -12,20 +12,20 @@ func TestResourceKsyunAlbRuleGroup_basic(t *testing.T) {
 			testAccPreCheck(t)
 		},
 
-		// IDRefreshName: "ksyun_auto_snapshot_volume_association.foo",
-		Providers: testAccProviders,
+		IDRefreshName: "ksyun_alb_rule_group.default",
+		Providers:     testAccProviders,
 		// CheckDestroy:  testAccCheckSnapshotDestroy,
 
 		Steps: []resource.TestStep{
 			{
-				Config: testAccAlbRuleGroupConfig,
+				Config: testAccAlbRuleGroupWithRedirectHttpCode,
 
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIDExists("ksyun_alb_rule_group.default"),
 				),
 			},
 			{
-				Config: testAccAlbRuleGroupUpdateConfig,
+				Config: testAccAlbRuleGroupWithRedirectHttpCodeUpdate,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIDExists("ksyun_alb_rule_group.default"),
 				),
@@ -102,5 +102,37 @@ alb_rule_set {
   healthy_threshold=3
   unhealthy_threshold=5
   host_name = ""
+}
+`
+
+const testAccAlbRuleGroupWithRedirectHttpCode = `
+
+resource "ksyun_alb_rule_group" "default" {
+  alb_listener_id         = "45410347-3f67-457b-b99f-848f51f07068"
+  alb_rule_group_name     = "tf_alb_rule_group-3"
+  redirect_alb_listener_id = "b7fac079-0801-4dca-8bc3-619505c7aa3a"
+  alb_rule_set {
+    alb_rule_type  = "url"
+    alb_rule_value = "/test/path/2"
+  }
+  listener_sync = "on"
+
+  redirect_http_code = 301
+}
+`
+
+const testAccAlbRuleGroupWithRedirectHttpCodeUpdate = `
+
+resource "ksyun_alb_rule_group" "default" {
+  alb_listener_id         = "45410347-3f67-457b-b99f-848f51f07068"
+  alb_rule_group_name     = "tf_alb_rule_group-3"
+  redirect_alb_listener_id = "b7fac079-0801-4dca-8bc3-619505c7aa3a"
+  alb_rule_set {
+    alb_rule_type  = "url"
+    alb_rule_value = "/test/path/2"
+  }
+  listener_sync = "on"
+
+  redirect_http_code = 307
 }
 `

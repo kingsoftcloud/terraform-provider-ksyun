@@ -146,9 +146,9 @@ The following arguments are supported:
 
 * `alb_listener_id` - (Required, ForceNew) The ID of the ALB listener.
 * `alb_rule_set` - (Required) Rule set, define strategies for being load-balance of backend server.
-* `backend_server_group_id` - (Required) The ID of the backend server group.
 * `listener_sync` - (Required) Whether to synchronize the health check, session persistence, and load balancing algorithm of the listener. valid values: 'on', 'off'.
 * `alb_rule_group_name` - (Optional) The name of the ALB rule group.
+* `backend_server_group_id` - (Optional) The ID of the backend server group. Conflict with 'backend_server_group_id'.
 * `cookie_name` - (Optional) The name of cookie. Should set it value, when `listener_sync` is off and `cookie_type` is `RewriteCookie`.
 * `cookie_type` - (Optional) The type of cookie, valid values: 'ImplantCookie','RewriteCookie'.
 * `health_check_state` - (Optional) Status maintained by health examination.Valid Values:'start', 'stop'. Should set it value, when `listener_sync` is off.
@@ -156,6 +156,8 @@ The following arguments are supported:
 * `host_name` - (Optional) The service host name of the health check, which is available only for the HTTP or HTTPS health check. Should set it value, when `listener_sync` is off.
 * `interval` - (Optional) Interval of health examination.Valid Values:1-3600. Should set it value, when `listener_sync` is off.
 * `method` - (Optional) Forwarding mode of listener. Valid Values:'RoundRobin', 'LeastConnections'.
+* `redirect_alb_listener_id` - (Optional) The id of redirect alb listener. Conflict with 'backend_server_group_id'.
+* `redirect_http_code` - (Optional) The http code of redirecting. Valid Values: 301|302|307.
 * `session_persistence_period` - (Optional) Session hold timeout. Valid Values:1-86400. Should set it value, when `listener_sync` is off.
 * `session_state` - (Optional) The state of session. Valid Values:'start', 'stop'. Should set it value, when `listener_sync` is off.
 * `timeout` - (Optional) Health check timeout.Valid Values:1-3600. Should set it value, when `listener_sync` is off.

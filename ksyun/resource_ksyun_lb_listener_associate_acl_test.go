@@ -2,11 +2,12 @@ package ksyun
 
 import (
 	"fmt"
+	"strings"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/pkg/errors"
-	"strings"
-	"testing"
 )
 
 func TestAccKsyunListenerAssociateAcl_basic(t *testing.T) {
@@ -15,14 +16,14 @@ func TestAccKsyunListenerAssociateAcl_basic(t *testing.T) {
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
-		IDRefreshName: "ksyun_lb_listener_associate_acl.foo",
+		IDRefreshName: "ksyun_lb_listener_associate_acl.default",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckListenerAssociateAclDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccListenerAssociateAclConfig,
+				Config: testAccAlbListenerAssociateAclConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckListenerAssociateAclExists("ksyun_lb_listener_associate_acl.foo", &val),
+					testAccCheckListenerAssociateAclExists("ksyun_lb_listener_associate_acl.default", &val),
 					testAccCheckListenerAssociateAclAttributes(&val),
 				),
 			},
@@ -164,4 +165,13 @@ resource "ksyun_lb_listener_associate_acl" "foo" {
   listener_id = "${ksyun_lb_listener.default.id}"
   load_balancer_acl_id = "${ksyun_lb_acl.default.id}"
 }
+`
+
+const testAccAlbListenerAssociateAclConfig = `
+resource "ksyun_lb_listener_associate_acl" "default" {
+  listener_id          = "09197c73-88ce-4070-9ec2-2da476742926"
+  load_balancer_acl_id = "6de65767-93f7-4b4c-8601-2f7ad28a184e"
+  lb_type = "Alb"
+}
+
 `
