@@ -22,6 +22,7 @@ package ksyun
 
 import (
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
@@ -47,6 +48,11 @@ func resourceKsyunListenerAssociateAcl() *schema.Resource {
 				ForceNew:    true,
 				Description: "The ID of the load balancer acl.",
 			},
+			"lb_type": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The type of listener. Valid Value: `Alb` and `Slb`. Default: `Slb`.",
+			},
 		},
 	}
 }
@@ -56,6 +62,7 @@ func resourceKsyunListenerAssociateAclCreate(d *schema.ResourceData, meta interf
 	if err != nil {
 		return fmt.Errorf("error on creating listener acl associate %q, %s", d.Id(), err)
 	}
+	_ = d.Set("lb_type", "Slb")
 	return resourceKsyunListenerAssociateAclRead(d, meta)
 }
 

@@ -42,6 +42,7 @@ package ksyun
 
 import (
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
@@ -54,6 +55,15 @@ func resourceKsyunSlbRule() *schema.Resource {
 		} else {
 			v.ForceNew = false
 			v.DiffSuppressFunc = nil
+		}
+
+		switch k {
+		case "http_method":
+			v.Optional = false
+			v.Computed = true
+			v.ValidateFunc = nil
+		case "lb_type":
+			delete(entry, k)
 		}
 	}
 	return &schema.Resource{

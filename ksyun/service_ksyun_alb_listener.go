@@ -1,7 +1,9 @@
 package ksyun
 
 import (
+	"context"
 	"fmt"
+	"reflect"
 	"strings"
 	"time"
 
@@ -24,10 +26,16 @@ func (s *AlbListenerService) createListenerCall(d *schema.ResourceData, r *schem
 		"session": {
 			Type: TransformListUnique,
 		},
+		"default_forward_rule": {
+			Type: TransformListUnique,
+		},
 	}
 	req, err := SdkRequestAutoMapping(d, r, false, transform, nil, SdkReqParameter{
 		onlyTransform: false,
 	})
+	if err != nil {
+		return callback, err
+	}
 
 	if req["listener_protocol"] != "HTTPS" {
 		delete(req, "EnableHttp2")
@@ -36,6 +44,9 @@ func (s *AlbListenerService) createListenerCall(d *schema.ResourceData, r *schem
 		if strings.HasPrefix(k, "Session.") {
 			req[strings.Replace(k, "Session.", "", -1)] = v
 			delete(req, k)
+		} else if strings.HasPrefix(k, "DefaultForwardRule.") {
+			req[strings.Replace(k, "DefaultForwardRule.", "", -1)] = v
+			delete(req, k)
 		}
 	}
 	// if session is zero need set default SessionState stop
@@ -43,9 +54,6 @@ func (s *AlbListenerService) createListenerCall(d *schema.ResourceData, r *schem
 		req["SessionState"] = "stop"
 	}
 
-	if err != nil {
-		return callback, err
-	}
 	callback = ApiCall{
 		param:  &req,
 		action: "CreateAlbListener",
@@ -253,15 +261,24 @@ func (s *AlbListenerService) modifyListenerCall(d *schema.ResourceData, r *schem
 }
 
 func (s *AlbListenerService) ModifyListener(d *schema.ResourceData, r *schema.Resource) (err error) {
-	callbacks := []ApiCall{}
-	var call ApiCall
+	callbacks := NewApiProcess(context.Background(), d, s.client, true)
+	var (
+		call, defaultForwardRuleCall ApiCall
+	)
+
 	call, err = s.modifyListenerCall(d, r)
 	if err != nil {
 		return
 	}
-	callbacks = append(callbacks, call)
-	err = ksyunApiCallNew(callbacks, d, s.client, true)
-	return
+
+	defaultForwardRuleCall, err = s.modifyAlbListenerDefaultRuleGroupCall(d, r)
+	if err != nil {
+		return err
+	}
+
+	callbacks.PutCalls(call, defaultForwardRuleCall)
+
+	return callbacks.Run()
 }
 
 func (s *AlbListenerService) ReadAndSetAlbListeners(d *schema.ResourceData, r *schema.Resource) (err error) {
@@ -298,4 +315,102 @@ func (s *AlbListenerService) ReadAndSetAlbListeners(d *schema.ResourceData, r *s
 		targetField: "listeners",
 		extra:       map[string]SdkResponseMapping{},
 	})
+}
+
+func (s *AlbListenerService) ReadAndSetDefaultBackendGroup(d *schema.ResourceData, r *schema.Resource) error {
+	ruleGroup := AlbRuleGroup{s.client}
+
+	defaultReadReq := make(map[string]interface{}, 1)
+
+	defaultReadReq["Filter.1.Name"] = "alblistener-id"
+	defaultReadReq["Filter.1.Value.1"] = d.Id()
+
+	data, err := ruleGroup.readRuleGroups(defaultReadReq)
+	if err != nil {
+		return err
+	}
+
+	var defaultRule map[string]interface{}
+
+	// filter default forward rule
+	for _, dIf := range data {
+		switch dIf.(type) {
+		case map[string]interface{}:
+			d := dIf.(map[string]interface{})
+			if v, ok := d["AlbRuleGroupName"]; ok {
+				if reflect.DeepEqual(v, "默认转发策略") {
+					defaultRule = d
+					goto breakDouble
+				}
+			}
+		}
+	}
+breakDouble:
+
+	items := make([]interface{}, 0, 1)
+
+	defaultBackend := r.Schema["default_forward_rule"].Elem
+	switch defaultBackend.(type) {
+	case *schema.Resource:
+		m := make(map[string]interface{})
+		defaultBackendField := defaultBackend.(*schema.Resource)
+		for k := range defaultBackendField.Schema {
+			humpKey := Downline2Hump(k)
+			if v, ok := defaultRule[humpKey]; ok && v != "" {
+				m[k] = v
+			}
+		}
+		items = append(items, m)
+		if err := d.Set("default_forward_rule", items); err != nil {
+			return err
+		}
+	}
+
+	return err
+}
+
+func (s *AlbListenerService) modifyAlbListenerDefaultRuleGroupCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
+	if !d.HasChange("default_forward_rule") {
+		return callback, err
+	}
+	transform := map[string]SdkReqTransform{
+		"default_forward_rule": {
+			Type: TransformListUnique,
+		},
+	}
+	req, err := SdkRequestAutoMapping(d, r, true, transform, nil, SdkReqParameter{
+		onlyTransform: false,
+	})
+	logger.Debug(logger.ReqFormat, "ModifyAlbListenerDefaultForwardRule", req)
+	if err != nil {
+		return callback, err
+	}
+	// specially deal with default forward rule parameters.
+	for k, v := range req {
+		if strings.HasPrefix(k, "DefaultForwardRule.") {
+			req[strings.Replace(k, "DefaultForwardRule.", "", -1)] = v
+			delete(req, k)
+		}
+	}
+
+	if len(req) > 0 {
+		ruleId := d.Get("default_forward_rule.0.alb_rule_group_id").(string)
+		req["AlbRuleGroupId"] = ruleId
+
+		callback = ApiCall{
+			param:  &req,
+			action: "ModifyAlbRuleGroup",
+			executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+				conn := client.slbconn
+				logger.Debug(logger.RespFormat, call.action, *(call.param))
+				resp, err = conn.ModifyAlbRuleGroup(call.param)
+				return resp, err
+			},
+			afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+				logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+				return err
+			},
+		}
+	}
+	return callback, err
 }

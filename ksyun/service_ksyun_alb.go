@@ -1,12 +1,14 @@
 package ksyun
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
-	"time"
 )
 
 type AlbService struct {
@@ -236,11 +238,11 @@ func (alb *AlbService) ModifyAlb(d *schema.ResourceData, r *schema.Resource) (er
 		calls = append(calls, modifyEnabledLogCall)
 	}
 
-	//tagService := TagService{s.client}
-	//tagCall, err := tagService.ReplaceResourcesTagsWithResourceCall(d, r, "eip", true, false)
-	//if err != nil {
+	// tagService := TagService{s.client}
+	// tagCall, err := tagService.ReplaceResourcesTagsWithResourceCall(d, r, "eip", true, false)
+	// if err != nil {
 	//	return err
-	//}
+	// }
 	return ksyunApiCallNew(calls, d, alb.client, true)
 }
 
@@ -350,6 +352,7 @@ func (alb *AlbService) ReadAndSetAlbs(d *schema.ResourceData, r *schema.Resource
 		},
 	})
 }
+
 func (alb *AlbService) ReadAndSetAlb(d *schema.ResourceData, r *schema.Resource) (err error) {
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
 		data, callErr := alb.readAlb(d, "", true)
@@ -367,7 +370,7 @@ func (alb *AlbService) ReadAndSetAlb(d *schema.ResourceData, r *schema.Resource)
 			return nil
 		}
 	})
-	//return
+	// return
 }
 func (alb *AlbService) stateRefreshFunc(d *schema.ResourceData, albId string, failStates []string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
@@ -461,4 +464,443 @@ func (alb *AlbService) CreateAlb(d *schema.ResourceData, r *schema.Resource) (er
 	}
 
 	return ksyunApiCallNew(calls, d, alb.client, true)
+}
+
+func (alb *AlbService) CreateAlbBackendServerGroup(d *schema.ResourceData, r *schema.Resource) error {
+	apiProcess := NewApiProcess(context.Background(), d, alb.client, true)
+
+	createCall, err := alb.createAlbBackendServerGroupCall(d, r)
+	if err != nil {
+		return err
+	}
+
+	apiProcess.PutCalls(createCall)
+	return apiProcess.Run()
+}
+
+func (alb *AlbService) ModifyAlbBackendServerGroup(d *schema.ResourceData, r *schema.Resource) error {
+	apiProcess := NewApiProcess(context.Background(), d, alb.client, true)
+
+	modifyCall, err := alb.modifyAlbBackendServerGroupCall(d, r)
+	if err != nil {
+		return err
+	}
+
+	apiProcess.PutCalls(modifyCall)
+
+	return apiProcess.Run()
+}
+func (alb *AlbService) ReadAndSetAlbBackendServerGroup(d *schema.ResourceData, r *schema.Resource) error {
+	return resource.Retry(5*time.Minute, func() *resource.RetryError {
+		data, callErr := alb.readAlbBackendServerGroup(d, "")
+		if callErr != nil {
+			if !d.IsNewResource() {
+				return resource.NonRetryableError(callErr)
+			}
+			if notFoundError(callErr) {
+				return resource.RetryableError(callErr)
+			} else {
+				return resource.NonRetryableError(fmt.Errorf("error on reading ALB %q, %s", d.Id(), callErr))
+			}
+		} else {
+			SdkResponseAutoResourceData(d, r, data, nil)
+			return nil
+		}
+	})
+}
+func (alb *AlbService) RemoveAlbBackendServerGroup(d *schema.ResourceData) error {
+	apiProcess := NewApiProcess(context.Background(), d, alb.client, true)
+
+	removeCall, err := alb.removeAlbBackendServerGroupCall(d)
+	if err != nil {
+		return err
+	}
+
+	apiProcess.PutCalls(removeCall)
+
+	return apiProcess.Run()
+}
+
+func (alb *AlbService) createAlbBackendServerGroupCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
+	transform := map[string]SdkReqTransform{
+		"health_check": {
+			Ignore: true,
+		},
+	}
+	req, err := SdkRequestAutoMapping(d, r, false, transform, nil, SdkReqParameter{
+		onlyTransform: false,
+	})
+	if err != nil {
+		return callback, err
+	}
+
+	if d.HasChanges("health_check") {
+		healthCheckIf := d.Get("health_check")
+		switch healthCheckIf.(type) {
+		case map[string]interface{}:
+			healthCheck := healthCheckIf.(map[string]interface{})
+			for k, v := range healthCheck {
+				switch v.(type) {
+				case int, string, bool:
+					req[k] = v
+				}
+			}
+		}
+	}
+
+	callback = ApiCall{
+		param:  &req,
+		action: "CreateAlbBackendServerGroup",
+		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+			conn := client.slbconn
+			logger.Debug(logger.RespFormat, call.action, *(call.param))
+
+			resp, err = conn.CreateAlbBackendServerGroup(call.param)
+			return resp, err
+		},
+		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+			id, err := getSdkValue("BackendServerGroup.BackendServerGroupId", *resp)
+			if err != nil {
+				return err
+			}
+			d.SetId(id.(string))
+
+			return
+		},
+	}
+	return callback, err
+}
+func (alb *AlbService) modifyAlbBackendServerGroupCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
+	transform := map[string]SdkReqTransform{
+		"name":               {},
+		"upstream_keepalive": {},
+	}
+	req, err := SdkRequestAutoMapping(d, r, true, transform, nil)
+	if err != nil {
+		return callback, err
+	}
+
+	if len(req) > 0 {
+		req["BackendServerGroupId"] = d.Id()
+		callback = ApiCall{
+			param:  &req,
+			action: "ModifyAlbBackendServerGroup",
+			executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+				conn := client.slbconn
+				logger.Debug(logger.RespFormat, call.action, *(call.param))
+
+				resp, err = conn.ModifyAlbBackendServerGroup(call.param)
+				return resp, err
+			},
+			afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+				logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+				return
+			},
+		}
+	}
+
+	return callback, err
+}
+
+func (alb *AlbService) removeAlbBackendServerGroupCall(d *schema.ResourceData) (callback ApiCall, err error) {
+	removeReq := map[string]interface{}{
+		"BackendServerGroupId": d.Id(),
+	}
+	callback = ApiCall{
+		param:  &removeReq,
+		action: "DeleteAlbBackendServerGroup",
+		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+			conn := client.slbconn
+			logger.Debug(logger.RespFormat, call.action, *(call.param))
+			resp, err = conn.DeleteAlbBackendServerGroup(call.param)
+			return resp, err
+		},
+		callError: func(d *schema.ResourceData, client *KsyunClient, call ApiCall, baseErr error) error {
+			return resource.Retry(15*time.Minute, func() *resource.RetryError {
+				data, callErr := alb.readAlb(d, "", true)
+				logger.Debug(logger.RespFormat, call.action, data, callErr)
+				if callErr != nil {
+					if notFoundError(callErr) {
+						return nil
+					} else {
+						return resource.NonRetryableError(fmt.Errorf("error on reading AlbBackendServerGroup when delete %q, %s", d.Id(), callErr))
+					}
+				}
+				_, callErr = call.executeCall(d, client, call)
+				if callErr == nil {
+					return nil
+				}
+				return resource.RetryableError(callErr)
+			})
+		},
+		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+			return err
+		},
+	}
+	return
+}
+
+func (alb *AlbService) readAlbBackendServerGroups(condition map[string]interface{}) (data []interface{}, err error) {
+	var (
+		resp    *map[string]interface{}
+		results interface{}
+	)
+
+	return pageQuery(condition, "MaxResults", "NextToken", 200, 1, func(condition map[string]interface{}) ([]interface{}, error) {
+		conn := alb.client.slbconn
+		action := "DescribeAlbBackendServerGroups"
+		logger.Debug(logger.ReqFormat, action, condition)
+		resp, err = conn.DescribeAlbBackendServerGroups(&condition)
+		if err != nil {
+			return data, err
+		}
+		results, err = getSdkValue("BackendServerGroupSet", *resp)
+		if err != nil {
+			return data, err
+		}
+		data = results.([]interface{})
+
+		return data, err
+	})
+}
+
+func (alb *AlbService) readAlbBackendServerGroup(d *schema.ResourceData, backendId string) (data map[string]interface{}, err error) {
+	var (
+		results []interface{}
+	)
+	if backendId == "" {
+		backendId = d.Id()
+	}
+	req := map[string]interface{}{
+		"BackendServerGroupId.1": backendId,
+	}
+
+	results, err = alb.readAlbBackendServerGroups(req)
+	if err != nil {
+		return data, err
+	}
+	for _, v := range results {
+		data = v.(map[string]interface{})
+	}
+	if len(data) == 0 {
+		return data, fmt.Errorf("AlbBackendServerGroup %s is not exist ", backendId)
+	}
+	return
+}
+
+func (alb *AlbService) ReadAndSetAlbBackendServerGroups(d *schema.ResourceData, r *schema.Resource) (err error) {
+	transform := map[string]SdkReqTransform{
+		"ids": {
+			mapping: "BackendServerGroupId",
+			Type:    TransformWithN,
+		},
+		"vpc_id": {
+			mapping: "vpc-id",
+			Type:    TransformWithFilter,
+		},
+		"backend_server_type": {
+			mapping: "backend-server-type",
+			Type:    TransformWithFilter,
+		},
+	}
+	req, err := mergeDataSourcesReq(d, r, transform)
+	if err != nil {
+		return err
+	}
+	data, err := alb.readAlbBackendServerGroups(req)
+	if err != nil {
+		return err
+	}
+
+	return mergeDataSourcesResp(d, r, ksyunDataSource{
+		collection:  data,
+		idFiled:     "BackendServerGroupId",
+		targetField: "alb_backend_server_groups",
+	})
+}
+
+func (alb *AlbService) createAlbBackendServerCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
+	req, err := SdkRequestAutoMapping(d, r, false, nil, nil)
+	if err != nil {
+		return callback, err
+	}
+	callback = ApiCall{
+		param:  &req,
+		action: "RegisterAlbBackendServer",
+		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+			conn := client.slbconn
+			logger.Debug(logger.RespFormat, call.action, *(call.param))
+			resp, err = conn.RegisterAlbBackendServer(call.param)
+			return resp, err
+		},
+		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+			id, err := getSdkValue("BackendServer.BackendServerId", *resp)
+			if err != nil {
+				return err
+			}
+			d.SetId(id.(string))
+			return err
+		},
+	}
+	return callback, err
+}
+
+func (alb *AlbService) modifyAlbBackendServerCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
+	req, err := SdkRequestAutoMapping(d, r, true, nil, nil)
+	if err != nil {
+		return callback, err
+	}
+	if len(req) > 0 {
+		req["BackendServerId"] = d.Id()
+		callback = ApiCall{
+			param:  &req,
+			action: "ModifyAlbBackendServer",
+			executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+				conn := client.slbconn
+				logger.Debug(logger.RespFormat, call.action, *(call.param))
+				resp, err = conn.ModifyAlbBackendServer(call.param)
+				return resp, err
+			},
+			afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+				logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+				return err
+			},
+		}
+	}
+	return callback, err
+}
+
+func (alb *AlbService) ReadAlbBackendServers(condition map[string]interface{}) (data []interface{}, err error) {
+	var (
+		resp    *map[string]interface{}
+		results interface{}
+	)
+
+	return pageQuery(condition, "MaxResults", "NextToken", 200, 1, func(condition map[string]interface{}) ([]interface{}, error) {
+
+		conn := alb.client.slbconn
+		action := "DescribeAlbBackendServers"
+		logger.Debug(logger.ReqFormat, action, condition)
+
+		resp, err = conn.DescribeAlbBackendServers(&condition)
+		if err != nil {
+			return data, err
+		}
+
+		results, err = getSdkValue("BackendServerSet", *resp)
+		if err != nil {
+			return data, err
+		}
+		data = results.([]interface{})
+		return data, err
+	})
+}
+
+func (alb *AlbService) ReadAlbBackendServer(d *schema.ResourceData, backendServerId string) (data map[string]interface{}, err error) {
+	var (
+		results []interface{}
+	)
+	if backendServerId == "" {
+		backendServerId = d.Id()
+	}
+	req := map[string]interface{}{
+		"BackendServerId.1": backendServerId,
+	}
+	results, err = alb.ReadAlbBackendServers(req)
+	if err != nil {
+		return data, err
+	}
+	for _, v := range results {
+		data = v.(map[string]interface{})
+	}
+	if len(data) == 0 {
+		return data, fmt.Errorf("AlbBackendServer %s not exist ", backendServerId)
+	}
+	return data, err
+}
+
+func (alb *AlbService) ReadAndSetAlbBackendServer(d *schema.ResourceData, r *schema.Resource) (err error) {
+	data, err := alb.ReadAlbBackendServer(d, "")
+	if err != nil {
+		return err
+	}
+	SdkResponseAutoResourceData(d, r, data, nil)
+	return err
+}
+
+func (alb *AlbService) RemoveAlbBackendServerCall(d *schema.ResourceData) (callback ApiCall, err error) {
+	removeReq := map[string]interface{}{
+		"BackendServerId": d.Id(),
+	}
+	callback = ApiCall{
+		param:  &removeReq,
+		action: "DeregisterAlbBackendServer",
+		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+			conn := client.slbconn
+			logger.Debug(logger.RespFormat, call.action, *(call.param))
+			resp, err = conn.DeregisterAlbBackendServer(call.param)
+			return resp, err
+		},
+		callError: func(d *schema.ResourceData, client *KsyunClient, call ApiCall, baseErr error) error {
+			return resource.Retry(15*time.Minute, func() *resource.RetryError {
+				_, callErr := alb.ReadAlbBackendServer(d, "")
+				if callErr != nil {
+					if notFoundError(callErr) {
+						return nil
+					} else {
+						return resource.NonRetryableError(fmt.Errorf("error on reading alb backend server when delete %q, %s", d.Id(), callErr))
+					}
+				}
+				_, callErr = call.executeCall(d, client, call)
+				if callErr == nil {
+					return nil
+				}
+				return resource.RetryableError(callErr)
+			})
+		},
+		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+			return err
+		},
+	}
+	return callback, err
+}
+
+func (alb *AlbService) RemoveAlbBackendServer(d *schema.ResourceData) (err error) {
+	apiProcess := NewApiProcess(context.Background(), d, alb.client, true)
+
+	call, err := alb.RemoveAlbBackendServerCall(d)
+	if err != nil {
+		return err
+	}
+
+	apiProcess.PutCalls(call)
+	return apiProcess.Run()
+}
+
+func (alb *AlbService) CreateAlbBackendServer(d *schema.ResourceData, r *schema.Resource) (err error) {
+	apiProcess := NewApiProcess(context.Background(), d, alb.client, true)
+
+	call, err := alb.createAlbBackendServerCall(d, r)
+	if err != nil {
+		return err
+	}
+
+	apiProcess.PutCalls(call)
+	return apiProcess.Run()
+}
+
+func (alb *AlbService) ModifyAlbBackendServer(d *schema.ResourceData, r *schema.Resource) (err error) {
+	apiProcess := NewApiProcess(context.Background(), d, alb.client, true)
+
+	call, err := alb.modifyAlbBackendServerCall(d, r)
+	if err != nil {
+		return err
+	}
+
+	apiProcess.PutCalls(call)
+	return apiProcess.Run()
 }

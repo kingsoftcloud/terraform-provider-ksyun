@@ -165,11 +165,7 @@ func resourceKsyunAlbRuleGroup() *schema.Resource {
 				ForceNew:    true,
 				Description: "The ID of the ALB listener.",
 			},
-			"alb_rule_group_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The ID of the rule group.",
-			},
+
 			"alb_rule_group_name": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -177,9 +173,11 @@ func resourceKsyunAlbRuleGroup() *schema.Resource {
 				Description: "The name of the ALB rule group.",
 			},
 			"backend_server_group_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The ID of the backend server group.",
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"redirect_alb_listener_id"},
+				AtLeastOneOf:  []string{"backend_server_group_id", "redirect_alb_listener_id"},
+				Description:   "The ID of the backend server group. Conflict with 'backend_server_group_id'.",
 			},
 			"alb_rule_set": {
 				Type:        schema.TypeList,
@@ -314,6 +312,26 @@ func resourceKsyunAlbRuleGroup() *schema.Resource {
 				Default:          "",
 				DiffSuppressFunc: AlbRuleGroupSyncOffDiffSuppressFunc,
 				Description:      "The service host name of the health check, which is available only for the HTTP or HTTPS health check. Should set it value, when `listener_sync` is off.",
+			},
+
+			"redirect_alb_listener_id": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"backend_server_group_id"},
+				AtLeastOneOf:  []string{"backend_server_group_id", "redirect_alb_listener_id"},
+				Description:   "The id of redirect alb listener. Conflict with 'backend_server_group_id'.",
+			},
+			"redirect_http_code": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "301",
+				Description: "The http code of redirecting. Valid Values: 301|302|307.",
+			},
+
+			"alb_rule_group_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ID of the rule group.",
 			},
 		},
 	}

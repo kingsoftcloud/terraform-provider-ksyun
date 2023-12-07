@@ -2,10 +2,11 @@ package ksyun
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
-	"time"
 )
 
 type AlbListenerCertGroupService struct {
@@ -57,16 +58,16 @@ func (s *AlbListenerCertGroupService) CreateCertGroup(d *schema.ResourceData, r 
 	}
 	callbacks = append(callbacks, createCall)
 
-	//if certList, ok := d.GetOk("alb_listener_cert_set"); ok {
-	//for _, item := range certList.([]interface{}) {
+	// if certList, ok := d.GetOk("alb_listener_cert_set"); ok {
+	// for _, item := range certList.([]interface{}) {
 	//	logger.Debug(logger.RespFormat, "alb_listener_cert_set", item)
-	//}
+	// }
 	certCalls, err := s.modifyCertSetCall(d, r, false)
 	if err != nil {
 		return
 	}
 	callbacks = append(callbacks, certCalls...)
-	//}
+	// }
 
 	err = ksyunApiCallNew(callbacks, d, s.client, false)
 	return
@@ -147,7 +148,7 @@ func (s *AlbListenerCertGroupService) ReadAndSetCertGroups(d *schema.ResourceDat
 	}
 	return mergeDataSourcesResp(d, r, ksyunDataSource{
 		collection: data,
-		//nameField:   "AlbListenerName",
+		// nameField:   "AlbListenerName",
 		idFiled:     "AlbListenerCertGroupId",
 		targetField: "listener_cert_groups",
 		extra:       map[string]SdkResponseMapping{},
@@ -249,8 +250,8 @@ func (s *AlbListenerCertGroupService) ModifyCertGroup(d *schema.ResourceData, r 
 
 func (s *AlbListenerCertGroupService) modifyCertSetCall(d *schema.ResourceData, r *schema.Resource, isUpdate bool) (callbacks []ApiCall, err error) {
 
-	newCertIds := []string{}
-	removeCertIds := []string{}
+	newCertIds := make([]string, 0)
+	removeCertIds := make([]string, 0)
 
 	if isUpdate {
 		oldList, newList := d.GetChange("certificate")
@@ -286,7 +287,7 @@ func (s *AlbListenerCertGroupService) modifyCertSetCall(d *schema.ResourceData, 
 		}
 		logger.Debug(logger.RespFormat, "modifyCertSetCall new:", newCertIds)
 		logger.Debug(logger.RespFormat, "modifyCertSetCall remove:", removeCertIds)
-		//return
+		// return
 	} else {
 		if certSets, ok := d.GetOk("certificate"); ok {
 			for _, cert := range certSets.([]interface{}) {
@@ -299,7 +300,7 @@ func (s *AlbListenerCertGroupService) modifyCertSetCall(d *schema.ResourceData, 
 	for _, removeCertId := range removeCertIds {
 		callbacks = append(callbacks, ApiCall{
 			param: &map[string]interface{}{
-				//"AlbListenerCertGroupId": d.Id(),
+				// "AlbListenerCertGroupId": d.Id(),
 				"CertificateId": removeCertId,
 			},
 			action: "DissociateCertificateWithGroup",
@@ -320,7 +321,7 @@ func (s *AlbListenerCertGroupService) modifyCertSetCall(d *schema.ResourceData, 
 	for _, newCertId := range newCertIds {
 		callbacks = append(callbacks, ApiCall{
 			param: &map[string]interface{}{
-				//"AlbListenerCertGroupId": d.Id(),
+				// "AlbListenerCertGroupId": d.Id(),
 				"CertificateId": newCertId,
 			},
 			action: "AssociateCertificateWithGroup",
