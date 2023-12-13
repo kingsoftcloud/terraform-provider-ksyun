@@ -544,6 +544,9 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_private_dns_zone":                resourceKsyunPrivateDnsZone(),
 			"ksyun_private_dns_record":              resourceKsyunPrivateDnsRecord(),
 			"ksyun_private_dns_zone_vpc_attachment": resourceKsyunPrivateDnsZoneVpcAttachment(),
+
+			// kcrs
+			"ksyun_kcrs_instance": resourceKsyunKcrsInstance(),
 		},
 		ConfigureFunc: providerConfigure,
 	}
