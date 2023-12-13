@@ -1,10 +1,14 @@
 package ksyun
 
 import (
+	"context"
 	"fmt"
+	"strconv"
+	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
-	"strconv"
 )
 
 type TagService struct {
@@ -229,6 +233,91 @@ func (s *TagService) ReplaceResourcesTagsCommonCall(req map[string]interface{}, 
 		},
 	}
 	return callback, err
+}
+
+func (s *TagService) CreateTag(d *schema.ResourceData, r *schema.Resource) error {
+	apiProcess := NewApiProcess(context.Background(), d, s.client, true)
+
+	createTagCall, err := s.CreateTagCall(d, r)
+	if err != nil {
+		return err
+	}
+	apiProcess.PutCalls(createTagCall)
+	return apiProcess.Run()
+}
+
+func (s *TagService) ReadAndSetTag(d *schema.ResourceData, r *schema.Resource) error {
+	key := d.Get("tag_key").(string)
+	value := d.Get("tag_value").(string)
+
+	req := make(map[string]interface{})
+	req["Key"] = key
+	req["Value"] = value
+
+	results, err := s.ReadTags(req)
+	if err != nil {
+		return err
+	}
+
+	var data map[string]interface{}
+
+	for _, v := range results {
+		data = v.(map[string]interface{})
+	}
+	if len(data) == 0 {
+		return fmt.Errorf("tag %s:%s is not exist ", key, value)
+	}
+	extra := map[string]SdkResponseMapping{
+		"Id": {
+			Field: "tag_id",
+		},
+	}
+	SdkResponseAutoResourceData(d, r, data, extra)
+	return nil
+}
+
+func (s *TagService) DeleteTag(d *schema.ResourceData) error {
+	apiProcess := NewApiProcess(context.Background(), d, s.client, true)
+
+	deleteCall, err := s.DeleteTagCall(d)
+	if err != nil {
+		return err
+	}
+	apiProcess.PutCalls(deleteCall)
+
+	return apiProcess.Run()
+}
+
+func (s *TagService) DeleteTagCall(d *schema.ResourceData) (callback ApiCall, err error) {
+	// 构成参数
+	params := map[string]interface{}{}
+	params["Tag.0.Key"] = d.Get("key")
+	params["Tag.0.Value"] = d.Get("value")
+
+	callback = ApiCall{
+		param:  &params,
+		action: "DeleteTags",
+		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+			conn := client.tagv1conn
+			logger.Debug(logger.RespFormat, call.action, *(call.param))
+			resp, err = conn.DeleteTags(call.param)
+			return resp, err
+		},
+		callError: func(d *schema.ResourceData, client *KsyunClient, call ApiCall, baseErr error) error {
+
+			return resource.Retry(5*time.Minute, func() *resource.RetryError {
+				if notFoundError(err) {
+					return nil
+				}
+				return resource.RetryableError(err)
+			})
+		},
+		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+			return err
+		},
+	}
+	return
 }
 
 func (s *TagService) CreateTagCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {

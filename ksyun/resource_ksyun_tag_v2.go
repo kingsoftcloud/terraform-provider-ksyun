@@ -1,13 +1,13 @@
 /*
-Provides a tag resource.
+Provides a Tagv2 resource.
 
 # Example Usage
 
 ```hcl
 
-	resource "ksyun_tag" "kec_tag" {
-	  key = "test_tag_key"
-	  value = "test_tag_value"
+	resource "ksyun_Tagv2" "kec_Tagv2" {
+	  key = "test_Tagv2_key"
+	  value = "test_Tagv2_value"
 	  resource_type = "eip"
 	  resource_id = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
 	}
@@ -16,39 +16,40 @@ Provides a tag resource.
 
 # Import
 
-Tag can be imported using the `id`, e.g.
+Tagv2 can be imported using the `id`, e.g.
 
 ```
-$ terraform import ksyun_tag.kec_tag ${tag_key}:${tag_value},${resource_type}:${resource_id}
+$ terraform import ksyun_Tagv2.kec_Tagv2 ${Tagv2_key}:${Tagv2_value},${resource_type}:${resource_id}
 ```
 */
 package ksyun
 
 import (
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func resourceKsyunTag() *schema.Resource {
+func resourceKsyunTagv2() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceKsyunTagCreate,
-		Read:   resourceKsyunTagRead,
-		Update: resourceKsyunTagUpdate,
-		Delete: resourceKsyunTagDelete,
+		Create: resourceKsyunTagv2Create,
+		Read:   resourceKsyunTagv2Read,
+		Update: resourceKsyunTagv2Update,
+		Delete: resourceKsyunTagv2Delete,
 		Importer: &schema.ResourceImporter{
-			State: importTagV1Resource,
+			State: importTagResource,
 		},
-		CustomizeDiff: resourceKsyunTagDiff(),
+		CustomizeDiff: resourceKsyunTagv2Diff(),
 		Schema: map[string]*schema.Schema{
 			"key": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Tag key.",
+				Description: "Tagv2 key.",
 			},
 			"value": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Tag value.",
+				Description: "Tagv2 value.",
 			},
 			"resource_type": {
 				Type:        schema.TypeString,
@@ -64,7 +65,7 @@ func resourceKsyunTag() *schema.Resource {
 	}
 }
 
-func resourceKsyunTagDiff() schema.CustomizeDiffFunc {
+func resourceKsyunTagv2Diff() schema.CustomizeDiffFunc {
 	return func(diff *schema.ResourceDiff, i interface{}) (err error) {
 		keys := []string{"key", "value", "resource_type", "resource_id"}
 
@@ -81,39 +82,33 @@ func resourceKsyunTagDiff() schema.CustomizeDiffFunc {
 	}
 }
 
-func resourceKsyunTagCreate(d *schema.ResourceData, meta interface{}) (err error) {
-	tagService := TagV1Service{meta.(*KsyunClient)}
-	err = tagService.CreateTag(d, resourceKsyunTag())
+func resourceKsyunTagv2Create(d *schema.ResourceData, meta interface{}) (err error) {
+	tagService := TagService{meta.(*KsyunClient)}
+	err = tagService.CreateTag(d, resourceKsyunTagv2())
 	if err != nil {
-		return fmt.Errorf("error on creating tag %q, %s", d.Id(), err)
+		return fmt.Errorf("error on creating Tagv2 %q, %s", d.Id(), err)
 	}
-	return resourceKsyunTagRead(d, meta)
+	return resourceKsyunTagv2Read(d, meta)
 }
 
-func resourceKsyunTagUpdate(d *schema.ResourceData, meta interface{}) (err error) {
-	//tagService := TagV1Service{meta.(*KsyunClient)}
-	//err = tagService.ModifyTag(d, resourceKsyunTag())
-	//if err != nil {
-	//	return fmt.Errorf("error on updating tag %q, %s", d.Id(), err)
-	//}
-	//return resourceKsyunTagRead(d, meta)
+func resourceKsyunTagv2Update(d *schema.ResourceData, meta interface{}) (err error) {
 	return
 }
 
-func resourceKsyunTagRead(d *schema.ResourceData, meta interface{}) (err error) {
-	tagService := TagV1Service{meta.(*KsyunClient)}
-	err = tagService.ReadAndSetTag(d, resourceKsyunTag())
+func resourceKsyunTagv2Read(d *schema.ResourceData, meta interface{}) (err error) {
+	tagService := TagService{meta.(*KsyunClient)}
+	err = tagService.ReadAndSetTag(d, resourceKsyunTagv2())
 	if err != nil {
-		return fmt.Errorf("error on reading tag, %s", err)
+		return fmt.Errorf("error on reading Tagv2, %s", err)
 	}
 	return
 }
 
-func resourceKsyunTagDelete(d *schema.ResourceData, meta interface{}) (err error) {
-	tagService := TagV1Service{meta.(*KsyunClient)}
+func resourceKsyunTagv2Delete(d *schema.ResourceData, meta interface{}) (err error) {
+	tagService := TagService{meta.(*KsyunClient)}
 	err = tagService.DeleteTag(d)
 	if err != nil {
-		return fmt.Errorf("error on deleting tag %q, %s", d.Id(), err)
+		return fmt.Errorf("error on deleting Tagv2 %q, %s", d.Id(), err)
 	}
 	return
 }
