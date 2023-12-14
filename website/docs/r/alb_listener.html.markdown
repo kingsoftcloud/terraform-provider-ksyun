@@ -102,6 +102,7 @@ The following arguments are supported:
 * `alb_listener_name` - (Optional) The name of the listener.
 * `alb_listener_state` - (Optional) The state of listener.Valid Values:'start', 'stop'.
 * `certificate_id` - (Optional) The ID of certificate.
+* `config_content` - (Optional) The custom configure for listener. [The details](https://docs.ksyun.com/documents/42615?type=3).
 * `default_forward_rule` - (Optional) The default forward rule group.
 * `enable_http2` - (Optional) whether enable to HTTP2.
 * `http_protocol` - (Optional) Backend Protocol, valid values:'HTTP1.0','HTTP1.1'.
