@@ -281,6 +281,8 @@ Tag
 
 	Resource
 		ksyun_tag
+		ksyun_tag_v2
+		ksyun_tag_v2_attachment
 
 KS3
 
@@ -544,6 +546,10 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_private_dns_zone":                resourceKsyunPrivateDnsZone(),
 			"ksyun_private_dns_record":              resourceKsyunPrivateDnsRecord(),
 			"ksyun_private_dns_zone_vpc_attachment": resourceKsyunPrivateDnsZoneVpcAttachment(),
+
+			// tag
+			"ksyun_tag_v2":            resourceKsyunTagv2(),
+			"ksyun_tag_v2_attachment": resourceKsyunTagv2Attachment(),
 		},
 		ConfigureFunc: providerConfigure,
 	}

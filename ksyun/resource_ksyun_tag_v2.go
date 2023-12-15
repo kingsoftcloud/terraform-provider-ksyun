@@ -5,23 +5,22 @@ Provides a Tagv2 resource.
 
 ```hcl
 
-	resource "ksyun_Tagv2" "kec_Tagv2" {
-	  key = "test_Tagv2_key"
-	  value = "test_Tagv2_value"
-	  resource_type = "eip"
-	  resource_id = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
-	}
+resource "ksyun_tag_v2" "tag" {
+  key = "test_tag_key"
+  value = "test_tag_value"
+}
 
 ```
 
 # Import
 
-Tagv2 can be imported using the `id`, e.g.
+Tagv2 can be imported using the `key&value`, e.g.
 
 ```
-$ terraform import ksyun_Tagv2.kec_Tagv2 ${Tagv2_key}:${Tagv2_value},${resource_type}:${resource_id}
+$ terraform import ksyun_tag_v2.tag ${tagv2_key}:${tagv2_value}
 ```
 */
+
 package ksyun
 
 import (
@@ -44,22 +43,12 @@ func resourceKsyunTagv2() *schema.Resource {
 			"key": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Tagv2 key.",
+				Description: "Tag key.",
 			},
 			"value": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Tagv2 value.",
-			},
-			"resource_type": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Resource type.",
-			},
-			"resource_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Resource ID.",
+				Description: "Tag value.",
 			},
 		},
 	}
