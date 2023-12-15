@@ -11,19 +11,22 @@ description: |-
 
 Provides an attachment for pinning tag upon resource.
 
+> Note: supported all of resource_type
+> The tag will be created if it is not existed.
+
 #
 
 ## Example Usage
 
 ```hcl
 resource "ksyun_tag_v2" "tagv2" {
-  key   = "test_tag_key1"
-  value = "test_tag_value2"
+  key   = "test_tag_key"
+  value = "test_tag_value"
 }
 
 resource "ksyun_tag_v2_attachment" "tag" {
-  key           = "test_tag_key1"
-  value         = "test_tag_value2"
+  key           = "test_tag_key"
+  value         = "test_tag_value"
   resource_type = "redis-instance"
   resource_id   = "1f4e8c22-xxxx-xxxx-xxxx-cc6345011af4"
 }
@@ -33,10 +36,10 @@ resource "ksyun_tag_v2_attachment" "tag" {
 
 The following arguments are supported:
 
-* `key` - (Required) Tagv2Attachment key.
+* `key` - (Required) Tag key.
 * `resource_id` - (Required) Resource ID.
-* `resource_type` - (Required) Resource type.
-* `value` - (Required) Tagv2Attachment value.
+* `resource_type` - (Required) Resource type. [supported type](https://docs.ksyun.com/documents/39807).
+* `value` - (Required) Tag value.
 
 ## Attributes Reference
 

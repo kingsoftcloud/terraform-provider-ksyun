@@ -26,8 +26,8 @@ resource "ksyun_tag_v2" "tag" {
 
 The following arguments are supported:
 
-* `key` - (Required) Tagv2 key.
-* `value` - (Required) Tagv2 value.
+* `key` - (Required) Tag key.
+* `value` - (Required) Tag value.
 
 ## Attributes Reference
 
