@@ -1,9 +1,18 @@
+
+## 1.13.0 (Dec 18, 2023) 
+
+FEATURES:
+
+- - **New Resource:** `ksyun_tag_v2` 标签管理
+- - **New Resource:** `ksyun_tag_v2_attachment` 资源绑定标签，支持控制台所有的`resource_type` 
+
 ## 1.12.1 (Dec 14, 2023) 
 
 IMPROVEMENTS:
 
 - `ksyun_healthcheck` 新增`health_check_connect_port`健康检查端口
 - `ksyun_alb_listener` 新增`config_content` 个性化配置
+
 
 ## 1.12.0 (Dec 7, 2023)
 

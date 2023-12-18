@@ -1,14 +1,44 @@
 package ksyun
 
 import (
+	"context"
 	"fmt"
+	"reflect"
+	"strconv"
+	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
-	"strconv"
 )
 
 type TagService struct {
 	client *KsyunClient
+}
+
+type Tag struct {
+	Id         int    `mapstructure:"Id"`
+	Key        string `mapstructure:"Key"`
+	Value      string `mapstructure:"Value"`
+	CreateTime string `mapstructure:"CreateTime"`
+	CanDelete  int    `mapstructure:"CanDelete"`
+	IsBillTag  int    `mapstructure:"IsBillTag"`
+}
+
+type Tags []*Tag
+
+func (t Tags) GetTagsParams(rsType, rsUuid string) (map[string]interface{}, error) {
+	m := make(map[string]interface{})
+	for i, tag := range t {
+		m["Tag_"+strconv.Itoa(i+1)+"_Key"] = tag.Key
+		m["Tag_"+strconv.Itoa(i+1)+"_Value"] = tag.Value
+	}
+	m["ResourceType"] = rsType
+	rpTagMap := map[string]interface{}{
+		"ResourceUuids": rsUuid,
+	}
+	m["ReplaceTags"] = []interface{}{rpTagMap}
+	return m, nil
 }
 
 func (s *TagService) ReadTags(condition map[string]interface{}) (data []interface{}, err error) {
@@ -194,7 +224,7 @@ func (s *TagService) CreateTagCommonCall(req map[string]interface{}, isSetId boo
 				if err != nil {
 					return err
 				}
-				d.SetId(id.(string))
+				d.SetId(Float64ToString(id.(float64)))
 			}
 			return err
 		},
@@ -229,6 +259,241 @@ func (s *TagService) ReplaceResourcesTagsCommonCall(req map[string]interface{}, 
 		},
 	}
 	return callback, err
+}
+
+func (s *TagService) CreateTag(d *schema.ResourceData, r *schema.Resource) error {
+	apiProcess := NewApiProcess(context.Background(), d, s.client, true)
+
+	createTagCall, err := s.CreateTagCall(d, r)
+	if err != nil {
+		return err
+	}
+	apiProcess.PutCalls(createTagCall)
+	return apiProcess.Run()
+}
+func (s *TagService) CreateTagResourceAttachment(d *schema.ResourceData, r *schema.Resource) error {
+	apiProcess := NewApiProcess(context.Background(), d, s.client, true)
+
+	createTagCall, err := s.tagAttachResourceWithCall(d, r)
+	if err != nil {
+		return err
+	}
+	apiProcess.PutCalls(createTagCall)
+	return apiProcess.Run()
+}
+
+func (s *TagService) tagAttachResourceWithCall(d *schema.ResourceData, r *schema.Resource) (ApiCall, error) {
+	var (
+		req    map[string]interface{}
+		rsType = d.Get("resource_type").(string)
+		rsId   = d.Get("resource_id").(string)
+	)
+	t := &Tag{
+		Key:   d.Get("key").(string),
+		Value: d.Get("value").(string),
+	}
+	tags := Tags{t}
+
+	// query existed tags
+	results, err := s.ReadTagByResourceId(d, rsId, rsType)
+	if err != nil {
+		return ApiCall{}, fmt.Errorf("an error caused while merging tags, %s", err)
+	}
+	for _, res := range results {
+		switch res.(type) {
+		case map[string]interface{}:
+			r := res.(map[string]interface{})
+			k, ok := r["TagKey"]
+			if !ok {
+				continue
+			}
+			v, vOk := r["TagValue"]
+			if !vOk {
+				continue
+			}
+			tt := &Tag{
+				Key:   k.(string),
+				Value: v.(string),
+			}
+			tags = append(tags, tt)
+		}
+	}
+
+	req, _ = tags.GetTagsParams(rsType, rsId)
+
+	return s.ReplaceResourcesTagsCommonCall(req, true)
+
+}
+
+func (s *TagService) DetachResourceTags(d *schema.ResourceData) error {
+	apiProcess := NewApiProcess(context.Background(), d, s.client, true)
+
+	call, err := s.DetachResourceTagsWithCall(d)
+	if err != nil {
+		return err
+	}
+	apiProcess.PutCalls(call)
+	return apiProcess.Run()
+}
+
+func (s *TagService) DetachResourceTagsWithCall(d *schema.ResourceData) (callback ApiCall, err error) {
+	params := map[string]interface{}{}
+	params["ResourceType"] = d.Get("resource_type")
+	params["ResourceUuid"] = d.Get("resource_id")
+	params["TagIds"] = d.Get("tag_id")
+
+	callback = ApiCall{
+		param:  &params,
+		action: "DeleteTags",
+		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+			conn := client.tagconn
+			logger.Debug(logger.RespFormat, call.action, *(call.param))
+			resp, err = conn.DetachResourceTags(call.param)
+			return resp, err
+		},
+		callError: func(d *schema.ResourceData, client *KsyunClient, call ApiCall, baseErr error) error {
+			return resource.Retry(5*time.Minute, func() *resource.RetryError {
+				if notFoundError(err) {
+					return nil
+				}
+				return resource.RetryableError(err)
+			})
+		},
+		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+			return err
+		},
+	}
+	return
+}
+
+func (s *TagService) ReadAndSetTag(d *schema.ResourceData, r *schema.Resource) error {
+	key := d.Get("key").(string)
+	value := d.Get("value").(string)
+
+	req := make(map[string]interface{})
+	req["Key"] = key
+	req["Value"] = value
+
+	results, err := s.ReadTags(req)
+	if err != nil {
+		return err
+	}
+
+	var data map[string]interface{}
+
+	for _, v := range results {
+		data = v.(map[string]interface{})
+	}
+	if len(data) == 0 {
+		return fmt.Errorf("tag %s:%s is not exist ", key, value)
+	}
+	extra := map[string]SdkResponseMapping{
+		"Id": {
+			Field: "tag_id",
+		},
+	}
+	SdkResponseAutoResourceData(d, r, data, extra)
+	return nil
+}
+
+func (s *TagService) ReadAndSetTagAttachment(d *schema.ResourceData, r *schema.Resource) error {
+	var (
+		rsId   = d.Get("resource_id").(string)
+		rsType = d.Get("resource_type").(string)
+
+		tagKey   = d.Get("key")
+		tagValue = d.Get("value")
+
+		tagId float64
+		found bool
+	)
+
+	results, err := s.ReadTagByResourceId(d, rsId, rsType)
+	if err != nil {
+		return err
+	}
+
+	for _, result := range results {
+		switch result.(type) {
+		case map[string]interface{}:
+			r := result.(map[string]interface{})
+			if reflect.DeepEqual(tagKey, r["TagKey"]) && reflect.DeepEqual(tagValue, r["TagValue"]) {
+				if v, ok := r["TagId"]; ok {
+					tagId = v.(float64)
+				}
+
+				if err := d.Set("tag_id", tagId); err != nil {
+					return err
+				}
+
+				id := AssembleIds(rsId, Float64ToString(tagId))
+				d.SetId(id)
+				found = true
+				goto exit
+			}
+		}
+	}
+
+exit:
+	if !found {
+		return fmt.Errorf("the attachment between tag and resource %s is not exsit", rsId)
+	}
+	return nil
+}
+
+func (s *TagService) DeleteTag(d *schema.ResourceData) error {
+	apiProcess := NewApiProcess(context.Background(), d, s.client, true)
+
+	deleteCall, err := s.DeleteTagCall(d)
+	if err != nil {
+		return err
+	}
+	apiProcess.PutCalls(deleteCall)
+
+	return apiProcess.Run()
+}
+
+func (s *TagService) DeleteTagCall(d *schema.ResourceData) (callback ApiCall, err error) {
+	// 构成参数
+	params := map[string]interface{}{}
+
+	tags := make([]map[string]interface{}, 0)
+
+	tag := map[string]interface{}{
+		"Key":   d.Get("key"),
+		"Value": d.Get("value"),
+	}
+	params["Tags"] = append(tags, tag)
+
+	callback = ApiCall{
+		param:  &params,
+		action: "DeleteTag",
+		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+			conn := client.tagconn
+			logger.Debug(logger.RespFormat, call.action, *(call.param))
+			resp, err = conn.DeleteTag(call.param)
+			return resp, err
+		},
+		callError: func(d *schema.ResourceData, client *KsyunClient, call ApiCall, baseErr error) error {
+			return resource.Retry(5*time.Minute, func() *resource.RetryError {
+				if notFoundError(baseErr) {
+					return nil
+				}
+
+				// it cannot be deleted if this is still using
+				if isExpectError(baseErr, []string{"TagDeleteConflict"}) {
+					return resource.NonRetryableError(baseErr)
+				}
+				return resource.RetryableError(baseErr)
+			})
+		},
+		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+			return err
+		},
+	}
+	return
 }
 
 func (s *TagService) CreateTagCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
