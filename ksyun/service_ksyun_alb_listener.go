@@ -29,6 +29,9 @@ func (s *AlbListenerService) createListenerCall(d *schema.ResourceData, r *schem
 		"default_forward_rule": {
 			Type: TransformListUnique,
 		},
+		"config_content": {
+			Ignore: true,
+		},
 	}
 	req, err := SdkRequestAutoMapping(d, r, false, transform, nil, SdkReqParameter{
 		onlyTransform: false,
@@ -52,6 +55,18 @@ func (s *AlbListenerService) createListenerCall(d *schema.ResourceData, r *schem
 	// if session is zero need set default SessionState stop
 	if _, ok := req["SessionState"]; !ok {
 		req["SessionState"] = "stop"
+	}
+
+	// deal with custom configure
+	if v, ok := d.GetOk("config_content"); ok {
+		vals := v.(map[string]interface{})
+		var content string
+		for key, property := range vals {
+			kv := strings.Join([]string{key, property.(string)}, " ")
+
+			content += kv + ";"
+		}
+		req["ConfigContent"] = content
 	}
 
 	callback = ApiCall{
@@ -145,6 +160,27 @@ func (s *AlbListenerService) ReadAndSetListener(d *schema.ResourceData, r *schem
 	if err != nil {
 		return err
 	}
+
+	// extract out of config content
+	if vs, ok := data["ConfigContent"]; ok {
+		content := vs.(string)
+		kvs := strings.Split(content, ";")
+
+		m := make(map[string]interface{})
+
+		for _, kv := range kvs {
+			kv = strings.TrimSpace(kv)
+			kvSlice := strings.Split(kv, " ")
+			if len(kvSlice) < 2 {
+				continue
+			}
+			m[kvSlice[0]] = kvSlice[1]
+		}
+		_ = d.Set("config_content", m)
+
+		delete(data, "ConfigContent")
+	}
+
 	extra := map[string]SdkResponseMapping{
 		"Session": {
 			Field: "session",
@@ -210,6 +246,9 @@ func (s *AlbListenerService) modifyListenerCall(d *schema.ResourceData, r *schem
 		"session": {
 			Type: TransformListUnique,
 		},
+		"config_content": {
+			Ignore: true,
+		},
 	}
 	req, err := SdkRequestAutoMapping(d, r, true, transform, nil, SdkReqParameter{
 		onlyTransform: false,
@@ -238,6 +277,19 @@ func (s *AlbListenerService) modifyListenerCall(d *schema.ResourceData, r *schem
 		if _, ok := req["CookieType"]; !ok {
 			req["CookieType"] = d.Get("session.0.cookie_type")
 		}
+	}
+
+	// deal with custom configure
+	if d.HasChange("config_content") {
+		v := d.Get("config_content")
+		vals := v.(map[string]interface{})
+		var content string
+		for key, property := range vals {
+			kv := strings.Join([]string{key, property.(string)}, " ")
+
+			content += kv + ";"
+		}
+		req["ConfigContent"] = content
 	}
 
 	if len(req) > 0 {
