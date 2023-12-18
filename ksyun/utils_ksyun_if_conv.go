@@ -2,7 +2,10 @@
 
 package ksyun
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
 func If2Slice(any interface{}) (ret []interface{}, err error) {
 	if any == nil {
@@ -42,4 +45,8 @@ func If2String(any interface{}) (ret string, err error) {
 		err = fmt.Errorf("got a unexpected type, expecte string")
 	}
 	return
+}
+
+func Float64ToString(f float64) string {
+	return strconv.FormatFloat(f, 'f', -1, 64)
 }
