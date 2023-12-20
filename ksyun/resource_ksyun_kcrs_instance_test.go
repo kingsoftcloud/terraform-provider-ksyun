@@ -27,7 +27,7 @@ func TestAccKsyunKcrsInstance_basic(t *testing.T) {
 
 const testAccKsyunKcrsInstanceConfig = `
 resource "ksyun_kcrs_instance" "foo" {
-	instance_name = "tfunittest1"
+	instance_name = "tfunittest2"
 	instance_type = "basic"
 }
 `

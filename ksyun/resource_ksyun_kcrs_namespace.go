@@ -60,14 +60,7 @@ func resourceKsyunKcrsNamespace() *schema.Resource {
 				ForceNew:    true,
 				Description: "the ID of the KcrsNamespace.",
 			},
-			// "charge_type": {
-			// 	Type:     schema.TypeString,
-			// 	Optional: true,
-			// 	Default:  "HourlyInstantSettlement",
-			// 	ValidateFunc: validation.StringInSlice([]string{"HourlyInstantSettlement"},
-			// 		false),
-			// 	Description: "the link type of the KcrsNamespace. Valid Values: 'DDoS_BGP'.",
-			// },
+
 			"public": {
 				Type:     schema.TypeBool,
 				Required: true,
@@ -89,7 +82,7 @@ func resourceKsyunKcrsNamespaceCreate(d *schema.ResourceData, meta interface{}) 
 
 func resourceKsyunKcrsNamespaceRead(d *schema.ResourceData, meta interface{}) (err error) {
 	kcrsNamespaceService := KcrsService{meta.(*KsyunClient)}
-	err = kcrsNamespaceService.ReadAndSetKcrsInstance(d, resourceKsyunKcrsInstance())
+	err = kcrsNamespaceService.ReadAndSetKcrsNamespace(d, resourceKsyunKcrsInstance())
 	if err != nil {
 		return fmt.Errorf("error on reading kcrs Namespace %q, %s", d.Id(), err)
 	}
@@ -103,7 +96,12 @@ func resourceKsyunKcrsNamespaceUpdate(d *schema.ResourceData, meta interface{}) 
 		req := make(map[string]interface{}, 3)
 		req["InstanceId"] = d.Get("instance_id")
 		req["Namespace"] = d.Get("namespace")
-		req["Public"] = d.Get("public")
+		if d.Get("public").(bool) {
+			req["Public"] = "True"
+		} else {
+			req["Public"] = "False"
+		}
+
 		action := "DescribeInstance"
 		logger.Debug(logger.ReqFormat, action, req)
 		_, err = conn.ModifyNamespaceType(&req)

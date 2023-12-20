@@ -73,9 +73,10 @@ func resourceKsyunKcrsToken() *schema.Resource {
 			// 	Description: "the link type of the KcrsToken. Valid Values: 'DDoS_BGP'.",
 			// },
 			"token_time": {
-				Type:     schema.TypeBool,
+				Type:     schema.TypeInt,
 				Required: true,
 
+				ValidateFunc: validation.IntBetween(1, 9999),
 				// ForceNew:    true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					if d.Get("token_type") == "NeverExpire" {
@@ -166,7 +167,7 @@ func resourceKsyunKcrsTokenDelete(d *schema.ResourceData, meta interface{}) (err
 	)
 	instanceId := d.Get("instance_id").(string)
 	req["InstanceId"] = instanceId
-	req["TokenId"] = d.Get("TokenId")
+	req["TokenId"] = d.Id()
 
 	err = resource.Retry(3*time.Minute, func() *resource.RetryError {
 		conn := kcrsTokenService.client.kcrsconn

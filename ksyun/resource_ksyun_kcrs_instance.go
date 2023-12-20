@@ -59,14 +59,14 @@ func resourceKsyunKcrsInstance() *schema.Resource {
 				Required:    true,
 				Description: "the ID of the KcrsInstance.",
 			},
-			// "charge_type": {
-			// 	Type:     schema.TypeString,
-			// 	Optional: true,
-			// 	Default:  "HourlyInstantSettlement",
-			// 	ValidateFunc: validation.StringInSlice([]string{"HourlyInstantSettlement"},
-			// 		false),
-			// 	Description: "the link type of the KcrsInstance. Valid Values: 'DDoS_BGP'.",
-			// },
+			"charge_type": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "HourlyInstantSettlement",
+				ValidateFunc: validation.StringInSlice([]string{"HourlyInstantSettlement"},
+					false),
+				Description: "the link type of the KcrsInstance. Valid Values: 'HourlyInstantSettlement'.",
+			},
 			"instance_type": {
 				Type:     schema.TypeString,
 				Required: true,
@@ -76,7 +76,31 @@ func resourceKsyunKcrsInstance() *schema.Resource {
 				Description: "the max ip count that can bind to the KcrsInstance,value range: [10, 100].",
 			},
 
+			"open_public_operation": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Control public network access.",
+			},
+
+			// computed values
+
+			"instance_status": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "",
+			},
 			"internal_endpoint": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "",
+			},
+			"public_domain": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "",
+			},
+			"expired_time": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "",
@@ -114,5 +138,4 @@ func resourceKsyunKcrsInstanceDelete(d *schema.ResourceData, meta interface{}) (
 		return fmt.Errorf("error on deleting kcrs instance %q, %s", d.Id(), err)
 	}
 	return err
-
 }
