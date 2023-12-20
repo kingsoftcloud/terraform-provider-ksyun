@@ -34,6 +34,7 @@ The following arguments are supported:
 
 The `health_check` object supports the following:
 
+* `health_check_connect_port` - (Optional) The port of connecting for health check.
 * `health_check_state` - (Optional) Status maintained by health examination.Valid Values:'start', 'stop'.
 * `healthy_threshold` - (Optional) Health threshold.Valid Values:1-10. Default is 5.
 * `host_name` - (Optional) hostname of the health check.

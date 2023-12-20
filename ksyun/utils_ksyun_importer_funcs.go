@@ -297,6 +297,26 @@ func importTagV1Resource(d *schema.ResourceData, meta interface{}) ([]*schema.Re
 	return []*schema.ResourceData{d}, nil
 
 }
+func importTagResource(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	var err error
+	// ID => t_key + ":" + t_value + "," + r_type + ":" + r_id
+	items := strings.Split(d.Id(), ":")
+	if len(items) != 2 {
+		return []*schema.ResourceData{d}, fmt.Errorf("ID example: 'tag_key:tag_value'")
+	}
+
+	err = d.Set("key", items[0])
+	if err != nil {
+		return []*schema.ResourceData{d}, err
+	}
+	err = d.Set("value", items[1])
+	if err != nil {
+		return []*schema.ResourceData{d}, err
+	}
+
+	return []*schema.ResourceData{d}, nil
+
+}
 
 func importAddressAssociate(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	var err error

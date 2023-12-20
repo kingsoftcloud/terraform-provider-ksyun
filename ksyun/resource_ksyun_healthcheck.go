@@ -62,6 +62,13 @@ func resourceKsyunHealthCheck() *schema.Resource {
 				Default:     "start",
 				Description: "Status maintained by health examination.Valid Values:'start', 'stop'.",
 			},
+
+			"health_check_connect_port": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "The port of connecting for health check.",
+			},
+
 			"healthy_threshold": {
 				Type:         schema.TypeInt,
 				Optional:     true,

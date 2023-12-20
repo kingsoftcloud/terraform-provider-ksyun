@@ -288,7 +288,14 @@ func resourceKsyunAlbListener() *schema.Resource {
 				},
 			},
 
-			// TODO: 个性化配置
+			"config_content": {
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Description: "The custom configure for listener. [The details](https://docs.ksyun.com/documents/42615?type=3).",
+			},
 
 			"alb_listener_id": {
 				Type:        schema.TypeString,

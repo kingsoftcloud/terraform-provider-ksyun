@@ -281,6 +281,8 @@ Tag
 
 	Resource
 		ksyun_tag
+		ksyun_tag_v2
+		ksyun_tag_v2_attachment
 
 KS3
 
@@ -550,6 +552,10 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_kcrs_namespace":       resourceKsyunKcrsNamespace(),
 			"ksyun_kcrs_token":           resourceKsyunKcrsToken(),
 			"ksyun_kcrs_webhook_trigger": resourceKsyunKcrsWebhookTrigger(),
+
+			// tag
+			"ksyun_tag_v2":            resourceKsyunTagv2(),
+			"ksyun_tag_v2_attachment": resourceKsyunTagv2Attachment(),
 		},
 		ConfigureFunc: providerConfigure,
 	}
