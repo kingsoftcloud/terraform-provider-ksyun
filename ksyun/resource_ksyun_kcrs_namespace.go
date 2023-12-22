@@ -34,6 +34,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-ksyun/ksyun/internal/pkg/helper"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
 )
 
@@ -96,11 +97,7 @@ func resourceKsyunKcrsNamespaceUpdate(d *schema.ResourceData, meta interface{}) 
 		req := make(map[string]interface{}, 3)
 		req["InstanceId"] = d.Get("instance_id")
 		req["Namespace"] = d.Get("namespace")
-		if d.Get("public").(bool) {
-			req["Public"] = "True"
-		} else {
-			req["Public"] = "False"
-		}
+		req["Public"] = helper.StringBoolean(d.Get("public").(bool))
 
 		action := "DescribeInstance"
 		logger.Debug(logger.ReqFormat, action, req)

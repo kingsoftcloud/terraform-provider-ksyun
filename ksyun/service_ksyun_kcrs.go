@@ -25,7 +25,28 @@ func (s *KcrsService) CreateKcrsInstance(d *schema.ResourceData, r *schema.Resou
 	if err != nil {
 		return err
 	}
+
 	apiProcess.PutCalls(call)
+
+	if err := apiProcess.Run(); err != nil {
+		return err
+	}
+
+	if d.Get("open_public_operation").(bool) {
+		openCall, err := s.modifyExternalEndpointWithCall(d, true)
+		if err != nil {
+			return err
+		}
+		apiProcess.PutCalls(openCall)
+	}
+
+	if d.HasChange("external_policy") {
+		ePolicyCall, err := s.modifyExternalEndpointPolicyWithCall(d)
+		if err != nil {
+			return err
+		}
+		apiProcess.PutCalls(ePolicyCall...)
+	}
 
 	return apiProcess.Run()
 }
@@ -73,9 +94,38 @@ func (s *KcrsService) CreateKcrsNamespace(d *schema.ResourceData, r *schema.Reso
 
 	return apiProcess.Run()
 }
+func (s *KcrsService) ModifyKcrsInstanceEoIEndpoint(d *schema.ResourceData, r *schema.Resource) error {
+	apiProcess := NewApiProcess(context.Background(), d, s.client, true)
+
+	if d.HasChange("open_public_operation") {
+		publicCall, err := s.modifyExternalEndpointWithCall(d, d.Get("open_public_operation").(bool))
+		if err != nil {
+			return err
+		}
+		apiProcess.PutCalls(publicCall)
+	}
+
+	if d.HasChange("external_policy") {
+		externalPolicyCall, err := s.modifyExternalEndpointPolicyWithCall(d)
+		if err != nil {
+			return err
+		}
+		apiProcess.PutCalls(externalPolicyCall...)
+	}
+
+	return apiProcess.Run()
+}
 
 func (s *KcrsService) createKcrsInstanceCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
-	params, err := SdkRequestAutoMapping(d, r, false, nil, nil)
+	trans := map[string]SdkReqTransform{
+		"open_public_operation": {
+			Ignore: true,
+		},
+		"delete_bucket": {
+			Ignore: true,
+		},
+	}
+	params, err := SdkRequestAutoMapping(d, r, false, trans, nil, SdkReqParameter{onlyTransform: false})
 	if err != nil {
 		return callback, err
 	}
@@ -102,6 +152,151 @@ func (s *KcrsService) createKcrsInstanceCall(d *schema.ResourceData, r *schema.R
 			return err
 		},
 	}
+	return callback, err
+}
+
+func (s *KcrsService) modifyExternalEndpointWithCall(d *schema.ResourceData, open bool) (callback ApiCall, err error) {
+	params := map[string]interface{}{
+		"InstanceId": d.Id(),
+	}
+
+	callback = ApiCall{
+		param:  &params,
+		action: "OpenExternalEndpoint",
+		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+			conn := client.kcrsconn
+			logger.Debug(logger.RespFormat, call.action, *(call.param))
+			resp, err = conn.OpenExternalEndpoint(call.param)
+			return resp, err
+		},
+		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+			return err
+		},
+	}
+
+	if !open {
+		callback.executeCall = func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+			conn := client.kcrsconn
+			logger.Debug(logger.RespFormat, call.action, *(call.param))
+			resp, err = conn.CloseExternalEndpoint(call.param)
+			return resp, err
+		}
+		callback.action = "CloseExternalEndpoint"
+	}
+
+	return callback, err
+}
+
+func (s *KcrsService) modifyExternalEndpointPolicyWithCall(d *schema.ResourceData) (callbacks []ApiCall, err error) {
+	createCall := func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+		conn := client.kcrsconn
+		logger.Debug(logger.RespFormat, call.action, *(call.param))
+		resp, err = conn.CreateExternalEndpointPolicy(call.param)
+		return resp, err
+	}
+	removeCall := func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+		conn := client.kcrsconn
+		logger.Debug(logger.RespFormat, call.action, *(call.param))
+		resp, err = conn.DeleteExternalEndpointPolicy(call.param)
+		return resp, err
+	}
+
+	rawIf, currIf := d.GetChange("external_policy")
+
+	raw := rawIf.(*schema.Set)
+	curr := currIf.(*schema.Set)
+
+	removePolicy := raw.Difference(curr)
+	addPolicy := curr.Difference(raw)
+
+	callback := ApiCall{
+		// param:  &params,
+		action:      "",
+		executeCall: nil,
+		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+			return err
+		},
+	}
+
+	policyCallHandler := func(set *schema.Set, isCreate bool) {
+
+		for _, policy := range set.List() {
+			var req = make(map[string]interface{})
+			call := callback.Copy()
+
+			req["InstanceId"] = d.Id()
+			p := policy.(map[string]interface{})
+			req["Entry"] = p["entry"]
+			if isCreate {
+				call.action = "CreateExternalEndpointPolicy"
+				call.executeCall = createCall
+				if v, ok := p["desc"]; ok {
+					req["Desc"] = v
+				}
+			} else {
+				call.action = "DeleteExternalEndpointPolicy"
+				call.executeCall = removeCall
+			}
+			call.param = &req
+			callbacks = append(callbacks, call)
+		}
+	}
+
+	policyCallHandler(removePolicy, false)
+	policyCallHandler(addPolicy, true)
+
+	return callbacks, err
+}
+
+func (s *KcrsService) ModifyInternalEndpointDns(d *schema.ResourceData) error {
+	apiProcess := NewApiProcess(context.Background(), d, s.client, true)
+
+	mCall, err := s.modifyInternalEndpointDnsWithCall(d, d.Get("enable_vpc_domain_dns").(bool))
+	if err != nil {
+		return err
+	}
+	apiProcess.PutCalls(mCall)
+
+	return apiProcess.Run()
+}
+
+func (s *KcrsService) modifyInternalEndpointDnsWithCall(d *schema.ResourceData, enable bool) (callback ApiCall, err error) {
+	ids := DisassembleIds(d.Id())
+
+	params := map[string]interface{}{
+		"InstanceId":          ids[0],
+		"VpcId":               ids[1],
+		"EniLBIp":             d.Get("eni_lb_ip"),
+		"InternalEndpointDns": d.Get("internal_endpoint_dns"),
+	}
+
+	callback = ApiCall{
+		param:  &params,
+		action: "CreateInternalEndpointDns",
+		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+			conn := client.kcrsconn
+			logger.Debug(logger.RespFormat, call.action, *(call.param))
+			resp, err = conn.CreateInternalEndpointDns(call.param)
+			return resp, err
+		},
+		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+			return err
+		},
+	}
+
+	if !enable {
+		callback.executeCall = func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+			conn := client.kcrsconn
+			logger.Debug(logger.RespFormat, call.action, *(call.param))
+			resp, err = conn.DeleteInternalEndpointDns(call.param)
+			return resp, err
+		}
+		callback.action = "DeleteInternalEndpointDns"
+	}
+
 	return callback, err
 }
 
@@ -142,15 +337,12 @@ func prepareWebhookTriggerParameters(d *schema.ResourceData, r *schema.Resource,
 			orderKey := prefix + strconv.Itoa(idx+1) + "."
 
 			// header keys
-			params[orderKey+"Key"] = header["key"]
+			keyPrefix := orderKey + "Key"
+			params[keyPrefix] = header["key"]
 
-			values := header["values"]
-			secondPrefix := orderKey + "Value"
-			for j, value := range values.([]interface{}) {
-				headerValueKey := secondPrefix + "." + strconv.Itoa(j+1)
-
-				params[headerValueKey] = value
-			}
+			value := header["value"]
+			valuePrefix := orderKey + "Value.1"
+			params[valuePrefix] = value
 		}
 
 	}
@@ -179,7 +371,7 @@ func (s *KcrsService) createKcrsWebhookTriggerWithCall(d *schema.ResourceData, r
 			if err != nil {
 				return err
 			}
-			d.SetId(id.(string))
+			d.SetId(Float64ToString(id.(float64)))
 
 			return err
 		},
@@ -312,10 +504,7 @@ func (s *KcrsService) modifyInstanceTokenStatusWithCall(d *schema.ResourceData, 
 	trans := map[string]SdkReqTransform{
 		"enable": {
 			ValueFunc: func(d *schema.ResourceData) (interface{}, bool) {
-				if d.Get("enable").(bool) {
-					return "True", true
-				}
-				return "False", true
+				return helper.StringBoolean(d.Get("enable").(bool)), true
 			},
 		},
 	}
@@ -352,8 +541,14 @@ func (s *KcrsService) modifyInstanceTokenStatusWithCall(d *schema.ResourceData, 
 
 func (s *KcrsService) deleteKcrsInstanceWithCall(d *schema.ResourceData) (callback ApiCall, err error) {
 	removeReq := map[string]interface{}{
-		"InstanceId": d.Id(),
+		"InstanceId":   d.Id(),
+		"DeleteBucket": "False",
 	}
+
+	if d.Get("delete_bucket").(bool) {
+		removeReq["DeleteBucket"] = "True"
+	}
+
 	callback = ApiCall{
 		param:  &removeReq,
 		action: "DeleteInstance",
@@ -481,6 +676,75 @@ func (s *KcrsService) deleteKcrsNamespaceWithCall(d *schema.ResourceData) (callb
 	return callback, err
 }
 
+func (s *KcrsService) ReadAndSetInternalEndpoint(d *schema.ResourceData, r *schema.Resource) error {
+	return resource.Retry(5*time.Minute, func() *resource.RetryError {
+		var (
+			instanceId = d.Get("instance_id").(string)
+		)
+
+		data, callErr := s.ReadInternalEndpoint(d, instanceId)
+		if callErr != nil {
+			if !d.IsNewResource() {
+				return resource.NonRetryableError(callErr)
+			}
+			if notFoundError(callErr) {
+				return resource.RetryableError(callErr)
+			} else {
+				return resource.NonRetryableError(fmt.Errorf("error on reading kcrs instance %q, %s", d.Id(), callErr))
+			}
+		} else {
+			extra := map[string]SdkResponseMapping{
+				"EniLBIp": {
+					Field: "eni_lb_ip",
+				},
+				"SubnetId": {
+					Field: "reserve_subnet_id",
+				},
+			}
+			SdkResponseAutoResourceData(d, r, data, extra)
+
+			if d.Get("enable_vpc_domain_dns").(bool) {
+				var (
+					params      = make(map[string]interface{})
+					endpointDns = "PrivateDomain"
+					resp        *map[string]interface{}
+					err         error
+				)
+				params["InstanceId"] = instanceId
+				params["VpcId"] = d.Get("vpc_id")
+				params["InternalEndpointDns"] = endpointDns
+				params["EniLBIp"] = d.Get("eni_lb_ip")
+
+				conn := s.client.kcrsconn
+				action := "DescribeInternalEndpoint"
+				logger.Debug(logger.ReqFormat, action, params)
+				resp, err = conn.DescribeInternalEndpointDns(&params)
+				if err != nil {
+					if notFoundError(err) {
+						return resource.NonRetryableError(err)
+					}
+					return resource.RetryableError(err)
+				}
+				status, err := getSdkValue("InternalEndpointDnsSet.0.Status", *resp)
+				if err != nil {
+					return resource.NonRetryableError(err)
+				}
+				stat, _ := If2String(status)
+				if err := d.Set("dns_parse_status", stat); err != nil {
+					return resource.NonRetryableError(err)
+				}
+				_ = d.Set("internal_endpoint_dns", endpointDns)
+			} else {
+				if err := d.Set("dns_parse_status", "Closed"); err != nil {
+					return resource.NonRetryableError(err)
+				}
+			}
+
+			return nil
+		}
+	})
+}
+
 func (s *KcrsService) ReadAndSetKcrsInstance(d *schema.ResourceData, r *schema.Resource) error {
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
 		data, callErr := s.ReadKcrsInstance(d, d.Id())
@@ -495,6 +759,54 @@ func (s *KcrsService) ReadAndSetKcrsInstance(d *schema.ResourceData, r *schema.R
 			}
 		} else {
 			SdkResponseAutoResourceData(d, r, data, nil)
+
+			descExternalEndpoint := map[string]interface{}{
+				"InstanceId": d.Id(),
+			}
+
+			conn := s.client.kcrsconn
+
+			resp, err := conn.DescribeExternalEndpoint(&descExternalEndpoint)
+			if err != nil {
+				return resource.NonRetryableError(err)
+			}
+
+			results, err := getSdkValue("Status", *resp)
+			if err != nil {
+				return resource.NonRetryableError(err)
+			}
+
+			status := results.(string)
+			if status == "Closed" {
+				_ = d.Set("open_public_operation", false)
+			} else {
+				_ = d.Set("open_public_operation", true)
+			}
+
+			policySetIf, err := getSdkValue("PolicySet", *resp)
+			if err != nil {
+				return resource.NonRetryableError(err)
+			}
+			if policySetIf != nil {
+				policySet := policySetIf.([]interface{})
+
+				ps := make([]interface{}, 0, len(policySet))
+				for _, pp := range policySet {
+					switch pp.(type) {
+					case map[string]interface{}:
+						p := pp.(map[string]interface{})
+						m := make(map[string]interface{}, 2)
+						for k, v := range p {
+							m[Hump2Downline(k)] = v
+						}
+						ps = append(ps, m)
+					}
+				}
+				if len(ps) > 0 {
+					_ = d.Set("external_policy", ps)
+				}
+			}
+
 			return nil
 		}
 	})
@@ -589,6 +901,30 @@ func (s *KcrsService) ReadKcrsInstance(d *schema.ResourceData, instanceId string
 	return data, err
 }
 
+func (s *KcrsService) ReadInternalEndpoint(d *schema.ResourceData, instanceId string) (data map[string]interface{}, err error) {
+	var (
+		results []interface{}
+	)
+	if instanceId == "" {
+		return nil, fmt.Errorf("instance id cannot be blank")
+	}
+	req := map[string]interface{}{
+		"InstanceId": instanceId,
+	}
+
+	results, err = s.ReadInternalEndpoints(req)
+	if err != nil {
+		return data, err
+	}
+	for _, v := range results {
+		data = v.(map[string]interface{})
+	}
+	if len(data) == 0 {
+		return data, fmt.Errorf("kcrs internal endpoint %s not exist ", instanceId)
+	}
+	return data, err
+}
+
 func (s *KcrsService) ReadAndSetWebhookTrigger(d *schema.ResourceData, r *schema.Resource) error {
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
 		data, callErr := s.ReadKcrsWebhookTrigger(d, "", "", "")
@@ -605,8 +941,8 @@ func (s *KcrsService) ReadAndSetWebhookTrigger(d *schema.ResourceData, r *schema
 
 			trigger := make(map[string]interface{}, len(data))
 
+			headers := make([]map[string]interface{}, 0)
 			// parse headers
-			headersM := make(map[string][]string)
 			if receivedHeaderIf, ok := data["Header"]; ok {
 				if receivedHeader, cOk := receivedHeaderIf.(string); cOk {
 					kvs := strings.Split(receivedHeader, ";")
@@ -616,22 +952,13 @@ func (s *KcrsService) ReadAndSetWebhookTrigger(d *schema.ResourceData, r *schema
 							continue
 						}
 						k := kvSlice[0]
-						if _, ok := headersM[k]; !ok {
-							headersM[k] = make([]string, 0)
-						}
-
-						headersM[k] = append(headersM[k], kvSlice[1])
-
+						v := kvSlice[1]
+						m := make(map[string]interface{}, 2)
+						m["key"] = k
+						m["value"] = v
+						headers = append(headers, m)
 					}
 				}
-			}
-
-			headers := make([]map[string]interface{}, 0, len(headersM))
-			for hk, hvs := range headersM {
-				m := make(map[string]interface{}, 2)
-				m["key"] = hk
-				m["values"] = hvs
-				headers = append(headers, m)
 			}
 
 			trigger["headers"] = headers
@@ -645,7 +972,9 @@ func (s *KcrsService) ReadAndSetWebhookTrigger(d *schema.ResourceData, r *schema
 					trigger[Hump2Downline(k)] = v
 				}
 			}
-			if err := d.Set("trigger", trigger); err != nil {
+
+			triggers := []interface{}{trigger}
+			if err := d.Set("trigger", triggers); err != nil {
 				return resource.NonRetryableError(err)
 			}
 			return nil
@@ -800,6 +1129,32 @@ func (s *KcrsService) ReadKcrsWebhookTriggers(condition map[string]interface{}) 
 
 		return data, err
 	})
+
+	return data, err
+}
+func (s *KcrsService) ReadInternalEndpoints(condition map[string]interface{}) (data []interface{}, err error) {
+
+	var (
+		resp    *map[string]interface{}
+		results interface{}
+	)
+
+	if condition == nil {
+		condition = make(map[string]interface{})
+	}
+	conn := s.client.kcrsconn
+	action := "DescribeInternalEndpoint"
+	logger.Debug(logger.ReqFormat, action, condition)
+	resp, err = conn.DescribeInternalEndpoint(&condition)
+	if err != nil {
+		return data, err
+	}
+
+	results, err = getSdkValue("AccessVpcSet", *resp)
+	if err != nil {
+		return data, err
+	}
+	data = results.([]interface{})
 
 	return data, err
 }

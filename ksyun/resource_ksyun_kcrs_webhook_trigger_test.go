@@ -37,7 +37,11 @@ resource "ksyun_kcrs_webhook_trigger" "foo" {
 		event_types = ["DeleteImage", "PushImage"]
 		headers {
 			key = "pp1"
-			values = ["22", "dads2"]
+			value = "22"
+		}
+		headers {
+			key = "pp1"
+			value = "333"
 		}
 	}
 }

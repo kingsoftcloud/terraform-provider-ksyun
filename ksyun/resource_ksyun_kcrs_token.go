@@ -141,6 +141,7 @@ func resourceKsyunKcrsTokenUpdate(d *schema.ResourceData, meta interface{}) (err
 	}
 	if len(req) > 0 {
 		req["InstanceId"] = d.Get("instance_id")
+		req["TokenId"] = d.Id()
 		_, actionErr := conn.ModifyInstanceTokenInformation(&req)
 		if actionErr != nil {
 			err = multierror.Append(err, fmt.Errorf("error on updating kcrs token information %q, %s", d.Id(), actionErr))

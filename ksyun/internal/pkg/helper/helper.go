@@ -17,3 +17,19 @@ func GetSchemaListHeadMap(d *schema.ResourceData, key string) (result map[string
 	result, ok = head.(map[string]interface{})
 	return
 }
+
+func StringBoolean(s bool) string {
+	if s {
+		return "True"
+	}
+	return "False"
+}
+
+func GetDWithBool(d *schema.ResourceData, key string) (b bool, ok bool) {
+	if v, dOk := d.GetOk(key); dOk {
+		b = v.(bool)
+		return b, dOk
+	} else {
+		return false, false
+	}
+}

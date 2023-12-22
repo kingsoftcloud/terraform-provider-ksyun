@@ -552,6 +552,7 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_kcrs_namespace":       resourceKsyunKcrsNamespace(),
 			"ksyun_kcrs_token":           resourceKsyunKcrsToken(),
 			"ksyun_kcrs_webhook_trigger": resourceKsyunKcrsWebhookTrigger(),
+			"ksyun_kcrs_vpc_attachment":  resourceKsyunKcrsVpcAttachment(),
 
 			// tag
 			"ksyun_tag_v2":            resourceKsyunTagv2(),

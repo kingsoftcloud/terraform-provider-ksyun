@@ -1,6 +1,7 @@
 package ksyun
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -436,4 +437,26 @@ func importPrivateDnsZoneVpcAttachment(d *schema.ResourceData, meta interface{})
 	}
 
 	return []*schema.ResourceData{d}, nil
+}
+
+func commonImport(number int, keys ...string) schema.StateFunc {
+	return func(d *schema.ResourceData, i interface{}) ([]*schema.ResourceData, error) {
+		var (
+			err  error
+			retD = []*schema.ResourceData{d}
+		)
+
+		ids := strings.Split(d.Id(), ":")
+		if len(ids) != number {
+			return retD, errors.New("import id must split with ':'")
+		}
+
+		for idx, id := range ids {
+			err = d.Set(keys[idx], id)
+			if err != nil {
+				return retD, fmt.Errorf("setting values encountered an error %s", err)
+			}
+		}
+		return retD, nil
+	}
 }

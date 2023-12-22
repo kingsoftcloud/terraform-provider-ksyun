@@ -22,6 +22,12 @@ func TestAccKsyunKcrsNamespace_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIDExists("ksyun_kcrs_namespace.foo"),
 				),
+			}, {
+				Config: testAccKsyunKcrsNamespaceUpdateConfig,
+
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIDExists("ksyun_kcrs_namespace.foo"),
+				),
 			},
 		},
 	})
@@ -32,5 +38,12 @@ resource "ksyun_kcrs_namespace" "foo" {
 	instance_id = "b061ebeb-106d-40b9-88ea-7cad7e0c08e5"
 	namespace = "tftest"
 	public = false
+}
+`
+const testAccKsyunKcrsNamespaceUpdateConfig = `
+resource "ksyun_kcrs_namespace" "foo" {
+	instance_id = "b061ebeb-106d-40b9-88ea-7cad7e0c08e5"
+	namespace = "tftest"
+	public = true 
 }
 `

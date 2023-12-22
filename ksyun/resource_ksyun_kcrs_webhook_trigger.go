@@ -85,13 +85,10 @@ func resourceKsyunKcrsWebhookTrigger() *schema.Resource {
 										Required:    true,
 										Description: "Header Key.",
 									},
-									"values": {
-										Type: schema.TypeList,
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
+									"value": {
+										Type:        schema.TypeString,
 										Required:    true,
-										Description: "Header Values.",
+										Description: "Header Value.",
 									},
 								},
 							},
@@ -115,6 +112,7 @@ func resourceKsyunKcrsWebhookTrigger() *schema.Resource {
 						"enabled": {
 							Type:        schema.TypeBool,
 							Optional:    true,
+							Computed:    true,
 							Description: "Enable trigger.",
 						},
 					},

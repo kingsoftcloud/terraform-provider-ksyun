@@ -57,6 +57,7 @@ func resourceKsyunKcrsInstance() *schema.Resource {
 			"instance_name": {
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "the ID of the KcrsInstance.",
 			},
 			"charge_type": {
@@ -65,6 +66,7 @@ func resourceKsyunKcrsInstance() *schema.Resource {
 				Default:  "HourlyInstantSettlement",
 				ValidateFunc: validation.StringInSlice([]string{"HourlyInstantSettlement"},
 					false),
+				ForceNew:    true,
 				Description: "the link type of the KcrsInstance. Valid Values: 'HourlyInstantSettlement'.",
 			},
 			"instance_type": {
@@ -83,8 +85,44 @@ func resourceKsyunKcrsInstance() *schema.Resource {
 				Description: "Control public network access.",
 			},
 
-			// computed values
+			"external_policy": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"entry": {
+							Type: schema.TypeString,
+							ValidateFunc: validation.Any(
+								validation.IsCIDR,
+								validation.IsIPAddress,
+							),
+							Required: true,
+						},
+						"desc": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+					},
+				},
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					if !d.Get("open_public_operation").(bool) {
+						return true
+					}
+					return false
+				},
+			},
 
+			"delete_bucket": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+
+				// never activate diff
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					return true
+				},
+			},
+			// computed values
 			"instance_status": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -128,7 +166,17 @@ func resourceKsyunKcrsInstanceRead(d *schema.ResourceData, meta interface{}) (er
 }
 
 func resourceKsyunKcrsInstanceUpdate(d *schema.ResourceData, meta interface{}) (err error) {
-	return fmt.Errorf("the attributes are not supported to modify")
+	kcrsInstanceService := KcrsService{meta.(*KsyunClient)}
+
+	if d.HasChanges("open_public_operation", "external_policy") {
+		err := kcrsInstanceService.ModifyKcrsInstanceEoIEndpoint(d, resourceKsyunKcrsInstance())
+		if err != nil {
+			return fmt.Errorf("an error caused when changing instance external endpoint status or policy %q, %s", d.Id(), err)
+		}
+		return resourceKsyunKcrsInstanceRead(d, meta)
+	}
+
+	return fmt.Errorf("the attributes, 'project_id', are not supported to modify")
 }
 
 func resourceKsyunKcrsInstanceDelete(d *schema.ResourceData, meta interface{}) (err error) {
