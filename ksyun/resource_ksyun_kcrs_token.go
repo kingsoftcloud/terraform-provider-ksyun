@@ -1,30 +1,31 @@
 /*
-Provides an KcrsToken resource.
+Provides an access token resource under kcrs repository instance.
 
 Example Usage
 
 ```hcl
+# repository instance
+resource "ksyun_kcrs_instance" "foo" {
+	instance_name = "tfunittest"
+	instance_type = "basic"
+}
+
 # Create a KcrsToken
-resource "ksyun_KcrsToken" "default" {
-  link_type = "DDoS_BGP"
-  ip_count = 10
-  band = 30
-  max_band = 30
-  idc_band = 100
-  duration = 1
-  KcrsToken_name = "ksc_KcrsService"
-  bill_type = 1
-  service_id = "KcrsToken_30G"
-  project_id="0"
+resource "ksyun_kcrs_token" "foo" {
+	instance_id = ksyun_kcrs_instance.foo.id
+	token_type = "Day"
+	token_time = 10
+	desc = "test"
+	enable = true
 }
 ```
 
 Import
 
-KcrsToken can be imported using the id, e.g.
+KcrsToken can be imported using `instance_id:token_id`, e.g.
 
 ```
-$ terraform import ksyun_KcrsToken.default KcrsService67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
+$ terraform import ksyun_kcrs_token.foo ${instance_id}:${token_id}
 ```
 */
 
@@ -54,7 +55,7 @@ func resourceKsyunKcrsToken() *schema.Resource {
 			"instance_id": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The id of the project.",
+				Description: "Instance id of repository.",
 			},
 			"token_type": {
 				Type:     schema.TypeString,
@@ -62,16 +63,9 @@ func resourceKsyunKcrsToken() *schema.Resource {
 
 				ValidateFunc: validation.StringInSlice([]string{"Hour", "Day", "NeverExpire"},
 					false),
-				Description: "the ID of the KcrsToken.",
+				Description: "Token type.",
 			},
-			// "charge_type": {
-			// 	Type:     schema.TypeString,
-			// 	Optional: true,
-			// 	Default:  "HourlyInstantSettlement",
-			// 	ValidateFunc: validation.StringInSlice([]string{"HourlyInstantSettlement"},
-			// 		false),
-			// 	Description: "the link type of the KcrsToken. Valid Values: 'DDoS_BGP'.",
-			// },
+
 			"token_time": {
 				Type:     schema.TypeInt,
 				Required: true,
@@ -85,21 +79,24 @@ func resourceKsyunKcrsToken() *schema.Resource {
 					return false
 				},
 
-				Description: "the max ip count that can bind to the KcrsToken,value range: [10, 100].",
+				Description: "The validation time of token. If the `token_type` is 'NeverExpire', this field is invalid.",
 			},
 			"desc": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Description for this token.",
 			},
 			"enable": {
-				Type:     schema.TypeBool,
-				Optional: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Whether to enable this token.",
 			},
 
 			// computed
 			"expire_time": {
-				Type:     schema.TypeBool,
-				Computed: true,
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "The expired time for this token.",
 			},
 		},
 	}

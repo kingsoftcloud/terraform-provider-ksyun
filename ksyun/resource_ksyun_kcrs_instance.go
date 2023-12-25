@@ -1,21 +1,32 @@
 /*
-Provides an KcrsInstance resource.
+Provides a Kcrs Repository Instance resource.
 
 Example Usage
 
 ```hcl
-# Create a KcrsInstance
-resource "ksyun_KcrsInstance" "default" {
-  link_type = "DDoS_BGP"
-  ip_count = 10
-  band = 30
-  max_band = 30
-  idc_band = 100
-  duration = 1
-  KcrsInstance_name = "ksc_KcrsService"
-  bill_type = 1
-  service_id = "KcrsInstance_30G"
-  project_id="0"
+# Create a Kcrs Repository Instance
+resource "ksyun_kcrs_instance" "foo" {
+	instance_name = "tfunittest"
+	instance_type = "basic"
+}
+
+
+# Create a Kcrs Repository Instance and open public access
+resource "ksyun_kcrs_instance" "foo" {
+	instance_name = "tfunittest"
+	instance_type = "basic"
+	open_public_operation = true
+
+
+	# open public access with external policy that permits an address, ip or cidr, to access this repository
+	external_policy {
+		entry = "192.168.2.133"
+		desc = "ddd"
+	}
+	external_policy {
+		entry = "192.168.2.123/32"
+		desc = "ddd"
+	}
 }
 ```
 
@@ -24,7 +35,7 @@ Import
 KcrsInstance can be imported using the id, e.g.
 
 ```
-$ terraform import ksyun_KcrsInstance.default KcrsService67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
+$ terraform import ksyun_kcrs_instance.foo 67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
 ```
 */
 
@@ -58,7 +69,7 @@ func resourceKsyunKcrsInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "the ID of the KcrsInstance.",
+				Description: "Repository instance name.",
 			},
 			"charge_type": {
 				Type:     schema.TypeString,
@@ -67,7 +78,7 @@ func resourceKsyunKcrsInstance() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"HourlyInstantSettlement"},
 					false),
 				ForceNew:    true,
-				Description: "the link type of the KcrsInstance. Valid Values: 'HourlyInstantSettlement'.",
+				Description: "Charge type of the instance. Valid Values: 'HourlyInstantSettlement'. Default: 'HourlyInstantSettlement'.",
 			},
 			"instance_type": {
 				Type:     schema.TypeString,
@@ -75,7 +86,7 @@ func resourceKsyunKcrsInstance() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"basic", "premium"},
 					false),
 				ForceNew:    true,
-				Description: "the max ip count that can bind to the KcrsInstance,value range: [10, 100].",
+				Description: "The type of instance. Valid Values: 'basic', 'premium'.",
 			},
 
 			"open_public_operation": {
@@ -96,11 +107,13 @@ func resourceKsyunKcrsInstance() *schema.Resource {
 								validation.IsCIDR,
 								validation.IsIPAddress,
 							),
-							Required: true,
+							Required:    true,
+							Description: "External policy entry. Submit to CIDR or IP.",
 						},
 						"desc": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The external policy description.",
 						},
 					},
 				},
@@ -110,6 +123,7 @@ func resourceKsyunKcrsInstance() *schema.Resource {
 					}
 					return false
 				},
+				Description: "The external access policy. It's activated when 'open_public_operation' is true.",
 			},
 
 			"delete_bucket": {
@@ -121,27 +135,29 @@ func resourceKsyunKcrsInstance() *schema.Resource {
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					return true
 				},
+				Description: "Whether delete bucket with this instance is removing.",
 			},
+
 			// computed values
 			"instance_status": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "",
+				Description: "Repository instance status.",
 			},
 			"internal_endpoint": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "",
+				Description: "Internal endpoint address.",
 			},
 			"public_domain": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "",
+				Description: "Public domain.",
 			},
 			"expired_time": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "",
+				Description: "Expired time.",
 			},
 		},
 	}

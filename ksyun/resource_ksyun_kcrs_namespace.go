@@ -1,30 +1,30 @@
 /*
-Provides an KcrsNamespace resource.
+Provides a namespace resource under kcrs repository instance.
 
 Example Usage
 
 ```hcl
-# Create a KcrsNamespace
-resource "ksyun_KcrsNamespace" "default" {
-  link_type = "DDoS_BGP"
-  ip_count = 10
-  band = 30
-  max_band = 30
-  idc_band = 100
-  duration = 1
-  KcrsNamespace_name = "ksc_KcrsService"
-  bill_type = 1
-  service_id = "KcrsNamespace_30G"
-  project_id="0"
+# repository instance
+resource "ksyun_kcrs_instance" "foo" {
+	instance_name = "tfunittest"
+	instance_type = "basic"
+}
+
+
+# Create a namespace under the repository instance
+resource "ksyun_kcrs_namespace" "foo" {
+	instance_id = ksyun_kcrs_instance.foo.id
+	namespace = "tftest"
+	public = false
 }
 ```
 
 Import
 
-KcrsNamespace can be imported using the id, e.g.
+KcrsNamespace can be imported using `instance_id:namespace_name`, e.g.
 
 ```
-$ terraform import ksyun_KcrsNamespace.default KcrsService67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
+$ terraform import ksyun_kcrs_namespace.foo ${instance_id}:${namespace_name}
 ```
 */
 
@@ -53,13 +53,13 @@ func resourceKsyunKcrsNamespace() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     0,
-				Description: "The id of the project.",
+				Description: "Instance id of repository.",
 			},
 			"namespace": {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "the ID of the KcrsNamespace.",
+				Description: "The name of namespace.",
 			},
 
 			"public": {
@@ -67,7 +67,7 @@ func resourceKsyunKcrsNamespace() *schema.Resource {
 				Required: true,
 
 				// ForceNew:    true,
-				Description: "the max ip count that can bind to the KcrsNamespace,value range: [10, 100].",
+				Description: "Whether to be public this namespace.",
 			},
 		},
 	}

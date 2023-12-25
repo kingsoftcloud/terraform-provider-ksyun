@@ -1,30 +1,30 @@
 /*
-Provides an KcrsVpcAttachment resource.
+Provides an internal access attachment resource with a vpc under kcrs repository instance.
 
 Example Usage
 
 ```hcl
-# Create a KcrsVpcAttachment
-resource "ksyun_KcrsVpcAttachment" "default" {
-  link_type = "DDoS_BGP"
-  ip_count = 10
-  band = 30
-  max_band = 30
-  idc_band = 100
-  duration = 1
-  KcrsVpcAttachment_name = "ksc_KcrsService"
-  bill_type = 1
-  service_id = "KcrsVpcAttachment_30G"
-  project_id="0"
+# repository instance
+resource "ksyun_kcrs_instance" "foo" {
+	instance_name = "tfunittest"
+	instance_type = "basic"
+}
+
+# To attach a vpc for an instance
+resource "ksyun_kcrs_vpc_attachment" "foo" {
+	instance_id = ksyun_kcrs_instance.foo.id
+	vpc_id = "vpc_id"
+	reserve_subnet_id = "subnet_id"
+	enable_vpc_domain_dns = true
 }
 ```
 
 Import
 
-KcrsVpcAttachment can be imported using the id, e.g.
+KcrsVpcAttachment can be imported using `instance_id:vpc_id`, e.g.
 
 ```
-$ terraform import ksyun_KcrsVpcAttachment.default KcrsService67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
+$ terraform import ksyun_kcrs_vpc_attachment.foo ${instance_id}:${vpc_id}
 ```
 */
 
@@ -53,41 +53,48 @@ func resourceKsyunKcrsVpcAttachment() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "The id of the project.",
+				Description: "Instance id of repository.",
 			},
 			"vpc_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Vpc id.",
 			},
 			"reserve_subnet_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The id of subnet type is '**Reserve**'.",
 			},
 
 			"enable_vpc_domain_dns": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Whether to enable vpc domain dns. Default value is `false`.",
 			},
 
 			// compute values
 			"status": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Status of the internal access.",
 			},
 			"dns_parse_status": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Status of the DNS parsed.",
 			},
 			"eni_lb_ip": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "IP address of the internal access.",
 			},
 			"internal_endpoint_dns": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Endpoint Domain of the internal access.",
 			},
 		},
 	}

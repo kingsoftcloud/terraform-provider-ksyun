@@ -200,6 +200,15 @@ KCE
 		ksyun_kce_cluster
 		ksyun_kce_worker
 
+KCR
+
+	Resource
+		ksyun_kcrs_instance
+		ksyun_kcrs_namespace
+		ksyun_kcrs_token
+		ksyun_kcrs_webhook_trigger
+		ksyun_kcrs_vpc_attachment
+
 KCM
 
 	Data Source

@@ -1,21 +1,32 @@
 /*
-Provides an KcrsWebhookTrigger resource.
+Provides a webhook trigger under kcrs repository instance.
 
 Example Usage
 
 ```hcl
-# Create a KcrsWebhookTrigger
-resource "ksyun_KcrsWebhookTrigger" "default" {
-  link_type = "DDoS_BGP"
-  ip_count = 10
-  band = 30
-  max_band = 30
-  idc_band = 100
-  duration = 1
-  KcrsWebhookTrigger_name = "ksc_KcrsService"
-  bill_type = 1
-  service_id = "KcrsWebhookTrigger_30G"
-  project_id="0"
+# repository instance
+resource "ksyun_kcrs_instance" "foo" {
+	instance_name = "tfunittest"
+	instance_type = "basic"
+}
+
+# Create a webhook trigger
+resource "ksyun_kcrs_webhook_trigger" "foo" {
+	instance_id = ksyun_kcrs_instance.foo.id
+	namespace = "namespace"
+	trigger {
+		trigger_url = "http://www.test111.com"
+		trigger_name = "tfunittest"
+		event_types = ["DeleteImage", "PushImage"]
+		headers {
+			key = "pp1"
+			value = "22"
+		}
+		headers {
+			key = "pp1"
+			value = "333"
+		}
+	}
 }
 ```
 
@@ -52,7 +63,7 @@ func resourceKsyunKcrsWebhookTrigger() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     0,
-				Description: "The id of the project.",
+				Description: "Instance id of repository.",
 			},
 
 			"namespace": {
@@ -100,13 +111,13 @@ func resourceKsyunKcrsWebhookTrigger() *schema.Resource {
 								ValidateFunc: validation.StringInSlice([]string{"PushImage", "DeleteImage"}, false),
 							},
 							Required:    true,
-							Description: "Trigger action.",
+							Description: "Trigger action. Valid Values: 'PushImage', 'DeleteImage'.",
 						},
 						"trigger_name": {
 							Type:     schema.TypeString,
 							Required: true,
 							// ForceNew:    true,
-							Description: "the ID of the KcrsWebhookTrigger.",
+							Description: "Trigger name.",
 						},
 
 						"enabled": {
