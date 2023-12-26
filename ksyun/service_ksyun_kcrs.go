@@ -18,6 +18,8 @@ type KcrsService struct {
 	client *KsyunClient
 }
 
+type emptySlice []interface{}
+
 func (s *KcrsService) CreateKcrsInstance(d *schema.ResourceData, r *schema.Resource) error {
 	apiProcess := NewApiProcess(context.Background(), d, s.client, true)
 
@@ -98,7 +100,8 @@ func (s *KcrsService) ModifyKcrsInstanceEoIEndpoint(d *schema.ResourceData, r *s
 	apiProcess := NewApiProcess(context.Background(), d, s.client, true)
 
 	if d.HasChange("open_public_operation") {
-		publicCall, err := s.modifyExternalEndpointWithCall(d, d.Get("open_public_operation").(bool))
+		isOpen := d.Get("open_public_operation").(bool)
+		publicCall, err := s.modifyExternalEndpointWithCall(d, isOpen)
 		if err != nil {
 			return err
 		}
@@ -183,6 +186,14 @@ func (s *KcrsService) modifyExternalEndpointWithCall(d *schema.ResourceData, ope
 			return resp, err
 		}
 		callback.action = "CloseExternalEndpoint"
+		callback.afterCall = func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) error {
+			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+			if !open {
+				// clean the external policy set when open_public_operation is false
+				_ = d.Set("external_policy", emptySlice{})
+			}
+			return err
+		}
 	}
 
 	return callback, err
@@ -389,6 +400,8 @@ func (s *KcrsService) modifyKcrsWebhookTriggerWithCall(d *schema.ResourceData, r
 	}
 
 	params["Trigger.TriggerId"] = d.Id()
+	params["InstanceId"] = d.Get("instance_id")
+	params["Namespace"] = d.Get("namespace")
 
 	callback = ApiCall{
 		param:  &params,
@@ -745,6 +758,127 @@ func (s *KcrsService) ReadAndSetInternalEndpoint(d *schema.ResourceData, r *sche
 	})
 }
 
+func (s *KcrsService) ReadAndSetKcrsTokens(d *schema.ResourceData, r *schema.Resource) (err error) {
+	req := map[string]interface{}{
+		"InstanceId": d.Get("instance_id"),
+	}
+
+	data, err := s.readKcrsInstanceTokens(req)
+	if err != nil {
+		return err
+	}
+
+	return mergeDataSourcesResp(d, r, ksyunDataSource{
+		collection: data,
+		// nameField:   "InstanceName",
+		idFiled:     "TokenId",
+		targetField: "tokens",
+		extra:       map[string]SdkResponseMapping{},
+	})
+}
+func (s *KcrsService) ReadAndSetKcrsNamespaces(d *schema.ResourceData, r *schema.Resource) (err error) {
+	transform := map[string]SdkReqTransform{
+		"namespaces": {
+			mapping: "Namespace",
+			Type:    TransformWithN,
+		},
+	}
+	req, err := mergeDataSourcesReq(d, r, transform)
+	if err != nil {
+		return err
+	}
+
+	req["InstanceId"] = d.Get("instance_id")
+
+	data, err := s.ReadKcrsNamespaces(req)
+	if err != nil {
+		return err
+	}
+
+	return mergeDataSourcesResp(d, r, ksyunDataSource{
+		collection: data,
+		// nameField:   "InstanceName",
+		idFiled:     "Namespace",
+		targetField: "namespace_items",
+		extra:       map[string]SdkResponseMapping{},
+	})
+}
+func (s *KcrsService) ReadAndSetKcrsWebhookTriggers(d *schema.ResourceData, r *schema.Resource) (err error) {
+	transform := map[string]SdkReqTransform{
+		"trigger_ids": {
+			mapping: "TriggerId",
+			Type:    TransformWithN,
+		},
+	}
+	req, err := mergeDataSourcesReq(d, r, transform)
+	if err != nil {
+		return err
+	}
+
+	req["InstanceId"] = d.Get("instance_id")
+	req["Namespace"] = d.Get("namespace")
+
+	data, err := s.ReadKcrsWebhookTriggers(req)
+	if err != nil {
+		return err
+	}
+
+	for _, dd := range data {
+		switch dd.(type) {
+		case map[string]interface{}:
+			dm := dd.(map[string]interface{})
+			if v, ok := dm["TriggerId"]; ok {
+				if vv, vOk := v.(float64); vOk {
+					dm["TriggerId"] = Float64ToString(vv)
+				}
+			}
+		}
+	}
+
+	return mergeDataSourcesResp(d, r, ksyunDataSource{
+		collection: data,
+		// nameField:   "InstanceName",
+		idFiled:     "TriggerId",
+		targetField: "triggers",
+		extra:       map[string]SdkResponseMapping{},
+	})
+}
+func (s *KcrsService) ReadAndSetKcrsInstances(d *schema.ResourceData, r *schema.Resource) (err error) {
+	transform := map[string]SdkReqTransform{
+		"ids": {
+			mapping: "InstanceId",
+			Type:    TransformWithN,
+		},
+		"project_ids": {
+			mapping: "ProjectId",
+			Type:    TransformWithN,
+		},
+	}
+	req, err := mergeDataSourcesReq(d, r, transform)
+	if err != nil {
+		return err
+	}
+
+	if _, ok := req["ProjectId.1"]; !ok {
+		if err := addProjectInfo(d, &req, s.client); err != nil {
+			return err
+		}
+	}
+
+	data, err := s.ReadKcrsInstances(req)
+	if err != nil {
+		return err
+	}
+
+	return mergeDataSourcesResp(d, r, ksyunDataSource{
+		collection:  data,
+		nameField:   "InstanceName",
+		idFiled:     "InstanceId",
+		targetField: "instances",
+		extra:       map[string]SdkResponseMapping{},
+	})
+}
+
 func (s *KcrsService) ReadAndSetKcrsInstance(d *schema.ResourceData, r *schema.Resource) error {
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
 		data, callErr := s.ReadKcrsInstance(d, d.Id())
@@ -805,6 +939,8 @@ func (s *KcrsService) ReadAndSetKcrsInstance(d *schema.ResourceData, r *schema.R
 				if len(ps) > 0 {
 					_ = d.Set("external_policy", ps)
 				}
+			} else {
+				_ = d.Set("external_policy", emptySlice{})
 			}
 
 			return nil
@@ -1082,24 +1218,24 @@ func (s *KcrsService) ReadKcrsInstances(condition map[string]interface{}) (data 
 		resp    *map[string]interface{}
 		results interface{}
 	)
-	if condition == nil {
-		condition = make(map[string]interface{})
-	}
-	conn := s.client.kcrsconn
-	action := "DescribeInstance"
-	logger.Debug(logger.ReqFormat, action, condition)
-	resp, err = conn.DescribeInstance(&condition)
-	if err != nil {
-		return data, err
-	}
+	return pageQuery(condition, "MaxResults", "Marker", 99, 0, func(condition map[string]interface{}) ([]interface{}, error) {
+		conn := s.client.kcrsconn
+		action := "DescribeInstance"
+		logger.Debug(logger.ReqFormat, action, condition)
+		resp, err = conn.DescribeInstance(&condition)
+		if err != nil {
+			return data, err
+		}
 
-	results, err = getSdkValue("InstanceSet", *resp)
-	if err != nil {
-		return data, err
-	}
-	data = results.([]interface{})
+		results, err = getSdkValue("InstanceSet", *resp)
+		if err != nil {
+			return data, err
+		}
+		data = results.([]interface{})
 
-	return data, err
+		return data, err
+
+	})
 }
 
 func (s *KcrsService) ReadKcrsWebhookTriggers(condition map[string]interface{}) (data []interface{}, err error) {

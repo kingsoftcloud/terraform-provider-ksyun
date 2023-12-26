@@ -202,6 +202,12 @@ KCE
 
 KCR
 
+	Data Source
+		ksyun_kcrs_instances
+		ksyun_kcrs_tokens
+		ksyun_kcrs_namespaces
+		ksyun_kcrs_webhook_triggers
+
 	Resource
 		ksyun_kcrs_instance
 		ksyun_kcrs_namespace
@@ -469,6 +475,12 @@ func Provider() terraform.ResourceProvider {
 			// private_dns
 			"ksyun_private_dns_zones":   dataSourceKsyunPrivateDnsZones(),
 			"ksyun_private_dns_records": dataSourceKsyunPrivateDnsRecords(),
+
+			// kcrs
+			"ksyun_kcrs_instances":        dataSourceKsyunKcrsInstances(),
+			"ksyun_kcrs_tokens":           dataSourceKsyunKcrsTokens(),
+			"ksyun_kcrs_namespaces":       dataSourceKsyunKcrsNamespaces(),
+			"ksyun_kcrs_webhook_triggers": dataSourceKsyunKcrsWebhookTriggers(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"ksyun_alb":                              resourceKsyunAlb(),

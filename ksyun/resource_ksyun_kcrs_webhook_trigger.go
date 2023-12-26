@@ -154,7 +154,7 @@ func resourceKsyunKcrsWebhookTriggerUpdate(d *schema.ResourceData, meta interfac
 	kcrsWebhookTriggerService := KcrsService{meta.(*KsyunClient)}
 	err = kcrsWebhookTriggerService.ModifyWebhookTrigger(d, resourceKsyunKcrsWebhookTrigger())
 	if err != nil {
-		return fmt.Errorf("error on deleting kcrs WebhookTrigger %q, %s", d.Id(), err)
+		return fmt.Errorf("error on updating kcrs WebhookTrigger %q, %s", d.Id(), err)
 	}
 	return resourceKsyunKcrsWebhookTriggerRead(d, meta)
 }

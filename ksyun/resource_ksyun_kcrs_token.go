@@ -128,14 +128,12 @@ func resourceKsyunKcrsTokenUpdate(d *schema.ResourceData, meta interface{}) (err
 		req     = make(map[string]interface{})
 	)
 
-	if d.HasChanges("token_type", "token_time") {
+	if d.HasChanges("token_type", "token_time", "desc") {
 		req["TokenType"] = d.Get("token_type")
 		req["TokenTime"] = d.Get("token_time")
-	}
-
-	if d.HasChange("desc") {
 		req["Desc"] = d.Get("desc")
 	}
+
 	if len(req) > 0 {
 		req["InstanceId"] = d.Get("instance_id")
 		req["TokenId"] = d.Id()
