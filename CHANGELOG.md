@@ -1,3 +1,16 @@
+## unrelease
+
+FEATURES:
+
+- - **New Resource:** `ksyun_kcrs_instance` 容器镜像服务-仓库实例
+- - **New Resource:** `ksyun_kcrs_namespace` 容器镜像服务-命名空间
+- - **New Resource:** `ksyun_kcrs_token`  容器镜像服务-访问凭证
+- - **New Resource:** `ksyun_kcrs_webhook_trigger`  容器镜像服务-Webhook触发器
+- - **New Resource:** `ksyun_kcrs_vpc_attachment`  容器镜像服务-内网访问
+- - **New Data Source:** `ksyun_kcrs_instance`
+- - **New Data Source:** `ksyun_kcrs_namespace`
+- - **New Data Source:** `ksyun_kcrs_token`
+- - **New Data Source:** `ksyun_kcrs_webhook_trigger`
 
 ## 1.13.0 (Dec 18, 2023) 
 
