@@ -257,27 +257,36 @@ func resourceKsyunAlbListener() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"backend_server_group_id": {
-							Type:     schema.TypeString,
-							Required: true,
-							// ConflictsWith: []string{"default_forward_rule.0.redirect_alb_listener_id"},
-							// AtLeastOneOf:  []string{"default_forward_rule.0.backend_server_group_id", "default_forward_rule.0.redirect_alb_listener_id"},
-							Description: "The backend server group id for default forward rule group.",
+							Type:          schema.TypeString,
+							Optional:      true,
+							ConflictsWith: []string{"default_forward_rule.0.redirect_alb_listener_id", "default_forward_rule.0.fixed_response_config"},
+							AtLeastOneOf:  []string{"default_forward_rule.0.backend_server_group_id", "default_forward_rule.0.redirect_alb_listener_id", "default_forward_rule.0.fixed_response_config"},
+							Description:   "The backend server group id for default forward rule group.",
 						},
 
 						// support it when openapi update!
 
-						// "redirect_alb_listener_id": {
-						// 	Type:          schema.TypeString,
-						// 	Optional:      true,
-						// 	ConflictsWith: []string{"default_forward_rule.0.backend_server_group_id"},
-						// 	AtLeastOneOf:  []string{"default_forward_rule.0.backend_server_group_id", "default_forward_rule.0.redirect_alb_listener_id"},
-						// 	Description:   "The ID of the alternative redirect ALB listener.",
-						// },
-						// "redirect_http_code": {
-						// 	Type:        schema.TypeString,
-						// 	Optional:    true,
-						// 	Description: "The http code for redirect action.",
-						// },
+						"redirect_alb_listener_id": {
+							Type:          schema.TypeString,
+							Optional:      true,
+							ConflictsWith: []string{"default_forward_rule.0.backend_server_group_id", "default_forward_rule.0.fixed_response_config"},
+							AtLeastOneOf:  []string{"default_forward_rule.0.backend_server_group_id", "default_forward_rule.0.redirect_alb_listener_id", "default_forward_rule.0.fixed_response_config"},
+							Description:   "The ID of the alternative redirect ALB listener.",
+						},
+						"redirect_http_code": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The http code for redirect action. Valid Values: 301|302|307.",
+						},
+
+						"fixed_response_config": {
+							Type:          schema.TypeList,
+							Optional:      true,
+							MaxItems:      1,
+							ConflictsWith: []string{"default_forward_rule.0.backend_server_group_id", "default_forward_rule.0.redirect_alb_listener_id"},
+							AtLeastOneOf:  []string{"default_forward_rule.0.backend_server_group_id", "default_forward_rule.0.redirect_alb_listener_id", "default_forward_rule.0.fixed_response_config"},
+							Elem:          fixedResponseConfigResourceElem(),
+						},
 
 						"alb_rule_group_id": {
 							Type:        schema.TypeString,
@@ -297,6 +306,7 @@ func resourceKsyunAlbListener() *schema.Resource {
 				Description: "The custom configure for listener. [The details](https://docs.ksyun.com/documents/42615?type=3).",
 			},
 
+			// computed values
 			"alb_listener_id": {
 				Type:        schema.TypeString,
 				Computed:    true,

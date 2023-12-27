@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-ksyun/ksyun/internal/pkg/helper"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
 )
 
@@ -20,12 +21,45 @@ var (
 	albRuleGroupHealthNecessary  = []string{"interval", "timeout", "healthy_threshold", "unhealthy_threshold", "url_path", "host_name"}
 )
 
+const (
+	albRuleTypeForwardGroup  = "ForwardGroup"
+	albRuleTypeRedirect      = "Redirect"
+	albRuleTypeFixedResponse = "FixedResponse"
+)
+
+var (
+	fixedResponseConfigResourceElem = func() *schema.Resource {
+		return &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"content": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "The content of response.",
+				},
+				"http_code": {
+					Type:        schema.TypeString,
+					Required:    true,
+					Description: "The response http code. Valid Values: 2xx|4xx|5xx. e.g. 503.",
+				},
+				"content_type": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "The type of content. Valid Values: `text/plain`|`text/css`|`text/html`|`application/javascript`|`application/json`.",
+				},
+			},
+		}
+	}
+)
+
 func (s *AlbRuleGroup) createRuleGroupCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
 	transform := map[string]SdkReqTransform{
 		// "alb_rule_set": {mappings: map[string]string{
 		//	"alb_rule_type":  "AlbRuleType",
 		//	"alb_rule_value": "AlbRuleValue",
 		// }, Type: TransformListN},
+		"fixed_response_config": {
+			Ignore: false,
+		},
 	}
 	req, err := SdkRequestAutoMapping(d, r, false, transform, nil, SdkReqParameter{
 		onlyTransform: false,
@@ -42,6 +76,12 @@ func (s *AlbRuleGroup) createRuleGroupCall(d *schema.ResourceData, r *schema.Res
 
 	if _, ok := req["HostName"]; !ok {
 		req["HostName"] = d.Get("host_name")
+	}
+
+	if _, ok := d.GetOk("fixed_response_config"); ok {
+		if mm, mOk := helper.GetSchemaListHeadMap(d, "fixed_response_config"); mOk {
+			req["FixedResponseConfig"] = helper.ConvertMapKey2Title(mm)
+		}
 	}
 
 	if err != nil {
@@ -217,6 +257,14 @@ func (s *AlbRuleGroup) ReadAndSetRuleGroup(d *schema.ResourceData, r *schema.Res
 		}
 	}
 
+	if v, ok := data[fixedResponseConfig]; ok {
+		vm := v.(map[string]interface{})
+		if len(vm) > 0 {
+			responseConfig := helper.ConvertMapKey2Underline(vm)
+			data[fixedResponseConfig] = []interface{}{responseConfig}
+		}
+	}
+
 	extra := map[string]SdkResponseMapping{}
 	SdkResponseAutoResourceData(d, r, data, extra)
 	return
@@ -297,8 +345,17 @@ func (s *AlbRuleGroup) modifyRuleGroupCall(d *schema.ResourceData, r *schema.Res
 		}
 	}
 
-	if d.HasChange("redirect_http_code") {
+	switch d.Get("type") {
+	case albRuleTypeForwardGroup:
+		transform["backend_server_group_id"] = SdkReqTransform{
+			forceUpdateParam: true,
+		}
+	case albRuleTypeRedirect:
 		transform["redirect_alb_listener_id"] = SdkReqTransform{
+			forceUpdateParam: true,
+		}
+	default:
+		transform["alb_rule_set"] = SdkReqTransform{
 			forceUpdateParam: true,
 		}
 	}
@@ -309,6 +366,11 @@ func (s *AlbRuleGroup) modifyRuleGroupCall(d *schema.ResourceData, r *schema.Res
 	logger.Debug(logger.ReqFormat, "modifyRuleGroupCall", req)
 	if err != nil {
 		return callback, err
+	}
+
+	// if the number of fixed_response_config more than 0, always set it
+	if mm, mOk := helper.GetSchemaListHeadMap(d, "fixed_response_config"); mOk {
+		req["FixedResponseConfig"] = helper.ConvertMapKey2Title(mm)
 	}
 
 	if albRuleSetParams, ok := req["AlbRuleSet"]; ok {
