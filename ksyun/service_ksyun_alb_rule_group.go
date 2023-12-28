@@ -80,7 +80,7 @@ func (s *AlbRuleGroup) createRuleGroupCall(d *schema.ResourceData, r *schema.Res
 
 	if _, ok := d.GetOk("fixed_response_config"); ok {
 		if mm, mOk := helper.GetSchemaListHeadMap(d, "fixed_response_config"); mOk {
-			req["FixedResponseConfig"] = helper.ConvertMapKey2Title(mm)
+			req["FixedResponseConfig"] = helper.ConvertMapKey2Title(mm, true)
 		}
 	}
 
@@ -350,14 +350,35 @@ func (s *AlbRuleGroup) modifyRuleGroupCall(d *schema.ResourceData, r *schema.Res
 		transform["backend_server_group_id"] = SdkReqTransform{
 			forceUpdateParam: true,
 		}
+
+		// ignore others' id by manual
+		transform["redirect_alb_listener_id"] = SdkReqTransform{
+			Ignore: true,
+		}
 	case albRuleTypeRedirect:
 		transform["redirect_alb_listener_id"] = SdkReqTransform{
 			forceUpdateParam: true,
 		}
-	default:
-		transform["alb_rule_set"] = SdkReqTransform{
-			forceUpdateParam: true,
+
+		transform["backend_server_group_id"] = SdkReqTransform{
+			Ignore: true,
 		}
+	case albRuleTypeFixedResponse:
+		transform["backend_server_group_id"] = SdkReqTransform{
+			Ignore: true,
+		}
+		transform["redirect_alb_listener_id"] = SdkReqTransform{
+			Ignore: true,
+		}
+
+	default:
+	}
+
+	transform["alb_rule_set"] = SdkReqTransform{
+		forceUpdateParam: true,
+	}
+	transform["fixed_response_config"] = SdkReqTransform{
+		Ignore: true,
 	}
 
 	req, err := SdkRequestAutoMapping(d, r, true, transform, nil, SdkReqParameter{
@@ -370,7 +391,7 @@ func (s *AlbRuleGroup) modifyRuleGroupCall(d *schema.ResourceData, r *schema.Res
 
 	// if the number of fixed_response_config more than 0, always set it
 	if mm, mOk := helper.GetSchemaListHeadMap(d, "fixed_response_config"); mOk {
-		req["FixedResponseConfig"] = helper.ConvertMapKey2Title(mm)
+		req["FixedResponseConfig"] = helper.ConvertMapKey2Title(mm, true)
 	}
 
 	if albRuleSetParams, ok := req["AlbRuleSet"]; ok {

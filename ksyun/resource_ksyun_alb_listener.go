@@ -274,8 +274,15 @@ func resourceKsyunAlbListener() *schema.Resource {
 							Description:   "The ID of the alternative redirect ALB listener.",
 						},
 						"redirect_http_code": {
-							Type:        schema.TypeString,
-							Optional:    true,
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+							DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+								if d.Get("default_forward_rule.0.redirect_alb_listener_id") == "" {
+									return true
+								}
+								return false
+							},
 							Description: "The http code for redirect action. Valid Values: 301|302|307.",
 						},
 

@@ -56,7 +56,7 @@ func (s *AlbListenerService) createListenerCall(d *schema.ResourceData, r *schem
 			kk := strings.Replace(k, "DefaultForwardRule.", "", -1)
 			if strings.Contains(kk, fixedResponseConfig) {
 				if vv, ok := helper.GetSchemaListHeadMap(d, "default_forward_rule.0.fixed_response_config"); ok {
-					v = helper.ConvertMapKey2Title(vv)
+					v = helper.ConvertMapKey2Title(vv, true)
 				}
 			}
 			req[kk] = v
@@ -448,7 +448,8 @@ func (s *AlbListenerService) modifyAlbListenerDefaultRuleGroupCall(d *schema.Res
 	}
 	transform := map[string]SdkReqTransform{
 		"default_forward_rule": {
-			Type: TransformListUnique,
+			Type:             TransformListUnique,
+			forceUpdateParam: true,
 		},
 	}
 	req, err := SdkRequestAutoMapping(d, r, true, transform, nil, SdkReqParameter{
@@ -464,10 +465,12 @@ func (s *AlbListenerService) modifyAlbListenerDefaultRuleGroupCall(d *schema.Res
 			kk := strings.Replace(k, "DefaultForwardRule.", "", -1)
 			if strings.Contains(kk, fixedResponseConfig) {
 				if vv, ok := helper.GetSchemaListHeadMap(d, "default_forward_rule.0.fixed_response_config"); ok {
-					v = helper.ConvertMapKey2Title(vv)
+					v = helper.ConvertMapKey2Title(vv, true)
 				}
 			}
-			req[kk] = v
+			if !helper.IsEmpty(v) {
+				req[kk] = v
+			}
 			delete(req, k)
 		}
 	}

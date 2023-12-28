@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"reflect"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -81,9 +82,15 @@ func Hump2Underline(s string) string {
 	return s1
 }
 
-func ConvertMapKey2Title(m map[string]interface{}) map[string]interface{} {
+func ConvertMapKey2Title(m map[string]interface{}, hitBlankStr bool) map[string]interface{} {
 	rm := make(map[string]interface{}, len(m))
 	for ck, cv := range m {
+		switch cv.(type) {
+		case string:
+			if hitBlankStr && cv == "" {
+				continue
+			}
+		}
 		rm[Underline2Hump(ck)] = cv
 		// delete(m, ck)
 	}
@@ -95,4 +102,20 @@ func ConvertMapKey2Underline(m map[string]interface{}) map[string]interface{} {
 		rm[Hump2Underline(ck)] = cv
 	}
 	return rm
+}
+
+func IsEmpty(v interface{}) bool {
+	value := reflect.ValueOf(v)
+	if value.Kind() == reflect.Ptr || value.Kind() == reflect.Interface {
+		if value.IsNil() {
+			return true
+		}
+		value = value.Elem()
+	}
+	switch value.Kind() {
+	case reflect.Slice, reflect.Map:
+		return value.Len() == 0
+	}
+	zeroValue := reflect.Zero(value.Type())
+	return reflect.DeepEqual(v, zeroValue.Interface())
 }
