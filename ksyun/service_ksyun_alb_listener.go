@@ -9,12 +9,17 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-ksyun/ksyun/internal/pkg/helper"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
 )
 
 type AlbListenerService struct {
 	client *KsyunClient
 }
+
+const (
+	fixedResponseConfig = "FixedResponseConfig"
+)
 
 func (s *AlbListenerService) createListenerCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
 	transform := map[string]SdkReqTransform{
@@ -48,7 +53,13 @@ func (s *AlbListenerService) createListenerCall(d *schema.ResourceData, r *schem
 			req[strings.Replace(k, "Session.", "", -1)] = v
 			delete(req, k)
 		} else if strings.HasPrefix(k, "DefaultForwardRule.") {
-			req[strings.Replace(k, "DefaultForwardRule.", "", -1)] = v
+			kk := strings.Replace(k, "DefaultForwardRule.", "", -1)
+			if strings.Contains(kk, fixedResponseConfig) {
+				if vv, ok := helper.GetSchemaListHeadMap(d, "default_forward_rule.0.fixed_response_config"); ok {
+					v = helper.ConvertMapKey2Title(vv, true)
+				}
+			}
+			req[kk] = v
 			delete(req, k)
 		}
 	}
@@ -249,6 +260,9 @@ func (s *AlbListenerService) modifyListenerCall(d *schema.ResourceData, r *schem
 		"config_content": {
 			Ignore: true,
 		},
+		"default_forward_rule": {
+			Ignore: true,
+		},
 	}
 	req, err := SdkRequestAutoMapping(d, r, true, transform, nil, SdkReqParameter{
 		onlyTransform: false,
@@ -409,6 +423,13 @@ breakDouble:
 		for k := range defaultBackendField.Schema {
 			humpKey := Downline2Hump(k)
 			if v, ok := defaultRule[humpKey]; ok && v != "" {
+				if strings.Contains(humpKey, fixedResponseConfig) {
+					vm := v.(map[string]interface{})
+					if len(vm) < 1 {
+						continue
+					}
+					v = []interface{}{helper.ConvertMapKey2Underline(vm)}
+				}
 				m[k] = v
 			}
 		}
@@ -427,7 +448,8 @@ func (s *AlbListenerService) modifyAlbListenerDefaultRuleGroupCall(d *schema.Res
 	}
 	transform := map[string]SdkReqTransform{
 		"default_forward_rule": {
-			Type: TransformListUnique,
+			Type:             TransformListUnique,
+			forceUpdateParam: true,
 		},
 	}
 	req, err := SdkRequestAutoMapping(d, r, true, transform, nil, SdkReqParameter{
@@ -440,7 +462,15 @@ func (s *AlbListenerService) modifyAlbListenerDefaultRuleGroupCall(d *schema.Res
 	// specially deal with default forward rule parameters.
 	for k, v := range req {
 		if strings.HasPrefix(k, "DefaultForwardRule.") {
-			req[strings.Replace(k, "DefaultForwardRule.", "", -1)] = v
+			kk := strings.Replace(k, "DefaultForwardRule.", "", -1)
+			if strings.Contains(kk, fixedResponseConfig) {
+				if vv, ok := helper.GetSchemaListHeadMap(d, "default_forward_rule.0.fixed_response_config"); ok {
+					v = helper.ConvertMapKey2Title(vv, true)
+				}
+			}
+			if !helper.IsEmpty(v) {
+				req[kk] = v
+			}
 			delete(req, k)
 		}
 	}
@@ -448,6 +478,13 @@ func (s *AlbListenerService) modifyAlbListenerDefaultRuleGroupCall(d *schema.Res
 	if len(req) > 0 {
 		ruleId := d.Get("default_forward_rule.0.alb_rule_group_id").(string)
 		req["AlbRuleGroupId"] = ruleId
+
+		// set alb rule set
+		mm := map[string]interface{}{
+			"AlbRuleType":  "url",
+			"AlbRuleValue": "/",
+		}
+		req["AlbRuleSet"] = []interface{}{mm}
 
 		callback = ApiCall{
 			param:  &req,
