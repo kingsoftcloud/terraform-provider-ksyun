@@ -293,6 +293,7 @@ func resourceKsyunAlbListener() *schema.Resource {
 							ConflictsWith: []string{"default_forward_rule.0.backend_server_group_id", "default_forward_rule.0.redirect_alb_listener_id"},
 							AtLeastOneOf:  []string{"default_forward_rule.0.backend_server_group_id", "default_forward_rule.0.redirect_alb_listener_id", "default_forward_rule.0.fixed_response_config"},
 							Elem:          fixedResponseConfigResourceElem(),
+							Description:   "The config of fixed response. Conflict with 'backend_server_group_id' and 'fixed_response_config'.",
 						},
 
 						"alb_rule_group_id": {
