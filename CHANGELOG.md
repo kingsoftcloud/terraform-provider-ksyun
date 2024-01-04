@@ -12,6 +12,10 @@ FEATURES:
 - - **New Data Source:** `ksyun_kcrs_token`
 - - **New Data Source:** `ksyun_kcrs_webhook_trigger`
 
+BUGFIX:
+
+- `ksyun_alb_backend_server_group` 弃用健康检查配置
+
 ## 1.13.1 (Dec 28, 2023) 
 
 IMPROVEMENTS:
