@@ -200,6 +200,21 @@ KCE
 		ksyun_kce_cluster
 		ksyun_kce_worker
 
+KCR
+
+	Data Source
+		ksyun_kcrs_instances
+		ksyun_kcrs_tokens
+		ksyun_kcrs_namespaces
+		ksyun_kcrs_webhook_triggers
+
+	Resource
+		ksyun_kcrs_instance
+		ksyun_kcrs_namespace
+		ksyun_kcrs_token
+		ksyun_kcrs_webhook_trigger
+		ksyun_kcrs_vpc_attachment
+
 KCM
 
 	Data Source
@@ -460,6 +475,12 @@ func Provider() terraform.ResourceProvider {
 			// private_dns
 			"ksyun_private_dns_zones":   dataSourceKsyunPrivateDnsZones(),
 			"ksyun_private_dns_records": dataSourceKsyunPrivateDnsRecords(),
+
+			// kcrs
+			"ksyun_kcrs_instances":        dataSourceKsyunKcrsInstances(),
+			"ksyun_kcrs_tokens":           dataSourceKsyunKcrsTokens(),
+			"ksyun_kcrs_namespaces":       dataSourceKsyunKcrsNamespaces(),
+			"ksyun_kcrs_webhook_triggers": dataSourceKsyunKcrsWebhookTriggers(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"ksyun_alb":                              resourceKsyunAlb(),
@@ -546,6 +567,13 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_private_dns_zone":                resourceKsyunPrivateDnsZone(),
 			"ksyun_private_dns_record":              resourceKsyunPrivateDnsRecord(),
 			"ksyun_private_dns_zone_vpc_attachment": resourceKsyunPrivateDnsZoneVpcAttachment(),
+
+			// kcrs
+			"ksyun_kcrs_instance":        resourceKsyunKcrsInstance(),
+			"ksyun_kcrs_namespace":       resourceKsyunKcrsNamespace(),
+			"ksyun_kcrs_token":           resourceKsyunKcrsToken(),
+			"ksyun_kcrs_webhook_trigger": resourceKsyunKcrsWebhookTrigger(),
+			"ksyun_kcrs_vpc_attachment":  resourceKsyunKcrsVpcAttachment(),
 
 			// tag
 			"ksyun_tag_v2":            resourceKsyunTagv2(),

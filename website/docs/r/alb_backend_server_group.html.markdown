@@ -36,7 +36,7 @@ The following arguments are supported:
 * `upstream_keepalive` - (Required) The upstream keepalive type. Valid Value: `adaptation`, `keepalive`, `shortconnection`.
 * `vpc_id` - (Required, ForceNew) ID of the VPC.
 * `backend_server_type` - (Optional, ForceNew) The type of backend server. Valid values: 'Host', 'DirectConnect'. Default is 'Host'.
-* `health_check` - (Optional, ForceNew) Health check information.
+* `health_check` - (Optional, ForceNew, **Deprecated**) Alb does not support health checks at this time. If you need a health check configuration on this server group, you are supposed to use 'ksyun_alb_rule_group' Health check information.
 * `name` - (Optional) The name of alb backend server group. Default: 'ksc_bsg'.
 
 The `health_check` object supports the following:

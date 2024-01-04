@@ -6,9 +6,17 @@ type TransformType int
 
 const (
 	TransformDefault TransformType = iota
+
+	// TransformWithN output: Attribute.N
 	TransformWithN
+
+	// TransformWithFilter output: Filter.N.Name Filter.N.Value.1
 	TransformWithFilter
+
+	// TransformListFilter output:
 	TransformListFilter
+
+	// TransformListUnique output: Object.Attribute
 	TransformListUnique
 	TransformListN
 	TransformSingleN
