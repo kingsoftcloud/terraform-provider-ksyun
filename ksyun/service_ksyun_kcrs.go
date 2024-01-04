@@ -72,7 +72,7 @@ func (s *KcrsService) CreateKcrsToken(d *schema.ResourceData, r *schema.Resource
 		return err
 	}
 
-	apiProcess.PutCalls(call)
+	apiProcess.PutCalls(IdleApiCall(10*time.Second), call)
 
 	if d.Get("enable").(bool) {
 		modifyCall, err := s.modifyInstanceTokenStatusWithCall(d, r)
@@ -92,7 +92,7 @@ func (s *KcrsService) CreateKcrsNamespace(d *schema.ResourceData, r *schema.Reso
 	if err != nil {
 		return err
 	}
-	apiProcess.PutCalls(call)
+	apiProcess.PutCalls(IdleApiCall(10*time.Second), call)
 
 	return apiProcess.Run()
 }
@@ -1351,7 +1351,7 @@ func (s *KcrsService) checkKcrsInstanceState(d *schema.ResourceData, instanceId 
 	stateConf := &resource.StateChangeConf{
 		Pending:      []string{},
 		Target:       target,
-		Refresh:      s.kcrsInstanceStateRefreshFunc(d, instanceId),
+		Refresh:      s.kcrsInstanceStateRefreshFunc(d, instanceId, "Error"),
 		Timeout:      timeout,
 		PollInterval: 5 * time.Second,
 		Delay:        10 * time.Second,
@@ -1361,7 +1361,7 @@ func (s *KcrsService) checkKcrsInstanceState(d *schema.ResourceData, instanceId 
 	return err
 }
 
-func (s *KcrsService) kcrsInstanceStateRefreshFunc(d *schema.ResourceData, instanceId string) resource.StateRefreshFunc {
+func (s *KcrsService) kcrsInstanceStateRefreshFunc(d *schema.ResourceData, instanceId string, failStates ...string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		var (
 			err error
@@ -1376,6 +1376,21 @@ func (s *KcrsService) kcrsInstanceStateRefreshFunc(d *schema.ResourceData, insta
 			return nil, "", err
 		}
 
+		for _, v := range failStates {
+			if v == status {
+				return nil, "", fmt.Errorf("Kcrs Instance status  error, status:%v", status)
+			}
+		}
+
 		return data, status.(string), nil
+	}
+}
+
+func IdleApiCall(idle time.Duration) ApiCall {
+	return ApiCall{
+		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (*map[string]interface{}, error) {
+			time.Sleep(idle)
+			return nil, nil
+		},
 	}
 }
