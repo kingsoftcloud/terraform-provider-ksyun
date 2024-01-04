@@ -142,6 +142,7 @@ package ksyun
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -175,9 +176,9 @@ func resourceKsyunAlbRuleGroup() *schema.Resource {
 			"backend_server_group_id": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				ConflictsWith: []string{"redirect_alb_listener_id"},
-				AtLeastOneOf:  []string{"backend_server_group_id", "redirect_alb_listener_id"},
-				Description:   "The ID of the backend server group. Conflict with 'backend_server_group_id'.",
+				ConflictsWith: []string{"redirect_alb_listener_id", "fixed_response_config"},
+				AtLeastOneOf:  []string{"backend_server_group_id", "redirect_alb_listener_id", "fixed_response_config"},
+				Description:   "The ID of the backend server group. Conflict with 'backend_server_group_id' and 'fixed_response_config'.",
 			},
 			"alb_rule_set": {
 				Type:        schema.TypeList,
@@ -317,15 +318,40 @@ func resourceKsyunAlbRuleGroup() *schema.Resource {
 			"redirect_alb_listener_id": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				ConflictsWith: []string{"backend_server_group_id"},
-				AtLeastOneOf:  []string{"backend_server_group_id", "redirect_alb_listener_id"},
-				Description:   "The id of redirect alb listener. Conflict with 'backend_server_group_id'.",
+				ConflictsWith: []string{"backend_server_group_id", "fixed_response_config"},
+				AtLeastOneOf:  []string{"backend_server_group_id", "redirect_alb_listener_id", "fixed_response_config"},
+				Description:   "The id of redirect alb listener. Conflict with 'backend_server_group_id' and 'fixed_response_config'.",
 			},
 			"redirect_http_code": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "301",
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "301",
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					if reflect.DeepEqual(d.Get("type"), "Redirect") && d.Get("redirect_alb_listener_id") != "" {
+						return false
+					}
+					return true
+				},
 				Description: "The http code of redirecting. Valid Values: 301|302|307.",
+			},
+
+			"type": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "ForwardGroup",
+				Description: "The type of rule group, Valid Values: ForwardGroup|Redirect|FixedResponse. Default: ForwardGroup. \n" +
+					"**Notes**: The type is supposed to be of consistency with backend instance. `ForwardGroup -> backend_server_group_id`," +
+					" `Redirect -> redirect_alb_listener_id`, `FixedResponse -> fixed_response_config`.",
+			},
+
+			"fixed_response_config": {
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				ConflictsWith: []string{"backend_server_group_id", "redirect_alb_listener_id"},
+				AtLeastOneOf:  []string{"backend_server_group_id", "redirect_alb_listener_id", "fixed_response_config"},
+				Description:   "The config of fixed response. Conflict with 'backend_server_group_id' and 'fixed_response_config'.",
+				Elem:          fixedResponseConfigResourceElem(),
 			},
 
 			"alb_rule_group_id": {

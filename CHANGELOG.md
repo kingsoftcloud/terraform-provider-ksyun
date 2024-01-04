@@ -12,6 +12,14 @@ FEATURES:
 - - **New Data Source:** `ksyun_kcrs_token`
 - - **New Data Source:** `ksyun_kcrs_webhook_trigger`
 
+## 1.13.1 (Dec 28, 2023) 
+
+IMPROVEMENTS:
+
+- `ksyun_alb_rule_group` 新增`fixed_response_config` 固定响应配置
+- `ksyun_alb_rule_group` 新增`type` type类型须与后端资源类型对应
+- `ksyun_alb_listener` 新增`fixed_response_config` 默认转发策略增加固定响应配置
+
 ## 1.13.0 (Dec 18, 2023) 
 
 FEATURES:

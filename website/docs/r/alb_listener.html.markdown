@@ -113,7 +113,10 @@ The following arguments are supported:
 
 The `default_forward_rule` object supports the following:
 
-* `backend_server_group_id` - (Required) The backend server group id for default forward rule group.
+* `backend_server_group_id` - (Optional) The backend server group id for default forward rule group.
+* `fixed_response_config` - (Optional) 
+* `redirect_alb_listener_id` - (Optional) The ID of the alternative redirect ALB listener.
+* `redirect_http_code` - (Optional) The http code for redirect action. Valid Values: 301|302|307.
 
 The `session` object supports the following:
 

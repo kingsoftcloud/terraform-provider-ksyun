@@ -82,7 +82,7 @@ func testAccCheckAlbListenerDestroy(s *terraform.State) error {
 
 const testAccAlbListenerConfig = `
 resource "ksyun_alb_listener" "test" {
-  alb_id             = "7291ecea-dcc5-45c1-8331-e53e062d2f52"
+  alb_id             = "2935cd99-89d0-4d6d-be62-8ba899a9a36c"
   alb_listener_name  = "alb-unit-test-listener"
   protocol           = "HTTPS"
   port               = 8087
@@ -95,14 +95,18 @@ resource "ksyun_alb_listener" "test" {
     session_persistence_period = 3100
   }
   default_forward_rule {
-    backend_server_group_id = "45390ce2-6703-4a4a-a662-9ca338b77c09"
+    fixed_response_config {
+		content = "dddddss"
+		http_code = "401"
+		content_type = "text/plain"
+	}
   }
 }
 `
 
 const testAccAlbListenerUpdateConfig = `
 resource "ksyun_alb_listener" "test" {
-  alb_id             = "7291ecea-dcc5-45c1-8331-e53e062d2f52"
+  alb_id             = "2935cd99-89d0-4d6d-be62-8ba899a9a36c"
   alb_listener_name  = "alb-unit-test-listener"
   protocol           = "HTTPS"
   port               = 8087
@@ -115,7 +119,11 @@ resource "ksyun_alb_listener" "test" {
     session_persistence_period = 3100
   }
   default_forward_rule {
-    backend_server_group_id = "49793f55-e5f2-4329-949d-6ea6170ece54"
+        fixed_response_config {
+		content = "ddddadssaaaaaaaaaaaa"
+		http_code = "401"
+		content_type = "text/plain"
+	}
   }
 }
 `

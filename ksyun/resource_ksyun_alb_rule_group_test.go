@@ -108,9 +108,8 @@ alb_rule_set {
 const testAccAlbRuleGroupWithRedirectHttpCode = `
 
 resource "ksyun_alb_rule_group" "default" {
-  alb_listener_id         = "45410347-3f67-457b-b99f-848f51f07068"
+  alb_listener_id         = "b9941735-300b-474e-b521-f3f389660ff3"
   alb_rule_group_name     = "tf_alb_rule_group-3"
-  redirect_alb_listener_id = "b7fac079-0801-4dca-8bc3-619505c7aa3a"
   alb_rule_set {
     alb_rule_type  = "url"
     alb_rule_value = "/test/path/2"
@@ -118,21 +117,33 @@ resource "ksyun_alb_rule_group" "default" {
   listener_sync = "on"
 
   redirect_http_code = 301
+  fixed_response_config  {
+	content = "dddsad"
+    http_code = "402"
+    content_type = "text/plain"
+  }
+  type = "FixedResponse"
 }
 `
 
 const testAccAlbRuleGroupWithRedirectHttpCodeUpdate = `
 
 resource "ksyun_alb_rule_group" "default" {
-  alb_listener_id         = "45410347-3f67-457b-b99f-848f51f07068"
+  alb_listener_id         = "b9941735-300b-474e-b521-f3f389660ff3"
   alb_rule_group_name     = "tf_alb_rule_group-3"
-  redirect_alb_listener_id = "b7fac079-0801-4dca-8bc3-619505c7aa3a"
   alb_rule_set {
     alb_rule_type  = "url"
-    alb_rule_value = "/test/path/2"
+    alb_rule_value = "/test/path/3"
   }
   listener_sync = "on"
 
   redirect_http_code = 307
+  fixed_response_config  {
+	content = "dddsad"
+    http_code = "403"
+    content_type = "text/plain"
+  }
+
+  type = "FixedResponse"
 }
 `
