@@ -35,14 +35,10 @@ func dataSourceKsyunKcrsWebhookTriggers() *schema.Resource {
 				Description: "Kcrs Instance Namespace.",
 			},
 
-			"trigger_ids": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Set:         schema.HashString,
-				Description: "A list of Webhook Trigger IDs, all the Webhook Trigger belong to this namespace of instance will be retrieved if the ID is `\"\"`.",
+			"trigger_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Webhook Trigger ID, all the Webhook Trigger belong to this namespace of instance will be retrieved if the ID is `\"\"`.",
 			},
 
 			"output_file": {

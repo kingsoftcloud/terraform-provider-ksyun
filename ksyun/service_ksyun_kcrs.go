@@ -778,9 +778,9 @@ func (s *KcrsService) ReadAndSetKcrsTokens(d *schema.ResourceData, r *schema.Res
 }
 func (s *KcrsService) ReadAndSetKcrsNamespaces(d *schema.ResourceData, r *schema.Resource) (err error) {
 	transform := map[string]SdkReqTransform{
-		"namespaces": {
+		"namespace": {
 			mapping: "Namespace",
-			Type:    TransformWithN,
+			Type:    TransformDefault,
 		},
 	}
 	req, err := mergeDataSourcesReq(d, r, transform)
@@ -805,9 +805,9 @@ func (s *KcrsService) ReadAndSetKcrsNamespaces(d *schema.ResourceData, r *schema
 }
 func (s *KcrsService) ReadAndSetKcrsWebhookTriggers(d *schema.ResourceData, r *schema.Resource) (err error) {
 	transform := map[string]SdkReqTransform{
-		"trigger_ids": {
+		"trigger_id": {
 			mapping: "TriggerId",
-			Type:    TransformWithN,
+			Type:    TransformDefault,
 		},
 	}
 	req, err := mergeDataSourcesReq(d, r, transform)

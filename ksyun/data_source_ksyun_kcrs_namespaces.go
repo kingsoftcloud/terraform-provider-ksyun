@@ -28,14 +28,10 @@ func dataSourceKsyunKcrsNamespaces() *schema.Resource {
 				Description: "Kcrs Instance Id.",
 			},
 
-			"namespaces": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Set:         schema.HashString,
-				Description: "A list of Kcrs Instance namespace, all the Kcrs namespace belong to this instance will be retrieved if the namespaces is `\"\"`.",
+			"namespace": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: " Kcrs Instance namespace, all the Kcrs namespace belong to this instance will be retrieved if the namespaces is `\"\"`.",
 			},
 
 			"output_file": {
