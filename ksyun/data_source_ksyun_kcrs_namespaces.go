@@ -31,7 +31,7 @@ func dataSourceKsyunKcrsNamespaces() *schema.Resource {
 			"namespace": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: " Kcrs Instance namespace, all the Kcrs namespace belong to this instance will be retrieved if the namespaces is `\"\"`.",
+				Description: "Kcrs Instance namespace, all the Kcrs namespace belong to this instance will be retrieved if the namespaces is `\"\"`.",
 			},
 
 			"output_file": {

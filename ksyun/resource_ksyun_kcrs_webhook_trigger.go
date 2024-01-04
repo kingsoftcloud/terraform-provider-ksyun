@@ -29,14 +29,6 @@ resource "ksyun_kcrs_webhook_trigger" "foo" {
 	}
 }
 ```
-
-Import
-
-KcrsWebhookTrigger can be imported using the id, e.g.
-
-```
-$ terraform import ksyun_KcrsWebhookTrigger.default KcrsService67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
-```
 */
 
 package ksyun

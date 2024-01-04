@@ -25,7 +25,7 @@ data "ksyun_kcrs_namespaces" "foo" {
 The following arguments are supported:
 
 * `instance_id` - (Required) Kcrs Instance Id.
-* `namespaces` - (Optional) A list of Kcrs Instance namespace, all the Kcrs namespace belong to this instance will be retrieved if the namespaces is `""`.
+* `namespace` - (Optional) Kcrs Instance namespace, all the Kcrs namespace belong to this instance will be retrieved if the namespaces is `""`.
 * `output_file` - (Optional) File name where to save data source results (after running `terraform plan`).
 
 ## Attributes Reference

@@ -28,7 +28,7 @@ The following arguments are supported:
 * `instance_id` - (Required) Kcrs Instance Id.
 * `namespace` - (Required) Kcrs Instance Namespace.
 * `output_file` - (Optional) File name where to save data source results (after running `terraform plan`).
-* `trigger_ids` - (Optional) A list of Webhook Trigger IDs, all the Webhook Trigger belong to this namespace of instance will be retrieved if the ID is `""`.
+* `trigger_id` - (Optional) Webhook Trigger ID, all the Webhook Trigger belong to this namespace of instance will be retrieved if the ID is `""`.
 
 ## Attributes Reference
 
