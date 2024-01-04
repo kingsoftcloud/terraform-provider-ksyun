@@ -202,5 +202,24 @@ func (a *ApiProcess) ConRun() []error {
 }
 
 func (a *ApiProcess) Run() error {
+	defer a.Clean()
+
 	return ksyunApiCallNew(a.apiProcessQueue, a.d, a.client, a.DryRun)
+}
+func (a *ApiProcess) Clean() {
+	a.apiProcessQueue = make([]ApiCall, 0, 5)
+}
+
+func (c *ApiCall) Copy() ApiCall {
+	dst := ApiCall{
+		param:         c.param,
+		executeCall:   c.executeCall,
+		afterCall:     c.afterCall,
+		beforeCall:    c.beforeCall,
+		action:        c.action,
+		callError:     c.callError,
+		disableDryRun: c.disableDryRun,
+	}
+
+	return dst
 }

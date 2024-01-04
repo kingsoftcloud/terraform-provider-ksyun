@@ -1,6 +1,7 @@
 package ksyun
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -342,6 +343,41 @@ func importAddressAssociate(d *schema.ResourceData, meta interface{}) ([]*schema
 	return []*schema.ResourceData{d}, nil
 }
 
+func importKcrsNamespace(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	var err error
+	items := strings.Split(d.Id(), ":")
+	if len(items) < 2 {
+		return []*schema.ResourceData{d}, fmt.Errorf("import id must split with ':'")
+	}
+
+	err = d.Set("instance_id", items[0])
+	if err != nil {
+		return []*schema.ResourceData{d}, err
+	}
+	err = d.Set("namespace", items[1])
+	if err != nil {
+		return []*schema.ResourceData{d}, err
+	}
+	return []*schema.ResourceData{d}, nil
+}
+func importKcrsToken(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	var err error
+	items := strings.Split(d.Id(), ":")
+	if len(items) < 2 {
+		return []*schema.ResourceData{d}, fmt.Errorf("import id must split with ':'")
+	}
+
+	err = d.Set("instance_id", items[0])
+	if err != nil {
+		return []*schema.ResourceData{d}, err
+	}
+	err = d.Set("token_id", items[1])
+	if err != nil {
+		return []*schema.ResourceData{d}, err
+	}
+	return []*schema.ResourceData{d}, nil
+}
+
 func importBandWidthShareAssociate(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	var err error
 	items := strings.Split(d.Id(), ":")
@@ -401,4 +437,26 @@ func importPrivateDnsZoneVpcAttachment(d *schema.ResourceData, meta interface{})
 	}
 
 	return []*schema.ResourceData{d}, nil
+}
+
+func commonImport(number int, keys ...string) schema.StateFunc {
+	return func(d *schema.ResourceData, i interface{}) ([]*schema.ResourceData, error) {
+		var (
+			err  error
+			retD = []*schema.ResourceData{d}
+		)
+
+		ids := strings.Split(d.Id(), ":")
+		if len(ids) != number {
+			return retD, errors.New("import id must split with ':'")
+		}
+
+		for idx, id := range ids {
+			err = d.Set(keys[idx], id)
+			if err != nil {
+				return retD, fmt.Errorf("setting values encountered an error %s", err)
+			}
+		}
+		return retD, nil
+	}
 }

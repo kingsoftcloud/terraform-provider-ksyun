@@ -113,6 +113,7 @@ func resourceKsyunAlbBackendServerGroup() *schema.Resource {
 				Optional:         true,
 				Computed:         true,
 				ForceNew:         true,
+				Deprecated:       "Alb does not support health checks at this time. If you need a health check configuration on this server group, you are supposed to use 'ksyun_alb_rule_group'",
 				DiffSuppressFunc: lbBackendServerDiffSuppressFunc,
 				Description:      "Health check information.",
 			},
