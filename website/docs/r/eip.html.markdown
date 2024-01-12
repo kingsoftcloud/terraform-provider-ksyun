@@ -43,7 +43,7 @@ The following arguments are supported:
  | PrePaidByMonth | Monthly | Monthly package | 
 |                | DailyPaidByTransfer | Pay-as-you-go (daily traffic) | 
 |                | HourlyInstantSettlement | Pay-as-you-go (hourly instant settlement) | 
-|                | PostPaidByHour | Pay-as-you-go (hourly monthly) | 
+|                | PostPaidByHour | Pay-as-you-go (hourly billing, monthly settlement) | 
 |                | PostpaidByTime | Settlement by times |.
 * `line_id` - (Optional, ForceNew) The id of the line.
 * `project_id` - (Optional) The id of the project.

@@ -88,7 +88,7 @@ func resourceKsyunEip() *schema.Resource {
 					"| PrePaidByMonth | Monthly | Monthly package | \n" +
 					"|                | DailyPaidByTransfer | Pay-as-you-go (daily traffic) | \n" +
 					"|                | HourlyInstantSettlement | Pay-as-you-go (hourly instant settlement) | \n" +
-					"|                | PostPaidByHour | Pay-as-you-go (hourly monthly) | \n" +
+					"|                | PostPaidByHour | Pay-as-you-go (hourly billing, monthly settlement) | \n" +
 					"|                | PostpaidByTime | Settlement by times |.",
 			},
 			"purchase_time": {
