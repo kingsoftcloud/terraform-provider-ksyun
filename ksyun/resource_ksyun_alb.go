@@ -119,27 +119,32 @@ func resourceKsyunAlb() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"PrePaidByHourUsage"}, false),
 				Description:  "The charge type, valid values: 'PrePaidByHourUsage'.",
 			},
-			"create_time": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The creation time.",
+
+			"subnet_id": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				Computed:         true,
+				ValidateFunc:     validation.StringIsNotWhiteSpace,
+				DiffSuppressFunc: albInternalDiffSuppressFunc,
+				Description:      "The Id of Subnet that's type is **Reserve**. It not be empty, when 'alb_type' as '**internal**'.",
 			},
-			"public_ip": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The public IP address.",
+
+			"private_ip_address": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				Computed:         true,
+				ValidateFunc:     validation.IsIPAddress,
+				DiffSuppressFunc: albInternalDiffSuppressFunc,
+				Description:      "The private ip address. It not be empty, when 'alb_type' as '**internal**'.",
 			},
+
 			"state": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
 				Description: "The state of the ALB, Valid Values:'start', 'stop'.",
-			},
-			"status": {
-				Type: schema.TypeString,
-				// Optional:    true,
-				Computed:    true,
-				Description: "The status of the ALB.",
 			},
 
 			"enabled_log": {
@@ -176,11 +181,35 @@ func resourceKsyunAlb() *schema.Resource {
 					},
 				},
 			},
+
+			// computed values
+			"create_time": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The creation time.",
+			},
+			"public_ip": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The public IP address.",
+			},
+			"status": {
+				Type: schema.TypeString,
+				// Optional:    true,
+				Computed:    true,
+				Description: "The status of the ALB.",
+			},
 		},
 	}
 }
 
 func resourceKsyunAlbCreate(d *schema.ResourceData, meta interface{}) (err error) {
+	switch d.Get("alb_type") {
+	case "internal":
+		if !(d.HasChange("subnet_id") && d.HasChange("private_ip_address")) {
+			return fmt.Errorf("subnet_id and private_ip_address must not be empty, when alb_type as internal")
+		}
+	}
 	s := AlbService{meta.(*KsyunClient)}
 	err = s.CreateAlb(d, resourceKsyunAlb())
 	if err != nil {
