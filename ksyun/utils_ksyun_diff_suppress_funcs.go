@@ -129,6 +129,13 @@ func loadBalancerDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bo
 	return false
 }
 
+func albInternalDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bool {
+	if d.Get("alb_type") != "internal" && (k == "subnet_id" || k == "private_ip_address") {
+		return true
+	}
+	return false
+}
+
 func AlbListenerDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bool {
 	// if k == "certificate_id" || k == "tls_cipher_policy" || k == "enable_http2" {
 	//	return true

@@ -1,3 +1,9 @@
+## 1.14.1 (Jan 12, 2024)
+
+IMPROVEMENTS:
+
+- `ksyun_alb` 支持创建私网类型alb实例
+
 ## 1.14.0 (Jan 04, 2024)
 
 FEATURES:

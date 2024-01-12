@@ -30,6 +30,7 @@ package ksyun
 
 import (
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
@@ -77,7 +78,18 @@ func resourceKsyunEip() *schema.Resource {
 					"PostpaidByTime",
 				}, false),
 				DiffSuppressFunc: chargeSchemaDiffSuppressFunc,
-				Description:      "The charge type of the Elastic IP address.Valid Values:'PrePaidByMonth','Monthly','PostPaidByPeak','Peak','PostPaidByDay','Daily','PostPaidByTransfer','TrafficMonthly','DailyPaidByTransfer','HourlySettlement','PostPaidByHour','HourlyInstantSettlement','PostpaidByTime'.",
+				Description: "The charge type of the Elastic IP address.Valid Values:'PrePaidByMonth','Monthly','PostPaidByPeak','Peak','PostPaidByDay','Daily','PostPaidByTransfer','TrafficMonthly','DailyPaidByTransfer','HourlySettlement','PostPaidByHour','HourlyInstantSettlement','PostpaidByTime'. \n" +
+					"**Notes:** Charge Type have a upgrade, The above-mentioned parameters, **every**, are **valid**. The changes as following:\n\n" +
+					"| Previous Version | Current Version | Description | \n" +
+					"| -------- | -------- | ----------- | \n" +
+					"| PostPaidByPeak | Peak| Pay-as-you-go (monthly peak) | \n " +
+					"| PostPaidByDay | Daily | Pay-as-you-go (daily) | \n" +
+					"| PostPaidByTransfer | TrafficMonthly | Pay-as-you-go (monthly traffic) |\n " +
+					"| PrePaidByMonth | Monthly | Monthly package | \n" +
+					"|                | DailyPaidByTransfer | Pay-as-you-go (daily traffic) | \n" +
+					"|                | HourlyInstantSettlement | Pay-as-you-go (hourly instant settlement) | \n" +
+					"|                | PostPaidByHour | Pay-as-you-go (hourly billing, monthly settlement) | \n" +
+					"|                | PostpaidByTime | Settlement by times |.",
 			},
 			"purchase_time": {
 				Type:             schema.TypeInt,
@@ -92,7 +104,7 @@ func resourceKsyunEip() *schema.Resource {
 				Optional:    true,
 				Default:     0,
 				Description: "The id of the project.",
-				//Computed:    true,
+				// Computed:    true,
 			},
 			"tags": tagsSchema(),
 

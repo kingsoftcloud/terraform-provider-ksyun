@@ -63,8 +63,10 @@ The following arguments are supported:
 * `enabled_log` - (Optional) Whether log is enabled or not. Specific `klog_info` field when `enabled_log` is true.
 * `ip_version` - (Optional, ForceNew) IP version, 'ipv4' or 'ipv6'.
 * `klog_info` - (Optional) Indicate klog info, including log-project-name and log-pool-name, that use to bind log service for this alb process.
+* `private_ip_address` - (Optional, ForceNew) The private ip address. It not be empty, when 'alb_type' as '**internal**'.
 * `project_id` - (Optional) The ID of the project.
 * `state` - (Optional) The state of the ALB, Valid Values:'start', 'stop'.
+* `subnet_id` - (Optional, ForceNew) The Id of Subnet that's type is **Reserve**. It not be empty, when 'alb_type' as '**internal**'.
 
 The `klog_info` object supports the following:
 
