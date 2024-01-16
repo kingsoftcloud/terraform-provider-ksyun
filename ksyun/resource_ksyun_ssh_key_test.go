@@ -2,9 +2,10 @@ package ksyun
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"testing"
 )
 
 func TestAccKsyunSSHKey_basic(t *testing.T) {
@@ -124,6 +125,7 @@ func testAccCheckSSHKeyDestroy(s *terraform.State) error {
 const testAccSSHKeyConfig = `
 resource "ksyun_ssh_key" "foo" {
 	key_name="sshKeyName"
+	public_key="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC5MPEC4hjObq7u9uZY+IHwJE71wRMFPmYMo5Qc56Z9TG/5irXh0l8cu1+Qi9VmmJCeYMU8FrVoaBThjRIgKjuuAF9gKuYx8tWEsURO33F+s0u410PPgpOVyHM6yRO9QNM9iEVBQRk2T8cLdfZuKPQRQH+jyVMAFXpomcx7Q0Yt9rFkZIjC3wBw16MziaCPKVSyCn5SQ+mFNCqqn5+lVc5gXhWAJRwfnSFBNJhXNkEuPAFm1UeNW34Zi96SRA2msIuTBmxt+ZtczIw+MGh2/L8wrTUgXg6j9uD80ZwUKRWkmvapPHaqHZ0gPTvbL6lXtfwU4u2MQrvGSSThKugp1QZf+OC8/F9B4K0ehq6NCjaIscSMW33hO96un6kSvz5HWL0mwlJ+ZXvV6mpUY9X8HSJhOxaA4uX5RO/KqcQWhIku7LxvRBsK8O5EUwCYs6tMCQqpdn+edK5NM7PrO3j+IG6NlHD/JPlNh4pjyzK8oPbfTncYhtwBsAaWQLpW/oFxYv8= lvsongke@lvsongkedeMacBook-Air.local"
 }
 `
 
