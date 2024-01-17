@@ -24,6 +24,8 @@ package ksyun
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
@@ -49,10 +51,40 @@ func resourceKsyunSSHKey() *schema.Resource {
 				Description: "ID of the key.",
 			},
 			"public_key": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				ForceNew: true,
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					// pKey := d.Get("public_key").(string)
+					if old == "" {
+						return false
+					}
+					old = strings.TrimSpace(old)
+					new = strings.TrimSpace(new)
+
+					if old == new {
+						return true
+					}
+					oPks := strings.Split(old, " ")
+					nPks := strings.Split(new, " ")
+
+					// new public key is incorrect
+					if len(nPks) < 2 {
+						return false
+					}
+
+					for i, s := range oPks {
+						if i > 1 {
+							return true
+						}
+						if s != nPks[i] {
+							return false
+						}
+					}
+
+					return false
+				},
 				Description: "public key.",
 			},
 			"private_key": {
