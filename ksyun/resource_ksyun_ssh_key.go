@@ -62,8 +62,18 @@ func resourceKsyunSSHKey() *schema.Resource {
 					}
 					old = strings.TrimSpace(old)
 					new = strings.TrimSpace(new)
+
+					if old == new {
+						return true
+					}
 					oPks := strings.Split(old, " ")
 					nPks := strings.Split(new, " ")
+
+					// new public key is incorrect
+					if len(nPks) < 2 {
+						return false
+					}
+
 					for i, s := range oPks {
 						if i > 1 {
 							return true
