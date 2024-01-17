@@ -1,3 +1,9 @@
+## 1.14.2 (Jan 17, 2024)
+
+BUGFIX:
+
+- `resource_ksyun_ssh_key` 修复public key comments引发的plan diff
+
 ## 1.14.1 (Jan 12, 2024)
 
 IMPROVEMENTS:
