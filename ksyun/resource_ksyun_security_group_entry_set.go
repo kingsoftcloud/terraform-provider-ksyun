@@ -57,41 +57,51 @@ func resourceKsyunSecurityGroupEntrySet() *schema.Resource {
 			},
 			"security_group_entries": {
 				Type:     schema.TypeSet,
-				Optional: true,
-				Computed: true,
+				Required: true,
 				Set:      securityGroupEntryHash,
 				Elem: &schema.Resource{
 					Schema: entry,
 				},
-				Description: "Network security group Entries. this parameter will be deprecated, use `ksyun_security_group_entry` instead.",
+				Description: "Network security group Entries.",
 			},
 		},
 	}
 }
 
+/*
+###
+
+this development of resource is suspended, because of the remote have a default entry that's direction is out, so that
+provider cannot manage that default entry when creating.
+
+###
+
+*/
+
 func resourceKsyunSecurityGroupEntrySetCreate(d *schema.ResourceData, meta interface{}) (err error) {
 	vpcService := VpcService{meta.(*KsyunClient)}
-	err = vpcService.CreateSecurityGroup(d, resourceKsyunSecurityGroupEntrySet())
+	err = vpcService.CreateSecurityGroupEntrySet(d, resourceKsyunSecurityGroupEntrySet())
 	if err != nil {
-		return fmt.Errorf("error on creating security group  %q, %s", d.Id(), err)
+		return fmt.Errorf("error on creating security group set %q, %s", d.Id(), err)
 	}
-	return resourceKsyunSecurityGroupRead(d, meta)
+	d.SetId(d.Get("security_group_id").(string))
+	return resourceKsyunSecurityGroupEntrySetRead(d, meta)
 }
 
 func resourceKsyunSecurityGroupEntrySetRead(d *schema.ResourceData, meta interface{}) (err error) {
 	vpcService := VpcService{meta.(*KsyunClient)}
 	err = vpcService.ReadAndSetSecurityGroup(d, resourceKsyunSecurityGroupEntrySet())
 	if err != nil {
-		return fmt.Errorf("error on reading security group  %q, %s", d.Id(), err)
+		return fmt.Errorf("error on reading security group set %q, %s", d.Id(), err)
 	}
 	return err
 }
 
 func resourceKsyunSecurityGroupEntrySetUpdate(d *schema.ResourceData, meta interface{}) (err error) {
 	vpcService := VpcService{meta.(*KsyunClient)}
-	err = vpcService.ModifySecurityGroup(d, resourceKsyunSecurityGroupEntrySet())
+	err = vpcService.ModifySecurityGroupSet(d, resourceKsyunSecurityGroupEntrySet())
 	if err != nil {
-		return fmt.Errorf("error on updating security group  %q, %s", d.Id(), err)
+		return fmt.Errorf("error on updating security group set %q, %s", d.Id(), err)
 	}
 	return resourceKsyunSecurityGroupRead(d, meta)
 }
@@ -107,13 +117,13 @@ func resourceKsyunSecurityGroupEntrySetDelete(d *schema.ResourceData, meta inter
 		entryId := entry["security_group_entry_id"].(string)
 		call, err := vpcService.RemoveSecurityGroupEntryCommonCall(gId, entryId)
 		if err != nil {
-			return fmt.Errorf("error on deleting security group entry %q, %s", entryId, err)
+			return fmt.Errorf("error on deleting security group entry set %q, %s", entryId, err)
 		}
 		apiProcess.PutCalls(call)
 	}
 	err = apiProcess.Run()
 	if err != nil {
-		return fmt.Errorf("error on deleting security group  %q, %s", d.Id(), err)
+		return fmt.Errorf("error on deleting security group set %q, %s", d.Id(), err)
 	}
 	return err
 }
