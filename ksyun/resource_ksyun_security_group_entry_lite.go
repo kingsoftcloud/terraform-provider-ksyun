@@ -60,12 +60,12 @@ func resourceKsyunSecurityGroupEntryLite() *schema.Resource {
 	}
 
 	return &schema.Resource{
-		Create:   resourceKsyunSecurityGroupEntryLiteCreate,
-		Read:     resourceKsyunSecurityGroupEntryLiteRead,
-		Update:   resourceKsyunSecurityGroupEntryLiteUpdate,
-		Delete:   resourceKsyunSecurityGroupEntryLiteDelete,
+		Create: resourceKsyunSecurityGroupEntryLiteCreate,
+		Read:   resourceKsyunSecurityGroupEntryLiteRead,
+		Update: resourceKsyunSecurityGroupEntryLiteUpdate,
+		Delete: resourceKsyunSecurityGroupEntryLiteDelete,
 		Importer: &schema.ResourceImporter{
-			// State: importSecurityGroupEntryLite,
+			State: denyImport,
 		},
 		Schema: entry,
 	}
