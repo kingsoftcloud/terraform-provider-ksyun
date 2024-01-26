@@ -32,7 +32,19 @@ resource "ksyun_eip" "default" {
 The following arguments are supported:
 
 * `band_width` - (Required) The band width of the public address.
-* `charge_type` - (Required, ForceNew) The charge type of the Elastic IP address.Valid Values:'PrePaidByMonth','Monthly','PostPaidByPeak','Peak','PostPaidByDay','Daily','PostPaidByTransfer','TrafficMonthly','DailyPaidByTransfer','HourlySettlement','PostPaidByHour','HourlyInstantSettlement','PostpaidByTime'.
+* `charge_type` - (Required, ForceNew) The charge type of the Elastic IP address.Valid Values:'PrePaidByMonth','Monthly','PostPaidByPeak','Peak','PostPaidByDay','Daily','PostPaidByTransfer','TrafficMonthly','DailyPaidByTransfer','HourlySettlement','PostPaidByHour','HourlyInstantSettlement','PostpaidByTime'. 
+**Notes:** Charge Type have a upgrade, The above-mentioned parameters, **every**, are **valid**. The changes as following:
+
+| Previous Version | Current Version | Description | 
+| -------- | -------- | ----------- | 
+| PostPaidByPeak | Peak| Pay-as-you-go (monthly peak) | 
+ | PostPaidByDay | Daily | Pay-as-you-go (daily) | 
+| PostPaidByTransfer | TrafficMonthly | Pay-as-you-go (monthly traffic) |
+ | PrePaidByMonth | Monthly | Monthly package | 
+|                | DailyPaidByTransfer | Pay-as-you-go (daily traffic) | 
+|                | HourlyInstantSettlement | Pay-as-you-go (hourly instant settlement) | 
+|                | PostPaidByHour | Pay-as-you-go (hourly billing, monthly settlement) | 
+|                | PostpaidByTime | Settlement by times |.
 * `line_id` - (Optional, ForceNew) The id of the line.
 * `project_id` - (Optional) The id of the project.
 * `purchase_time` - (Optional, ForceNew) Purchase time. If charge_type is Monthly or PrePaidByMonth, this is Required.
