@@ -80,6 +80,7 @@ VPC
 		ksyun_route
 		ksyun_security_group
 		ksyun_security_group_entry
+		ksyun_security_group_entry_lite
 		ksyun_kec_network_interface
 		ksyun_private_dns_zone
 		ksyun_private_dns_record
@@ -498,8 +499,6 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_lb_listener_associate_acl":        resourceKsyunListenerAssociateAcl(),
 			"ksyun_vpc":                              resourceKsyunVpc(),
 			"ksyun_subnet":                           resourceKsyunSubnet(),
-			"ksyun_security_group":                   resourceKsyunSecurityGroup(),
-			"ksyun_security_group_entry":             resourceKsyunSecurityGroupEntry(),
 			"ksyun_instance":                         resourceKsyunInstance(),
 			"ksyun_sqlserver":                        resourceKsyunSqlServer(),
 			"ksyun_kec_network_interface":            resourceKsyunKecNetworkInterface(),
@@ -578,6 +577,12 @@ func Provider() terraform.ResourceProvider {
 			// tag
 			"ksyun_tag_v2":            resourceKsyunTagv2(),
 			"ksyun_tag_v2_attachment": resourceKsyunTagv2Attachment(),
+
+			// security group
+			"ksyun_security_group":            resourceKsyunSecurityGroup(),
+			"ksyun_security_group_entry":      resourceKsyunSecurityGroupEntry(),
+			"ksyun_security_group_entry_lite": resourceKsyunSecurityGroupEntryLite(),
+			// "ksyun_security_group_entry_set":  resourceKsyunSecurityGroupEntrySet(),
 		},
 		ConfigureFunc: providerConfigure,
 	}

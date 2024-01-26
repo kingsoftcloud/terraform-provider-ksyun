@@ -460,3 +460,14 @@ func commonImport(number int, keys ...string) schema.StateFunc {
 		return retD, nil
 	}
 }
+
+// denyImport deny import calling
+func denyImport(d *schema.ResourceData, i interface{}) ([]*schema.ResourceData, error) {
+	var (
+		err  error
+		retD = []*schema.ResourceData{d}
+	)
+
+	err = fmt.Errorf("this resource import calling is denied")
+	return retD, err
+}

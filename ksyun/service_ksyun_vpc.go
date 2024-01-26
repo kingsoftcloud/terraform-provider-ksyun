@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-ksyun/ksyun/internal/pkg/helper"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
 )
 
@@ -2448,6 +2449,47 @@ func (s *VpcService) ReadSecurityGroupEntry(d *schema.ResourceData, securityGrou
 	}
 	return data, err
 }
+func (s *VpcService) ReadAndSetSecurityGroupEntryLite(d *schema.ResourceData, r *schema.Resource) (err error) {
+	securityGroupId := d.Get("security_group_id").(string)
+	sg, err := s.ReadSecurityGroup(d, securityGroupId)
+	if err != nil {
+		return err
+	}
+	sgEntryIdMap := make(map[string]map[string]interface{}, 0)
+	securityGroupEntryIdList := make([]string, 0)
+	cidrBlockSet := make([]string, 0)
+	var sgEntry map[string]interface{}
+
+	sgEntrySet := sg["SecurityGroupEntrySet"].([]interface{})
+	for _, entryIf := range sgEntrySet {
+		if entry, ok := entryIf.(map[string]interface{}); !ok {
+			continue
+		} else {
+
+			entryId := entry["SecurityGroupEntryId"].(string)
+			sgEntryIdMap[entryId] = entry
+		}
+
+	}
+	entryIdSet, _ := helper.GetSchemaListWithString(d, "security_group_entry_id_list")
+	for _, entryId := range entryIdSet {
+		if rule, ok := sgEntryIdMap[entryId]; ok {
+			if sgEntry == nil {
+				sgEntry = rule
+			}
+			securityGroupEntryIdList = append(securityGroupEntryIdList, entryId)
+			cidrBlock := rule["CidrBlock"].(string)
+			cidrBlockSet = append(cidrBlockSet, cidrBlock)
+		}
+	}
+
+	delete(sgEntry, "CidrBlock")
+	SdkResponseAutoResourceData(d, r, sgEntry, nil)
+
+	_ = d.Set("cidr_block", cidrBlockSet)
+	_ = d.Set("security_group_entry_id_list", securityGroupEntryIdList)
+	return err
+}
 
 func (s *VpcService) ReadAndSetSecurityGroups(d *schema.ResourceData, r *schema.Resource) (err error) {
 	transform := map[string]SdkReqTransform{
@@ -2666,12 +2708,71 @@ func (s *VpcService) CreateSecurityGroup(d *schema.ResourceData, r *schema.Resou
 	return ksyunApiCallNew(callbacks, d, s.client, false)
 }
 
+func (s *VpcService) CreateSecurityGroupEntrySet(d *schema.ResourceData, r *schema.Resource) (err error) {
+	apiProcess := NewApiProcess(context.Background(), d, s.client, true)
+	entries, err := s.CreateSecurityGroupEntryWithSgCall(d, r)
+	if err != nil {
+		return err
+	}
+	apiProcess.PutCalls(entries...)
+	return apiProcess.Run()
+}
+
 func (s *VpcService) CreateSecurityGroupEntry(d *schema.ResourceData, r *schema.Resource) (err error) {
 	call, err := s.CreateSecurityGroupEntryCall(d, r)
 	if err != nil {
 		return err
 	}
 	return ksyunApiCallNew([]ApiCall{call}, d, s.client, true)
+}
+func (s *VpcService) CreateSecurityGroupEntryLite(d *schema.ResourceData, r *schema.Resource) (err error) {
+	apiProcess := NewApiProcess(context.Background(), d, s.client, true)
+	calls, err := s.CreateSecurityGroupEntryLiteCall(d, r)
+	if err != nil {
+		return err
+	}
+	apiProcess.PutCalls(calls...)
+	return apiProcess.Run()
+}
+
+func (s *VpcService) CreateSecurityGroupEntryLiteCall(d *schema.ResourceData, r *schema.Resource) (callbacks []ApiCall, err error) {
+	entryCall, err := s.CreateSecurityGroupEntryCall(d, r)
+	if err != nil {
+		return callbacks, err
+	}
+	afterCall := func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) error {
+		logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+		idList, gOk := helper.GetSchemaListWithString(d, "security_group_entry_id_list")
+		if !gOk {
+			idList = make([]string, 0)
+		}
+		rawIdSetIf, gOk := (*resp)["SecurityGroupEntryIdSet"]
+		if !gOk || helper.IsEmpty(rawIdSetIf) {
+			return fmt.Errorf("internal error, cannot get security group entry id from openapi")
+		}
+		rawIdSet := rawIdSetIf.([]interface{})
+		idList = append(idList, rawIdSet[0].(string))
+
+		_ = d.Set("security_group_entry_id_list", idList)
+		return nil
+	}
+
+	cidrBlocks, ok := helper.GetSchemaListWithString(d, "cidr_block")
+	if !ok {
+		return callbacks, fmt.Errorf("cannot get correct a list of values of cidr block")
+	}
+	for _, cidrBlock := range cidrBlocks {
+		liteCall := entryCall.Copy()
+		nParam, ok := helper.MapCopy(*liteCall.param)
+		if !ok {
+			return nil, fmt.Errorf("internal error, failed to copy apicall parameters")
+		}
+		liteCall.param = &nParam
+		(*liteCall.param)["CidrBlock"] = cidrBlock
+		liteCall.afterCall = afterCall
+		callbacks = append(callbacks, liteCall)
+	}
+	return
 }
 
 func (s *VpcService) ModifySecurityGroupCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
@@ -2818,6 +2919,33 @@ func (s *VpcService) ModifySecurityGroupEntryCall(d *schema.ResourceData, r *sch
 	}
 	return callback, err
 }
+func (s *VpcService) ModifySecurityGroupEntryLiteCall(d *schema.ResourceData, r *schema.Resource) (callbacks []ApiCall, err error) {
+	transform := map[string]SdkReqTransform{
+		"description": {},
+	}
+	req, err := SdkRequestAutoMapping(d, r, true, transform, nil)
+	if err != nil {
+		return nil, err
+	}
+	if len(req) > 0 {
+		idSet, ok := helper.GetSchemaListWithString(d, "security_group_entry_id_list")
+		if !ok {
+			return nil, fmt.Errorf("internal error, cannot get entry id for modifying")
+		}
+		for _, entryId := range idSet {
+			entryReq := make(map[string]interface{}, 2)
+			entryReq["Description"] = req["Description"]
+			entryReq["SecurityGroupEntryId"] = entryId
+			modifyEntryCall, err := s.ModifySecurityGroupEntryCommonCall(entryReq)
+			if err != nil {
+				return nil, err
+			}
+			callbacks = append(callbacks, modifyEntryCall)
+		}
+
+	}
+	return callbacks, err
+}
 
 func (s *VpcService) ModifySecurityGroup(d *schema.ResourceData, r *schema.Resource) (err error) {
 	var callbacks []ApiCall
@@ -2835,6 +2963,15 @@ func (s *VpcService) ModifySecurityGroup(d *schema.ResourceData, r *schema.Resou
 	}
 	return ksyunApiCallNew(callbacks, d, s.client, true)
 }
+func (s *VpcService) ModifySecurityGroupSet(d *schema.ResourceData, r *schema.Resource) (err error) {
+	apiProcess := NewApiProcess(context.Background(), d, s.client, true)
+	entries, err := s.ModifySecurityGroupEntryWithSgCall(d, r)
+	if err != nil {
+		return err
+	}
+	apiProcess.PutCalls(entries...)
+	return apiProcess.Run()
+}
 
 func (s *VpcService) ModifySecurityGroupEntry(d *schema.ResourceData, r *schema.Resource) (err error) {
 	var callbacks []ApiCall
@@ -2844,6 +2981,16 @@ func (s *VpcService) ModifySecurityGroupEntry(d *schema.ResourceData, r *schema.
 	}
 	callbacks = append(callbacks, call)
 	return ksyunApiCallNew(callbacks, d, s.client, true)
+}
+
+func (s *VpcService) ModifySecurityGroupEntryLite(d *schema.ResourceData, r *schema.Resource) (err error) {
+	apiProcess := NewApiProcess(context.Background(), d, s.client, true)
+	calls, err := s.ModifySecurityGroupEntryLiteCall(d, r)
+	if err != nil {
+		return err
+	}
+	apiProcess.PutCalls(calls...)
+	return apiProcess.Run()
 }
 
 func (s *VpcService) RemoveSecurityGroupCall(d *schema.ResourceData) (callback ApiCall, err error) {
@@ -2952,6 +3099,26 @@ func (s *VpcService) RemoveSecurityGroupEntry(d *schema.ResourceData) (err error
 		return err
 	}
 	return ksyunApiCallNew([]ApiCall{call}, d, s.client, true)
+}
+func (s *VpcService) RemoveSecurityGroupEntryLite(d *schema.ResourceData) (err error) {
+	apiProcess := NewApiProcess(context.Background(), d, s.client, true)
+
+	groupId := d.Get("security_group_id").(string)
+	idSet, _ := helper.GetSchemaListWithString(d, "security_group_entry_id_list")
+	for _, entryId := range idSet {
+		call, err := s.RemoveSecurityGroupEntryCommonCall(groupId, entryId)
+		if err != nil {
+			return err
+		}
+		apiProcess.PutCalls(call)
+	}
+
+	return apiProcess.Run()
+}
+func (s *VpcService) RemoveSecurityGroupEntryLiteCall(d *schema.ResourceData, entryId string) (callBack ApiCall, err error) {
+	groupId := d.Get("security_group_id").(string)
+
+	return s.RemoveSecurityGroupEntryCommonCall(groupId, entryId)
 }
 
 func (s *VpcService) ReadVpnGateways(condition map[string]interface{}) (data []interface{}, err error) {
@@ -3854,4 +4021,9 @@ func (s *VpcService) ModifyNetworkInterfaceSecondaryInfraIpCall(d *schema.Resour
 		},
 	}
 	return callback, nil
+}
+
+var logCall = func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+	logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+	return err
 }
