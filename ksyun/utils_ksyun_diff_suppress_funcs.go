@@ -148,6 +148,7 @@ func securityGroupEntryLiteDiffSuppress(k, old, new string, d *schema.ResourceDa
 	}
 
 	return true
+}
 
 func albInternalDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bool {
 	if d.Get("alb_type") != "internal" && (k == "subnet_id" || k == "private_ip_address") {
