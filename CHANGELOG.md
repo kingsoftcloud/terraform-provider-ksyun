@@ -1,3 +1,9 @@
+## 1.14.3 (Jan 26, 2024)
+
+IMPROVEMENTS:
+
+- -**New Resource:** `ksyun_security_group_entry_lite` 安全组批量管理资源
+
 ## 1.14.2 (Jan 17, 2024)
 
 BUGFIX:
