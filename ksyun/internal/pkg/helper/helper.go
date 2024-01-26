@@ -119,3 +119,35 @@ func IsEmpty(v interface{}) bool {
 	zeroValue := reflect.Zero(value.Type())
 	return reflect.DeepEqual(v, zeroValue.Interface())
 }
+
+func GetSchemaListWithString(d *schema.ResourceData, k string) (l []string, ok bool) {
+	v, ok := d.GetOk(k)
+	if !ok {
+		return
+	}
+	interfaces, ok := v.([]interface{})
+	if !ok || len(interfaces) == 0 {
+		ok = false
+		return
+	}
+	l = make([]string, len(interfaces))
+	for i, inter := range interfaces {
+		if v, ok := inter.(string); !ok {
+			return nil, ok
+		} else {
+			l[i] = v
+		}
+	}
+	return
+}
+
+func MapCopy(m map[string]interface{}) (map[string]interface{}, bool) {
+	if m == nil {
+		return nil, false
+	}
+	n := make(map[string]interface{}, len(m))
+	for k, v := range m {
+		n[k] = v
+	}
+	return n, true
+}
