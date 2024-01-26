@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-ksyun/ksyun/internal/pkg/helper"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
 )
 
@@ -127,6 +128,26 @@ func loadBalancerDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bo
 		return true
 	}
 	return false
+}
+
+func securityGroupEntryLiteDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
+	if k == "cidr_block.#" {
+		return false
+	}
+	oldBlockIf, _ := d.GetChange("cidr_block")
+	oldBlock := oldBlockIf.([]interface{})
+	newBlock, _ := helper.GetSchemaListWithString(d, "cidr_block")
+	if len(oldBlock) != len(newBlock) {
+		return false
+	}
+
+	for _, cidrBlock := range oldBlock {
+		if !stringSliceContains(newBlock, cidrBlock.(string)) {
+			return false
+		}
+	}
+
+	return true
 }
 
 func AlbListenerDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bool {

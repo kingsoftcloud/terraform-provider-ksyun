@@ -90,6 +90,6 @@ resource "ksyun_security_group_entry_lite" "foo" {
   port_range_from=22
   port_range_to=22
 
-  cidr_block=["10.0.1.1/32", "192.177.2.1/32"]
+  cidr_block=[ "192.177.2.1/32", "10.0.1.1/32"]
 }
 `

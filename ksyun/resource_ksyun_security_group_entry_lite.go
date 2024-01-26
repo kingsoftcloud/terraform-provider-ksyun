@@ -49,6 +49,7 @@ func resourceKsyunSecurityGroupEntryLite() *schema.Resource {
 				validation.IsCIDR,
 			),
 		},
+		DiffSuppressFunc: securityGroupEntryLiteDiffSuppress,
 
 		Description: "The cidr block list of security group rule.",
 	}
