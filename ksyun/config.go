@@ -34,8 +34,8 @@ import (
 	"github.com/KscSDK/ksc-sdk-go/service/tagv2"
 	"github.com/KscSDK/ksc-sdk-go/service/vpc"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/ks3sdklib/ksyun-ks3-go-sdk/ks3"
 	"github.com/terraform-providers/terraform-provider-ksyun/ksyun/internal/pkg/network"
-	"github.com/wilac-pv/ksyun-ks3-go-sdk/ks3"
 )
 
 // Config is the configuration of ksyun meta data
@@ -45,6 +45,7 @@ type Config struct {
 	Region        string
 	Insecure      bool
 	Domain        string
+	Endpoint      string
 	DryRun        bool
 	IgnoreService bool
 	HttpKeepAlive bool
@@ -122,7 +123,7 @@ func (client *KsyunClient) WithKs3Client(do func(*ks3.Client) (interface{}, erro
 	defer goSdkMutex.Unlock()
 	// Initialize the KS3 client if necessary
 	if client.ks3conn == nil {
-		ks3conn, err := ks3.New(client.config.Domain, client.config.AccessKey, client.config.SecretKey)
+		ks3conn, err := ks3.New(client.config.Endpoint, client.config.AccessKey, client.config.SecretKey)
 		if err != nil {
 			return nil, fmt.Errorf("unable to initialize the KS3 client: %#v", err)
 		}

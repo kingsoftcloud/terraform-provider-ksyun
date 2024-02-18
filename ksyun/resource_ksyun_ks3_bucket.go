@@ -4,165 +4,142 @@ Provides an KS3 Bucket resource.
 # Example Usage
 
 ```hcl
-# 创建一个名为 "bucket-new" 的 ks3 存储桶资源
+# 创建存储桶资源
 
-	resource "ksyun_ks3_bucket" "bucket-new" {
-	  provider = ks3.bj-prod
-	  #指定要创建的虚拟存储桶的名称
-	  bucket = "YOUR_BUCKET"
-	  #桶权限
-	  acl    = "public-read"
-	}
-
-	resource "ksyun_ks3_bucket" "bucket-attr" {
-	  provider = ksyun.bj-prod
-	  bucket = "bucket-20230324-1"
-	  #访问日志的存储路径
-	  logging {
-	    target_bucket = "bucket-20230324-2"
-	    target_prefix = "log/"
-	  }
-	  #文件生命周期
-	  lifecycle_rule {
-	    id      = "id1"
-	    #如果filter.prefix有值情况下会覆盖这个选项
-	    prefix  = "path/1"
-	    enabled = true
-
-	    #过期删除时间 days or date 只能二选一
-	    expiration {
-	      #设置过期日期
-	      date = "2023-04-10"
-	      #设置过期时间
-	      #days = "40"
-	  }
-	  #添加标签
-	    filter {
-	    prefix = "example_prefix"
-	    #每个标签不能与其他标签重复
-	    tag {
-	      key   = "example_key1"
-	      value = "example_value"
-	    }
-	    tag {
-	      key   = "example_key2"
-	      value = "example_value"
-	    }
-	  }
-
+resource "ksyun_ks3_bucket" "bucket-create" {
+  #指定要创建的虚拟存储桶的名称
+  bucket = "bucket-20240206-104450"
 }
 
-	lifecycle_rule {
-	  id      = "id2"
-	  prefix  = "path/365"
-	  enabled = true
-
-	  expiration {
-	    date = "2023-04-10"
-	  }
-	}
-
-#跨域规则
-
-	  cors_rule {
-	  allowed_origins =  [var.allow-origins-star]
-	  allowed_methods = split(",", var.allow-methods-put)
-	  allowed_headers = [var.allowed_headers]
-	}
-
-	cors_rule {
-	  allowed_origins = split(",", var.allow-origins-ksyun)
-	  allowed_methods = split(",", var.allow-methods-get)
-	  allowed_headers = [var.allowed_headers]
-	  expose_headers  = [var.expose_headers]
-	  max_age_seconds = var.max_age_seconds
-	}
-
+resource "ksyun_ks3_bucket" "bucket-create2" {
+  #指定要创建的虚拟存储桶的名称
+  bucket = "bucket-20240205-153413"
+  #桶权限
+  acl = "public-read"
+  #桶存储类型
+  storage_class = "IA"
+  #空间策略
+  policy = <<-EOT
+  {
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Action": [
+          "ks3:ListBucket",
+          "ks3:ListBucketMultipartUploads",
+          "ks3:GetObject",
+          "ks3:GetObjectAcl",
+          "ks3:ListMultipartUploadParts"
+        ],
+        "Principal": {
+          "KSC": [
+            "*"
+          ]
+        },
+        "Resource": [
+          "krn:ksc:ks3:::bucket-20240205-153413/*",
+          "krn:ksc:ks3:::bucket-20240205-153413"
+        ]
+      }
+    ]
+  }
+  EOT
+  #日志
+  logging {
+    target_bucket = "bucket-20240206-104450"
+    target_prefix = "log/"
+  }
+  #跨域资源共享
+  cors_rule {
+    allowed_headers = ["*"]
+    allowed_methods = ["GET","PUT"]
+    allowed_origins = ["*"]
+    expose_headers = ["header1","header2"]
+    max_age_seconds = 3600
+  }
+  cors_rule {
+    allowed_headers = ["*"]
+    allowed_methods = ["POST","DELETE"]
+    allowed_origins = ["https://www.abc.com","https://www.def.com"]
+    expose_headers = ["header1","header2"]
+    max_age_seconds = 3600
+  }
+  #生命周期
+  lifecycle_rule {
+    id      = "id1"
+    enabled = true
+    filter {
+      prefix = "logs"
+    }
+    expiration {
+      days = 130
+    }
+    transitions {
+      days = 10
+      storage_class = "STANDARD_IA"
+    }
+    transitions {
+      days = 40
+      storage_class = "ARCHIVE"
+    }
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 50
+    }
+  }
+  lifecycle_rule {
+    id      = "id2"
+    enabled = true
+    filter {
+      prefix = "test"
+    }
+    expiration {
+      date = "2024-07-10"
+    }
+    transitions {
+      date = "2024-05-10"
+      storage_class = "STANDARD_IA"
+    }
+    transitions {
+      date = "2024-06-10"
+      storage_class = "ARCHIVE"
+    }
+    abort_incomplete_multipart_upload {
+      date = "2024-07-10"
+    }
+  }
+  lifecycle_rule {
+    id      = "id3"
+    enabled = true
+    filter {
+      and {
+        prefix = "docs"
+        tag {
+          key   = "example_key1"
+          value = "example_value"
+        }
+        tag {
+          key   = "example_key2"
+          value = "example_value"
+        }
+      }
+    }
+    expiration {
+      date = "2024-07-10"
+    }
+    transitions {
+      date = "2024-05-10"
+      storage_class = "STANDARD_IA"
+    }
+    transitions {
+      date = "2024-06-10"
+      storage_class = "ARCHIVE"
+    }
+  }
 }
-```
-
-# 创建variables.tf (上面var的变量才能引用到)
-```hcl
-
-	variable "bucket-new" {
-	  default = "bucket-20180423-1"
-	}
-
-	variable "bucket-attr" {
-	  default = "bucket-20180423-2"
-	}
-
-	variable "acl-bj" {
-	  default = "private"
-	}
-
-	variable "target-prefix" {
-	  default = "log3/"
-	}
-
-	variable "role-days" {
-	  default = "expirationByDays"
-	}
-
-	variable "rule-days" {
-	  default = 365
-	}
-
-	variable "my_variable" {
-	  type = number
-	  default = 42
-	}
-
-	variable "role-date" {
-	  default = "expirationByDate"
-	}
-
-	variable "rule-date" {
-	  default = "2023-03-18"
-	}
-
-	variable "rule-prefix" {
-	  default = "path"
-	}
-
-	variable "allow-empty" {
-	  default = true
-	}
-
-	variable "referers" {
-	  default = "http://www.ksyun.com, https://www.ksyun.com, http://?.ksyun.com"
-	}
-
-	variable "allow-origins-star" {
-	  default = "*"
-	}
-
-	variable "allow-origins-ksyun" {
-	  default = "http://www.ksyun.com,http://*.ksyun.com"
-	}
-
-	variable "allow-methods-get" {
-	  default = "GET"
-	}
-
-	variable "allow-methods-put" {
-	  default = "PUT,GET"
-	}
-
-	variable "allowed_headers" {
-	  default = "*"
-	}
-
-	variable "expose_headers" {
-	  default = "x-ks3-test, x-ks3-test1"
-	}
-
-	variable "max_age_seconds" {
-	  default = 100
-	}
 
 ```
 */
+
 package ksyun
 
 import (
@@ -172,9 +149,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"github.com/wilac-pv/ksyun-ks3-go-sdk/ks3"
+	"github.com/ks3sdklib/ksyun-ks3-go-sdk/ks3"
 	"log"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -206,9 +182,24 @@ func resourceKsyunKs3Bucket() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"private", "public-read", "public-read-write"}, false),
 				Description:  "The canned ACL to apply. Defaults to private. Valid values are private, public-read, and public-read-write.",
 			},
+
+			"storage_class": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  string(ks3.TypeNormal),
+				ValidateFunc: validation.StringInSlice([]string{
+					string(ks3.TypeNormal),
+					string(ks3.TypeIA),
+					string(ks3.TypeArchive),
+					string(ks3.TypeDeepIA),
+				}, false),
+				Description: "The class of storage used to store the object.",
+			},
+
 			"cors_rule": {
 				Type:        schema.TypeList,
 				Optional:    true,
+				MaxItems:    10,
 				Description: "The cross domain resource sharing (CORS) configuration rules of the bucket. Each rule can contain up to 100 headers, 100 methods, and 100 origins. For more information, see Cross-domain resource sharing (CORS) in the KS3 Developer Guide.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -243,12 +234,12 @@ func resourceKsyunKs3Bucket() *schema.Resource {
 						},
 					},
 				},
-				MaxItems: 10,
 			},
 
 			"logging": {
 				Type:        schema.TypeList,
 				Optional:    true,
+				MaxItems:    1,
 				Description: "Call this interface to set the bucket logging configuration. If the configuration already exists, KS3 will replace it.\nTo use this interface, you need to have permission to perform the ks3: PutBucketLogging operation. The space owner has this permission by default and can grant corresponding permissions to others.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -264,19 +255,13 @@ func resourceKsyunKs3Bucket() *schema.Resource {
 						},
 					},
 				},
-				MaxItems: 1,
 			},
-
-			//"logging_isenable": {
-			//	Type:       schema.TypeBool,
-			//	Optional:   true,
-			//	Deprecated: "Use the logging block instead",
-			//},
 
 			"lifecycle_rule": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Optional:    true,
+				MaxItems:    10,
 				Description: "Call this interface to set the bucket lifecycle configuration. If the configuration already exists, KS3 will replace it.\nTo use this interface, you need to have permission to perform the ks3: PutBucketLifecycle operation. The space owner has this permission by default and can grant corresponding permissions to others.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -290,7 +275,12 @@ func resourceKsyunKs3Bucket() *schema.Resource {
 						"prefix": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Prefix identifying one or more objects to which the rule applies. The rule applies only to objects with key names beginning with the specified prefix. If you specify multiple rules in a lifecycle configuration, the rule with the longest prefix is used to determine which rule applies to a given object. If you specify a prefix for the rule, you cannot specify a tag for the rule.",
+							Description: "Prefix identifying one or more objects to which the rule applies. ",
+						},
+						"enabled": {
+							Type:        schema.TypeBool,
+							Required:    true,
+							Description: "If 'Enabled', the rule is currently being applied. If 'Disabled', the rule is not currently being applied.",
 						},
 						"filter": {
 							Type:        schema.TypeSet,
@@ -302,35 +292,44 @@ func resourceKsyunKs3Bucket() *schema.Resource {
 									"prefix": {
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "Prefix identifying one or more objects to which the rule applies. The rule applies only to objects with key names beginning with the specified prefix. If you specify multiple rules in a lifecycle configuration, the rule with the longest prefix is used to determine which rule applies to a given object. If you specify a prefix for the rule, you cannot specify a tag for the rule.",
+										Description: "Prefix identifying one or more objects to which the rule applies. ",
 									},
-									"tag": {
+									"and": {
 										Type:        schema.TypeList,
 										Optional:    true,
-										Description: "Container for the tag of lifecycle rule. If you specify a tag, you cannot specify a prefix for the rule.",
+										MaxItems:    1,
+										Description: "A subset of the object filter that is required when specifying tag.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"key": {
+												"prefix": {
 													Type:        schema.TypeString,
-													Required:    true,
-													Description: "The key of the tag.",
+													Optional:    true,
+													Description: "Prefix identifying one or more objects to which the rule applies. ",
 												},
-												"value": {
-													Type:        schema.TypeString,
-													Required:    true,
-													Description: "The value of the tag.",
+												"tag": {
+													Type:        schema.TypeList,
+													Optional:    true,
+													Description: "Container for the tag of lifecycle rule. If you specify a tag, you cannot specify a prefix for the rule.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"key": {
+																Type:        schema.TypeString,
+																Required:    true,
+																Description: "The key of the tag.",
+															},
+															"value": {
+																Type:        schema.TypeString,
+																Required:    true,
+																Description: "The value of the tag.",
+															},
+														},
+													},
 												},
 											},
 										},
 									},
 								},
 							},
-						},
-
-						"enabled": {
-							Type:        schema.TypeBool,
-							Required:    true,
-							Description: "If 'Enabled', the rule is currently being applied. If 'Disabled', the rule is not currently being applied.",
 						},
 						"expiration": {
 							Type:        schema.TypeSet,
@@ -365,7 +364,7 @@ func resourceKsyunKs3Bucket() *schema.Resource {
 										Description: "Indicates at what date the object is to be moved or deleted.example:2016-01-02.",
 									},
 									"days": {
-										Type:        schema.TypeString,
+										Type:        schema.TypeInt,
 										Optional:    true,
 										Description: "Indicates the lifetime, in days, of the objects that are subject to the rule. The value must be a non-zero positive integer.",
 									},
@@ -383,22 +382,35 @@ func resourceKsyunKs3Bucket() *schema.Resource {
 								},
 							},
 						},
+						"abort_incomplete_multipart_upload": {
+							Type:        schema.TypeSet,
+							Optional:    true,
+							MaxItems:    1,
+							Description: "Specifies expiration attributes for incomplete multipart uploads",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"date": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Specifies a date and KS3 will execute lifecycle rules on data that was last modified earlier than that date. If Date is a future date, the rule will not take effect until that date.",
+									},
+									"days_after_initiation": {
+										Type:         schema.TypeInt,
+										Optional:     true,
+										ValidateFunc: validation.IntAtLeast(0),
+										Description:  "Specifies the number of days after the start of the multipart upload that the upload must be completed, otherwise it will be deleted. The value must be a non-zero positive integer.",
+									},
+								},
+							},
+						},
 					},
 				},
-				MaxItems: 10,
 			},
 
-			"storage_class": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  string(ks3.TypeNormal),
-				ValidateFunc: validation.StringInSlice([]string{
-					string(ks3.TypeNormal),
-					string(ks3.TypeIA),
-					string(ks3.TypeArchive),
-					string(ks3.TypeDeepIA),
-				}, false),
-				Description: "The class of storage used to store the object.",
+			"policy": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Bucket Policy is an authorization policy for Bucket introduced by KS3. You can authorize other users to access the KS3 resources you specify through the space policy.",
 			},
 		},
 	}
@@ -446,14 +458,14 @@ func resourceKsyunKs3BucketRead(d *schema.ResourceData, meta interface{}) error 
 	d.Set("bucket", d.Id())
 	d.Set("acl", object.BucketInfo.ACL)
 	d.Set("creation_date", object.BucketInfo.CreationDate.Format("2006-01-02"))
-	d.Set("location", object.BucketInfo.Location)
+	d.Set("region", object.BucketInfo.Region)
 	d.Set("owner", object.BucketInfo.Owner.ID)
 	d.Set("storage_class", object.BucketInfo.StorageClass)
 
 	request := map[string]string{"bucketName": d.Id()}
 	var requestInfo *ks3.Client
 
-	// Read the CORS
+	// Read the CORS configuration
 	raw, err := client.WithKs3Client(func(ks3Client *ks3.Client) (interface{}, error) {
 		requestInfo = ks3Client
 		return ks3Client.GetBucketCORS(request["bucketName"])
@@ -515,7 +527,7 @@ func resourceKsyunKs3BucketRead(d *schema.ResourceData, meta interface{}) error 
 	}
 	log.Printf("[DEBUG] Ks3 bucket:  %s, raw: %#v", d.Id(), raw)
 	addDebug("GetBucketLifecycle", raw, requestInfo, request)
-	lrules := make([]map[string]interface{}, 0)
+	lifecycleRules := make([]map[string]interface{}, 0)
 	lifecycle, _ := raw.(ks3.GetBucketLifecycleResult)
 	for _, lifecycleRule := range lifecycle.Rules {
 		rule := make(map[string]interface{})
@@ -526,45 +538,118 @@ func resourceKsyunKs3BucketRead(d *schema.ResourceData, meta interface{}) error 
 		} else {
 			rule["enabled"] = false
 		}
+
+		// Filter
+		if lifecycleRule.Filter != nil {
+			filter := make(map[string]interface{})
+			if lifecycleRule.Filter.Prefix != "" {
+				filter["prefix"] = lifecycleRule.Filter.Prefix
+			}
+			// And
+			if lifecycleRule.Filter.And != nil {
+				and := make(map[string]interface{})
+				if lifecycleRule.Filter.And.Prefix != "" {
+					and["prefix"] = lifecycleRule.Filter.And.Prefix
+				}
+				if len(lifecycleRule.Filter.And.Tag) != 0 {
+					var tagList []interface{}
+					for _, tagVal := range lifecycleRule.Filter.And.Tag {
+						tag := make(map[string]interface{})
+						tag["key"] = tagVal.Key
+						tag["value"] = tagVal.Value
+						tagList = append(tagList, tag)
+					}
+					and["tag"] = tagList
+				}
+				filter["and"] = []interface{}{and}
+			}
+			rule["filter"] = []interface{}{filter}
+		}
+
 		// Expiration
 		if lifecycleRule.Expiration != nil {
 			log.Printf("[DEBUG] lifecycleRule.Expiration start: %#v", lifecycleRule.Expiration)
-			m := make(map[string]interface{})
-			if &lifecycleRule.Expiration.Date != nil && lifecycleRule.Expiration.Date != "" {
+			expiration := make(map[string]interface{})
+			if lifecycleRule.Expiration.Date != "" {
 				lifecycleRule.Expiration.Date = strings.ReplaceAll(lifecycleRule.Expiration.Date, ".000", "")
 				t, err := time.Parse(Iso8601DateFormat, lifecycleRule.Expiration.Date)
-				if err == nil {
-					m["date"] = t.Format("2006-01-02")
+				if err != nil {
+					return WrapError(err)
 				}
+				expiration["date"] = t.Format("2006-01-02")
 			}
-			if &lifecycleRule.Expiration.Days != nil {
-				m["days"] = lifecycleRule.Expiration.Days
+			if lifecycleRule.Expiration.Days != 0 {
+				expiration["days"] = lifecycleRule.Expiration.Days
 			}
-			rule["expiration"] = schema.NewSet(expirationHash, []interface{}{m})
+			rule["expiration"] = schema.NewSet(expirationHash, []interface{}{expiration})
 		}
-		// transitions
+
+		// Transitions
 		if len(lifecycleRule.Transitions) != 0 {
-			var eSli []interface{}
-			for _, transition := range lifecycleRule.Transitions {
-				e := make(map[string]interface{})
-				if &transition.Date != nil && transition.Date != "" {
-					transition.Date = strings.ReplaceAll(transition.Date, ".000", "")
-					t, err := time.Parse(Iso8601DateFormat, transition.Date)
+			var transitionList []interface{}
+			for _, transitionItem := range lifecycleRule.Transitions {
+				transition := make(map[string]interface{})
+				if transitionItem.Date != "" {
+					transitionItem.Date = strings.ReplaceAll(transitionItem.Date, ".000", "")
+					t, err := time.Parse(Iso8601DateFormat, transitionItem.Date)
 					if err != nil {
 						return WrapError(err)
 					}
-					e["date"] = t.Format("2006-01-02")
+					transition["date"] = t.Format("2006-01-02")
 				}
-				e["days"] = fmt.Sprintf("%d", transition.Days)
-				e["storage_class"] = string(transition.StorageClass)
-				eSli = append(eSli, e)
+				if transitionItem.Days != 0 {
+					transition["days"] = transitionItem.Days
+				}
+				if transitionItem.StorageClass != "" {
+					transition["storage_class"] = string(transitionItem.StorageClass)
+				}
+				transitionList = append(transitionList, transition)
 			}
-			rule["transitions"] = schema.NewSet(transitionsHash, eSli)
+			rule["transitions"] = schema.NewSet(transitionsHash, transitionList)
 		}
-		lrules = append(lrules, rule)
+
+		// AbortIncompleteMultipartUpload
+		if lifecycleRule.AbortIncompleteMultipartUpload != nil {
+			log.Printf("[DEBUG] lifecycleRule.AbortIncompleteMultipartUpload start: %#v", lifecycleRule.AbortIncompleteMultipartUpload)
+			abortMul := make(map[string]interface{})
+			if lifecycleRule.AbortIncompleteMultipartUpload.Date != "" {
+				lifecycleRule.AbortIncompleteMultipartUpload.Date = strings.ReplaceAll(lifecycleRule.AbortIncompleteMultipartUpload.Date, ".000", "")
+				t, err := time.Parse(Iso8601DateFormat, lifecycleRule.AbortIncompleteMultipartUpload.Date)
+				if err != nil {
+					return WrapError(err)
+				}
+				abortMul["date"] = t.Format("2006-01-02")
+			}
+			if lifecycleRule.AbortIncompleteMultipartUpload.DaysAfterInitiation != 0 {
+				abortMul["days_after_initiation"] = lifecycleRule.AbortIncompleteMultipartUpload.DaysAfterInitiation
+			}
+			rule["abort_incomplete_multipart_upload"] = schema.NewSet(abortMulHash, []interface{}{abortMul})
+		}
+
+		lifecycleRules = append(lifecycleRules, rule)
 	}
 
-	if err := d.Set("lifecycle_rule", lrules); err != nil {
+	if err := d.Set("lifecycle_rule", lifecycleRules); err != nil {
+		return WrapError(err)
+	}
+
+	// Read the policy configuration
+	raw, err = client.WithKs3Client(func(ks3Client *ks3.Client) (interface{}, error) {
+		params := map[string]interface{}{}
+		params["policy"] = nil
+		return ks3Client.GetBucketPolicy(d.Id())
+	})
+
+	if err != nil && !ks3NotFoundError(err) {
+		return WrapErrorf(err, DefaultErrorMsg, d.Id(), "GetBucketPolicy", KsyunKs3GoSdk)
+	}
+	addDebug("GetBucketPolicy", raw, requestInfo, request)
+	policy := ""
+	if err == nil {
+		policy = raw.(string)
+	}
+
+	if err := d.Set("policy", policy); err != nil {
 		return WrapError(err)
 	}
 
@@ -596,6 +681,7 @@ func resourceKsyunKs3BucketUpdate(d *schema.ResourceData, meta interface{}) erro
 		}
 		d.SetPartial("cors_rule")
 	}
+
 	if d.HasChange("logging") {
 		if err := resourceKsyunKs3BucketLoggingUpdate(client, d); err != nil {
 			return WrapError(err)
@@ -607,6 +693,13 @@ func resourceKsyunKs3BucketUpdate(d *schema.ResourceData, meta interface{}) erro
 		if err := resourceKsyunKs3BucketLifecycleRuleUpdate(client, d); err != nil {
 			return WrapError(err)
 		}
+	}
+
+	if d.HasChange("policy") {
+		if err := resourceKsyunKs3BucketPolicyUpdate(client, d); err != nil {
+			return WrapError(err)
+		}
+		d.SetPartial("policy")
 	}
 
 	d.Partial(false)
@@ -676,6 +769,7 @@ func resourceKsyunKs3BucketCorsUpdate(client *KsyunClient, d *schema.ResourceDat
 	})
 	return nil
 }
+
 func resourceKsyunKs3BucketLoggingUpdate(client *KsyunClient, d *schema.ResourceData) error {
 	logging := d.Get("logging").([]interface{})
 	var requestInfo *ks3.Client
@@ -739,7 +833,7 @@ func resourceKsyunKs3BucketLifecycleRuleUpdate(client *KsyunClient, d *schema.Re
 	for i, lifecycleRule := range lifecycleRules {
 		r := lifecycleRule.(map[string]interface{})
 		rule := ks3.LifecycleRule{}
-		// ID--有值
+		// ID
 		if val, ok := r["id"].(string); ok && val != "" {
 			rule.ID = val
 		}
@@ -749,83 +843,87 @@ func resourceKsyunKs3BucketLifecycleRuleUpdate(client *KsyunClient, d *schema.Re
 		} else {
 			rule.Status = string(ExpirationStatusDisabled)
 		}
-		if filterSet, ok := r["filter"].(*schema.Set); ok {
-			if filterSet.Len() > 0 {
-				if filter, ok := filterSet.List()[0].(map[string]interface{}); ok {
-					filterModel := &ks3.LifecycleFilter{
-						And: ks3.LifecycleAnd{},
-					}
-					filterModel.And.Prefix = filter["prefix"].(string)
-					tagList := filter["tag"].([]interface{})
-					for _, tag := range tagList {
-						tagMap := tag.(map[string]interface{})
-						key := tagMap["key"].(string)
-						value := tagMap["value"].(string)
-						filterModel.And.Tag = append(filterModel.And.Tag, ks3.Tag{
-							Key:   key,
-							Value: value,
-						})
-					}
-					rule.Filter = filterModel
+		// Prefix
+		if val, ok := r["prefix"].(string); ok && val != "" {
+			rule.Prefix = val
+		}
+		// Filter
+		filterList := d.Get(fmt.Sprintf("lifecycle_rule.%d.filter", i)).(*schema.Set).List()
+		if len(filterList) > 0 {
+			filter := filterList[0].(map[string]interface{})
+			filterVal := &ks3.LifecycleFilter{}
+			filterVal.Prefix = filter["prefix"].(string)
+			andList := filter["and"].([]interface{})
+			if len(andList) > 0 {
+				and := andList[0].(map[string]interface{})
+				filterVal.And = &ks3.LifecycleAnd{}
+				filterVal.And.Prefix = and["prefix"].(string)
+				tagList := and["tag"].([]interface{})
+				for _, tagItem := range tagList {
+					tag := tagItem.(map[string]interface{})
+					tagVal := ks3.Tag{}
+					tagVal.Key = tag["key"].(string)
+					tagVal.Value = tag["value"].(string)
+					filterVal.And.Tag = append(filterVal.And.Tag, tagVal)
 				}
 			}
-		} else {
-			if val, ok := r["prefix"].(string); ok && val != "" {
-				rule.Prefix = val
-			}
+			rule.Filter = filterVal
 		}
-		// Expiration
-		// Expiration
-		expiration := d.Get(fmt.Sprintf("lifecycle_rule.%d.expiration", i)).(*schema.Set).List()
-		if len(expiration) > 0 {
-			e := expiration[0].(map[string]interface{})
-			i := ks3.LifecycleExpiration{}
-			valDate, _ := e["date"].(string)
-			valDays, _ := e["days"].(int)
-			cnt := 0
-			if valDate != "" {
-				i.Date = fmt.Sprintf("%sT00:00:00+08:00", valDate)
-				cnt++
-			}
-			if valDays > 0 {
-				i.Days = valDays
-				cnt++
-			}
-			if cnt != 1 {
-				return WrapError(Error("One and only one of 'date', 'date' and 'days' can be specified in one expiration configuration."))
-			}
 
-			rule.Expiration = &i
+		// Expiration
+		expirationList := d.Get(fmt.Sprintf("lifecycle_rule.%d.expiration", i)).(*schema.Set).List()
+		if len(expirationList) > 0 {
+			expiration := expirationList[0].(map[string]interface{})
+			expirationVal := &ks3.LifecycleExpiration{}
+			date, _ := expiration["date"].(string)
+			days, _ := expiration["days"].(int)
+			if date != "" {
+				expirationVal.Date = fmt.Sprintf("%sT00:00:00.000+08:00", date)
+			}
+			if days > 0 {
+				expirationVal.Days = days
+			}
+			rule.Expiration = expirationVal
 		}
-		log.Printf("[DEBUG] Ks3 bucket:  %s,rule.Expiration: %#v", d.Id(), rule.Expiration)
+
 		// Transitions
-		transitionsRaw := r["transitions"]
-		if transitionsRaw != nil {
-			transitions := transitionsRaw.(*schema.Set).List()
-			if len(transitions) > 0 {
-				for _, transition := range transitions {
-					transitionTmp := ks3.LifecycleTransition{}
-					valStorageClass := transition.(map[string]interface{})["storage_class"].(string)
-					date, ok := transition.(map[string]interface{})["date"].(string)
-					if ok && date != "" {
-						transitionTmp.Date = fmt.Sprintf("%sT00:00:00+08:00", date)
-					}
-					cnt := 0
-					daysInterface, ok := transition.(map[string]interface{})["days"].(string)
-					if ok && daysInterface != "" {
-						valDays, err := strconv.Atoi(daysInterface)
-						if err == nil && valDays > 0 {
-							transitionTmp.Days = valDays
-							cnt++
-						}
-					}
-					if valStorageClass != "" {
-						transitionTmp.StorageClass = ks3.StorageClassType(valStorageClass)
-					}
-					rule.Transitions = append(rule.Transitions, transitionTmp)
+		transitionList := d.Get(fmt.Sprintf("lifecycle_rule.%d.transitions", i)).(*schema.Set).List()
+		if len(transitionList) > 0 {
+			for _, transitionItem := range transitionList {
+				transition := transitionItem.(map[string]interface{})
+				transitionVal := ks3.LifecycleTransition{}
+				date, _ := transition["date"].(string)
+				days, _ := transition["days"].(int)
+				storageClass, _ := transition["storage_class"].(string)
+				if date != "" {
+					transitionVal.Date = fmt.Sprintf("%sT00:00:00.000+08:00", date)
 				}
+				if days > 0 {
+					transitionVal.Days = days
+				}
+				if storageClass != "" {
+					transitionVal.StorageClass = ks3.StorageClassType(storageClass)
+				}
+				rule.Transitions = append(rule.Transitions, transitionVal)
 			}
 		}
+
+		// AbortIncompleteMultipartUpload
+		abortIncompleteMultipartUploadList := d.Get(fmt.Sprintf("lifecycle_rule.%d.abort_incomplete_multipart_upload", i)).(*schema.Set).List()
+		if len(abortIncompleteMultipartUploadList) > 0 {
+			abortMul := abortIncompleteMultipartUploadList[0].(map[string]interface{})
+			abortMulVal := &ks3.LifecycleAbortIncompleteMultipartUpload{}
+			date, _ := abortMul["date"].(string)
+			daysAfterInitiation, _ := abortMul["days_after_initiation"].(int)
+			if date != "" {
+				abortMulVal.Date = fmt.Sprintf("%sT00:00:00.000+08:00", date)
+			}
+			if daysAfterInitiation > 0 {
+				abortMulVal.DaysAfterInitiation = daysAfterInitiation
+			}
+			rule.AbortIncompleteMultipartUpload = abortMulVal
+		}
+
 		rules = append(rules, rule)
 	}
 	log.Printf("[DEBUG] Ks3 bucket: %s, put Lifecycle: %#v", d.Id(), rules)
@@ -840,6 +938,34 @@ func resourceKsyunKs3BucketLifecycleRuleUpdate(client *KsyunClient, d *schema.Re
 		"bucketName": bucket,
 		"rules":      rules,
 	})
+	return nil
+}
+
+func resourceKsyunKs3BucketPolicyUpdate(client *KsyunClient, d *schema.ResourceData) error {
+	bucket := d.Id()
+	policy := d.Get("policy").(string)
+	var requestInfo *ks3.Client
+	if len(policy) == 0 {
+		raw, err := client.WithKs3Client(func(ks3Client *ks3.Client) (interface{}, error) {
+			requestInfo = ks3Client
+			return nil, ks3Client.DeleteBucketPolicy(bucket)
+		})
+		if err != nil {
+			return WrapErrorf(err, DefaultErrorMsg, d.Id(), "DeleteBucketPolicy", KsyunKs3GoSdk)
+		}
+		addDebug("DeleteBucketPolicy", raw, requestInfo, map[string]string{"bucketName": bucket})
+		return nil
+	}
+	raw, err := client.WithKs3Client(func(ks3Client *ks3.Client) (interface{}, error) {
+		requestInfo = ks3Client
+		buffer := new(bytes.Buffer)
+		buffer.Write([]byte(policy))
+		return nil, ks3Client.SetBucketPolicy(bucket, policy)
+	})
+	if err != nil {
+		return WrapErrorf(err, DefaultErrorMsg, d.Id(), "SetBucketPolicy", KsyunKs3GoSdk)
+	}
+	addDebug("SetBucketPolicy", raw, requestInfo, map[string]string{"bucketName": bucket})
 	return nil
 }
 
@@ -910,7 +1036,7 @@ func transitionsHash(v interface{}) int {
 		buf.WriteString(fmt.Sprintf("%s-", v.(string)))
 	}
 	if v, ok := m["days"]; ok {
-		buf.WriteString(fmt.Sprintf("%s-", v.(string)))
+		buf.WriteString(fmt.Sprintf("%d-", v.(int)))
 	}
 	return hashcode.String(buf.String())
 }
@@ -922,6 +1048,18 @@ func expirationHash(v interface{}) int {
 		buf.WriteString(fmt.Sprintf("%s-", v.(string)))
 	}
 	if v, ok := m["days"]; ok {
+		buf.WriteString(fmt.Sprintf("%d-", v.(int)))
+	}
+	return hashcode.String(buf.String())
+}
+
+func abortMulHash(v interface{}) int {
+	var buf bytes.Buffer
+	m := v.(map[string]interface{})
+	if v, ok := m["date"]; ok {
+		buf.WriteString(fmt.Sprintf("%s-", v.(string)))
+	}
+	if v, ok := m["days_after_initiation"]; ok {
 		buf.WriteString(fmt.Sprintf("%d-", v.(int)))
 	}
 	return hashcode.String(buf.String())
