@@ -5,8 +5,15 @@ This data source provides a list of Ks3 resources according to bucket name they 
 
 ```hcl
 
+	provider "ksyun" {
+	  #指定KS3服务的访问域名
+	  endpoint = "ks3-cn-beijing.ksyuncs.com"
+	}
+
 	data "ksyun_ks3_buckets" "default" {
+	  #匹配全部包涵该字符串的bucket
 	  name_regex  = "bucket-202402"
+	  #输出文件路径
 	  output_file = "bucket_info.txt"
 	}
 
@@ -38,8 +45,6 @@ func dataSourceKsyunKs3Buckets() *schema.Resource {
 			"name_regex": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validation.ValidateRegexp,
-				ForceNew:     true,
 				Description:  "The string used to match buckets.",
 			},
 			"output_file": {
@@ -50,6 +55,7 @@ func dataSourceKsyunKs3Buckets() *schema.Resource {
 			"buckets": {
 				Type:     schema.TypeList,
 				Computed: true,
+				Description: "The Matched bucket list.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
@@ -120,7 +126,7 @@ func dataSourceKsyunKs3Buckets() *schema.Resource {
 						"logging": {
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "Call this interface to set the bucket logging configuration. If the configuration already exists, KS3 will replace it.\nTo use this interface, you need to have permission to perform the ks3: PutBucketLogging operation. The space owner has this permission by default and can grant corresponding permissions to others.",
+							Description: "Call this interface to set the bucket logging configuration. If the configuration already exists, KS3 will replace it.\nTo use this interface, you need to have permission to perform the ks3: PutBucketLogging operation. The space owner has this permission by default and can grant corresponding permissions to others. If you want to turn off this setting, just leave it blank in the configuration.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"target_bucket": {
@@ -154,7 +160,7 @@ func dataSourceKsyunKs3Buckets() *schema.Resource {
 									"prefix": {
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "Prefix identifying one or more objects to which the rule applies. ",
+										Description: "Prefix identifying one or more objects to which the rule applies.",
 									},
 									"enabled": {
 										Type:        schema.TypeBool,
@@ -170,7 +176,7 @@ func dataSourceKsyunKs3Buckets() *schema.Resource {
 												"prefix": {
 													Type:        schema.TypeString,
 													Optional:    true,
-													Description: "Prefix identifying one or more objects to which the rule applies. ",
+													Description: "Prefix identifying one or more objects to which the rule applies.",
 												},
 												"and": {
 													Type:        schema.TypeList,
@@ -181,7 +187,7 @@ func dataSourceKsyunKs3Buckets() *schema.Resource {
 															"prefix": {
 																Type:        schema.TypeString,
 																Optional:    true,
-																Description: "Prefix identifying one or more objects to which the rule applies. ",
+																Description: "Prefix identifying one or more objects to which the rule applies.",
 															},
 															"tag": {
 																Type:        schema.TypeList,
@@ -262,7 +268,7 @@ func dataSourceKsyunKs3Buckets() *schema.Resource {
 										Type:        schema.TypeSet,
 										Optional:    true,
 										MaxItems:    1,
-										Description: "Specifies expiration attributes for incomplete multipart uploads",
+										Description: "Specifies expiration attributes for incomplete multipart uploads.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"date": {
@@ -286,7 +292,7 @@ func dataSourceKsyunKs3Buckets() *schema.Resource {
 						"policy": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Bucket Policy is an authorization policy for Bucket introduced by KS3. You can authorize other users to access the KS3 resources you specify through the space policy.",
+							Description: "Bucket Policy is an authorization policy for Bucket introduced by KS3. You can authorize other users to access the KS3 resources you specify through the space policy. If you want to turn off this setting, just leave it blank in the configuration.",
 						},
 					},
 				},

@@ -24,6 +24,11 @@ func TestAccKsyunKS3ResourceCreate(t *testing.T) {
 }
 
 const testAccKS3BucketConfig = `
+provider "ksyun" {
+  #指定KS3服务的访问域名
+  endpoint = "ks3-cn-beijing.ksyuncs.com"
+}
+
 resource "ksyun_ks3_bucket" "bucket-create" {
   #指定要创建的存储桶的名称
   bucket = "bucket-20240206-104450"
