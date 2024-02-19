@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestAccKsyunKS3_Resource_new(t *testing.T) {
+func TestAccKsyunKS3ResourceCreate(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
@@ -13,152 +13,150 @@ func TestAccKsyunKS3_Resource_new(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataKS3BucketConfig,
+				Config: testAccKS3BucketConfig,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIDExists("ksyun_ks3_bucket.bucket-create"),
+					testAccCheckIDExists("ksyun_ks3_bucket.bucket-create2"),
+				),
 			},
 		},
 	})
 }
 
-const testAccDataKS3BucketConfig = `
-
-
-resource "ksyun_ks3_bucket" "bucket-new" {
-  bucket = "ks3-bucket-tf2"
-}
-`
-
-func TestAccKsyunKS3_Resource_attr(t *testing.T) {
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheck(t)
-		},
-		Providers: testAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccDataKS3BucketConfigAttr,
-			},
-		},
-	})
+const testAccKS3BucketConfig = `
+provider "ksyun" {
+  #指定KS3服务的访问域名
+  endpoint = "ks3-cn-beijing.ksyuncs.com"
 }
 
-const testAccDataKS3BucketConfigAttr = `
+resource "ksyun_ks3_bucket" "bucket-create" {
+  #指定要创建的存储桶的名称
+  bucket = "bucket-20240206-104450"
+}
 
-
-resource "ksyun_ks3_bucket" "bucket-attr" {
-
-  bucket   = var.bucket-new
-  acl      = var.acl-bj
-
-  logging {
-    target_bucket = var.bucket-new
-    target_prefix = var.target-prefix
+resource "ksyun_ks3_bucket" "bucket-create2" {
+  #指定要创建的存储桶的名称
+  bucket = "bucket-20240205-153413"
+  #桶权限
+  acl = "public-read"
+  #桶存储类型
+  storage_class = "IA"
+  #空间策略
+  policy = <<-EOT
+  {
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Action": [
+          "ks3:ListBucket",
+          "ks3:ListBucketMultipartUploads",
+          "ks3:GetObject",
+          "ks3:GetObjectAcl",
+          "ks3:ListMultipartUploadParts"
+        ],
+        "Principal": {
+          "KSC": [
+            "*"
+          ]
+        },
+        "Resource": [
+          "krn:ksc:ks3:::bucket-20240205-153413/*",
+          "krn:ksc:ks3:::bucket-20240205-153413"
+        ]
+      }
+    ]
   }
+  EOT
+  #日志
+  logging {
+    target_bucket = "bucket-20240206-104450"
+    target_prefix = "log/"
+  }
+  #跨域资源共享
+  cors_rule {
+    allowed_headers = ["*"]
+    allowed_methods = ["GET","PUT"]
+    allowed_origins = ["*"]
+    expose_headers = ["header1","header2"]
+    max_age_seconds = 3600
+  }
+  cors_rule {
+    allowed_headers = ["*"]
+    allowed_methods = ["POST","DELETE"]
+    allowed_origins = ["https://www.abc.com","https://www.def.com"]
+    expose_headers = ["header1","header2"]
+    max_age_seconds = 3600
+  }
+  #生命周期
   lifecycle_rule {
-    id      = var.role-date
-    enabled = false
-
+    id      = "id1"
+    enabled = true
+    filter {
+      prefix = "logs"
+    }
+    expiration {
+      days = 130
+    }
     transitions {
-      date          = "2023-04-18"
+      days = 10
+      storage_class = "STANDARD_IA"
+    }
+    transitions {
+      days = 40
       storage_class = "ARCHIVE"
     }
-#    expiration  {
-#      date = "2023-05-18"
-#    }
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 50
+    }
   }
-
-  cors_rule {
-    allowed_origins = [var.allow-origins-star]
-    allowed_methods = split(",", var.allow-methods-put)
-    allowed_headers = [var.allowed_headers]
+  lifecycle_rule {
+    id      = "id2"
+    enabled = true
+    filter {
+      prefix = "test"
+    }
+    expiration {
+      date = "2024-07-10"
+    }
+    transitions {
+      date = "2024-05-10"
+      storage_class = "STANDARD_IA"
+    }
+    transitions {
+      date = "2024-06-10"
+      storage_class = "ARCHIVE"
+    }
+    abort_incomplete_multipart_upload {
+      date = "2024-07-10"
+    }
   }
-
-  cors_rule {
-    allowed_origins = split(",", var.allow-origins-ksyun)
-    allowed_methods = split(",", var.allow-methods-get)
-    allowed_headers = [var.allowed_headers]
-    expose_headers  = [var.expose_headers]
-    max_age_seconds = var.max_age_seconds
+  lifecycle_rule {
+    id      = "id3"
+    enabled = true
+    filter {
+      and {
+        prefix = "docs"
+        tag {
+          key   = "example_key1"
+          value = "example_value"
+        }
+        tag {
+          key   = "example_key2"
+          value = "example_value"
+        }
+      }
+    }
+    expiration {
+      date = "2024-07-10"
+    }
+    transitions {
+      date = "2024-05-10"
+      storage_class = "STANDARD_IA"
+    }
+    transitions {
+      date = "2024-06-10"
+      storage_class = "ARCHIVE"
+    }
   }
-
 }
-
-variable "bucket-new" {
-  default = "bucket-20180423-1"
-}
-
-variable "bucket-attr" {
-  default = "bucket-20180423-2"
-}
-
-variable "acl-bj" {
-  default = "private"
-}
-
-
-variable "target-prefix" {
-  default = "log3/"
-}
-
-variable "role-days" {
-  default = "expirationByDays"
-}
-
-variable "rule-days" {
-  default = 365
-}
-variable "my_variable" {
-  type = number
-  default = 42
-}
-
-
-variable "role-date" {
-  default = "expirationByDate"
-}
-
-variable "rule-date" {
-  default = "2023-03-18"
-}
-
-variable "rule-prefix" {
-  default = "path"
-}
-
-variable "allow-empty" {
-  default = true
-}
-
-variable "referers" {
-  default = "http://www.ksyun.com, https://www.ksyun.com, http://?.ksyun.com"
-}
-
-
-variable "allow-origins-star" {
-  default = "*"
-}
-
-variable "allow-origins-ksyun" {
-  default = "http://www.ksyun.com,http://*.ksyun.com"
-}
-
-variable "allow-methods-get" {
-  default = "GET"
-}
-
-variable "allow-methods-put" {
-  default = "PUT,GET"
-}
-
-variable "allowed_headers" {
-  default = "*"
-}
-
-variable "expose_headers" {
-  default = "x-ks3-test, x-ks3-test1"
-}
-
-variable "max_age_seconds" {
-  default = 100
-}
-
 `

@@ -164,6 +164,8 @@ In addition to [generic `provider` arguments](https://www.terraform.io/docs/conf
 
 * `domain` - (Optional) This is the base url of KSYUN API endpoint. (Default: `api.ksyun.com`) Setup to corresponding base URL if you are using private cloud or other delicated regions. 
 
+* `endpoint` - (Optional) This is the access domain name for KS3 services.
+
 * `dry_run` - (Optional, Boolean) Whether enable `dry_run` while operating SDK. 
 
 * `ignore_service` - (Optional, Boolean) Whether ignore customer's service. 
