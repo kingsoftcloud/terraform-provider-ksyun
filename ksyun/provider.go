@@ -302,6 +302,9 @@ Tag
 
 KS3
 
+	Data Source
+		ksyun_ks3_buckets
+
 	Resource
 		ksyun_ks3_bucket
 
@@ -359,6 +362,12 @@ func Provider() terraform.ResourceProvider {
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("KSYUN_DOMAIN", ""),
 				Description: descriptions["domain"],
+			},
+			"endpoint": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("KSYUN_ENDPOINT", ""),
+				Description: descriptions["endpoint"],
 			},
 			"dry_run": {
 				Type:        schema.TypeBool,
@@ -433,6 +442,7 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_sqlservers":                       dataSourceKsyunSqlServer(),
 			"ksyun_krds":                             dataSourceKsyunKrds(),
 			"ksyun_krds_security_groups":             dataSourceKsyunKrdsSecurityGroup(),
+			"ksyun_ks3_buckets":                      dataSourceKsyunKs3Buckets(),
 			"ksyun_certificates":                     dataSourceKsyunCertificates(),
 			"ksyun_ssh_keys":                         dataSourceKsyunSSHKeys(),
 			"ksyun_redis_instances":                  dataSourceRedisInstances(),
@@ -599,6 +609,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		Region:        d.Get("region").(string),
 		Insecure:      d.Get("insecure").(bool),
 		Domain:        d.Get("domain").(string),
+		Endpoint:      d.Get("endpoint").(string),
 		DryRun:        d.Get("dry_run").(bool),
 		IgnoreService: d.Get("ignore_service").(bool),
 		HttpKeepAlive: d.Get("http_keepalive").(bool),
@@ -619,6 +630,7 @@ func init() {
 		"region":         "cn-beijing-6",
 		"insecure":       "true",
 		"domain":         "",
+		"endpoint":       "",
 		"dry_run":        "false",
 		"ignore_service": "false",
 	}

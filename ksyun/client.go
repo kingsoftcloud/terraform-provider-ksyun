@@ -24,7 +24,7 @@ import (
 	"github.com/KscSDK/ksc-sdk-go/service/tag"
 	"github.com/KscSDK/ksc-sdk-go/service/tagv2"
 	"github.com/KscSDK/ksc-sdk-go/service/vpc"
-	"github.com/wilac-pv/ksyun-ks3-go-sdk/ks3"
+	"github.com/ks3sdklib/ksyun-ks3-go-sdk/ks3"
 )
 
 type KsyunClient struct {

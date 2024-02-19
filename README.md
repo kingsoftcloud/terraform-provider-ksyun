@@ -345,4 +345,4 @@ _例：官网openapi里主机创建的接口里，可以同时创建eip和主机
 | 虚拟私有网络       | ksyun_vpc | ksyun_vpcs | vpc|
 | 登录SSHKEY     | ksyun_ssh\_key | ksyun_ssh\_keys | sks|
 |  标签管理        | ksyun_tag | ksyun_tags | tag|
-| KS3 | ksyun_ks3 | - | Ks3 |
+| KS3          | ksyun_ks3_bucket | ksyun_ks3_buckets | ks3|

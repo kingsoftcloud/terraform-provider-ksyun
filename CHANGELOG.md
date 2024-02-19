@@ -1,3 +1,18 @@
+## 1.15.0 (Feb 19, 2024)
+
+FEATURES:
+
+- - **New Data Source:** `ksyun_ks3_buckets`
+
+IMPROVEMENTS:
+
+- `ksyun_ks3_bucket` 新增`policy` 空间策略; 新增`abort_incomplete_multipart_upload` 碎片管理
+- `provider` 新增`endpoint` 配置参数
+
+BUGFIX:
+
+- `ksyun_ks3_bucket` 修复plan not empty
+
 ## 1.14.3 (Jan 26, 2024)
 
 IMPROVEMENTS:

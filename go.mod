@@ -11,10 +11,10 @@ require (
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/hashicorp/hcl/v2 v2.0.0
 	github.com/hashicorp/terraform-plugin-sdk v1.7.0
+	github.com/ks3sdklib/ksyun-ks3-go-sdk v1.1.0
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.8.4
-	github.com/wilac-pv/ksyun-ks3-go-sdk v1.0.10-0.20230324081615-1ff86b7ab10e
 )
 
 require (

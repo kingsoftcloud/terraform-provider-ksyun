@@ -48,5 +48,5 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
--> Notes: this resource cannot import. if you need import security group entry, you are supposed to use `ksyun_security_group_entry_lite`
+-> **NOTE:** This resource cannot be imported. if you need import security group entry, you are supposed to use `ksyun_security_group_entry_lite`
 

@@ -3,7 +3,7 @@ package ksyun
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/wilac-pv/ksyun-ks3-go-sdk/ks3"
+	"github.com/ks3sdklib/ksyun-ks3-go-sdk/ks3"
 	"log"
 	"os"
 	"path/filepath"
