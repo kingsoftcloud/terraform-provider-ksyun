@@ -1,3 +1,8 @@
+## 1.15.1 (Mar 4, 2024)
+
+BUGFIX:
+- `ksyun_lb_listener` 支持`method`参数被修改
+
 ## 1.15.0 (Feb 19, 2024)
 
 FEATURES:

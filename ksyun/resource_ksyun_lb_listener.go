@@ -123,7 +123,7 @@ func resourceKsyunListener() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "RoundRobin",
-				ForceNew: true,
+				// ForceNew: true,
 				ValidateFunc: validation.StringInSlice([]string{
 					"RoundRobin",
 					"LeastConnections",
