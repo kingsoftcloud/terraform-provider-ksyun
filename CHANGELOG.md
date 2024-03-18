@@ -1,3 +1,9 @@
+## 1.15.2 (unreleased)
+
+BUGFIX:
+- `ksyun_lb_listener` 修复`health_check`在stop状态下触发的plan diff
+- `ksyun_alb_backend_server_group` 移除health_check配置
+
 ## 1.15.1 (unreleased)
 
 BUGFIX:
