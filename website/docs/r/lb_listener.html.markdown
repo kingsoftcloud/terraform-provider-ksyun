@@ -53,7 +53,7 @@ The following arguments are supported:
 * `listener_protocol` - (Optional, ForceNew) The protocol of listener.Valid Values:'TCP', 'UDP', 'HTTP', 'HTTPS'.
 * `listener_state` - (Optional) The state of listener.Valid Values:'start', 'stop'.
 * `load_balancer_acl_id` - (Optional) The ID of LB ACL.
-* `method` - (Optional, ForceNew) Forwarding mode of listener.Valid Values:'RoundRobin', 'LeastConnections', 'MasterSlave', 'QUIC_CID'.
+* `method` - (Optional) Forwarding mode of listener.Valid Values:'RoundRobin', 'LeastConnections', 'MasterSlave', 'QUIC_CID'.
 * `redirect_listener_id` - (Optional) The ID of the redirect listener.
 * `session` - (Optional) session.
 * `tls_cipher_policy` - (Optional) TLS cipher policy, valid values:'TlsCipherPolicy1.0','TlsCipherPolicy1.1','TlsCipherPolicy1.2','TlsCipherPolicy1.2-strict'.
