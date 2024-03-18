@@ -232,6 +232,14 @@ func lbListenerDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bool
 	if k == "health_check.0.host_name" && d.Get("health_check.0.is_default_host_name").(bool) {
 		return true
 	}
+
+	// deal with health_check excepted health_check_state
+	// if health_check_state is stop, all health_check fields are suppressed
+	if (strings.HasPrefix(k, "health_check") && !strings.HasSuffix(k, "health_check_state")) &&
+		d.Get("health_check.0.health_check_state") == "stop" {
+		return true
+	}
+
 	return false
 }
 
