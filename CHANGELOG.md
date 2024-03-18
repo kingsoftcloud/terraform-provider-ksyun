@@ -1,10 +1,10 @@
-## 1.15.2 (unreleased)
+## 1.15.2 (Mar 18, 2024)
 
 BUGFIX:
 - `ksyun_lb_listener` 修复`health_check`在stop状态下触发的plan diff
 - `ksyun_alb_backend_server_group` 移除health_check配置
 
-## 1.15.1 (unreleased)
+## 1.15.1 (Mar 4, 2024)
 
 BUGFIX:
 - `ksyun_lb_listener` 支持`method`参数被修改
