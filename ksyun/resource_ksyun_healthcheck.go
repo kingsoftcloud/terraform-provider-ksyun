@@ -125,6 +125,7 @@ func resourceKsyunHealthCheck() *schema.Resource {
 				Description: "The http requests' method. Valid Value: GET|HEAD.",
 				ValidateFunc: validation.StringInSlice([]string{"GET", "HEAD"},
 					false),
+				Computed: true,
 			},
 
 			"lb_type": {
