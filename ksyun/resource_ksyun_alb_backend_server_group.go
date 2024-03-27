@@ -104,6 +104,14 @@ func resourceKsyunAlbBackendServerGroup() *schema.Resource {
 				ForceNew:    true,
 				Description: "The type of backend server. Valid values: 'Host', 'DirectConnect'. Default is 'Host'.",
 			},
+
+			"protocol": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The protocol of backend server. Valid values: 'HTTP', 'gRPC'. Default is 'HTTP'.",
+			},
+
 			"health_check": {
 				Type:     schema.TypeList,
 				MaxItems: 1,
