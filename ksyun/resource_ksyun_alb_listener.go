@@ -242,7 +242,7 @@ func resourceKsyunAlbListener() *schema.Resource {
 					"HTTP1.1",
 				}, false),
 				Description: "Backend Protocol, valid values:'HTTP1.0','HTTP1.1'.",
-				// Deprecated:  "This attribution was deprecated.",
+				Deprecated:  "This field will be removed soon. Please use 'enable_http2' instead to choose a protocol.",
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
 					return true
 				},

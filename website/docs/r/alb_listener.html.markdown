@@ -105,7 +105,7 @@ The following arguments are supported:
 * `config_content` - (Optional) The custom configure for listener. [The details](https://docs.ksyun.com/documents/42615?type=3).
 * `default_forward_rule` - (Optional) The default forward rule group.
 * `enable_http2` - (Optional) whether enable to HTTP2.
-* `http_protocol` - (Optional) Backend Protocol, valid values:'HTTP1.0','HTTP1.1'.
+* `http_protocol` - (Optional, **Deprecated**) This field will be removed soon. Please use 'enable_http2' instead to choose a protocol. Backend Protocol, valid values:'HTTP1.0','HTTP1.1'.
 * `method` - (Optional) Forwarding mode of listener. Valid Values:'RoundRobin', 'LeastConnections'.
 * `redirect_alb_listener_id` - (Optional, **Deprecated**) This parameter is moved to 'default_forward_rule' block. The ID of the redirect ALB listener.
 * `session` - (Optional) Whether keeps session. Specific `session` block, if keeps session.

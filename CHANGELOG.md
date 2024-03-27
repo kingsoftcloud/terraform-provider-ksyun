@@ -1,3 +1,9 @@
+## 1.15.3 (Mar 27, 2024)
+
+BUGFIX:
+- `ksyun_lb_listener` 弃用`http_protocol`字段
+- `ksyun_alb_backend_server_group` 新增`protocol`字段，支持`http`和`grpc`两种协议
+
 ## 1.15.2 (Mar 18, 2024)
 
 BUGFIX:
