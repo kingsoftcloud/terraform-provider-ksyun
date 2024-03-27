@@ -38,6 +38,7 @@ The following arguments are supported:
 * `backend_server_type` - (Optional, ForceNew) The type of backend server. Valid values: 'Host', 'DirectConnect'. Default is 'Host'.
 * `health_check` - (Optional, ForceNew, **Deprecated**) Alb does not support health checks at this time. If you need a health check configuration on this server group, you are supposed to use 'ksyun_alb_rule_group' Health check information.
 * `name` - (Optional) The name of alb backend server group. Default: 'ksc_bsg'.
+* `protocol` - (Optional, ForceNew) The protocol of backend server. Valid values: 'HTTP', 'gRPC'. Default is 'HTTP'.
 
 The `health_check` object supports the following:
 
