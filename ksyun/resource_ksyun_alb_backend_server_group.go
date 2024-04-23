@@ -109,6 +109,7 @@ func resourceKsyunAlbBackendServerGroup() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
+				Computed:    true,
 				Description: "The protocol of backend server. Valid values: 'HTTP', 'gRPC'. Default is 'HTTP'.",
 			},
 
