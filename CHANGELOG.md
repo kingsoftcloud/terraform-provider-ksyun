@@ -1,3 +1,8 @@
+## 1.15.4 (Apr 23, 2024)
+
+BUGFIX:
+- `ksyun_alb_backend_server_group` 修复`protocol` change
+  
 ## 1.15.3 (Mar 27, 2024)
 
 BUGFIX:
