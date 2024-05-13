@@ -1,3 +1,9 @@
+## 1.15.6 (May 13, 2024)
+
+BUGFIX:
+- `ksyun_security_group_entry` 修复了在创建安全组规则时，触发的not exist问题
+
+
 ## 1.15.5 (May 13, 2024)
 
 BUGFIX:

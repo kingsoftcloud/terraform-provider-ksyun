@@ -1,6 +1,7 @@
 package ksyun
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"reflect"
@@ -2678,12 +2679,22 @@ func (s *VpcService) CreateSecurityGroupEntryCommonCall(req map[string]interface
 		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
 			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
 			if isSetId {
-				var data map[string]interface{}
+				var (
+					data  map[string]interface{}
+					buf   bytes.Buffer
+					retry int
+				)
+			again:
 				data, err = s.ReadSecurityGroupEntry(d, (*(call.param))["SecurityGroupId"].(string))
 				if err != nil {
+					if notFoundError(err) && retry < 10 {
+						time.Sleep(3 * time.Second)
+						retry++
+						goto again
+					}
 					return err
 				}
-				buf := securityGroupEntryHashBase(data, true)
+				buf = securityGroupEntryHashBase(data, true)
 				d.SetId((*(call.param))["SecurityGroupId"].(string) + buf.String())
 			}
 			return err
