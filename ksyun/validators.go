@@ -334,3 +334,27 @@ func validatePort(v interface{}, k string) (ws []string, errors []error) {
 	}
 	return
 }
+
+func validateValuesDuplication(v interface{}, k string) (ws []string, errors []error) {
+	value := v.([]interface{})
+	m := make(map[string]bool)
+	for _, v := range value {
+		if _, ok := m[v.(string)]; ok {
+			errors = append(errors, fmt.Errorf("%q must be unique", k))
+			return
+		}
+		m[v.(string)] = true
+	}
+	return
+}
+
+func IsDuplicationInSlice(vs []string) bool {
+	m := make(map[string]bool)
+	for _, v := range vs {
+		if _, ok := m[v]; ok {
+			return true
+		}
+		m[v] = true
+	}
+	return false
+}
