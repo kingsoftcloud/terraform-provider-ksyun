@@ -17,7 +17,7 @@ Provides a Security Group Entry resource that can manage a list of diverse cidr_
 
 ```hcl
 resource "ksyun_security_group_entry_lite" "default" {
-  security_group_id = "7385c8ea-79f7-4e9c-b99f-517fc3726256"
+  security_group_id = "7385c8ea-xxxx-xxxx-xxxx-517fc3726256"
   cidr_block        = ["10.0.0.1/32", "10.111.222.1/32"]
   direction         = "in"
   protocol          = "ip"
@@ -48,5 +48,5 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
--> **NOTE:** This resource cannot be imported. if you need import security group entry, you are supposed to use `ksyun_security_group_entry_lite`
+-> **NOTE:** This resource cannot be imported. if you need import security group entry, you are supposed to use `ksyun_security_group_entry`
 

@@ -2471,8 +2471,9 @@ func (s *VpcService) ReadAndSetSecurityGroupEntryLite(d *schema.ResourceData, r 
 		}
 
 	}
-	entryIdSet, _ := helper.GetSchemaListWithString(d, "security_group_entry_id_list")
-	for _, entryId := range entryIdSet {
+	entryIdSetStr, _ := d.Get("security_group_entry_id_list").(string)
+	entryIdList := strings.Split(entryIdSetStr, ",")
+	for _, entryId := range entryIdList {
 		if rule, ok := sgEntryIdMap[entryId]; ok {
 			if sgEntry == nil {
 				sgEntry = rule
@@ -2742,9 +2743,11 @@ func (s *VpcService) CreateSecurityGroupEntryLiteCall(d *schema.ResourceData, r 
 	}
 	afterCall := func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) error {
 		logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
-		idList, gOk := helper.GetSchemaListWithString(d, "security_group_entry_id_list")
-		if !gOk {
-			idList = make([]string, 0)
+		var idList []string
+		idListStr := d.Get("security_group_entry_id_list").(string)
+
+		if idListStr != "" {
+			idList = strings.Split(idListStr, ",")
 		}
 		rawIdSetIf, gOk := (*resp)["SecurityGroupEntryIdSet"]
 		if !gOk || helper.IsEmpty(rawIdSetIf) {
@@ -2753,8 +2756,8 @@ func (s *VpcService) CreateSecurityGroupEntryLiteCall(d *schema.ResourceData, r 
 		rawIdSet := rawIdSetIf.([]interface{})
 		idList = append(idList, rawIdSet[0].(string))
 
-		_ = d.Set("security_group_entry_id_list", idList)
-		return nil
+		newIds := strings.Join(idList, ",")
+		return d.Set("security_group_entry_id_list", newIds)
 	}
 
 	cidrBlocks, ok := helper.GetSchemaListWithString(d, "cidr_block")
@@ -3104,7 +3107,8 @@ func (s *VpcService) RemoveSecurityGroupEntryLite(d *schema.ResourceData) (err e
 	apiProcess := NewApiProcess(context.Background(), d, s.client, true)
 
 	groupId := d.Get("security_group_id").(string)
-	idSet, _ := helper.GetSchemaListWithString(d, "security_group_entry_id_list")
+	idListStr_ := d.Get("security_group_entry_id_list").(string)
+	idSet := strings.Split(idListStr_, ",")
 	for _, entryId := range idSet {
 		call, err := s.RemoveSecurityGroupEntryCommonCall(groupId, entryId)
 		if err != nil {

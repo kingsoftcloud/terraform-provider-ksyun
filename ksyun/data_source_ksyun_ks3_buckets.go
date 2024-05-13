@@ -43,9 +43,9 @@ func dataSourceKsyunKs3Buckets() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name_regex": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Description:  "The string used to match buckets.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The string used to match buckets.",
 			},
 			"output_file": {
 				Type:        schema.TypeString,
@@ -53,8 +53,8 @@ func dataSourceKsyunKs3Buckets() *schema.Resource {
 				Description: "The path of the output file.",
 			},
 			"buckets": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Computed:    true,
 				Description: "The Matched bucket list.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{

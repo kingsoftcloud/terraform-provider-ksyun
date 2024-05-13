@@ -6,7 +6,7 @@ Provides a Security Group Entry resource that can manage a list of diverse cidr_
 ```hcl
 
 	resource "ksyun_security_group_entry_lite" "default" {
-	  security_group_id="7385c8ea-79f7-4e9c-b99f-517fc3726256"
+	  security_group_id="7385c8ea-xxxx-xxxx-xxxx-517fc3726256"
 	  cidr_block=["10.0.0.1/32", "10.111.222.1/32"]
 	  direction="in"
 	  protocol="ip"
@@ -16,7 +16,7 @@ Provides a Security Group Entry resource that can manage a list of diverse cidr_
 
 # Import
 
--> **NOTE:** This resource cannot be imported. if you need import security group entry, you are supposed to use `ksyun_security_group_entry_lite`
+-> **NOTE:** This resource cannot be imported. if you need import security group entry, you are supposed to use `ksyun_security_group_entry`
 
 */
 
@@ -24,7 +24,6 @@ package ksyun
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
@@ -54,8 +53,8 @@ func resourceKsyunSecurityGroupEntryLite() *schema.Resource {
 		Description: "The cidr block list of security group rule.",
 	}
 	entry["security_group_entry_id_list"] = &schema.Schema{
-		Type:        schema.TypeList,
-		Elem:        &schema.Schema{Type: schema.TypeString},
+		Type: schema.TypeString,
+		// Elem:        &schema.Schema{Type: schema.TypeString},
 		Computed:    true,
 		Description: "The security group entry id of this lite managed.",
 	}
@@ -73,26 +72,27 @@ func resourceKsyunSecurityGroupEntryLite() *schema.Resource {
 }
 
 func resourceKsyunSecurityGroupEntryLiteCreate(d *schema.ResourceData, meta interface{}) (err error) {
+	cidrBlocks, _ := helper.GetSchemaListWithString(d, "cidr_block")
+	if IsDuplicationInSlice(cidrBlocks) {
+		return fmt.Errorf("cidr block list contains duplication, please check the duplication")
+	}
+
+	entryLiteId := buildSecurityGroupEntryLiteId(d)
+	d.SetId(entryLiteId)
+
 	vpcService := VpcService{meta.(*KsyunClient)}
 	err = vpcService.CreateSecurityGroupEntryLite(d, resourceKsyunSecurityGroupEntryLite())
 	if err != nil {
-		return fmt.Errorf("error on creating security group entry %q, %s", d.Id(), err)
+		return fmt.Errorf("error on creating security group entry lite %q, %s", d.Id(), err)
 	}
-
-	groupId := d.Get("security_group_id").(string)
-	entryIds, ok := helper.GetSchemaListWithString(d, "security_group_entry_id_list")
-	if !ok {
-		return fmt.Errorf("internal error, cannot get a list of id of entries")
-	}
-	id := AssembleIds(groupId, strings.Join(entryIds, ","))
-	d.SetId(id)
 	return resourceKsyunSecurityGroupEntryLiteRead(d, meta)
 }
+
 func resourceKsyunSecurityGroupEntryLiteRead(d *schema.ResourceData, meta interface{}) (err error) {
 	vpcService := VpcService{meta.(*KsyunClient)}
 	err = vpcService.ReadAndSetSecurityGroupEntryLite(d, resourceKsyunSecurityGroupEntryLite())
 	if err != nil {
-		return fmt.Errorf("error on reading security group entry %q, %s", d.Id(), err)
+		return fmt.Errorf("error on reading security group entry lite %q, %s", d.Id(), err)
 	}
 	return err
 }
@@ -103,7 +103,7 @@ func resourceKsyunSecurityGroupEntryLiteUpdate(d *schema.ResourceData, meta inte
 	if d.HasChange("description") {
 		err = vpcService.ModifySecurityGroupEntryLite(d, resourceKsyunSecurityGroupEntryLite())
 		if err != nil {
-			return fmt.Errorf("error on updating security group entry %q, %s", d.Id(), err)
+			return fmt.Errorf("error on updating security group entry lite %q, %s", d.Id(), err)
 		}
 	}
 
@@ -114,7 +114,20 @@ func resourceKsyunSecurityGroupEntryLiteDelete(d *schema.ResourceData, meta inte
 	vpcService := VpcService{meta.(*KsyunClient)}
 	err = vpcService.RemoveSecurityGroupEntryLite(d)
 	if err != nil {
-		return fmt.Errorf("error on deleting security group entry %q, %s", d.Id(), err)
+		return fmt.Errorf("error on deleting security group entry lite %q, %s", d.Id(), err)
 	}
 	return err
+}
+
+func buildSecurityGroupEntryLiteId(d *schema.ResourceData) string {
+	var varSuffix string
+	// groupId-direction-protocol-port_range_from(icmp_type)-port_range_to(icmp_code)
+	protocol := d.Get("protocol").(string)
+	switch protocol {
+	case "icmp":
+		varSuffix = fmt.Sprintf("%d-%d", d.Get("icmp_type").(int), d.Get("icmp_code").(int))
+	default:
+		varSuffix = fmt.Sprintf("%d-%d", d.Get("port_range_from").(int), d.Get("port_range_to").(int))
+	}
+	return fmt.Sprintf("%s_%s-%s-%s", d.Get("security_group_id").(string), d.Get("direction").(string), protocol, varSuffix)
 }
