@@ -1,3 +1,8 @@
+## 1.15.5 (May 13, 2024)
+
+BUGFIX:
+- `ksyun_security_group_entry_lite` 增加cidr_block字段重复判定，修复部分创建成功但terraform无法感知的问题
+
 ## 1.15.4 (Apr 23, 2024)
 
 BUGFIX:

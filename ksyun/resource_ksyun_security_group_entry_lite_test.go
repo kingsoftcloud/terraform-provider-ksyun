@@ -67,8 +67,24 @@ resource "ksyun_security_group_entry_lite" "foo" {
   port_range_from=22
   port_range_to=22
 
-  cidr_block=["10.0.1.1/32", "192.177.2.1/32"]
-}`
+  cidr_block=["192.177.2.1/32", "192.177.2.2/32", "10.0.1.3/32"]
+}
+
+
+resource "ksyun_security_group_entry_lite" "icmp" {
+  description       = "test3"
+  security_group_id = ksyun_security_group.default.id
+  direction         = "in"
+  protocol          = "tcp"
+    # icmp_type         = 0
+    # icmp_code         = 0
+  port_range_from = 22
+  port_range_to   = 22
+
+  cidr_block = ["192.177.2.1/32", "192.177.2.2/32", "10.0.1.3/32"]
+}
+
+`
 
 const testAccSecurityGroupEntryLiteUpdateConfig = `
 resource "ksyun_vpc" "default" {
