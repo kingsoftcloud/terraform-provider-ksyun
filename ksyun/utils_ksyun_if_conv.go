@@ -40,7 +40,11 @@ func If2String(any interface{}) (ret string, err error) {
 	switch any.(type) {
 	case string:
 		ret = any.(string)
-		return
+
+	case int:
+		ret = strconv.Itoa(any.(int))
+	case float64:
+		ret = Float64ToString(any.(float64))
 	default:
 		err = fmt.Errorf("got a unexpected type, expecte string")
 	}

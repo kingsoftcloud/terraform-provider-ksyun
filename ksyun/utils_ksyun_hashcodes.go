@@ -3,10 +3,11 @@ package ksyun
 import (
 	"bytes"
 	"fmt"
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
-	"strings"
 )
 
 func kecNetworkInterfaceHash(v interface{}) int {
@@ -182,4 +183,39 @@ func loadBalancerAclEntryHashBase(m map[string]interface{}) (buf bytes.Buffer) {
 	buf.WriteString(fmt.Sprintf("%s-", strings.ToLower(m["cidr_block"].(string))))
 	buf.WriteString(fmt.Sprintf("%s-", strings.ToLower(m["protocol"].(string))))
 	return buf
+}
+
+func kceInstanceNodeHashFunc() schema.SchemaSetFunc {
+	return func(v interface{}) int {
+		if v == nil {
+			return hashcode.String("")
+		}
+		m := v.(map[string]interface{})
+
+		var buf bytes.Buffer
+
+		schemas := instanceForNode()
+		for k, s := range schemas {
+			switch m[k].(type) {
+			case string, float64, int:
+				vv, _ := If2String(m[k])
+				buf.WriteString(vv)
+			default:
+				if s.Type == schema.TypeSet {
+					if m[k] == nil {
+						break
+					}
+					vvv, ok := m[k].([]interface{})
+					if !ok {
+						break
+					}
+					m[k] = schema.NewSet(s.Set, vvv)
+				}
+				schema.SerializeValueForHash(&buf, m[k], s)
+			}
+
+		}
+
+		return hashcode.String(buf.String())
+	}
 }
