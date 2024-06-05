@@ -4,12 +4,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/terraform-providers/terraform-provider-ksyun/logger"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-ksyun/ksyun/internal/pkg/helper"
+	"github.com/terraform-providers/terraform-provider-ksyun/ksyun/internal/structor/v1/kce"
+	"github.com/terraform-providers/terraform-provider-ksyun/logger"
 )
 
 type KceWorkerService struct {
@@ -25,6 +28,16 @@ type KceAddExistedInstance struct {
 	InstanceId string `json:"InstanceId,omitempty"`
 	Reason     string `json:"Reason,omitempty"`
 	Return     bool   `json:"Return,omitempty"`
+}
+
+type AddClusterInstancesResponse struct {
+	RequestId   string                  `json:"RequestId,omitempty" Mapstructure:"RequestId"`
+	InstanceSet []AddClusterInstanceSet `json:"InstanceSet,omitempty" Mapstructure:"InstanceSet"`
+}
+
+type AddClusterInstanceSet struct {
+	InstanceId   string `json:"InstanceId,omitempty" mapstructure:"InstanceId"`
+	InstanceName string `json:"InstanceName,omitempty" mapstructure:"InstanceName"`
 }
 
 func (s *KceWorkerService) addInstanceStateRefreshFunc(d *schema.ResourceData, instanceId string, failStates []string) resource.StateRefreshFunc {
@@ -46,7 +59,7 @@ func (s *KceWorkerService) addInstanceStateRefreshFunc(d *schema.ResourceData, i
 
 		var status interface{}
 		status, err = getSdkValue("InstanceSet.0.InstanceStatus", *data)
-		//logger.Debug("test", "addInstanceStateRefreshFunc", status)
+		// logger.Debug("test", "addInstanceStateRefreshFunc", status)
 		if err != nil {
 			return nil, "", err
 		}
@@ -77,11 +90,25 @@ func (s *KceWorkerService) checkAddInstanceProgress(d *schema.ResourceData, inst
 func formatAdvancedSettingParams(params *map[string]interface{}, currentParamKey string, currentParamValue interface{}, isNew bool) {
 	switch currentParamKey {
 	case "DataDisk":
-		value := currentParamValue.(*schema.Set)
-		if value.Len() == 0 {
-			return
+		var (
+			dataDiskItem map[string]interface{}
+		)
+
+		switch currentParamValue.(type) {
+		case *schema.Set:
+			value := currentParamValue.(*schema.Set)
+			if value.Len() == 0 {
+				return
+			}
+			dataDiskItem = value.List()[0].(map[string]interface{})
+		case []interface{}:
+			value := currentParamValue.([]interface{})
+			if len(value) == 0 {
+				return
+			}
+			dataDiskItem = value[0].(map[string]interface{})
 		}
-		dataDiskItem := value.List()[0].(map[string]interface{})
+
 		for k, v := range dataDiskItem {
 			(*params)["DataDisk."+Downline2Hump(k)] = v
 		}
@@ -103,10 +130,21 @@ func formatAdvancedSettingParams(params *map[string]interface{}, currentParamKey
 		}
 		for idx, item := range value {
 			if isNew || item.(string) != "" {
-				(*params)[fmt.Sprintf("ExtraArg.%d", idx+1)] = item
+				(*params)[fmt.Sprintf("ExtraArg.Kubelet.%d.CustomArg", idx+1)] = item
 			}
 		}
 		return
+	case "Taints":
+		value := currentParamValue.([]interface{})
+		if len(value) == 0 {
+			return
+		}
+		err := transformListN(value, "Taints", SdkReqTransform{}, params)
+		if err != nil {
+			return
+		}
+		return
+
 	default:
 		if isNew {
 			if valueStr, ok := currentParamValue.(string); ok {
@@ -121,7 +159,59 @@ func formatAdvancedSettingParams(params *map[string]interface{}, currentParamKey
 		}
 		return
 	}
-	//logger.Debug("AddWorker", "AddWorker", currentParamKey, currentParamValue)
+	// logger.Debug("AddWorker", "AddWorker", currentParamKey, currentParamValue)
+}
+
+func (s *KceWorkerService) AddNewInstances(d *schema.ResourceData, r *schema.Resource) (err error) {
+	// inti params
+	clusterId := d.Get("cluster_id").(string)
+
+	params := map[string]interface{}{
+		"ClusterId": clusterId, // "cd19855c-ed77-447a-9d4f-0fb6f7707df6",
+	}
+
+	// 整理 KecPara 参数
+	kecPara, _ := helper.GetSchemaListHeadMap(d, "worker_config")
+	kecPara["count"] = 1
+	handleKecParaWithPrefix(&params, []interface{}{kecPara}, "InstanceSet", 0, false, true)
+
+	// 整理 AdvanceSetting 参数
+	advancedSettingParams := map[string]interface{}{}
+
+	advancedSetting, _ := helper.GetSchemaListHeadMap(d, "advanced_setting")
+
+	for k, v := range advancedSetting {
+		if _, ok := d.GetOk("advanced_setting.0." + k); !ok {
+			continue
+		}
+
+		k = Downline2Hump(k)
+		formatAdvancedSettingParams(&advancedSettingParams, k, v, true)
+		logger.Debug("advanced_setting", "advanced_setting", advancedSettingParams)
+	}
+
+	handleAdvancedConfigWithPrefix(&params, []interface{}{advancedSettingParams}, "InstanceSet", 0)
+
+	// call the api action
+	var (
+		respSrc *map[string]interface{}
+	)
+
+	respSrc, err = s.client.kceconn.AddClusterInstances(&params)
+	if err != nil {
+		return err
+	}
+	resp := &AddClusterInstancesResponse{}
+	_ = MapstructureFiller(respSrc, resp)
+
+	for _, instance := range resp.InstanceSet {
+
+		// InstanceStatus:normal
+		err = s.checkAddInstanceProgress(d, instance.InstanceId, []string{"normal"}, d.Timeout(schema.TimeoutUpdate))
+		d.SetId(clusterId + ":" + instance.InstanceId)
+		_ = d.Set("instance_id", instance.InstanceId)
+	}
+	return nil
 }
 
 func (s *KceWorkerService) AddWorker(d *schema.ResourceData, r *schema.Resource) (err error) {
@@ -129,13 +219,13 @@ func (s *KceWorkerService) AddWorker(d *schema.ResourceData, r *schema.Resource)
 	instanceId := d.Get("instance_id")
 	imageId := d.Get("image_id")
 
-	//as, ok := d.GetOk("advanced_setting")
-	//logger.Debug("AddWorker", "advanced_setting", as, ok)
-	//dd, ok := d.GetOk("data_disk")
-	//logger.Debug("AddWorker", "data_disk", dd, ok)
-	//lb, ok := d.GetOk("data_disk.0.auto_format_and_mount")
-	//logger.Debug("AddWorker", "label", lb, ok)
-	//return
+	// as, ok := d.GetOk("advanced_setting")
+	// logger.Debug("AddWorker", "advanced_setting", as, ok)
+	// dd, ok := d.GetOk("data_disk")
+	// logger.Debug("AddWorker", "data_disk", dd, ok)
+	// lb, ok := d.GetOk("data_disk.0.auto_format_and_mount")
+	// logger.Debug("AddWorker", "label", lb, ok)
+	// return
 
 	// 查询是否可以移入
 	var resp *map[string]interface{}
@@ -177,12 +267,11 @@ func (s *KceWorkerService) AddWorker(d *schema.ResourceData, r *schema.Resource)
 		}
 	}
 
-	//[map[InstanceId:0b0f6f62-25ef-478f-9576-20a93c11e5dc Reason:The instance modify image fail Return:false]
+	// [map[InstanceId:0b0f6f62-25ef-478f-9576-20a93c11e5dc Reason:The instance modify image fail Return:false]
 
 	// inti params
 	params := map[string]interface{}{
-		"ClusterId":                        clusterId, //"cd19855c-ed77-447a-9d4f-0fb6f7707df6",
-		"ExistedInstanceKecSet.1.NodeRole": "worker",
+		"ClusterId": clusterId, // "cd19855c-ed77-447a-9d4f-0fb6f7707df6",
 	}
 
 	// 整理 KecPara 参数
@@ -262,7 +351,7 @@ func (s *KceWorkerService) DeleteKceWorker(d *schema.ResourceData, r *schema.Res
 	var resp *map[string]interface{}
 	resp, err = s.client.kceconn.DeleteClusterInstances(&map[string]interface{}{
 		"ClusterId":          d.Get("cluster_id"),
-		"InstanceDeleteMode": "Remove",
+		"InstanceDeleteMode": d.Get("instance_delete_mode"),
 		"InstanceId.1":       d.Get("instance_id"),
 	})
 	if err != nil {
@@ -363,8 +452,98 @@ func updateResourceData(d *schema.ResourceData, fieldName string, fieldValue int
 // DeleteVirtualNode
 // patchResourceYaml
 func (s *KceWorkerService) readAndSetLabels(d *schema.ResourceData) (err error) {
-	//s.client.kceconn.DescribeNodeLabels()
+	// s.client.kceconn.DescribeNodeLabels()
 	// 获取label列表
+	return
+}
+
+func (s *KceWorkerService) readAndSetAttachment(d *schema.ResourceData, resource *schema.Resource) (err error) {
+	idList := DisassembleIds(d.Id())
+	instanceId := idList[1]
+	clusterId := idList[0]
+
+	kecClient := KecService{client: s.client}
+	kceCluster := KceService{client: s.client}
+
+	// get master instances
+	queryKec := func(queryIds []string) ([]interface{}, error) {
+		var (
+			kecQuery        = map[string]interface{}{}
+			retry           int
+			infraErr        error
+			masterInstances []interface{}
+		)
+
+		for idx, queryId := range queryIds {
+			kecQuery[fmt.Sprintf("InstanceId.%d", idx+1)] = queryId
+		}
+	again:
+		masterInstances, infraErr = kecClient.readKecInstances(kecQuery)
+		if infraErr != nil && retry < 3 {
+			retry++
+			time.Sleep(2 * time.Second)
+			goto again
+		}
+		return masterInstances, infraErr
+	}
+
+	queryRole := func(instanceID string) (*kce.InstanceSet, error) {
+		filter := map[string]interface{}{
+			"instance-id": instanceID,
+		}
+		nodes, infraErr := kceCluster.getAllNodeWithFilter(clusterId, filter)
+		if infraErr != nil {
+			return nil, infraErr
+		}
+		var instance = &kce.InstanceSet{}
+		_ = helper.MapstructureFiller(nodes[0], instance, "")
+		return instance, nil
+	}
+
+	instances, err := queryKec([]string{instanceId})
+	if err != nil {
+		return fmt.Errorf("read attachment instances failed: %s", err)
+	}
+
+	var instanceSaveMap = map[string]interface{}{}
+	var advanced = map[string]interface{}{}
+
+	for _, instanceIf := range instances {
+		// handles master instance and set to data resources
+		instance := instanceIf.(map[string]interface{})
+		instanceSaveMap, err = convertInstanceToMapForSchema(instance)
+		if err != nil {
+			return fmt.Errorf("convert master instance failed: %s", err)
+		}
+		delete(instanceSaveMap, "vpc_id")
+		// masterSaveMap["count"] = 1
+		role, queryErr := queryRole(instanceId)
+		if queryErr != nil {
+			return fmt.Errorf("query %s role failed: %s", instanceId, err)
+		}
+		instanceSaveMap["role"] = role.InstanceRole
+		advanced = handleAdvancedSetting2Map(*role.AdvancedSetting)
+
+		// get the taints from local
+		taints, ok := d.GetOk("advanced_setting.0.taints")
+		if ok {
+			taintsList := taints.([]interface{})
+			saveTaints := []map[string]interface{}{}
+			for _, taint := range taintsList {
+				taintMap := taint.(map[string]interface{})
+				saveTaints = append(saveTaints, taintMap)
+			}
+			advanced["taints"] = saveTaints
+		}
+	}
+	var (
+		resourceMap = make(map[string]interface{}, 2)
+	)
+
+	resourceMap["worker_config"] = []interface{}{instanceSaveMap}
+	resourceMap["advanced_setting"] = []interface{}{advanced}
+
+	SdkResponseAutoResourceData(d, resource, resourceMap, nil)
 	return
 }
 
@@ -375,9 +554,9 @@ func (s *KceWorkerService) ReadAndSetWorker(d *schema.ResourceData, r *schema.Re
 	clusterId := ids[0]
 	instanceId := ids[1]
 	data, err = s.client.kceconn.DescribeClusterInstance(&map[string]interface{}{
-		"ClusterId":        clusterId, //d.Get("cluster_id"),
+		"ClusterId":        clusterId, // d.Get("cluster_id"),
 		"Filter.1.Name":    "instance-id",
-		"Filter.1.Value.1": instanceId, //d.Get("instance_id"),
+		"Filter.1.Value.1": instanceId, // d.Get("instance_id"),
 	})
 	if err != nil {
 		return
@@ -406,12 +585,12 @@ func (s *KceWorkerService) ReadAndSetWorker(d *schema.ResourceData, r *schema.Re
 	// todo：由于封锁接口未开放，暂不更新这个字段
 	// 创建后，advanceSetting里的schedulable就不更新了，驱逐状态由节点上的UnSchedulable字段返回
 	// 由于tf只暴露了schedulable，所以在这里将字段做个映射
-	//unSchedulableInterface, _ := getSdkValue("UnSchedulable", instanceInfo)
-	//logger.Debug("unSchedulableInterface", "unSchedulableInterface", unSchedulableInterface)
-	//if unSchedulable, ok := unSchedulableInterface.(bool); ok {
+	// unSchedulableInterface, _ := getSdkValue("UnSchedulable", instanceInfo)
+	// logger.Debug("unSchedulableInterface", "unSchedulableInterface", unSchedulableInterface)
+	// if unSchedulable, ok := unSchedulableInterface.(bool); ok {
 	//	logger.Debug("unSchedulableInterface", "unSchedulableInterface", unSchedulable)
 	//	updateResourceData(d, "schedulable", !unSchedulable)
-	//}
+	// }
 
 	logger.Debug("ReadAndSetWorker", "ReadAndSetWorker", d)
 
@@ -428,7 +607,7 @@ func (s *KceWorkerService) updateSchedulable(d *schema.ResourceData, resource *s
 	callback = ApiCall{
 		param: &updateReq,
 		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
-			//return resp, ModifyProjectInstanceNew(d.Id(), call.param, client)
+			// return resp, ModifyProjectInstanceNew(d.Id(), call.param, client)
 			return
 		},
 		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
@@ -438,17 +617,60 @@ func (s *KceWorkerService) updateSchedulable(d *schema.ResourceData, resource *s
 	return callback, nil
 }
 
-func (s *KceWorkerService) UpdateWorker(d *schema.ResourceData, r *schema.Resource) (err error) {
-	// todo 暂时没有可以update的字段
-	return
-	logger.Debug("UpdateWorker", "", d.HasChange("schedulable"),
-		d.HasChange("label"))
+// func (s *KceWorkerService) UpdateWorker(d *schema.ResourceData, r *schema.Resource) (err error) {
+// 	// todo 暂时没有可以update的字段
+// 	return
+// 	logger.Debug("UpdateWorker", "", d.HasChange("schedulable"),
+// 		d.HasChange("label"))
+//
+// 	var apiCalls []ApiCall
+// 	if d.HasChange("schedulable") {
+// 		var apiCall ApiCall
+// 		apiCall, err = s.updateSchedulable(d, r)
+// 		apiCalls = append(apiCalls, apiCall)
+// 	}
+// 	return ksyunApiCallNew(apiCalls, d, s.client, true)
+// }
 
-	var apiCalls []ApiCall
-	if d.HasChange("schedulable") {
-		var apiCall ApiCall
-		apiCall, err = s.updateSchedulable(d, r)
-		apiCalls = append(apiCalls, apiCall)
+func handleKecParaWithPrefix(createParams *map[string]interface{}, nodeConfigs []interface{}, prefix string, index int, isExist bool, hasSuffix bool) int {
+	for _, nodeConfigSrc := range nodeConfigs {
+		nodeConfig := nodeConfigSrc.(map[string]interface{})
+
+		// logger.Debug("[%s] %d:%+v", "test", idx, nodeConfig)
+		index++
+		_idx := index
+
+		roleKey := fmt.Sprintf("%s.%d.NodeRole", prefix, _idx)
+		var paraKey string
+		if isExist {
+			paraKey = fmt.Sprintf("%s.%d.KecPara", prefix, _idx)
+		} else {
+			paraKey = fmt.Sprintf("%s.%d.NodePara", prefix, _idx)
+		}
+
+		if hasSuffix {
+			paraKey = paraKey + ".1"
+		}
+
+		(*createParams)[roleKey] = nodeConfig["role"]
+		(*createParams)[paraKey] = formatKceInstancePara(nodeConfig)
 	}
-	return ksyunApiCallNew(apiCalls, d, s.client, true)
+
+	return index
+}
+
+func handleAdvancedConfigWithPrefix(createParams *map[string]interface{}, nodeConfigs []interface{}, prefix string, index int) int {
+	for _, nodeConfigSrc := range nodeConfigs {
+		nodeConfig := nodeConfigSrc.(map[string]interface{})
+
+		// logger.Debug("[%s] %d:%+v", "test", idx, nodeConfig)
+		index++
+		_idx := index
+		baseKey := fmt.Sprintf("%s.%d.AdvancedSetting", prefix, _idx)
+		for k, v := range nodeConfig {
+			(*createParams)[fmt.Sprintf("%s.%s", baseKey, k)] = v
+		}
+	}
+
+	return index
 }

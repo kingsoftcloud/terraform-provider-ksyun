@@ -1,16 +1,17 @@
 package ksyun
 
 import (
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	"testing"
 )
 
 const testAccKceWorkerConfig = `
-resource "ksyun_kce_worker" "foo" {
-	cluster_id = "5e2d7073-a948-42d1-81ec-13d679edfd10"
+resource "ksyun_kce_cluster_attach_existence" "foo" {
+	cluster_id = "45e21f7e-fd87-4c45-9e58-e3e2641b0729"
+	instance_id = "d9d852da-9e04-4fc3-a2ae-24950d97a167"
 	image_id = "7dc43a49-4d3e-4498-993c-4192847d75bf"
-	instance_id = "321521e8-4885-426c-baa1-2fc9a4eced76"
 
 	instance_password = "Test1234$"
 
@@ -44,25 +45,25 @@ func TestAccKsyunKceWorker_basic(t *testing.T) {
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
-		IDRefreshName: "ksyun_kce_worker.foo",
+		IDRefreshName: "ksyun_kce_cluster_attach_existence.foo",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckKceWorkerDestroy,
 		Steps: []resource.TestStep{
 			{
-				//PlanOnly: true,
+				// PlanOnly: true,
 				Config: testAccKceWorkerConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckKceWorkerExists("ksyun_kce_worker.foo", &val),
+					testAccCheckKceWorkerExists("ksyun_kce_cluster_attach_existence.foo", &val),
 					testAccCheckKceWorkerAttributes(&val),
 				),
 			},
-			//{
+			// {
 			//	ResourceName:      "ksyun_kce_worker.foo",
 			//	ImportStateId:     "bedfb5d0-bb8f-40dd-9f1d-8966fd1ace87:3a66ad5a-313b-41c0-8b72-6749e438ea17",
 			//	ImportState:       true,
 			//	ImportStateVerify: true,
 			//	//ImportStateVerifyIgnore: []string{"lang"},
-			//},
+			// },
 		},
 	})
 }
