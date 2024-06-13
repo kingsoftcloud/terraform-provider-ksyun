@@ -194,26 +194,44 @@ func kceInstanceNodeHashFunc() schema.SchemaSetFunc {
 
 		var buf bytes.Buffer
 
-		schemas := instanceForNode()
-		for k, s := range schemas {
-			switch m[k].(type) {
-			case string, float64, int:
-				vv, _ := If2String(m[k])
-				buf.WriteString(vv)
-			default:
-				if s.Type == schema.TypeSet {
-					if m[k] == nil {
+		hashKeys := []string{
+			"instance_type",
+			"image_id",
+			"security_group_id",
+			"subnet_id",
+			"role",
+		}
+		for _, key := range hashKeys {
+			if vv, ok := m[key]; ok {
+				switch vv.(type) {
+				case string:
+					if vv == "" {
 						break
 					}
-					vvv, ok := m[k].([]interface{})
-					if !ok {
-						break
+					buf.WriteString(fmt.Sprintf("%s", strings.ToLower(vv.(string))))
+				case int:
+					buf.WriteString(fmt.Sprintf("%d", vv.(int)))
+				case float64:
+					buf.WriteString(fmt.Sprintf("%d", int(vv.(float64))))
+				case bool:
+					if vv.(bool) {
+						buf.WriteString("1")
+					} else {
+						buf.WriteString("0")
 					}
-					m[k] = schema.NewSet(s.Set, vvv)
+				case []interface{}:
+					vvs := vv.([]interface{})
+					if len(vvs) < 1 {
+						buf.WriteString("[]")
+					} else {
+						buf.WriteString("[")
+						for _, vvv := range vvs {
+							buf.WriteString(fmt.Sprintf("%s", strings.ToLower(vvv.(string))))
+						}
+						buf.WriteString("]")
+					}
 				}
-				schema.SerializeValueForHash(&buf, m[k], s)
 			}
-
 		}
 
 		return hashcode.String(buf.String())

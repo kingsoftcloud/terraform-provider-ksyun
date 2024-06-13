@@ -223,9 +223,10 @@ func formatKceClusterReq(d *schema.ResourceData, resource *schema.Resource) (cre
 				}
 
 				advancedSetting := asSet[0].(map[string]interface{})
+				hashcode := kceInstanceNodeHashFunc()(nodeConfig)
 
 				for k, v := range advancedSetting {
-					if _, ok := d.GetOk(fmt.Sprintf("%s.0.advanced_setting.0.%s", topKey, k)); !ok {
+					if _, ok := d.GetOk(fmt.Sprintf("%s.%d.advanced_setting.0.%s", topKey, hashcode, k)); !ok {
 						continue
 					}
 
@@ -248,13 +249,13 @@ func formatKceClusterReq(d *schema.ResourceData, resource *schema.Resource) (cre
 	if nodeConfigs, ok := createReq["MasterConfig"]; ok {
 		logger.Debug("[%s] %+v", "test", createReq)
 
-		instanceIdx = handleKecPara(&createReq, nodeConfigs.([]interface{}), instanceIdx, "master_config")
+		instanceIdx = handleKecPara(&createReq, nodeConfigs.(*schema.Set).List(), instanceIdx, "master_config")
 	}
 	delete(createReq, "MasterConfig")
 
 	if workerCfg, ok := createReq["WorkerConfig"]; ok {
 		logger.Debug("[%s] handles worker config %+v", "test", createReq)
-		instanceIdx = handleKecPara(&createReq, workerCfg.([]interface{}), instanceIdx, "worker_config")
+		instanceIdx = handleKecPara(&createReq, workerCfg.(*schema.Set).List(), instanceIdx, "worker_config")
 	}
 	delete(createReq, "WorkerConfig")
 
@@ -563,6 +564,13 @@ func (s *KceService) readAndSetInstance(d *schema.ResourceData, r *schema.Resour
 	//	}
 	// }
 	//
+	type nodeInfo struct {
+		nodeMap  map[string]interface{}
+		advanced map[string]interface{}
+		role     string
+	}
+	type nodeInfoList []nodeInfo
+
 	var (
 		mIDs []string
 		wIDs []string
@@ -570,10 +578,7 @@ func (s *KceService) readAndSetInstance(d *schema.ResourceData, r *schema.Resour
 		masterInstances []interface{}
 		workerInstances []interface{}
 
-		masterNodeList     []map[string]interface{}
-		masterAdvancedList []map[string]interface{}
-		workerNodeList     []map[string]interface{}
-		workerAdvancedList []map[string]interface{}
+		nodeInfoMap = make(map[int]nodeInfoList, 0)
 	)
 	mIDs, _ = helper.GetSchemaListWithString(d, "master_id_list")
 	wIDs, _ = helper.GetSchemaListWithString(d, "worker_id_list")
@@ -615,6 +620,11 @@ func (s *KceService) readAndSetInstance(d *schema.ResourceData, r *schema.Resour
 		return instance, nil
 	}
 
+	calculateNodeHashAndSave := func(node nodeInfo) {
+		hashcode := kceInstanceNodeHashFunc()(node.nodeMap)
+		nodeInfoMap[hashcode] = append(nodeInfoMap[hashcode], node)
+	}
+
 	if mIDs != nil && len(mIDs) > 0 {
 		masterInstances, err = queryKec(mIDs)
 		if err != nil {
@@ -634,6 +644,8 @@ func (s *KceService) readAndSetInstance(d *schema.ResourceData, r *schema.Resour
 		resourceMap = make(map[string]interface{})
 	)
 
+	// TODO: query all nodes and generates the node hashcode
+	// classifies according to the node hashcode.
 	for _, masterInstanceIf := range masterInstances {
 		// handles master instance and set to data resources
 		masterInstance := masterInstanceIf.(map[string]interface{})
@@ -648,24 +660,14 @@ func (s *KceService) readAndSetInstance(d *schema.ResourceData, r *schema.Resour
 			return fmt.Errorf("query %s role failed: %s", instanceId, err)
 		}
 		masterSaveMap["role"] = role.InstanceRole
-		masterNodeList = append(masterNodeList, masterSaveMap)
 
 		advanced := handleAdvancedSetting2Map(*role.AdvancedSetting)
-		masterAdvancedList = append(masterAdvancedList, advanced)
-	}
-
-	if masterNodeList != nil && len(masterNodeList) > 0 {
-		localMasterConfig, _ := helper.GetSchemaListHeadMap(d, "master_config")
-		diffMap := helper.GetDiffMap(localMasterConfig, masterNodeList...)
-		localMasterAdvanced, ok := helper.GetSchemaListHeadMap(d, "master_config.0.advanced_setting")
-		if ok {
-			advancedDiff := helper.GetDiffMap(localMasterAdvanced, masterAdvancedList...)
-			diffMap["advanced_setting"] = []interface{}{advancedDiff}
+		node := nodeInfo{
+			nodeMap:  masterSaveMap,
+			advanced: advanced,
+			role:     role.InstanceRole,
 		}
-
-		workerConfigHashcode := kceInstanceNodeHashFunc()(diffMap)
-		diffMap["hashcode"] = workerConfigHashcode
-		resourceMap["master_config"] = []interface{}{diffMap}
+		calculateNodeHashAndSave(node)
 	}
 
 	for _, workerInstanceIf := range workerInstances {
@@ -682,25 +684,55 @@ func (s *KceService) readAndSetInstance(d *schema.ResourceData, r *schema.Resour
 			return fmt.Errorf("query %s role failed: %s", instanceId, err)
 		}
 		workerSaveMap["role"] = role.InstanceRole
-		workerNodeList = append(workerNodeList, workerSaveMap)
 
 		advanced := handleAdvancedSetting2Map(*role.AdvancedSetting)
-		workerAdvancedList = append(workerAdvancedList, advanced)
+		node := nodeInfo{
+			nodeMap:  workerSaveMap,
+			advanced: advanced,
+			role:     role.InstanceRole,
+		}
+		calculateNodeHashAndSave(node)
 	}
 
-	if workerNodeList != nil && len(workerNodeList) > 0 {
-		localWorkerConfig, _ := helper.GetSchemaListHeadMap(d, "worker_config")
-		diffWorkerMap := helper.GetDiffMap(localWorkerConfig, workerNodeList...)
+	if nodeInfoMap != nil && len(nodeInfoMap) > 0 {
+		block := "master_config"
 
-		localWorkerAdvanced, ok := helper.GetSchemaListHeadMap(d, "worker_config.0.advanced_setting")
-		if ok {
-			advancedDiff := helper.GetDiffMap(localWorkerAdvanced, workerAdvancedList...)
-			diffWorkerMap["advanced_setting"] = []interface{}{advancedDiff}
+		for hashcode, nodeInfoList := range nodeInfoMap {
+			if len(nodeInfoList) == 0 {
+				continue
+			}
+			switch nodeInfoList[0].role {
+			case "Worker":
+				block = "worker_config"
+			}
+
+			schemeKey := fmt.Sprintf("%s.%d", block, hashcode)
+			schemeAdvancedKey := fmt.Sprintf("%s.%d.advanced_setting", block, hashcode)
+			localConfig, ok := helper.GetSchemaMapWithKey(d, schemeKey)
+			if !ok {
+				logger.Debug("readAndSetInstance", "schemeKey", schemeKey, "localConfig", localConfig)
+				continue
+			}
+
+			nodeMapList := make([]map[string]interface{}, 0, len(nodeInfoList))
+			nodeAdvancedMapList := make([]map[string]interface{}, 0, len(nodeInfoList))
+			for _, nodeInfo := range nodeInfoList {
+				nodeMapList = append(nodeMapList, nodeInfo.nodeMap)
+				nodeAdvancedMapList = append(nodeAdvancedMapList, nodeInfo.advanced)
+			}
+			diffMap := helper.GetDiffMap(localConfig, nodeMapList...)
+
+			localAdvanced, ok := helper.GetSchemaListHeadMap(d, schemeAdvancedKey)
+			if ok {
+				advancedDiff := helper.GetDiffMap(localAdvanced, nodeAdvancedMapList...)
+				diffMap["advanced_setting"] = []interface{}{advancedDiff}
+			}
+			diffMap["hashcode"] = hashcode
+			if resourceMap[block] == nil {
+				resourceMap[block] = make([]map[string]interface{}, 0)
+			}
+			resourceMap[block] = append(resourceMap[block].([]map[string]interface{}), diffMap)
 		}
-
-		workerConfigHashcode := kceInstanceNodeHashFunc()(diffWorkerMap)
-		diffWorkerMap["hashcode"] = workerConfigHashcode
-		resourceMap["worker_config"] = []interface{}{diffWorkerMap}
 	}
 
 	SdkResponseAutoResourceData(d, r, resourceMap, nil)
@@ -723,13 +755,13 @@ func convertInstanceToMapForSchema(insResp map[string]interface{}) (map[string]i
 
 	schemaMap := instanceConfig()
 
-	igonreFields := []string{"advanced_setting"}
+	ignoreFields := []string{"advanced_setting"}
 
 	// handle the top level fields
 	for k, v := range insResp {
 		// logger.Debug("convertInstanceToMapForSchema", "k", k, "v", v)
 		underK := helper.Hump2Underline(k)
-		if checkValueInSlice(igonreFields, underK) {
+		if checkValueInSlice(ignoreFields, underK) {
 			continue
 		}
 		if schemaMap[underK] == nil || schemaMap[underK].Elem != nil {

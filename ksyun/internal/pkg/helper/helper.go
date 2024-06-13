@@ -35,6 +35,15 @@ func GetSchemaListHeadMap(d *schema.ResourceData, key string) (result map[string
 	return
 }
 
+func GetSchemaMapWithKey(d *schema.ResourceData, key string) (result map[string]interface{}, ok bool) {
+	v, ok := d.GetOk(key)
+	if !ok {
+		return
+	}
+	result, ok = v.(map[string]interface{})
+	return
+}
+
 func StringBoolean(s bool) string {
 	if s {
 		return "True"

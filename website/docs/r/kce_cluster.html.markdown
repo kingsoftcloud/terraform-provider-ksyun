@@ -15,34 +15,144 @@ Provides a KCE cluster resource.
 
 ## Example Usage
 
+## basic dependency resources
+
 ```hcl
 data "ksyun_kce_instance_images" "test" {
   output_file = "output_result"
 }
 
-resource "ksyun_kce_cluster" "default" {
-  cluster_name        = "tf_test_cluster"
-  cluster_desc        = "description..."
-  cluster_manage_mode = "DedicatedCluster"
-  vpc_id              = ksyun_vpc.tf_test.id
-  pod_cidr            = "172.16.0.0/16"
-  service_cidr        = "10.254.0.0/16"
-  network_type        = "Flannel"
-  k8s_version         = "v1.19.3"
-  reserve_subnet_id   = ksyun_subnet.tf_test_reserve_subnet.id
+data "ksyun_kce_instance_images" "test" {
+}
 
-  master_config {
-    role          = "Master_Etcd"
-    count         = 3
+variable "az" {
+  default = "cn-beijing-6e"
+}
+
+variable "suffix" {
+  default = "-kce-complete"
+}
+```
+
+## create a ManagementCluster
+
+```hcl
+resource "ksyun_kce_cluster" "default" {
+  cluster_name        = "tf-modification${var.suffix}"
+  cluster_desc        = "description...modification"
+  cluster_manage_mode = "ManagedCluster"
+  vpc_id              = ksyun_vpc.test.id
+  pod_cidr            = "172.16.0.0/16"
+  service_cidr        = "10.252.0.0/16"
+  network_type        = "Flannel"
+  k8s_version         = "v1.23.17"
+  reserve_subnet_id   = ksyun_subnet.reserve.id
+
+  managed_cluster_multi_master {
+    subnet_id         = ksyun_subnet.normal.id
+    security_group_id = ksyun_security_group.test.id
+  }
+
+  worker_config {
+    count         = 2
     image_id      = data.ksyun_kce_instance_images.test.image_set.0.image_id
     instance_type = "S6.4B"
+    instance_name = "tf_kce_worker"
     system_disk {
       disk_size = 20
       disk_type = "SSD3.0"
     }
-    subnet_id         = ksyun_subnet.tf_test_subnet.id
-    security_group_id = [ksyun_security_group.default.id]
+    subnet_id         = ksyun_subnet.normal.id
+    security_group_id = [ksyun_security_group.test.id]
     charge_type       = "Daily"
+    advanced_setting {
+      container_runtime = "containerd"
+      label {
+        key   = "tf_assembly_kce"
+        value = "advanced_setting"
+      }
+      taints {
+        key    = "key1"
+        value  = "value1"
+        effect = "NoSchedule"
+
+      }
+    }
+  }
+}
+```
+
+## create a DedicatedCluster
+
+```hcl
+resource "ksyun_kce_cluster" "default" {
+  cluster_name        = "tf-modification${var.suffix}"
+  cluster_desc        = "description...modification"
+  cluster_manage_mode = "DedicateCluster"
+  vpc_id              = ksyun_vpc.test.id
+  pod_cidr            = "172.16.0.0/16"
+  service_cidr        = "10.252.0.0/16"
+  network_type        = "Flannel"
+  k8s_version         = "v1.23.17"
+  reserve_subnet_id   = ksyun_subnet.reserve.id
+
+  managed_cluster_multi_master {
+    subnet_id         = ksyun_subnet.normal.id
+    security_group_id = ksyun_security_group.test.id
+  }
+
+  master_config {
+    count         = 3
+    image_id      = data.ksyun_kce_instance_images.test.image_set.0.image_id
+    instance_type = "S6.4B"
+    instance_name = "tf_kce_master"
+    system_disk {
+      disk_size = 20
+      disk_type = "SSD3.0"
+    }
+    subnet_id         = ksyun_subnet.normal.id
+    security_group_id = [ksyun_security_group.test.id]
+    charge_type       = "Daily"
+    advanced_setting {
+      container_runtime = "containerd"
+      label {
+        key   = "tf_assembly_kce"
+        value = "advanced_setting"
+      }
+      taints {
+        key    = "key1"
+        value  = "value1"
+        effect = "NoSchedule"
+
+      }
+    }
+  }
+
+  worker_config {
+    count         = 2
+    image_id      = data.ksyun_kce_instance_images.test.image_set.0.image_id
+    instance_type = "S6.4B"
+    instance_name = "tf_kce_worker"
+    system_disk {
+      disk_size = 20
+      disk_type = "SSD3.0"
+    }
+    subnet_id         = ksyun_subnet.normal.id
+    security_group_id = [ksyun_security_group.test.id]
+    charge_type       = "Daily"
+    advanced_setting {
+      container_runtime = "containerd"
+      label {
+        key   = "tf_assembly_kce"
+        value = "advanced_setting"
+      }
+      taints {
+        key    = "key1"
+        value  = "value1"
+        effect = "NoSchedule"
+
+      }
+    }
   }
 }
 ```

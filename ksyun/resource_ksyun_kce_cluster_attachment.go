@@ -9,14 +9,14 @@ resource "ksyun_kce_cluster_attachment" "foo" {
   cluster_id = ksyun_kce_cluster.default.id
 
   worker_config {
-    image_id      = "fbafd8cd-b570-47c4-a3db-ff9702108f17"
-    instance_type = "S6.4B"
+    image_id      = data.ksyun_kce_instance_images.test.image_set.0.image_id
+    instance_type = "S6.2A"
     system_disk {
       disk_size = 20
       disk_type = "SSD3.0"
     }
-    subnet_id         = "c771027a-fafd-4b3b-a6b9-daeab9d0c13a"
-    security_group_id = ["59a87036-dc27-41cf-98ab-24a387501195"]
+    subnet_id         = ksyun_subnet.normal.id
+    security_group_id = [ksyun_security_group.test.id]
     charge_type       = "Daily"
 
   }
@@ -42,7 +42,7 @@ resource "ksyun_kce_cluster_attachment" "foo" {
 KCE worker can be imported using the id, e.g.
 
 ```
-$ terraform import ksyun_kce_worker.default 67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
+$ terraform import ksyun_kce_cluster_attachment.default 67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
 ```
 */
 
