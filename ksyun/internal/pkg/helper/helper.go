@@ -35,12 +35,41 @@ func GetSchemaListHeadMap(d *schema.ResourceData, key string) (result map[string
 	return
 }
 
-func GetSchemaMapWithKey(d *schema.ResourceData, key string) (result map[string]interface{}, ok bool) {
+func GetSchemaSingerMapWithKey(d *schema.ResourceData, key string) (result map[string]interface{}, ok bool) {
 	v, ok := d.GetOk(key)
 	if !ok {
 		return
 	}
 	result, ok = v.(map[string]interface{})
+	return
+}
+
+func GetSchemaMapListWithKey(d *schema.ResourceData, key string) (result []map[string]interface{}, ok bool) {
+	v, ok := d.GetOk(key)
+	if !ok {
+		return
+	}
+	var (
+		interfaces []interface{}
+	)
+	switch v.(type) {
+	case []interface{}:
+		interfaces = v.([]interface{})
+	case *schema.Set:
+		interfaces = v.(*schema.Set).List()
+	}
+
+	if !ok || len(interfaces) == 0 {
+		ok = false
+		return
+	}
+	for _, inter := range interfaces {
+		if v, ok := inter.(map[string]interface{}); !ok {
+			return nil, ok
+		} else {
+			result = append(result, v)
+		}
+	}
 	return
 }
 

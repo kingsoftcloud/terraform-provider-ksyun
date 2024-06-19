@@ -205,7 +205,7 @@ func formatKceClusterReq(d *schema.ResourceData, resource *schema.Resource) (cre
 
 	handleKecPara := func(createParams *map[string]interface{}, nodeConfigs []interface{}, index int, topKey string) int {
 
-		for _, nodeConfigSrc := range nodeConfigs {
+		for idx, nodeConfigSrc := range nodeConfigs {
 			nodeConfig := nodeConfigSrc.(map[string]interface{})
 
 			// logger.Debug("[%s] %d:%+v", "test", idx, nodeConfig)
@@ -223,10 +223,9 @@ func formatKceClusterReq(d *schema.ResourceData, resource *schema.Resource) (cre
 				}
 
 				advancedSetting := asSet[0].(map[string]interface{})
-				hashcode := kceInstanceNodeHashFunc()(nodeConfig)
 
 				for k, v := range advancedSetting {
-					if _, ok := d.GetOk(fmt.Sprintf("%s.%d.advanced_setting.0.%s", topKey, hashcode, k)); !ok {
+					if _, ok := d.GetOk(fmt.Sprintf("%s.%d.advanced_setting.0.%s", topKey, idx, k)); !ok {
 						continue
 					}
 
@@ -249,13 +248,13 @@ func formatKceClusterReq(d *schema.ResourceData, resource *schema.Resource) (cre
 	if nodeConfigs, ok := createReq["MasterConfig"]; ok {
 		logger.Debug("[%s] %+v", "test", createReq)
 
-		instanceIdx = handleKecPara(&createReq, nodeConfigs.(*schema.Set).List(), instanceIdx, "master_config")
+		instanceIdx = handleKecPara(&createReq, nodeConfigs.([]interface{}), instanceIdx, "master_config")
 	}
 	delete(createReq, "MasterConfig")
 
 	if workerCfg, ok := createReq["WorkerConfig"]; ok {
 		logger.Debug("[%s] handles worker config %+v", "test", createReq)
-		instanceIdx = handleKecPara(&createReq, workerCfg.(*schema.Set).List(), instanceIdx, "worker_config")
+		instanceIdx = handleKecPara(&createReq, workerCfg.([]interface{}), instanceIdx, "worker_config")
 	}
 	delete(createReq, "WorkerConfig")
 
@@ -569,7 +568,10 @@ func (s *KceService) readAndSetInstance(d *schema.ResourceData, r *schema.Resour
 		advanced map[string]interface{}
 		role     string
 	}
-	type nodeInfoList []nodeInfo
+	type nodeInfoList struct {
+		deal bool
+		list []nodeInfo
+	}
 
 	var (
 		mIDs []string
@@ -622,7 +624,43 @@ func (s *KceService) readAndSetInstance(d *schema.ResourceData, r *schema.Resour
 
 	calculateNodeHashAndSave := func(node nodeInfo) {
 		hashcode := kceInstanceNodeHashFunc()(node.nodeMap)
-		nodeInfoMap[hashcode] = append(nodeInfoMap[hashcode], node)
+
+		if nodeList, ok := nodeInfoMap[hashcode]; !ok {
+			nodeInfoMap[hashcode] = nodeInfoList{
+				deal: false,
+				list: []nodeInfo{node},
+			}
+		} else {
+			nodeList.list = append(nodeList.list, node)
+			nodeInfoMap[hashcode] = nodeList
+		}
+	}
+
+	localMachineTypeSequenceM := map[int]int{}
+	localMachineTypeSequenceW := map[int]int{}
+
+	calculateMachineHash := func(blockKey string) {
+		var (
+			sm  = localMachineTypeSequenceM
+			mtl []interface{}
+		)
+
+		switch blockKey {
+		case "master_config":
+			mtl = d.Get("master_config").([]interface{})
+		case "worker_config":
+			sm = localMachineTypeSequenceW
+			mtl = d.Get("worker_config").([]interface{})
+		}
+
+		for idx, m := range mtl {
+			hashcode := kceInstanceNodeHashFunc()(m)
+			sm[hashcode] = idx
+		}
+	}
+
+	for _, blockKey := range []string{"master_config", "worker_config"} {
+		calculateMachineHash(blockKey)
 	}
 
 	if mIDs != nil && len(mIDs) > 0 {
@@ -695,43 +733,70 @@ func (s *KceService) readAndSetInstance(d *schema.ResourceData, r *schema.Resour
 	}
 
 	if nodeInfoMap != nil && len(nodeInfoMap) > 0 {
-		block := "master_config"
-
-		for hashcode, nodeInfoList := range nodeInfoMap {
-			if len(nodeInfoList) == 0 {
+		blocks := []string{"master_config", "worker_config"}
+		for _, block := range blocks {
+			localBlock, ok := helper.GetSchemaMapListWithKey(d, block)
+			if !ok {
 				continue
 			}
-			switch nodeInfoList[0].role {
+			results := make([]interface{}, len(localBlock), len(localBlock))
+			for idx, nodeLocalInfo := range localBlock {
+				schemeAdvancedKey := fmt.Sprintf("%s.%d.advanced_setting", block, idx)
+				hashcode := kceInstanceNodeHashFunc()(nodeLocalInfo)
+
+				var _nodeInfoList []nodeInfo
+				if nl, ok := nodeInfoMap[hashcode]; !ok {
+					continue
+				} else {
+					_nodeInfoList = nl.list
+					nl.deal = true
+					nodeInfoMap[hashcode] = nl
+				}
+
+				nodeMapList := make([]map[string]interface{}, 0, len(_nodeInfoList))
+				nodeAdvancedMapList := make([]map[string]interface{}, 0, len(_nodeInfoList))
+				for _, _nodeInfo := range _nodeInfoList {
+					nodeMapList = append(nodeMapList, _nodeInfo.nodeMap)
+					nodeAdvancedMapList = append(nodeAdvancedMapList, _nodeInfo.advanced)
+				}
+				diffMap := helper.GetDiffMap(nodeLocalInfo, nodeMapList...)
+
+				localAdvanced, ok := helper.GetSchemaListHeadMap(d, schemeAdvancedKey)
+				if ok {
+					advancedDiff := helper.GetDiffMap(localAdvanced, nodeAdvancedMapList...)
+					diffMap["advanced_setting"] = []interface{}{advancedDiff}
+				}
+				diffMap["hashcode"] = hashcode
+				diffMap["count"] = len(_nodeInfoList)
+				results[idx] = diffMap
+			}
+			resourceMap[block] = results
+		}
+
+		// deal with the rest nodes of the nodeInfoMap
+		for hashcode, _nodeInfoList := range nodeInfoMap {
+			if _nodeInfoList.deal {
+				continue
+			}
+
+			var (
+				block string
+			)
+			theFirstNode := _nodeInfoList.list[0]
+			theFirstMap := theFirstNode.nodeMap
+			switch theFirstNode.role {
 			case "Worker":
 				block = "worker_config"
+			default:
+				block = "master_config"
+			}
+			theFirstMap["hashcode"] = hashcode
+			theFirstMap["count"] = len(_nodeInfoList.list)
+			if theFirstNode.advanced != nil && len(theFirstNode.advanced) > 0 {
+				theFirstMap["advanced_setting"] = []interface{}{theFirstNode.advanced}
 			}
 
-			schemeKey := fmt.Sprintf("%s.%d", block, hashcode)
-			schemeAdvancedKey := fmt.Sprintf("%s.%d.advanced_setting", block, hashcode)
-			localConfig, ok := helper.GetSchemaMapWithKey(d, schemeKey)
-			if !ok {
-				logger.Debug("readAndSetInstance", "schemeKey", schemeKey, "localConfig", localConfig)
-				continue
-			}
-
-			nodeMapList := make([]map[string]interface{}, 0, len(nodeInfoList))
-			nodeAdvancedMapList := make([]map[string]interface{}, 0, len(nodeInfoList))
-			for _, nodeInfo := range nodeInfoList {
-				nodeMapList = append(nodeMapList, nodeInfo.nodeMap)
-				nodeAdvancedMapList = append(nodeAdvancedMapList, nodeInfo.advanced)
-			}
-			diffMap := helper.GetDiffMap(localConfig, nodeMapList...)
-
-			localAdvanced, ok := helper.GetSchemaListHeadMap(d, schemeAdvancedKey)
-			if ok {
-				advancedDiff := helper.GetDiffMap(localAdvanced, nodeAdvancedMapList...)
-				diffMap["advanced_setting"] = []interface{}{advancedDiff}
-			}
-			diffMap["hashcode"] = hashcode
-			if resourceMap[block] == nil {
-				resourceMap[block] = make([]map[string]interface{}, 0)
-			}
-			resourceMap[block] = append(resourceMap[block].([]map[string]interface{}), diffMap)
+			resourceMap[block] = append(resourceMap[block].([]interface{}), theFirstNode.nodeMap)
 		}
 	}
 

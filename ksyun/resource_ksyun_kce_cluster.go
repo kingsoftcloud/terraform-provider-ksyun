@@ -356,6 +356,18 @@ func instanceForNode() map[string]*schema.Schema {
 		Description: "",
 	}
 
+	m["advanced_setting"] = &schema.Schema{
+		Type: schema.TypeList,
+		// MinItems: 1,
+		MaxItems:    1,
+		Optional:    true,
+		ForceNew:    true,
+		Description: "Advanced settings.",
+		Elem: &schema.Resource{
+			Schema: nodeAdvancedSetting(),
+		},
+	}
+
 	for _, field := range instanceNodeForceNewField {
 		m[field].ForceNew = true
 	}
@@ -389,18 +401,6 @@ func instanceForWorkerNode() map[string]*schema.Schema {
 		Description: "The number of worker nodes.",
 	}
 
-	m["advanced_setting"] = &schema.Schema{
-		Type: schema.TypeList,
-		// MinItems: 1,
-		MaxItems:    1,
-		Optional:    true,
-		ForceNew:    true,
-		Description: "Advanced settings.",
-		Elem: &schema.Resource{
-			Schema: nodeAdvancedSetting(),
-		},
-	}
-
 	return m
 }
 
@@ -413,18 +413,6 @@ func instanceForMasterNode() map[string]*schema.Schema {
 		ForceNew:     true,
 		ValidateFunc: validation.IntInSlice([]int{3, 5}),
 		Description:  "The number of master nodes. The count of master nodes must be 3 or 5.",
-	}
-
-	m["advanced_setting"] = &schema.Schema{
-		Type: schema.TypeList,
-		// MinItems: 1,
-		MaxItems: 1,
-		Optional: true,
-		ForceNew: true,
-		Elem: &schema.Resource{
-			Schema: nodeAdvancedSetting(),
-		},
-		Description: "Advanced settings.",
 	}
 
 	return m
@@ -557,7 +545,7 @@ func resourceKsyunKceCluster() *schema.Resource {
 					"Users need to pass the Elastic IP creation pass-through parameter, which should be a JSON-formatted string.",
 			},
 			"master_config": {
-				Type:     schema.TypeSet,
+				Type:     schema.TypeList,
 				Optional: true,
 				ForceNew: true,
 				// Computed: true,
@@ -565,17 +553,15 @@ func resourceKsyunKceCluster() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: instanceForMasterNode(),
 				},
-				Set:         kceInstanceNodeHashFunc(),
 				Description: "The configuration for the master nodes.",
 			},
 			"worker_config": {
-				Type:     schema.TypeSet,
+				Type:     schema.TypeList,
 				ForceNew: true,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: instanceForWorkerNode(),
 				},
-				Set:         kceInstanceNodeHashFunc(),
 				Description: "The configuration for the worker nodes.",
 			},
 
