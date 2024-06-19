@@ -426,7 +426,7 @@ func resourceKsyunKceCluster() *schema.Resource {
 		Read:   resourceKsyunKceClusterRead,
 		Delete: resourceKsyunKceClusterDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			State: importKceCluster,
 		},
 		Schema: map[string]*schema.Schema{
 			"cluster_id": {
