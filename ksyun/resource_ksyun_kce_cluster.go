@@ -611,7 +611,7 @@ func resourceKsyunKceClusterUpdate(d *schema.ResourceData, meta interface{}) (er
 			return fmt.Errorf("error on update kce cluster: %s", err)
 		}
 	} else {
-		return fmt.Errorf("error on update kce cluster: %s", "this field is not supported to update at now. if you want to modify the information of this cluster, please move to the console to operate.")
+		return fmt.Errorf("error on update kce cluster: %s", "this field is not supported to update at now. if you want to modify the information of this cluster, please move on the console to operate.")
 	}
 
 	return resourceKsyunKceClusterRead(d, meta)
@@ -636,11 +636,23 @@ func resourceKsyunKceClusterDelete(d *schema.ResourceData, meta interface{}) (er
 func kcePreinspection(d *schema.ResourceData) error {
 	kceManagedMode := d.Get("cluster_manage_mode").(string)
 
+	blockErrFmt := "%s is duplication machine type block, the unique identification of master_config block conbine with instance_type, subnet_id, security_group_id, role, image_id. " +
+		"If the unique identification is the same, the instance config block is duplication. Please check the master_config block. " +
+		"And for the details of instance config block, please refer to the document https://registry.terraform.io/providers/kingsoftcloud/ksyun/latest/docs/resources/kce_cluster"
+
 	switch kceManagedMode {
 	case kceManagedModeManaged:
-		if helper.IsEmpty(d.Get("worker_config")) {
+		wc, ok := d.GetOk("worker_config")
+		if !ok {
 			return fmt.Errorf("worker_config is required when cluster_manage_mode is %s", kceManagedMode)
 		}
+		if helper.IsEmpty(wc) {
+			return fmt.Errorf("worker_config is required when cluster_manage_mode is %s", kceManagedMode)
+		}
+		if isDuplicationMachineType(wc.([]interface{})) {
+			return fmt.Errorf(blockErrFmt, "worker_config")
+		}
+
 		mc, ok := d.GetOk("master_config")
 		if ok {
 			if !helper.IsEmpty(mc) {
@@ -658,7 +670,24 @@ func kcePreinspection(d *schema.ResourceData) error {
 			if helper.IsEmpty(mc) {
 				return fmt.Errorf("master_config is required when cluster_manage_mode is %s", kceManagedMode)
 			}
+			if isDuplicationMachineType(mc.([]interface{})) {
+				return fmt.Errorf(blockErrFmt, "master_config")
+			}
+		} else {
+			return fmt.Errorf("master_config is required when cluster_manage_mode is %s", kceManagedMode)
 		}
 	}
 	return nil
+}
+
+func isDuplicationMachineType(machines []interface{}) bool {
+	m := make(map[int]bool)
+	for _, machine := range machines {
+		hashcode := kceInstanceNodeHashFunc()(machine)
+		if _, ok := m[hashcode]; ok {
+			return true
+		}
+		m[hashcode] = true
+	}
+	return false
 }

@@ -1,8 +1,6 @@
 package kce
 
 import (
-	"time"
-
 	"github.com/terraform-providers/terraform-provider-ksyun/ksyun/internal/structor/v1/kec"
 )
 
@@ -23,7 +21,7 @@ type KecInstancePara struct {
 	ImageID             string                    `json:"ImageId" mapstructure:"ImageID"`
 	PrivateIPAddress    string                    `json:"PrivateIpAddress" mapstructure:"PrivateIPAddress"`
 	ChargeType          string                    `json:"ChargeType" mapstructure:"ChargeType"`
-	CreateTime          time.Time                 `json:"CreateTime" mapstructure:"CreateTime"`
+	CreateTime          interface{}               `json:"CreateTime" mapstructure:"CreateTime"`
 	AvailabilityZone    string                    `json:"AvailabilityZone" mapstructure:"AvailabilityZone"`
 	SubnetID            string                    `json:"SubnetId" mapstructure:"SubnetID"`
 	VpcID               string                    `json:"VpcId" mapstructure:"VpcID"`

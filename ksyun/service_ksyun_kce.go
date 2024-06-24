@@ -349,18 +349,47 @@ func (s *KceService) CreateCluster(d *schema.ResourceData, resource *schema.Reso
 				workerNodeIds = make([]string, 0)
 				masterNodeIds = make([]string, 0)
 			)
-			for _, node := range nodes {
-				nodeId, err := getSdkValue("InstanceId", node)
-				if err != nil {
-					return err
+
+			for _, nodeIf := range nodes {
+				if node, ok := nodeIf.(map[string]interface{}); ok {
+					kceInstance := kce.InstanceSet{}
+
+					err := helper.MapstructureFiller(node, &kceInstance, "")
+					if err != nil {
+						return fmt.Errorf("convert master instance failed: %s", err)
+					}
+					nodeMap := map[string]interface{}{
+						"instance_type": kceInstance.KecInstancePara.InstanceType,
+						"image_id":      kceInstance.KecInstancePara.ImageID,
+						"subnet_id":     kceInstance.KecInstancePara.SubnetID,
+						"role":          kceInstance.InstanceRole,
+					}
+
+					networkInterface := kec.NetworkInterfaceSet{}
+					for _, networkInterfaceIf := range kceInstance.KecInstancePara.NetworkInterfaceSet {
+						if networkInterfaceIf.SubnetId == kceInstance.KecInstancePara.SubnetID {
+							networkInterface = networkInterfaceIf
+						}
+					}
+
+					securityIds := make([]string, len(networkInterface.SecurityGroupSet))
+					for _, sg := range networkInterface.SecurityGroupSet {
+						securityIds = append(securityIds, sg.SecurityGroupId)
+					}
+					nodeMap["security_group_id"] = securityIds
+
+					hashcode := kceInstanceNodeHashFunc()(nodeMap)
+
+					nodeHashAndId := AssembleIds(kceInstance.InstanceID, strconv.Itoa(hashcode))
+
+					switch kceInstance.InstanceRole {
+					case "Worker":
+						workerNodeIds = append(workerNodeIds, nodeHashAndId)
+					default:
+						masterNodeIds = append(masterNodeIds, nodeHashAndId)
+					}
 				}
-				nodeRole, err := getSdkValue("InstanceRole", node)
-				switch nodeRole {
-				case "Worker":
-					workerNodeIds = append(workerNodeIds, nodeId.(string))
-				default:
-					masterNodeIds = append(masterNodeIds, nodeId.(string))
-				}
+
 			}
 
 			_ = d.Set("master_id_list", masterNodeIds)
@@ -581,6 +610,11 @@ func (s *KceService) readAndSetInstance(d *schema.ResourceData, r *schema.Resour
 		workerInstances []interface{}
 
 		nodeInfoMap = make(map[int]nodeInfoList, 0)
+
+		instanceHashMap = make(map[int]string)
+
+		masterInstanceList = make([]string, 0)
+		workerInstanceList = make([]string, 0)
 	)
 	mIDs, _ = helper.GetSchemaListWithString(d, "master_id_list")
 	wIDs, _ = helper.GetSchemaListWithString(d, "worker_id_list")
@@ -634,6 +668,17 @@ func (s *KceService) readAndSetInstance(d *schema.ResourceData, r *schema.Resour
 			nodeList.list = append(nodeList.list, node)
 			nodeInfoMap[hashcode] = nodeList
 		}
+
+		var saveInstanceList []string
+		switch node.role {
+		case "Worker":
+			saveInstanceList = workerInstanceList
+		default:
+			saveInstanceList = masterInstanceList
+		}
+
+		instanceHashId := generateInstanceIdWithHashcode(node.nodeMap)
+		saveInstanceList = append(saveInstanceList, instanceHashId)
 	}
 
 	localMachineTypeSequenceM := map[int]int{}
@@ -646,16 +691,21 @@ func (s *KceService) readAndSetInstance(d *schema.ResourceData, r *schema.Resour
 		)
 
 		switch blockKey {
-		case "master_config":
-			mtl = d.Get("master_config").([]interface{})
 		case "worker_config":
 			sm = localMachineTypeSequenceW
-			mtl = d.Get("worker_config").([]interface{})
+		}
+
+		mtlI, ok := d.GetOk(blockKey)
+		if ok {
+			mtl = mtlI.([]interface{})
+		} else {
+			return
 		}
 
 		for idx, m := range mtl {
 			hashcode := kceInstanceNodeHashFunc()(m)
 			sm[hashcode] = idx
+			sm[idx] = hashcode
 		}
 	}
 
@@ -664,15 +714,33 @@ func (s *KceService) readAndSetInstance(d *schema.ResourceData, r *schema.Resour
 	}
 
 	if mIDs != nil && len(mIDs) > 0 {
-		masterInstances, err = queryKec(mIDs)
+		queryIds := make([]string, 0, len(mIDs))
+		for _, mID := range mIDs {
+			instanceIds := DisassembleIds(mID)
+			hashcode, err := strconv.Atoi(instanceIds[1])
+			if err != nil {
+				return fmt.Errorf("convert hashcode failed: %s", err)
+			}
+			logger.Debug("read master instances", "hashcode", hashcode, "instance_id", instanceIds[0])
+			instanceHashMap[hashcode] = instanceIds[0]
+			queryIds = append(queryIds, instanceIds[0])
+		}
+		masterInstances, err = queryKec(queryIds)
 		if err != nil {
 			return fmt.Errorf("read master instances failed: %s", err)
 		}
-
 	}
 
 	if wIDs != nil && len(wIDs) > 0 {
-		workerInstances, err = queryKec(wIDs)
+		queryIds := make([]string, 0, len(wIDs))
+		for _, wID := range wIDs {
+			instanceIds := DisassembleIds(wID)
+			hashcode, _ := strconv.Atoi(instanceIds[1])
+			logger.Debug("read master instances", "hashcode", instanceIds[1], "instance_id", instanceIds[0])
+			instanceHashMap[hashcode] = instanceIds[0]
+			queryIds = append(queryIds, instanceIds[0])
+		}
+		workerInstances, err = queryKec(queryIds)
 		if err != nil {
 			return fmt.Errorf("read worker instances failed: %s", err)
 		}
@@ -798,8 +866,83 @@ func (s *KceService) readAndSetInstance(d *schema.ResourceData, r *schema.Resour
 
 			resourceMap[block] = append(resourceMap[block].([]interface{}), theFirstNode.nodeMap)
 		}
+
+		// omit the element that is for occupied.
+		// compact the resourceMap
+		findCandidateFunc := func(instanceId string) (int, bool) {
+			for hashcode, _nodeInfoList := range nodeInfoMap {
+				for _, _nodeInfo := range _nodeInfoList.list {
+					if _nodeInfo.nodeMap["instance_id"] == instanceId {
+						return hashcode, true
+					}
+				}
+			}
+			return 0, false
+		}
+
+		findSaveMapWithHashcodeFunc := func(hashcode int, candidates []interface{}) (map[string]interface{}, int) {
+			for idx, candidate := range candidates {
+				if helper.IsEmpty(candidate) {
+					continue
+				}
+				candidateMap := candidate.(map[string]interface{})
+				if candidateMap["hashcode"] == hashcode {
+					return candidateMap, idx
+				}
+			}
+			return nil, 0
+		}
+
+		for k, ss := range resourceMap {
+			results := make([]interface{}, 0, len(ss.([]interface{})))
+			// stateSlice := d.Get(k).([]interface{})
+
+			sm := localMachineTypeSequenceM
+			if k == "worker_config" {
+				sm = localMachineTypeSequenceW
+			}
+
+			sss := ss.([]interface{})
+			stateLength := len(sss)
+			for idx := 0; idx < stateLength; idx++ {
+				if idx >= stateLength {
+					break
+				}
+
+				block := sss[idx]
+				if helper.IsEmpty(block) {
+					oldHashcode := sm[idx]
+					candidateInstanceId := instanceHashMap[oldHashcode]
+					hashcode, ok := findCandidateFunc(candidateInstanceId)
+					logger.Debug("readAndSetInstance", "hashcode", hashcode, "candidateInstanceId", candidateInstanceId)
+					if !ok {
+						continue
+					}
+					candidate, dealIdx := findSaveMapWithHashcodeFunc(hashcode, sss)
+					logger.Debug("readAndSetInstance", "candidate", candidate, "dealIdx", dealIdx)
+					if ok {
+						results = append(results, candidate)
+					}
+
+					// remove the element that is occupied
+					for i := dealIdx; i < len(sss)-1; i++ {
+						sss[i] = sss[i+1]
+					}
+					stateLength--
+				} else {
+					results = append(results, block)
+				}
+			}
+			resourceMap[k] = results
+		}
 	}
 
+	if len(masterInstanceList) > 0 {
+		_ = d.Set("master_id_list", masterInstanceList)
+	}
+	if len(workerInstanceList) > 0 {
+		_ = d.Set("worker_id_list", workerInstanceList)
+	}
 	SdkResponseAutoResourceData(d, r, resourceMap, nil)
 	// d.Get("master_config")
 
@@ -833,7 +976,7 @@ func convertInstanceToMapForSchema(insResp map[string]interface{}) (map[string]i
 			continue
 		}
 		insMap[underK] = v
-		// logger.Debug("convertInstanceToMapForSchema", "k", k, "v", v
+		logger.Debug("convertInstanceToMapForSchema", "k", k, "v", v)
 	}
 
 	// handle the special fields
@@ -885,4 +1028,10 @@ func handleAdvancedSetting2Map(advancedSetting kce.AdvancedSetting) map[string]i
 func localNodeCfgHashcode(d *schema.ResourceData, field string) int {
 	localConfig, _ := helper.GetSchemaListHeadMap(d, field)
 	return kceInstanceNodeHashFunc()(localConfig)
+}
+
+func generateInstanceIdWithHashcode(instance map[string]interface{}) string {
+	hashcode := kceInstanceNodeHashFunc()(instance)
+	instanceId := instance["instance_id"].(string)
+	return AssembleIds(instanceId, strconv.Itoa(hashcode))
 }
