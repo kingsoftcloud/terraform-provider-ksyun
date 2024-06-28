@@ -149,6 +149,23 @@ func dataSourceKsyunAlbRuleGroups() *schema.Resource {
 							Computed:    true,
 							Description: "The service host name of the health check.",
 						},
+						"http_method": {
+							Type:        schema.TypeString,
+							Description: "The http requests' method.",
+							Computed:    true,
+						},
+
+						"health_port": {
+							Type:        schema.TypeInt,
+							Description: "The port of connecting for health check.",
+							Computed:    true,
+						},
+
+						"health_protocol": {
+							Type:        schema.TypeString,
+							Description: "The protocol of connecting for health check.",
+							Computed:    true,
+						},
 						"alb_rule_set": {
 							Type:        schema.TypeList,
 							Computed:    true,

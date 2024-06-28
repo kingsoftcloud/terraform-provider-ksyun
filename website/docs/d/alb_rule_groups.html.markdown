@@ -46,8 +46,11 @@ In addition to all arguments above, the following attributes are exported:
   * `cookie_name` - The name of cookie.
   * `cookie_type` - The type of cookie.
   * `health_check_state` - Status maintained by health examination.
+  * `health_port` - The port of connecting for health check.
+  * `health_protocol` - The protocol of connecting for health check.
   * `healthy_threshold` - Health threshold.
   * `host_name` - The service host name of the health check.
+  * `http_method` - The http requests' method.
   * `id` - ID of the ALB Rule Group.
   * `interval` - Interval of health examination.
   * `listener_sync` - Whether to synchronize the health check, session persistence, and load balancing algorithm of the listener.

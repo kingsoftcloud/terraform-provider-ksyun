@@ -343,6 +343,23 @@ func (s *AlbRuleGroup) modifyRuleGroupCall(d *schema.ResourceData, r *schema.Res
 				}
 			}
 		}
+
+		if d.HasChange("health_protocol"); d.Get("health_protocol") == "HTTP" {
+			transform["url_path"] = SdkReqTransform{
+				forceUpdateParam: true,
+			}
+
+			transform["http_method"] = SdkReqTransform{
+				forceUpdateParam: true,
+				ValueFunc: func(data *schema.ResourceData) (interface{}, bool) {
+					methodValue, ok := data.GetOk("http_method")
+					if !ok {
+						return "HEAD", true
+					}
+					return methodValue, true
+				},
+			}
+		}
 	}
 
 	switch d.Get("type") {
