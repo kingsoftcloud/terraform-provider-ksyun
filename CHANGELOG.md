@@ -2,7 +2,7 @@
 
 IMPROVEMENTS:
 
-- `ksyun_alb_rule_group` 新增`http_method` 健康检查协议;
+- `ksyun_alb_rule_group` 新增`http_method` 健康检查HTTP方法，`health_protocol` 健康检查协议，`health_port` 健康检查端口;
 
 ## 1.15.6 (May 13, 2024)
 
