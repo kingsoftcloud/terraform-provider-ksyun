@@ -192,8 +192,18 @@ func AlbRuleGroupSyncOffDiffSuppressFunc(k, old, new string, d *schema.ResourceD
 		if n := d.Get("session_state"); n == "start" {
 			return false
 		}
-	case "interval", "timeout", "healthy_threshold", "unhealthy_threshold", "url_path", "host_name":
+
+	// health check
+	case "interval", "timeout", "healthy_threshold", "unhealthy_threshold",
+		"health_protocol", "health_port", "http_method", "url_path", "host_name":
 		if n := d.Get("health_check_state"); n == "start" {
+			switch k {
+			case "http_method", "url_path", "host_name":
+				if d.Get("health_protocol") == "HTTP" {
+					return false
+				}
+				return true
+			}
 			return false
 		}
 	case "cookie_name":
@@ -205,6 +215,7 @@ func AlbRuleGroupSyncOffDiffSuppressFunc(k, old, new string, d *schema.ResourceD
 
 	case "session_state", "health_check_state":
 		return false
+
 	}
 
 	return true
