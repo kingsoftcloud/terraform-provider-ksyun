@@ -9,6 +9,7 @@
 # You will need to pass the `--batch` flag to `gpg` in your signing step 
 # in `goreleaser` to indicate this is being used in a non-interactive mode.
 #
+version: "2"
 name: release
 on:
   push:
@@ -42,8 +43,8 @@ jobs:
         name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
         with:
-          version: 2
-          args: release --clean
+          version: latest
+          args: release --snapshot --skip-publish
         env:
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
