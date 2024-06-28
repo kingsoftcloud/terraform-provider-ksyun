@@ -101,6 +101,7 @@ The `worker_config` object supports the following:
 
 * `charge_type` - (Required, ForceNew) charge type of the instance.
 * `image_id` - (Required, ForceNew) The ID for the image to use for the instance.
+* `instance_type` - (Required, ForceNew) The type of instance to start. <br> - NOTE: it's may trigger this instance to power off, if instance type will be demotion.
 * `security_group_id` - (Required, ForceNew) Security Group to associate with.
 * `subnet_id` - (Required, ForceNew) The ID of subnet. the instance will use the subnet in the current region.
 * `auto_create_ebs` - (Optional) Whether to create EBS volumes from snapshots in the custom image, default is false.
@@ -116,7 +117,6 @@ The `worker_config` object supports the following:
 * `instance_name` - (Optional, ForceNew) The name of instance, which contains 2-64 characters and only support Chinese, English, numbers.
 * `instance_password` - (Optional, ForceNew) Password to an instance is a string of 8 to 32 characters.
 * `instance_status` - (Optional) The state of instance.
-* `instance_type` - (Optional, ForceNew) The type of instance to start. <br> - NOTE: it's may trigger this instance to power off, if instance type will be demotion.
 * `keep_image_login` - (Optional) Keep the initial settings of the custom image.
 * `key_id` - (Optional) The certificate id of the instance.
 * `local_volume_snapshot_id` - (Optional, ForceNew) When the local data disk opens, the snapshot id is entered.

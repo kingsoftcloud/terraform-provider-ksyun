@@ -215,8 +215,9 @@ The `managed_cluster_multi_master` object supports the following:
 The `master_config` object supports the following:
 
 * `charge_type` - (Required, ForceNew) charge type of the instance.
-* `count` - (Required) The number of master nodes. The count of master nodes must be 3 or 5.
+* `count` - (Required, ForceNew) The number of master nodes. The count of master nodes must be 3 or 5.
 * `image_id` - (Required, ForceNew) The ID for the image to use for the instance.
+* `instance_type` - (Required, ForceNew) The type of instance to start. <br> - NOTE: it's may trigger this instance to power off, if instance type will be demotion.
 * `security_group_id` - (Required, ForceNew) Security Group to associate with.
 * `subnet_id` - (Required, ForceNew) The ID of subnet. the instance will use the subnet in the current region.
 * `advanced_setting` - (Optional, ForceNew) Advanced settings.
@@ -233,14 +234,13 @@ The `master_config` object supports the following:
 * `instance_name` - (Optional, ForceNew) The name of instance, which contains 2-64 characters and only support Chinese, English, numbers.
 * `instance_password` - (Optional, ForceNew) Password to an instance is a string of 8 to 32 characters.
 * `instance_status` - (Optional) The state of instance.
-* `instance_type` - (Optional, ForceNew) The type of instance to start. <br> - NOTE: it's may trigger this instance to power off, if instance type will be demotion.
 * `keep_image_login` - (Optional) Keep the initial settings of the custom image.
 * `key_id` - (Optional) The certificate id of the instance.
 * `local_volume_snapshot_id` - (Optional, ForceNew) When the local data disk opens, the snapshot id is entered.
 * `private_ip_address` - (Optional) Instance private IP address can be specified when you creating new instance.
 * `project_id` - (Optional) The project instance belongs to.
 * `purchase_time` - (Optional, ForceNew) The duration that you will buy the resource.
-* `role` - (Optional) The role of instance. Valid values: Master_Etcd.
+* `role` - (Optional) 
 * `sriov_net_support` - (Optional, ForceNew) whether support networking enhancement.
 * `system_disk` - (Optional) System disk parameters.
 * `tags` - (Optional) the tags of the resource.
@@ -262,6 +262,7 @@ The `worker_config` object supports the following:
 * `charge_type` - (Required, ForceNew) charge type of the instance.
 * `count` - (Required, ForceNew) The number of worker nodes.
 * `image_id` - (Required, ForceNew) The ID for the image to use for the instance.
+* `instance_type` - (Required, ForceNew) The type of instance to start. <br> - NOTE: it's may trigger this instance to power off, if instance type will be demotion.
 * `security_group_id` - (Required, ForceNew) Security Group to associate with.
 * `subnet_id` - (Required, ForceNew) The ID of subnet. the instance will use the subnet in the current region.
 * `advanced_setting` - (Optional, ForceNew) Advanced settings.
@@ -278,7 +279,6 @@ The `worker_config` object supports the following:
 * `instance_name` - (Optional, ForceNew) The name of instance, which contains 2-64 characters and only support Chinese, English, numbers.
 * `instance_password` - (Optional, ForceNew) Password to an instance is a string of 8 to 32 characters.
 * `instance_status` - (Optional) The state of instance.
-* `instance_type` - (Optional, ForceNew) The type of instance to start. <br> - NOTE: it's may trigger this instance to power off, if instance type will be demotion.
 * `keep_image_login` - (Optional) Keep the initial settings of the custom image.
 * `key_id` - (Optional) The certificate id of the instance.
 * `local_volume_snapshot_id` - (Optional, ForceNew) When the local data disk opens, the snapshot id is entered.
