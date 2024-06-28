@@ -1,3 +1,9 @@
+## 1.15.7 (May 28, 2024)
+
+IMPROVEMENTS:
+
+- `ksyun_alb_rule_group` 新增`http_method` 健康检查协议;
+
 ## 1.15.6 (May 13, 2024)
 
 BUGFIX:

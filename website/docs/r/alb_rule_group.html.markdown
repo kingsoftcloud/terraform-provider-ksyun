@@ -155,6 +155,7 @@ The following arguments are supported:
 * `health_check_state` - (Optional) Status maintained by health examination.Valid Values:'start', 'stop'. Should set it value, when `listener_sync` is off.
 * `healthy_threshold` - (Optional) Health threshold.Valid Values:1-10. Should set it value, when `listener_sync` is off.
 * `host_name` - (Optional) The service host name of the health check, which is available only for the HTTP or HTTPS health check. Should set it value, when `listener_sync` is off.
+* `http_method` - (Optional) The http requests' method. Valid Value: GET|HEAD.
 * `interval` - (Optional) Interval of health examination.Valid Values:1-3600. Should set it value, when `listener_sync` is off.
 * `method` - (Optional) Forwarding mode of listener. Valid Values:'RoundRobin', 'LeastConnections'.
 * `redirect_alb_listener_id` - (Optional) The id of redirect alb listener. Conflict with 'backend_server_group_id' and 'fixed_response_config'.

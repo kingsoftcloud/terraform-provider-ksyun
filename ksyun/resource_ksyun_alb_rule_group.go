@@ -265,6 +265,16 @@ func resourceKsyunAlbRuleGroup() *schema.Resource {
 				DiffSuppressFunc: AlbRuleGroupSyncOffDiffSuppressFunc,
 				Description:      "Status maintained by health examination.Valid Values:'start', 'stop'. Should set it value, when `listener_sync` is off.",
 			},
+
+			"http_method": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The http requests' method. Valid Value: GET|HEAD.",
+				ValidateFunc: validation.StringInSlice([]string{"GET", "HEAD"},
+					false),
+				Computed: true,
+			},
+
 			"interval": {
 				Type:             schema.TypeInt,
 				Optional:         true,
