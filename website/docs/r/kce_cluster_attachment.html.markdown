@@ -4,20 +4,23 @@ layout: "ksyun"
 page_title: "ksyun: ksyun_kce_cluster_attachment"
 sidebar_current: "docs-ksyun-resource-kce_cluster_attachment"
 description: |-
-  Provides a KCE worker resource.
+  Provides a KCE attachment resource that attach a new instance to a cluster.
 ---
 
 # ksyun_kce_cluster_attachment
 
-Provides a KCE worker resource.
+Provides a KCE attachment resource that attach a new instance to a cluster.
 
 #
 
 ## Example Usage
 
 ```hcl
+data "ksyun_kce_instance_images" "test" {
+}
+
 resource "ksyun_kce_cluster_attachment" "foo" {
-  cluster_id = ksyun_kce_cluster.default.id
+  cluster_id = "67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx"
 
   worker_config {
     image_id      = data.ksyun_kce_instance_images.test.image_set.0.image_id
@@ -26,8 +29,8 @@ resource "ksyun_kce_cluster_attachment" "foo" {
       disk_size = 20
       disk_type = "SSD3.0"
     }
-    subnet_id         = ksyun_subnet.normal.id
-    security_group_id = [ksyun_security_group.test.id]
+    subnet_id         = "subnet-xxxxxx"
+    security_group_id = ["sg-xxxxxx"]
     charge_type       = "Daily"
 
   }
