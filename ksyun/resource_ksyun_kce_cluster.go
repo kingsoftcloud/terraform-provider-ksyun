@@ -1,6 +1,9 @@
 /*
 Provides a KCE cluster resource.
 
+~> **NOTE:** We recommend that uses the `ksyun_kce_cluster` resource to create a cluster with few `worker_config`.
+If you want to manage more worker instances in this cluster, to use the `ksyun_kce_cluster_attach_existence` or `ksyun_kce_cluster_attachment` resource to attach the worker instances to the cluster. The reason is that the `worker_config` is unchangeable and may cause the cluster to be re-created because it is marked *ForceNew*.
+
 # Example Usage
 
 ## basic dependency resources
@@ -124,6 +127,34 @@ resource "ksyun_kce_cluster" "default" {
     count         = 2
     image_id      = data.ksyun_kce_instance_images.test.image_set.0.image_id
     instance_type = "S6.4B"
+    instance_name = "tf_kce_worker"
+    system_disk {
+      disk_size = 20
+      disk_type = "SSD3.0"
+    }
+    subnet_id         = ksyun_subnet.normal.id
+    security_group_id = [ksyun_security_group.test.id]
+    charge_type       = "Daily"
+    advanced_setting {
+      container_runtime = "containerd"
+      label {
+        key   = "tf_assembly_kce"
+        value = "advanced_setting"
+      }
+      taints {
+        key    = "key1"
+        value  = "value1"
+        effect = "NoSchedule"
+
+      }
+    }
+  }
+
+## config a different machine type
+  worker_config {
+    count         = 2
+    image_id      = data.ksyun_kce_instance_images.test.image_set.0.image_id
+    instance_type = "S6.4C"
     instance_name = "tf_kce_worker"
     system_disk {
       disk_size = 20
@@ -337,6 +368,8 @@ func instanceForNode() map[string]*schema.Schema {
 	m["instance_type"].Computed = false
 	m["instance_type"].Required = true
 	m["instance_type"].Optional = false
+
+	m["security_group_id"].MaxItems = 1
 
 	m["role"] = &schema.Schema{
 		Type:     schema.TypeString,
@@ -553,7 +586,10 @@ func resourceKsyunKceCluster() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: instanceForMasterNode(),
 				},
-				Description: "The configuration for the master nodes.",
+				Description: "The configuration for the master nodes. If the cluster_manage_mode is DedicatedCluster, this field is **required**." +
+					" **Notes:** work_config block is identified by the **instance_type, subnet_id, security_group_id, role, image_id**. " +
+					"If the unique identification is the same, the instance config block is conflict, and then **cause an error**." +
+					"If the unique identification is changed, that leads to the cluster **re-creation**.",
 			},
 			"worker_config": {
 				Type:     schema.TypeList,
@@ -562,7 +598,10 @@ func resourceKsyunKceCluster() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: instanceForWorkerNode(),
 				},
-				Description: "The configuration for the worker nodes.",
+				Description: "The configuration for the worker nodes. If the cluster_manage_mode is ManagedCluster, this field is **required**." +
+					" **Notes:** work_config block is identified by the **instance_type, subnet_id, security_group_id, role, image_id**. " +
+					"If the unique identification is the same, the instance config block is conflict, and then **cause an error**." +
+					"If the unique identification is changed, that leads to the cluster **re-creation**.",
 			},
 
 			"master_id_list": {

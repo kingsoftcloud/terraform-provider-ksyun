@@ -1059,9 +1059,7 @@ func convertInstanceToMapForSchema(insResp map[string]interface{}) (map[string]i
 			insMap["vpc_id"] = ni.VpcId
 
 			sgIds := make([]string, 0, len(ni.SecurityGroupSet))
-			for _, sg := range ni.SecurityGroupSet {
-				sgIds = append(sgIds, sg.SecurityGroupId)
-			}
+			sgIds = append(sgIds, ni.SecurityGroupSet[0].SecurityGroupId)
 			insMap["security_group_id"] = sgIds
 		}
 
