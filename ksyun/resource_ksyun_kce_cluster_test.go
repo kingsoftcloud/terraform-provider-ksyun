@@ -51,9 +51,8 @@ resource "ksyun_kce_cluster" "default" {
 	}
   }
 
-
   worker_config {
-    count         = 2
+    count         = 1
     image_id      = data.ksyun_kce_instance_images.test.image_set.0.image_id
     instance_type = "S6.4B"
     system_disk {
@@ -74,7 +73,32 @@ resource "ksyun_kce_cluster" "default" {
 		key    = "key1"
 		value  = "value1"
 		effect = "NoSchedule"
+      }
+	}
+  }
 
+  worker_config {
+    count         = 2
+    image_id      = data.ksyun_kce_instance_images.test.image_set.0.image_id
+    instance_type = "S6.2A"
+    system_disk {
+      disk_size = 20
+      disk_type = "SSD3.0"
+    }
+    subnet_id         = "c771027a-fafd-4b3b-a6b9-daeab9d0c13a"
+    security_group_id = ["59a87036-dc27-41cf-98ab-24a387501195"]
+    charge_type       = "Daily"
+	advanced_setting {
+	  container_runtime = "containerd"
+	  pre_user_script   = "def"
+      label {
+		key  = "tf_assembly_kce"
+		value = "advanced_setting"
+      }
+	  taints {
+		key    = "key3"
+		value  = "value3"
+		effect = "NoSchedule"
       }
 	}
   }

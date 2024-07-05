@@ -1,29 +1,41 @@
 /*
-Provides a KCE ClusterAttachExistence resource.
+Provides a KCE attachment resource that attach the existing instance to a cluster.
 
 # Example Usage
 
 ```hcl
+variable "suffix" {
+	  default = "test"
+}
 
-	resource "ksyun_kce_cluster_attach_existence" "default" {
-	  cluster_id        = ksyun_kce_cluster.test_cluster.id
-	  instance_id       = ksyun_instance.traffic_analysis.0.id
-	  image_id          = data.ksyun_kce_instance_images.test.image_set.0.image_id
-	  instance_password = "1235Test$"
-	  data_disk {
-	    auto_format_and_mount = true
-	    file_system           = "ext4"
-	    mount_target          = "/data"
-	  }
-	  container_runtime       = "docker"
-	  docker_path             = "/data/docker_new"
-	  user_script             = "abc"
-	  pre_user_script         = "def"
-	  schedulable             = false
+resource "ksyun_instance" "foo3" {
+  image_id          = "image-xxxxxx"
+  instance_type     = "S6.1A"
+  subnet_id         = "subnet-xxxxxx"
+  instance_password = "Xuan663222"
+  charge_type       = "Daily"
+  security_group_id = ["sg-xxxxxx"]
+  instance_name     = "ksyun-${var.suffix}"
+}
 
-	  container_log_max_size  = 200
-	  container_log_max_files = 20
-	}
+resource "ksyun_kce_cluster_attach_existence" "default" {
+  cluster_id        = "67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx"
+  instance_id       = ksyun_instance.foo3.id
+  image_id          = "image-xxxxxx"
+  instance_password = "1235Test$"
+  data_disk {
+    auto_format_and_mount = true
+    file_system           = "ext4"
+    mount_target          = "/data"
+  }
+  container_runtime = "docker"
+  docker_path       = "/data/docker_new"
+  user_script       = "abc"
+  pre_user_script   = "def"
+
+  container_log_max_size  = 200
+  container_log_max_files = 20
+}
 
 ```
 
@@ -32,7 +44,7 @@ Provides a KCE ClusterAttachExistence resource.
 KCE ClusterAttachExistence can be imported using the id, e.g.
 
 ```
-$ terraform import ksyun_kce_ClusterAttachExistence.default 67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
+$ terraform import ksyun_kce_cluster_attach_existence.default 67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
 ```
 */
 
@@ -72,7 +84,7 @@ func resourceKsyunKceClusterAttachExistence() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "The ID of the image which support KCE.",
+				Description: "The ID of the image which support KCE. **NOTES**: This image will reinstall the existing instance after added to the cluster.",
 			},
 
 			"instance_delete_mode": {

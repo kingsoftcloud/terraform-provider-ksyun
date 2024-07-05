@@ -4,30 +4,33 @@ layout: "ksyun"
 page_title: "ksyun: ksyun_kce_cluster_attachment"
 sidebar_current: "docs-ksyun-resource-kce_cluster_attachment"
 description: |-
-  Provides a KCE worker resource.
+  Provides a KCE attachment resource that attach a new instance to a cluster.
 ---
 
 # ksyun_kce_cluster_attachment
 
-Provides a KCE worker resource.
+Provides a KCE attachment resource that attach a new instance to a cluster.
 
 #
 
 ## Example Usage
 
 ```hcl
+data "ksyun_kce_instance_images" "test" {
+}
+
 resource "ksyun_kce_cluster_attachment" "foo" {
-  cluster_id = ksyun_kce_cluster.default.id
+  cluster_id = "67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx"
 
   worker_config {
-    image_id      = "fbafd8cd-b570-47c4-a3db-ff9702108f17"
-    instance_type = "S6.4B"
+    image_id      = data.ksyun_kce_instance_images.test.image_set.0.image_id
+    instance_type = "S6.2A"
     system_disk {
       disk_size = 20
       disk_type = "SSD3.0"
     }
-    subnet_id         = "c771027a-fafd-4b3b-a6b9-daeab9d0c13a"
-    security_group_id = ["59a87036-dc27-41cf-98ab-24a387501195"]
+    subnet_id         = "subnet-xxxxxx"
+    security_group_id = ["sg-xxxxxx"]
     charge_type       = "Daily"
 
   }
@@ -101,6 +104,7 @@ The `worker_config` object supports the following:
 
 * `charge_type` - (Required, ForceNew) charge type of the instance.
 * `image_id` - (Required, ForceNew) The ID for the image to use for the instance.
+* `instance_type` - (Required, ForceNew) The type of instance to start. <br> - NOTE: it's may trigger this instance to power off, if instance type will be demotion.
 * `security_group_id` - (Required, ForceNew) Security Group to associate with.
 * `subnet_id` - (Required, ForceNew) The ID of subnet. the instance will use the subnet in the current region.
 * `auto_create_ebs` - (Optional) Whether to create EBS volumes from snapshots in the custom image, default is false.
@@ -116,7 +120,6 @@ The `worker_config` object supports the following:
 * `instance_name` - (Optional, ForceNew) The name of instance, which contains 2-64 characters and only support Chinese, English, numbers.
 * `instance_password` - (Optional, ForceNew) Password to an instance is a string of 8 to 32 characters.
 * `instance_status` - (Optional) The state of instance.
-* `instance_type` - (Optional, ForceNew) The type of instance to start. <br> - NOTE: it's may trigger this instance to power off, if instance type will be demotion.
 * `keep_image_login` - (Optional) Keep the initial settings of the custom image.
 * `key_id` - (Optional) The certificate id of the instance.
 * `local_volume_snapshot_id` - (Optional, ForceNew) When the local data disk opens, the snapshot id is entered.
@@ -142,6 +145,6 @@ In addition to all arguments above, the following attributes are exported:
 KCE worker can be imported using the id, e.g.
 
 ```
-$ terraform import ksyun_kce_worker.default 67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
+$ terraform import ksyun_kce_cluster_attachment.default 67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
 ```
 

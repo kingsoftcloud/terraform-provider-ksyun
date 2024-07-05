@@ -1,7 +1,12 @@
 /*
 Provides a KCE cluster resource.
 
+~> **NOTE:** We recommend that uses the `ksyun_kce_cluster` resource to create a cluster with few `worker_config`.
+If you want to manage more worker instances in this cluster, to use the `ksyun_kce_cluster_attach_existence` or `ksyun_kce_cluster_attachment` resource to attach the worker instances to the cluster. The reason is that the `worker_config` is unchangeable and may cause the cluster to be re-created because it is marked *ForceNew*.
+
 # Example Usage
+
+## basic dependency resources
 
 ```hcl
 
@@ -9,32 +14,172 @@ data "ksyun_kce_instance_images" "test" {
   output_file = "output_result"
 }
 
-resource "ksyun_kce_cluster" "default" {
-  cluster_name        = "tf_test_cluster"
-  cluster_desc        = "description..."
-  cluster_manage_mode = "DedicatedCluster"
-  vpc_id              = ksyun_vpc.tf_test.id
-  pod_cidr            = "172.16.0.0/16"
-  service_cidr        = "10.254.0.0/16"
-  network_type        = "Flannel"
-  k8s_version         = "v1.19.3"
-  reserve_subnet_id   = ksyun_subnet.tf_test_reserve_subnet.id
+data "ksyun_kce_instance_images" "test" {
+}
 
-  master_config {
-    role          = "Master_Etcd"
-    count         = 3
+variable "az" {
+  default = "cn-beijing-6e"
+}
+
+
+variable "suffix" {
+  default = "-kce-complete"
+}
+```
+
+## create a ManagementCluster
+
+```hcl
+
+resource "ksyun_kce_cluster" "default" {
+  cluster_name        = "tf-modification${var.suffix}"
+  cluster_desc        = "description...modification"
+  cluster_manage_mode = "ManagedCluster"
+  vpc_id              = ksyun_vpc.test.id
+  pod_cidr            = "172.16.0.0/16"
+  service_cidr        = "10.252.0.0/16"
+  network_type        = "Flannel"
+  k8s_version         = "v1.23.17"
+  reserve_subnet_id   = ksyun_subnet.reserve.id
+
+  managed_cluster_multi_master {
+    subnet_id         = ksyun_subnet.normal.id
+    security_group_id = ksyun_security_group.test.id
+  }
+
+  worker_config {
+    count         = 2
     image_id      = data.ksyun_kce_instance_images.test.image_set.0.image_id
     instance_type = "S6.4B"
+    instance_name = "tf_kce_worker"
     system_disk {
       disk_size = 20
       disk_type = "SSD3.0"
     }
-    subnet_id         = ksyun_subnet.tf_test_subnet.id
-    security_group_id = [ksyun_security_group.default.id]
+    subnet_id         = ksyun_subnet.normal.id
+    security_group_id = [ksyun_security_group.test.id]
     charge_type       = "Daily"
+    advanced_setting {
+      container_runtime = "containerd"
+      label {
+        key   = "tf_assembly_kce"
+        value = "advanced_setting"
+      }
+      taints {
+        key    = "key1"
+        value  = "value1"
+        effect = "NoSchedule"
+
+      }
+    }
   }
 }
 ```
+
+## create a DedicatedCluster
+
+```hcl
+
+resource "ksyun_kce_cluster" "default" {
+  cluster_name        = "tf-modification${var.suffix}"
+  cluster_desc        = "description...modification"
+  cluster_manage_mode = "DedicateCluster"
+  vpc_id              = ksyun_vpc.test.id
+  pod_cidr            = "172.16.0.0/16"
+  service_cidr        = "10.252.0.0/16"
+  network_type        = "Flannel"
+  k8s_version         = "v1.23.17"
+  reserve_subnet_id   = ksyun_subnet.reserve.id
+
+  managed_cluster_multi_master {
+    subnet_id         = ksyun_subnet.normal.id
+    security_group_id = ksyun_security_group.test.id
+  }
+
+  master_config {
+    count         = 3
+    image_id      = data.ksyun_kce_instance_images.test.image_set.0.image_id
+    instance_type = "S6.4B"
+    instance_name = "tf_kce_master"
+    system_disk {
+      disk_size = 20
+      disk_type = "SSD3.0"
+    }
+    subnet_id         = ksyun_subnet.normal.id
+    security_group_id = [ksyun_security_group.test.id]
+    charge_type       = "Daily"
+    advanced_setting {
+      container_runtime = "containerd"
+      label {
+        key   = "tf_assembly_kce"
+        value = "advanced_setting"
+      }
+      taints {
+        key    = "key1"
+        value  = "value1"
+        effect = "NoSchedule"
+
+      }
+    }
+  }
+
+  worker_config {
+    count         = 2
+    image_id      = data.ksyun_kce_instance_images.test.image_set.0.image_id
+    instance_type = "S6.4B"
+    instance_name = "tf_kce_worker"
+    system_disk {
+      disk_size = 20
+      disk_type = "SSD3.0"
+    }
+    subnet_id         = ksyun_subnet.normal.id
+    security_group_id = [ksyun_security_group.test.id]
+    charge_type       = "Daily"
+    advanced_setting {
+      container_runtime = "containerd"
+      label {
+        key   = "tf_assembly_kce"
+        value = "advanced_setting"
+      }
+      taints {
+        key    = "key1"
+        value  = "value1"
+        effect = "NoSchedule"
+
+      }
+    }
+  }
+
+## config a different machine type
+  worker_config {
+    count         = 2
+    image_id      = data.ksyun_kce_instance_images.test.image_set.0.image_id
+    instance_type = "S6.4C"
+    instance_name = "tf_kce_worker"
+    system_disk {
+      disk_size = 20
+      disk_type = "SSD3.0"
+    }
+    subnet_id         = ksyun_subnet.normal.id
+    security_group_id = [ksyun_security_group.test.id]
+    charge_type       = "Daily"
+    advanced_setting {
+      container_runtime = "containerd"
+      label {
+        key   = "tf_assembly_kce"
+        value = "advanced_setting"
+      }
+      taints {
+        key    = "key1"
+        value  = "value1"
+        effect = "NoSchedule"
+
+      }
+    }
+  }
+}
+```
+
 
 # Import
 
@@ -220,6 +365,12 @@ func instanceForNode() map[string]*schema.Schema {
 	m["key_id"].Computed = true
 	m["tags"].Computed = true
 
+	m["instance_type"].Computed = false
+	m["instance_type"].Required = true
+	m["instance_type"].Optional = false
+
+	m["security_group_id"].MaxItems = 1
+
 	m["role"] = &schema.Schema{
 		Type:     schema.TypeString,
 		Optional: true,
@@ -236,6 +387,18 @@ func instanceForNode() map[string]*schema.Schema {
 		Computed:    true,
 		ForceNew:    true,
 		Description: "",
+	}
+
+	m["advanced_setting"] = &schema.Schema{
+		Type: schema.TypeList,
+		// MinItems: 1,
+		MaxItems:    1,
+		Optional:    true,
+		ForceNew:    true,
+		Description: "Advanced settings.",
+		Elem: &schema.Resource{
+			Schema: nodeAdvancedSetting(),
+		},
 	}
 
 	for _, field := range instanceNodeForceNewField {
@@ -271,51 +434,18 @@ func instanceForWorkerNode() map[string]*schema.Schema {
 		Description: "The number of worker nodes.",
 	}
 
-	m["advanced_setting"] = &schema.Schema{
-		Type: schema.TypeList,
-		// MinItems: 1,
-		MaxItems:    1,
-		Optional:    true,
-		ForceNew:    true,
-		Description: "Advanced settings.",
-		Elem: &schema.Resource{
-			Schema: nodeAdvancedSetting(),
-		},
-	}
-
 	return m
 }
 
 func instanceForMasterNode() map[string]*schema.Schema {
 	m := instanceForNode()
 
-	m["role"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Optional: true,
-		Default:  "Master_Etcd",
-		ValidateFunc: validation.StringInSlice([]string{
-			"Master_Etcd",
-		}, false),
-		Description: "The role of instance. Valid values: Master_Etcd.",
-	}
-
 	m["count"] = &schema.Schema{
 		Type:         schema.TypeInt,
 		Required:     true,
+		ForceNew:     true,
 		ValidateFunc: validation.IntInSlice([]int{3, 5}),
 		Description:  "The number of master nodes. The count of master nodes must be 3 or 5.",
-	}
-
-	m["advanced_setting"] = &schema.Schema{
-		Type: schema.TypeList,
-		// MinItems: 1,
-		MaxItems: 1,
-		Optional: true,
-		ForceNew: true,
-		Elem: &schema.Resource{
-			Schema: nodeAdvancedSetting(),
-		},
-		Description: "Advanced settings.",
 	}
 
 	return m
@@ -329,7 +459,7 @@ func resourceKsyunKceCluster() *schema.Resource {
 		Read:   resourceKsyunKceClusterRead,
 		Delete: resourceKsyunKceClusterDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			State: importKceCluster,
 		},
 		Schema: map[string]*schema.Schema{
 			"cluster_id": {
@@ -452,21 +582,26 @@ func resourceKsyunKceCluster() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 				// Computed: true,
-				MaxItems: 1,
+				// MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: instanceForMasterNode(),
 				},
-				Description: "The configuration for the master nodes.",
+				Description: "The configuration for the master nodes. If the cluster_manage_mode is DedicatedCluster, this field is **required**." +
+					" **Notes:** work_config block is identified by the **instance_type, subnet_id, security_group_id, role, image_id**. " +
+					"If the unique identification is the same, the instance config block is conflict, and then **cause an error**." +
+					"If the unique identification is changed, that leads to the cluster **re-creation**.",
 			},
 			"worker_config": {
 				Type:     schema.TypeList,
 				ForceNew: true,
 				Optional: true,
-				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: instanceForWorkerNode(),
 				},
-				Description: "The configuration for the worker nodes.",
+				Description: "The configuration for the worker nodes. If the cluster_manage_mode is ManagedCluster, this field is **required**." +
+					" **Notes:** work_config block is identified by the **instance_type, subnet_id, security_group_id, role, image_id**. " +
+					"If the unique identification is the same, the instance config block is conflict, and then **cause an error**." +
+					"If the unique identification is changed, that leads to the cluster **re-creation**.",
 			},
 
 			"master_id_list": {
@@ -515,7 +650,7 @@ func resourceKsyunKceClusterUpdate(d *schema.ResourceData, meta interface{}) (er
 			return fmt.Errorf("error on update kce cluster: %s", err)
 		}
 	} else {
-		return fmt.Errorf("error on update kce cluster: %s", "this field is not supported to update at now. if you want to modify the information of this cluster, please move to the console to operate.")
+		return fmt.Errorf("error on update kce cluster: %s", "this field is not supported to update at now. if you want to modify the information of this cluster, please move on the console to operate.")
 	}
 
 	return resourceKsyunKceClusterRead(d, meta)
@@ -540,13 +675,28 @@ func resourceKsyunKceClusterDelete(d *schema.ResourceData, meta interface{}) (er
 func kcePreinspection(d *schema.ResourceData) error {
 	kceManagedMode := d.Get("cluster_manage_mode").(string)
 
+	blockErrFmt := "%s is duplication machine type block, the unique identification of master_config block conbine with instance_type, subnet_id, security_group_id, role, image_id. " +
+		"If the unique identification is the same, the instance config block is duplication. Please check the master_config block. " +
+		"And for the details of instance config block, please refer to the document https://registry.terraform.io/providers/kingsoftcloud/ksyun/latest/docs/resources/kce_cluster"
+
 	switch kceManagedMode {
 	case kceManagedModeManaged:
-		if helper.IsEmpty(d.Get("worker_config")) {
+		wc, ok := d.GetOk("worker_config")
+		if !ok {
 			return fmt.Errorf("worker_config is required when cluster_manage_mode is %s", kceManagedMode)
 		}
-		if !helper.IsEmpty(d.Get("master_config")) {
-			return fmt.Errorf("you don't need define master_config when cluster_manage_mode is %s", kceManagedMode)
+		if helper.IsEmpty(wc) {
+			return fmt.Errorf("worker_config is required when cluster_manage_mode is %s", kceManagedMode)
+		}
+		if isDuplicationMachineType(wc.([]interface{})) {
+			return fmt.Errorf(blockErrFmt, "worker_config")
+		}
+
+		mc, ok := d.GetOk("master_config")
+		if ok {
+			if !helper.IsEmpty(mc) {
+				return fmt.Errorf("you don't need define master_config when cluster_manage_mode is %s", kceManagedMode)
+			}
 		}
 
 		if helper.IsEmpty(d.Get("managed_cluster_multi_master")) {
@@ -554,9 +704,29 @@ func kcePreinspection(d *schema.ResourceData) error {
 		}
 
 	case kceManagedModeDedicated:
-		if helper.IsEmpty(d.Get("master_config")) {
+		mc, ok := d.GetOk("master_config")
+		if ok {
+			if helper.IsEmpty(mc) {
+				return fmt.Errorf("master_config is required when cluster_manage_mode is %s", kceManagedMode)
+			}
+			if isDuplicationMachineType(mc.([]interface{})) {
+				return fmt.Errorf(blockErrFmt, "master_config")
+			}
+		} else {
 			return fmt.Errorf("master_config is required when cluster_manage_mode is %s", kceManagedMode)
 		}
 	}
 	return nil
+}
+
+func isDuplicationMachineType(machines []interface{}) bool {
+	m := make(map[int]bool)
+	for _, machine := range machines {
+		hashcode := kceInstanceNodeHashFunc()(machine)
+		if _, ok := m[hashcode]; ok {
+			return true
+		}
+		m[hashcode] = true
+	}
+	return false
 }

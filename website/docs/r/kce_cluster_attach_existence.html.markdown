@@ -4,22 +4,36 @@ layout: "ksyun"
 page_title: "ksyun: ksyun_kce_cluster_attach_existence"
 sidebar_current: "docs-ksyun-resource-kce_cluster_attach_existence"
 description: |-
-  Provides a KCE ClusterAttachExistence resource.
+  Provides a KCE attachment resource that attach the existing instance to a cluster.
 ---
 
 # ksyun_kce_cluster_attach_existence
 
-Provides a KCE ClusterAttachExistence resource.
+Provides a KCE attachment resource that attach the existing instance to a cluster.
 
 #
 
 ## Example Usage
 
 ```hcl
+variable "suffix" {
+  default = "test"
+}
+
+resource "ksyun_instance" "foo3" {
+  image_id          = "image-xxxxxx"
+  instance_type     = "S6.1A"
+  subnet_id         = "subnet-xxxxxx"
+  instance_password = "Xuan663222"
+  charge_type       = "Daily"
+  security_group_id = ["sg-xxxxxx"]
+  instance_name     = "ksyun-${var.suffix}"
+}
+
 resource "ksyun_kce_cluster_attach_existence" "default" {
-  cluster_id        = ksyun_kce_cluster.test_cluster.id
-  instance_id       = ksyun_instance.traffic_analysis.0.id
-  image_id          = data.ksyun_kce_instance_images.test.image_set.0.image_id
+  cluster_id        = "67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx"
+  instance_id       = ksyun_instance.foo3.id
+  image_id          = "image-xxxxxx"
   instance_password = "1235Test$"
   data_disk {
     auto_format_and_mount = true
@@ -30,7 +44,6 @@ resource "ksyun_kce_cluster_attach_existence" "default" {
   docker_path       = "/data/docker_new"
   user_script       = "abc"
   pre_user_script   = "def"
-  schedulable       = false
 
   container_log_max_size  = 200
   container_log_max_files = 20
@@ -42,7 +55,7 @@ resource "ksyun_kce_cluster_attach_existence" "default" {
 The following arguments are supported:
 
 * `cluster_id` - (Required, ForceNew) The ID of the kce cluster.
-* `image_id` - (Required, ForceNew) The ID of the image which support KCE.
+* `image_id` - (Required, ForceNew) The ID of the image which support KCE. **NOTES**: This image will reinstall the existing instance after added to the cluster.
 * `instance_id` - (Required, ForceNew) The ID of the kec instance. The instance will be shut down while being added to the kce cluster.
 * `container_log_max_files` - (Optional, ForceNew) Specify custom data to configure a node, namely, specify the script to run after you deploy the node. You must ensure the reentrancy and retry logic of the script. You can view the script and its log files in the /usr/local/ksyun/kce/userscript directory of the node.
 * `container_log_max_size` - (Optional, ForceNew) The maximum size of a container log file. When the size of a container log file reaches this limit, a new container log file is generated for data writing. The default value is 100 MB.
@@ -81,6 +94,6 @@ In addition to all arguments above, the following attributes are exported:
 KCE ClusterAttachExistence can be imported using the id, e.g.
 
 ```
-$ terraform import ksyun_kce_ClusterAttachExistence.default 67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
+$ terraform import ksyun_kce_cluster_attach_existence.default 67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
 ```
 

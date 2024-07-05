@@ -11,38 +11,179 @@ description: |-
 
 Provides a KCE cluster resource.
 
+~> **NOTE:** We recommend that uses the `ksyun_kce_cluster` resource to create a cluster with few `worker_config`.
+If you want to manage more worker instances in this cluster, to use the `ksyun_kce_cluster_attach_existence` or `ksyun_kce_cluster_attachment` resource to attach the worker instances to the cluster. The reason is that the `worker_config` is unchangeable and may cause the cluster to be re-created because it is marked *ForceNew*.
+
 #
 
 ## Example Usage
+
+## basic dependency resources
 
 ```hcl
 data "ksyun_kce_instance_images" "test" {
   output_file = "output_result"
 }
 
-resource "ksyun_kce_cluster" "default" {
-  cluster_name        = "tf_test_cluster"
-  cluster_desc        = "description..."
-  cluster_manage_mode = "DedicatedCluster"
-  vpc_id              = ksyun_vpc.tf_test.id
-  pod_cidr            = "172.16.0.0/16"
-  service_cidr        = "10.254.0.0/16"
-  network_type        = "Flannel"
-  k8s_version         = "v1.19.3"
-  reserve_subnet_id   = ksyun_subnet.tf_test_reserve_subnet.id
+data "ksyun_kce_instance_images" "test" {
+}
 
-  master_config {
-    role          = "Master_Etcd"
-    count         = 3
+variable "az" {
+  default = "cn-beijing-6e"
+}
+
+variable "suffix" {
+  default = "-kce-complete"
+}
+```
+
+## create a ManagementCluster
+
+```hcl
+resource "ksyun_kce_cluster" "default" {
+  cluster_name        = "tf-modification${var.suffix}"
+  cluster_desc        = "description...modification"
+  cluster_manage_mode = "ManagedCluster"
+  vpc_id              = ksyun_vpc.test.id
+  pod_cidr            = "172.16.0.0/16"
+  service_cidr        = "10.252.0.0/16"
+  network_type        = "Flannel"
+  k8s_version         = "v1.23.17"
+  reserve_subnet_id   = ksyun_subnet.reserve.id
+
+  managed_cluster_multi_master {
+    subnet_id         = ksyun_subnet.normal.id
+    security_group_id = ksyun_security_group.test.id
+  }
+
+  worker_config {
+    count         = 2
     image_id      = data.ksyun_kce_instance_images.test.image_set.0.image_id
     instance_type = "S6.4B"
+    instance_name = "tf_kce_worker"
     system_disk {
       disk_size = 20
       disk_type = "SSD3.0"
     }
-    subnet_id         = ksyun_subnet.tf_test_subnet.id
-    security_group_id = [ksyun_security_group.default.id]
+    subnet_id         = ksyun_subnet.normal.id
+    security_group_id = [ksyun_security_group.test.id]
     charge_type       = "Daily"
+    advanced_setting {
+      container_runtime = "containerd"
+      label {
+        key   = "tf_assembly_kce"
+        value = "advanced_setting"
+      }
+      taints {
+        key    = "key1"
+        value  = "value1"
+        effect = "NoSchedule"
+
+      }
+    }
+  }
+}
+```
+
+## create a DedicatedCluster
+
+```hcl
+resource "ksyun_kce_cluster" "default" {
+  cluster_name        = "tf-modification${var.suffix}"
+  cluster_desc        = "description...modification"
+  cluster_manage_mode = "DedicateCluster"
+  vpc_id              = ksyun_vpc.test.id
+  pod_cidr            = "172.16.0.0/16"
+  service_cidr        = "10.252.0.0/16"
+  network_type        = "Flannel"
+  k8s_version         = "v1.23.17"
+  reserve_subnet_id   = ksyun_subnet.reserve.id
+
+  managed_cluster_multi_master {
+    subnet_id         = ksyun_subnet.normal.id
+    security_group_id = ksyun_security_group.test.id
+  }
+
+  master_config {
+    count         = 3
+    image_id      = data.ksyun_kce_instance_images.test.image_set.0.image_id
+    instance_type = "S6.4B"
+    instance_name = "tf_kce_master"
+    system_disk {
+      disk_size = 20
+      disk_type = "SSD3.0"
+    }
+    subnet_id         = ksyun_subnet.normal.id
+    security_group_id = [ksyun_security_group.test.id]
+    charge_type       = "Daily"
+    advanced_setting {
+      container_runtime = "containerd"
+      label {
+        key   = "tf_assembly_kce"
+        value = "advanced_setting"
+      }
+      taints {
+        key    = "key1"
+        value  = "value1"
+        effect = "NoSchedule"
+
+      }
+    }
+  }
+
+  worker_config {
+    count         = 2
+    image_id      = data.ksyun_kce_instance_images.test.image_set.0.image_id
+    instance_type = "S6.4B"
+    instance_name = "tf_kce_worker"
+    system_disk {
+      disk_size = 20
+      disk_type = "SSD3.0"
+    }
+    subnet_id         = ksyun_subnet.normal.id
+    security_group_id = [ksyun_security_group.test.id]
+    charge_type       = "Daily"
+    advanced_setting {
+      container_runtime = "containerd"
+      label {
+        key   = "tf_assembly_kce"
+        value = "advanced_setting"
+      }
+      taints {
+        key    = "key1"
+        value  = "value1"
+        effect = "NoSchedule"
+
+      }
+    }
+  }
+
+  ## config a different machine type
+  worker_config {
+    count         = 2
+    image_id      = data.ksyun_kce_instance_images.test.image_set.0.image_id
+    instance_type = "S6.4C"
+    instance_name = "tf_kce_worker"
+    system_disk {
+      disk_size = 20
+      disk_type = "SSD3.0"
+    }
+    subnet_id         = ksyun_subnet.normal.id
+    security_group_id = [ksyun_security_group.test.id]
+    charge_type       = "Daily"
+    advanced_setting {
+      container_runtime = "containerd"
+      label {
+        key   = "tf_assembly_kce"
+        value = "advanced_setting"
+      }
+      taints {
+        key    = "key1"
+        value  = "value1"
+        effect = "NoSchedule"
+
+      }
+    }
   }
 }
 ```
@@ -61,11 +202,11 @@ The following arguments are supported:
 * `cluster_desc` - (Optional) The description of the cluster.
 * `cluster_manage_mode` - (Optional, ForceNew) The management mode of the master node.
 * `managed_cluster_multi_master` - (Optional) The configuration for the managed cluster multi master. If the cluster_manage_mode is ManagedCluster, this field is **required**.
-* `master_config` - (Optional, ForceNew) The configuration for the master nodes.
+* `master_config` - (Optional, ForceNew) The configuration for the master nodes. If the cluster_manage_mode is DedicatedCluster, this field is **required**. **Notes:** work_config block is identified by the **instance_type, subnet_id, security_group_id, role, image_id**. If the unique identification is the same, the instance config block is conflict, and then **cause an error**.If the unique identification is changed, that leads to the cluster **re-creation**.
 * `master_etcd_separate` - (Optional, ForceNew) The deployment method for the Master and Etcd components of the cluster. if set to True, Deploy the Master and Etcd components on dedicated nodes. if set to false, Deploy the Master and Etcd components on shared nodes.
 * `max_pod_per_node` - (Optional, ForceNew) The maximum number of pods that can be run on each node. valid values: 16, 32, 64, 128, 256.
 * `public_api_server` - (Optional, ForceNew) Whether to expose the apiserver to the public network. If not needed, do not fill in this option. If selected, a public SLB and EIP will be created to enable public access to the cluster's API server. Users need to pass the Elastic IP creation pass-through parameter, which should be a JSON-formatted string.
-* `worker_config` - (Optional, ForceNew) The configuration for the worker nodes.
+* `worker_config` - (Optional, ForceNew) The configuration for the worker nodes. If the cluster_manage_mode is ManagedCluster, this field is **required**. **Notes:** work_config block is identified by the **instance_type, subnet_id, security_group_id, role, image_id**. If the unique identification is the same, the instance config block is conflict, and then **cause an error**.If the unique identification is changed, that leads to the cluster **re-creation**.
 
 The `advanced_setting` object supports the following:
 
@@ -105,8 +246,9 @@ The `managed_cluster_multi_master` object supports the following:
 The `master_config` object supports the following:
 
 * `charge_type` - (Required, ForceNew) charge type of the instance.
-* `count` - (Required) The number of master nodes. The count of master nodes must be 3 or 5.
+* `count` - (Required, ForceNew) The number of master nodes. The count of master nodes must be 3 or 5.
 * `image_id` - (Required, ForceNew) The ID for the image to use for the instance.
+* `instance_type` - (Required, ForceNew) The type of instance to start. <br> - NOTE: it's may trigger this instance to power off, if instance type will be demotion.
 * `security_group_id` - (Required, ForceNew) Security Group to associate with.
 * `subnet_id` - (Required, ForceNew) The ID of subnet. the instance will use the subnet in the current region.
 * `advanced_setting` - (Optional, ForceNew) Advanced settings.
@@ -123,14 +265,13 @@ The `master_config` object supports the following:
 * `instance_name` - (Optional, ForceNew) The name of instance, which contains 2-64 characters and only support Chinese, English, numbers.
 * `instance_password` - (Optional, ForceNew) Password to an instance is a string of 8 to 32 characters.
 * `instance_status` - (Optional) The state of instance.
-* `instance_type` - (Optional, ForceNew) The type of instance to start. <br> - NOTE: it's may trigger this instance to power off, if instance type will be demotion.
 * `keep_image_login` - (Optional) Keep the initial settings of the custom image.
 * `key_id` - (Optional) The certificate id of the instance.
 * `local_volume_snapshot_id` - (Optional, ForceNew) When the local data disk opens, the snapshot id is entered.
 * `private_ip_address` - (Optional) Instance private IP address can be specified when you creating new instance.
 * `project_id` - (Optional) The project instance belongs to.
 * `purchase_time` - (Optional, ForceNew) The duration that you will buy the resource.
-* `role` - (Optional) The role of instance. Valid values: Master_Etcd.
+* `role` - (Optional) 
 * `sriov_net_support` - (Optional, ForceNew) whether support networking enhancement.
 * `system_disk` - (Optional) System disk parameters.
 * `tags` - (Optional) the tags of the resource.
@@ -152,6 +293,7 @@ The `worker_config` object supports the following:
 * `charge_type` - (Required, ForceNew) charge type of the instance.
 * `count` - (Required, ForceNew) The number of worker nodes.
 * `image_id` - (Required, ForceNew) The ID for the image to use for the instance.
+* `instance_type` - (Required, ForceNew) The type of instance to start. <br> - NOTE: it's may trigger this instance to power off, if instance type will be demotion.
 * `security_group_id` - (Required, ForceNew) Security Group to associate with.
 * `subnet_id` - (Required, ForceNew) The ID of subnet. the instance will use the subnet in the current region.
 * `advanced_setting` - (Optional, ForceNew) Advanced settings.
@@ -168,7 +310,6 @@ The `worker_config` object supports the following:
 * `instance_name` - (Optional, ForceNew) The name of instance, which contains 2-64 characters and only support Chinese, English, numbers.
 * `instance_password` - (Optional, ForceNew) Password to an instance is a string of 8 to 32 characters.
 * `instance_status` - (Optional) The state of instance.
-* `instance_type` - (Optional, ForceNew) The type of instance to start. <br> - NOTE: it's may trigger this instance to power off, if instance type will be demotion.
 * `keep_image_login` - (Optional) Keep the initial settings of the custom image.
 * `key_id` - (Optional) The certificate id of the instance.
 * `local_volume_snapshot_id` - (Optional, ForceNew) When the local data disk opens, the snapshot id is entered.

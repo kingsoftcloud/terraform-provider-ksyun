@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-ksyun/ksyun/internal/pkg/helper"
+	"github.com/terraform-providers/terraform-provider-ksyun/ksyun/internal/structor/v1/kce"
 )
 
 func importKecNetworkInterfaceAttachment(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
@@ -470,4 +472,38 @@ func denyImport(d *schema.ResourceData, i interface{}) ([]*schema.ResourceData, 
 
 	err = fmt.Errorf("this resource import calling is denied")
 	return retD, err
+}
+
+func importKceCluster(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	var err error
+
+	srv := KceService{meta.(*KsyunClient)}
+	clusterID := d.Id()
+
+	nodes, err := srv.getAllNodeWithFilter(clusterID, nil)
+	if err != nil {
+		return []*schema.ResourceData{d}, err
+	}
+	var instance = make([]kce.InstanceSet, 0, len(nodes))
+	_ = helper.MapstructureFiller(nodes, &instance, "")
+
+	masterIdList := make([]string, 0)
+	workerIdList := make([]string, 0)
+
+	for _, node := range instance {
+		switch node.InstanceRole {
+		case "Worker":
+			workerIdList = append(workerIdList, node.InstanceID)
+		default:
+			masterIdList = append(masterIdList, node.InstanceID)
+		}
+	}
+
+	if len(masterIdList) > 0 {
+		_ = d.Set("master_id", masterIdList)
+	}
+	if len(workerIdList) > 0 {
+		_ = d.Set("worker_id", workerIdList)
+	}
+	return []*schema.ResourceData{d}, nil
 }

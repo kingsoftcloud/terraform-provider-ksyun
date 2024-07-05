@@ -205,7 +205,7 @@ func formatKceClusterReq(d *schema.ResourceData, resource *schema.Resource) (cre
 
 	handleKecPara := func(createParams *map[string]interface{}, nodeConfigs []interface{}, index int, topKey string) int {
 
-		for _, nodeConfigSrc := range nodeConfigs {
+		for idx, nodeConfigSrc := range nodeConfigs {
 			nodeConfig := nodeConfigSrc.(map[string]interface{})
 
 			// logger.Debug("[%s] %d:%+v", "test", idx, nodeConfig)
@@ -225,7 +225,7 @@ func formatKceClusterReq(d *schema.ResourceData, resource *schema.Resource) (cre
 				advancedSetting := asSet[0].(map[string]interface{})
 
 				for k, v := range advancedSetting {
-					if _, ok := d.GetOk(fmt.Sprintf("%s.0.advanced_setting.0.%s", topKey, k)); !ok {
+					if _, ok := d.GetOk(fmt.Sprintf("%s.%d.advanced_setting.0.%s", topKey, idx, k)); !ok {
 						continue
 					}
 
@@ -298,9 +298,9 @@ func (s *KceService) checkClusterState(clusterId string, target []string, timeou
 	return err
 }
 
-func (s *KceService) CreateCluster(d *schema.ResourceData, resource *schema.Resource) (err error) {
+func (s *KceService) CreateCluster(d *schema.ResourceData, r *schema.Resource) (err error) {
 	var createReq map[string]interface{}
-	createReq, err = formatKceClusterReq(d, resource)
+	createReq, err = formatKceClusterReq(d, r)
 
 	if err != nil {
 		return
@@ -334,13 +334,30 @@ func (s *KceService) CreateCluster(d *schema.ResourceData, resource *schema.Reso
 				}
 				d.SetId(clusterId.(string))
 			}
-			_ = s.checkClusterState(clusterId.(string), []string{"running"}, d.Timeout(schema.TimeoutCreate))
+			err = s.checkClusterState(clusterId.(string), []string{"running"}, d.Timeout(schema.TimeoutCreate))
+			if err != nil {
+				return
+			}
 			// checkClusterState的err可以忽略(无论是否异常，都要加载一次集群数据用于生成结果)
 			// 统一拿到最外层的create方法处理
 			// err = s.ReadAndSetKceCluster(d, resource)
 
 			// TODO: query all nodes and set to tf
-			nodes, err := s.getAllNodeWithFilter(clusterId.(string), nil)
+			var (
+				nodes []interface{}
+			)
+
+			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+				var (
+					queryErr error
+				)
+
+				nodes, queryErr = s.getAllNodeWithFilter(clusterId.(string), nil)
+				if queryErr != nil {
+					return resource.RetryableError(queryErr)
+				}
+				return nil
+			})
 			if err != nil {
 				return
 			}
@@ -349,18 +366,47 @@ func (s *KceService) CreateCluster(d *schema.ResourceData, resource *schema.Reso
 				workerNodeIds = make([]string, 0)
 				masterNodeIds = make([]string, 0)
 			)
-			for _, node := range nodes {
-				nodeId, err := getSdkValue("InstanceId", node)
-				if err != nil {
-					return err
+
+			for _, nodeIf := range nodes {
+				if node, ok := nodeIf.(map[string]interface{}); ok {
+					kceInstance := kce.InstanceSet{}
+
+					err := helper.MapstructureFiller(node, &kceInstance, "")
+					if err != nil {
+						return fmt.Errorf("convert master instance failed: %s", err)
+					}
+					nodeMap := map[string]interface{}{
+						"instance_type": kceInstance.KecInstancePara.InstanceType,
+						"image_id":      kceInstance.KecInstancePara.ImageID,
+						"subnet_id":     kceInstance.KecInstancePara.SubnetID,
+						"role":          kceInstance.InstanceRole,
+					}
+
+					networkInterface := kec.NetworkInterfaceSet{}
+					for _, networkInterfaceIf := range kceInstance.KecInstancePara.NetworkInterfaceSet {
+						if networkInterfaceIf.SubnetId == kceInstance.KecInstancePara.SubnetID {
+							networkInterface = networkInterfaceIf
+						}
+					}
+
+					securityIds := make([]string, len(networkInterface.SecurityGroupSet))
+					for _, sg := range networkInterface.SecurityGroupSet {
+						securityIds = append(securityIds, sg.SecurityGroupId)
+					}
+					nodeMap["security_group_id"] = securityIds
+
+					hashcode := kceInstanceNodeHashFunc()(nodeMap)
+
+					nodeHashAndId := AssembleIds(kceInstance.InstanceID, strconv.Itoa(hashcode))
+
+					switch kceInstance.InstanceRole {
+					case "Worker":
+						workerNodeIds = append(workerNodeIds, nodeHashAndId)
+					default:
+						masterNodeIds = append(masterNodeIds, nodeHashAndId)
+					}
 				}
-				nodeRole, err := getSdkValue("InstanceRole", node)
-				switch nodeRole {
-				case "Worker":
-					workerNodeIds = append(workerNodeIds, nodeId.(string))
-				default:
-					masterNodeIds = append(masterNodeIds, nodeId.(string))
-				}
+
 			}
 
 			_ = d.Set("master_id_list", masterNodeIds)
@@ -552,17 +598,30 @@ func (s *KceService) ReadAndSetKceInstanceImages(d *schema.ResourceData, r *sche
 	})
 }
 
-// 把tf里master的配置，和master机器列表对应起来
-func (s *KceService) readAndSetInstance(d *schema.ResourceData, r *schema.Resource) (err error) {
+// readAndSetInstance read the instance information from ksyun remote
+// and make connection with the local config block with hashcode of machine types.
+// there are eight steps to finish the function:
+// 1. get the local instance id list.
+// 2. calculate the hashcode of the machine type sequence in local tfstate.
+// 3. according to local instance id, querying the kec information and role in kce cluster.
+// 4. calculate the hashcode of the node information from ksyun remote.
+// 5. deal with the node information from ksyun remote with sequence index and save the results to resources map.
+// 6. deal with the rest of the node information and append it to tail of the resources map, if machine type was changed on the ksyun remote.
+// 7. make the rest of nodes to relate with the local config block with hashcode of machine types.
+// 8. save the resources map to the local tfstate.
 
-	// masterConfigSrc := d.Get("master_config")
-	// logger.Debug("readAndSetMasters", "master_config", masterConfigSrc)
-	// if masterConfigList, ok := masterConfigSrc.([]interface{}); ok {
-	//	for _, configItem := range masterConfigList {
-	//		logger.Debug("readAndSetMasters", "master_config_item", configItem.(map[string]interface{}))
-	//	}
-	// }
-	//
+// this function is so complicate, that we split hardly it to some small functions.
+func (s *KceService) readAndSetInstance(d *schema.ResourceData, r *schema.Resource) (err error) {
+	type nodeInfo struct {
+		nodeMap  map[string]interface{}
+		advanced map[string]interface{}
+		role     string
+	}
+	type nodeInfoList struct {
+		deal bool
+		list []nodeInfo
+	}
+
 	var (
 		mIDs []string
 		wIDs []string
@@ -570,17 +629,21 @@ func (s *KceService) readAndSetInstance(d *schema.ResourceData, r *schema.Resour
 		masterInstances []interface{}
 		workerInstances []interface{}
 
-		masterNodeList     []map[string]interface{}
-		masterAdvancedList []map[string]interface{}
-		workerNodeList     []map[string]interface{}
-		workerAdvancedList []map[string]interface{}
+		nodeInfoMap = make(map[int]nodeInfoList, 0)
+
+		instanceHashMap = make(map[int]string)
+
+		masterInstanceList = make([]string, 0)
+		workerInstanceList = make([]string, 0)
 	)
+
+	// get the local instance id list.
 	mIDs, _ = helper.GetSchemaListWithString(d, "master_id_list")
 	wIDs, _ = helper.GetSchemaListWithString(d, "worker_id_list")
 
 	kecClient := KecService{client: s.client}
 
-	// get master instances
+	// the function that query the kec instances from kec OpenAPI actions.
 	queryKec := func(queryIds []string) ([]interface{}, error) {
 		var (
 			kecQuery        = map[string]interface{}{}
@@ -602,6 +665,7 @@ func (s *KceService) readAndSetInstance(d *schema.ResourceData, r *schema.Resour
 		return masterInstances, infraErr
 	}
 
+	// the function that query the role of the instance from kce cluster.
 	queryRole := func(instanceID string) (*kce.InstanceSet, error) {
 		filter := map[string]interface{}{
 			"instance-id": instanceID,
@@ -615,16 +679,100 @@ func (s *KceService) readAndSetInstance(d *schema.ResourceData, r *schema.Resour
 		return instance, nil
 	}
 
+	// the function that calculate the hashcode of the node information from ksyun remote.
+	calculateNodeHashAndSave := func(node nodeInfo) {
+		hashcode := kceInstanceNodeHashFunc()(node.nodeMap)
+
+		if nodeList, ok := nodeInfoMap[hashcode]; !ok {
+			nodeInfoMap[hashcode] = nodeInfoList{
+				deal: false,
+				list: []nodeInfo{node},
+			}
+		} else {
+			nodeList.list = append(nodeList.list, node)
+			nodeInfoMap[hashcode] = nodeList
+		}
+
+		var saveInstanceList []string
+		switch node.role {
+		case "Worker":
+			saveInstanceList = workerInstanceList
+		default:
+			saveInstanceList = masterInstanceList
+		}
+
+		instanceHashId := generateInstanceIdWithHashcode(node.nodeMap)
+		saveInstanceList = append(saveInstanceList, instanceHashId)
+	}
+
+	localMachineTypeSequenceM := map[int]int{}
+	localMachineTypeSequenceW := map[int]int{}
+
+	// the function that calculate the hashcode of the machine type.
+	// and record the sequence's index in local config block with the hashcode.
+	calculateMachineHash := func(blockKey string) {
+		var (
+			sm  = localMachineTypeSequenceM
+			mtl []interface{}
+		)
+
+		switch blockKey {
+		case "worker_config":
+			sm = localMachineTypeSequenceW
+		}
+
+		mtlI, ok := d.GetOk(blockKey)
+		if ok {
+			mtl = mtlI.([]interface{})
+		} else {
+			return
+		}
+
+		for idx, m := range mtl {
+			hashcode := kceInstanceNodeHashFunc()(m)
+			sm[hashcode] = idx
+			sm[idx] = hashcode
+		}
+	}
+
+	// calculate the hashcode of the machine type sequence in local tfstate.
+	// avoid the machine hashcode is empty.
+	for _, blockKey := range []string{"master_config", "worker_config"} {
+		calculateMachineHash(blockKey)
+	}
+
+	// according to local instance id, querying the kec information from kec OpenAPI actions.
+	// and save the information to the local machine type sequence.
 	if mIDs != nil && len(mIDs) > 0 {
-		masterInstances, err = queryKec(mIDs)
+		queryIds := make([]string, 0, len(mIDs))
+		for _, mID := range mIDs {
+			instanceIds := DisassembleIds(mID)
+			hashcode, err := strconv.Atoi(instanceIds[1])
+			if err != nil {
+				return fmt.Errorf("convert hashcode failed: %s", err)
+			}
+			logger.Debug("read master instances", "hashcode", hashcode, "instance_id", instanceIds[0])
+			instanceHashMap[hashcode] = instanceIds[0]
+			queryIds = append(queryIds, instanceIds[0])
+		}
+		masterInstances, err = queryKec(queryIds)
 		if err != nil {
 			return fmt.Errorf("read master instances failed: %s", err)
 		}
-
 	}
 
+	// according to local instance id, querying the kec information from kec OpenAPI actions.
+	// and save the information to the local machine type sequence.
 	if wIDs != nil && len(wIDs) > 0 {
-		workerInstances, err = queryKec(wIDs)
+		queryIds := make([]string, 0, len(wIDs))
+		for _, wID := range wIDs {
+			instanceIds := DisassembleIds(wID)
+			hashcode, _ := strconv.Atoi(instanceIds[1])
+			logger.Debug("read master instances", "hashcode", instanceIds[1], "instance_id", instanceIds[0])
+			instanceHashMap[hashcode] = instanceIds[0]
+			queryIds = append(queryIds, instanceIds[0])
+		}
+		workerInstances, err = queryKec(queryIds)
 		if err != nil {
 			return fmt.Errorf("read worker instances failed: %s", err)
 		}
@@ -634,6 +782,8 @@ func (s *KceService) readAndSetInstance(d *schema.ResourceData, r *schema.Resour
 		resourceMap = make(map[string]interface{})
 	)
 
+	// query the role and some information of master instances in kce cluster
+	// and convert attributes of the master instances to tf schema map.
 	for _, masterInstanceIf := range masterInstances {
 		// handles master instance and set to data resources
 		masterInstance := masterInstanceIf.(map[string]interface{})
@@ -648,26 +798,17 @@ func (s *KceService) readAndSetInstance(d *schema.ResourceData, r *schema.Resour
 			return fmt.Errorf("query %s role failed: %s", instanceId, err)
 		}
 		masterSaveMap["role"] = role.InstanceRole
-		masterNodeList = append(masterNodeList, masterSaveMap)
 
 		advanced := handleAdvancedSetting2Map(*role.AdvancedSetting)
-		masterAdvancedList = append(masterAdvancedList, advanced)
-	}
-
-	if masterNodeList != nil && len(masterNodeList) > 0 {
-		localMasterConfig, _ := helper.GetSchemaListHeadMap(d, "master_config")
-		diffMap := helper.GetDiffMap(localMasterConfig, masterNodeList...)
-		localMasterAdvanced, ok := helper.GetSchemaListHeadMap(d, "master_config.0.advanced_setting")
-		if ok {
-			advancedDiff := helper.GetDiffMap(localMasterAdvanced, masterAdvancedList...)
-			diffMap["advanced_setting"] = []interface{}{advancedDiff}
+		node := nodeInfo{
+			nodeMap:  masterSaveMap,
+			advanced: advanced,
+			role:     role.InstanceRole,
 		}
-
-		workerConfigHashcode := kceInstanceNodeHashFunc()(diffMap)
-		diffMap["hashcode"] = workerConfigHashcode
-		resourceMap["master_config"] = []interface{}{diffMap}
+		calculateNodeHashAndSave(node)
 	}
 
+	// query the worker instances and convert attributes of the worker instances to tf schema map.
 	for _, workerInstanceIf := range workerInstances {
 		// handles worker instance and set to data resources
 		workerInstance := workerInstanceIf.(map[string]interface{})
@@ -682,31 +823,188 @@ func (s *KceService) readAndSetInstance(d *schema.ResourceData, r *schema.Resour
 			return fmt.Errorf("query %s role failed: %s", instanceId, err)
 		}
 		workerSaveMap["role"] = role.InstanceRole
-		workerNodeList = append(workerNodeList, workerSaveMap)
 
 		advanced := handleAdvancedSetting2Map(*role.AdvancedSetting)
-		workerAdvancedList = append(workerAdvancedList, advanced)
+		node := nodeInfo{
+			nodeMap:  workerSaveMap,
+			advanced: advanced,
+			role:     role.InstanceRole,
+		}
+		calculateNodeHashAndSave(node)
 	}
 
-	if workerNodeList != nil && len(workerNodeList) > 0 {
-		localWorkerConfig, _ := helper.GetSchemaListHeadMap(d, "worker_config")
-		diffWorkerMap := helper.GetDiffMap(localWorkerConfig, workerNodeList...)
+	// deal with the rank of nodes information from ksyun remote with hashcode about machine type in local tfstate.
+	// if the hashcode between the local machine type sequence and the remote machine type sequence is equal,
+	// set the remote information to the local machine type sequence with the same index.
+	if nodeInfoMap != nil && len(nodeInfoMap) > 0 {
+		blocks := []string{"master_config", "worker_config"}
+		for _, block := range blocks {
+			localBlock, ok := helper.GetSchemaMapListWithKey(d, block)
+			if !ok {
+				continue
+			}
+			results := make([]interface{}, len(localBlock), len(localBlock))
+			for idx, nodeLocalInfo := range localBlock {
+				schemeAdvancedKey := fmt.Sprintf("%s.%d.advanced_setting", block, idx)
+				hashcode := kceInstanceNodeHashFunc()(nodeLocalInfo)
 
-		localWorkerAdvanced, ok := helper.GetSchemaListHeadMap(d, "worker_config.0.advanced_setting")
-		if ok {
-			advancedDiff := helper.GetDiffMap(localWorkerAdvanced, workerAdvancedList...)
-			diffWorkerMap["advanced_setting"] = []interface{}{advancedDiff}
+				var _nodeInfoList []nodeInfo
+				if nl, ok := nodeInfoMap[hashcode]; !ok {
+					continue
+				} else {
+					// if the information of nodes from remote has the identical hashcode with local machine type sequence,
+					// mark the nodeInfoList as dealt.
+					_nodeInfoList = nl.list
+					nl.deal = true
+					nodeInfoMap[hashcode] = nl
+				}
+
+				nodeMapList := make([]map[string]interface{}, 0, len(_nodeInfoList))
+				nodeAdvancedMapList := make([]map[string]interface{}, 0, len(_nodeInfoList))
+				for _, _nodeInfo := range _nodeInfoList {
+					nodeMapList = append(nodeMapList, _nodeInfo.nodeMap)
+					nodeAdvancedMapList = append(nodeAdvancedMapList, _nodeInfo.advanced)
+				}
+				diffMap := helper.GetDiffMap(nodeLocalInfo, nodeMapList...)
+
+				localAdvanced, ok := helper.GetSchemaListHeadMap(d, schemeAdvancedKey)
+				if ok {
+					advancedDiff := helper.GetDiffMap(localAdvanced, nodeAdvancedMapList...)
+					diffMap["advanced_setting"] = []interface{}{advancedDiff}
+				}
+				diffMap["hashcode"] = hashcode
+				diffMap["count"] = len(_nodeInfoList)
+				results[idx] = diffMap
+			}
+			resourceMap[block] = results
 		}
 
-		workerConfigHashcode := kceInstanceNodeHashFunc()(diffWorkerMap)
-		diffWorkerMap["hashcode"] = workerConfigHashcode
-		resourceMap["worker_config"] = []interface{}{diffWorkerMap}
+		// deal with the rest nodes of the nodeInfoMap
+		// the rest nodes are the nodes that are not in the local machine type sequence.
+		// so, we just append the rest nodes to the resourceMap.
+		for hashcode, _nodeInfoList := range nodeInfoMap {
+			if _nodeInfoList.deal {
+				continue
+			}
+
+			var (
+				block string
+			)
+			theFirstNode := _nodeInfoList.list[0]
+			theFirstMap := theFirstNode.nodeMap
+			switch theFirstNode.role {
+			case "Worker":
+				block = "worker_config"
+			default:
+				block = "master_config"
+			}
+			theFirstMap["hashcode"] = hashcode
+			theFirstMap["count"] = len(_nodeInfoList.list)
+			if theFirstNode.advanced != nil && len(theFirstNode.advanced) > 0 {
+				theFirstMap["advanced_setting"] = []interface{}{theFirstNode.advanced}
+			}
+
+			resourceMap[block] = append(resourceMap[block].([]interface{}), theFirstNode.nodeMap)
+		}
+
+		// omit the element that is for occupied.
+		// compact the resourceMap
+		findCandidateFunc := func(instanceId string) (int, bool) {
+			for hashcode, _nodeInfoList := range nodeInfoMap {
+				for _, _nodeInfo := range _nodeInfoList.list {
+					if _nodeInfo.nodeMap["instance_id"] == instanceId {
+						return hashcode, true
+					}
+				}
+			}
+			return 0, false
+		}
+
+		// find the candidate block with the hashcode
+		findSaveMapWithHashcodeFunc := func(hashcode int, candidates []interface{}) (map[string]interface{}, int) {
+			for idx, candidate := range candidates {
+				if helper.IsEmpty(candidate) {
+					continue
+				}
+				candidateMap := candidate.(map[string]interface{})
+				if candidateMap["hashcode"] == hashcode {
+					return candidateMap, idx
+				}
+			}
+			return nil, 0
+		}
+
+		// find a candidate instance block to replace the old block for occupy the position.
+		// if old block is empty, other word, the original machine type was changed and that it not exists in the remote.
+		// so we need to find a candidate block to replace the old block. In order to keep the position for make a diff by terraform.
+		for k, ss := range resourceMap {
+			results := make([]interface{}, 0, len(ss.([]interface{})))
+			// stateSlice := d.Get(k).([]interface{})
+
+			sm := localMachineTypeSequenceM
+			if k == "worker_config" {
+				sm = localMachineTypeSequenceW
+			}
+
+			sss := ss.([]interface{})
+			stateLength := len(sss)
+			for idx := 0; idx < stateLength; idx++ {
+				if idx >= stateLength {
+					break
+				}
+
+				block := sss[idx]
+				if helper.IsEmpty(block) {
+					oldHashcode := sm[idx]
+					candidateInstanceId := instanceHashMap[oldHashcode]
+					hashcode, ok := findCandidateFunc(candidateInstanceId)
+					logger.Debug("readAndSetInstance", "hashcode", hashcode, "candidateInstanceId", candidateInstanceId)
+					if !ok {
+						continue
+					}
+					candidate, dealIdx := findSaveMapWithHashcodeFunc(hashcode, sss)
+					logger.Debug("readAndSetInstance", "candidate", candidate, "dealIdx", dealIdx)
+
+					if candidate != nil {
+						// handle the taints from instance block with the old hashcode
+						// because the new candidate block has not the taints from the remote.
+						// so we need to keep the taints from the old block.
+
+						oldBlockSchemaKey := fmt.Sprintf("%s.%d.advanced_setting.0.taints", k, idx)
+						oldTaintsBlock, blockExist := d.GetOk(oldBlockSchemaKey)
+						logger.Debug("readAndSetInstance", "oldTaintsBlock", oldTaintsBlock, "blockExist", blockExist)
+						logger.Debug("readAndSetInstance", "oldBlockSchemaKey", oldBlockSchemaKey)
+						if blockExist {
+							blockASs := candidate["advanced_setting"].([]interface{})
+							blockAS := blockASs[0].(map[string]interface{})
+							blockAS["taints"] = oldTaintsBlock
+							candidate["advanced_setting"] = []interface{}{blockAS}
+						}
+						results = append(results, candidate)
+					}
+
+					// remove the element that is occupied
+					for i := dealIdx; i < len(sss)-1; i++ {
+						sss[i] = sss[i+1]
+					}
+					stateLength--
+				} else {
+					results = append(results, block)
+				}
+			}
+			resourceMap[k] = results
+		}
 	}
 
+	if len(masterInstanceList) > 0 {
+		_ = d.Set("master_id_list", masterInstanceList)
+	}
+	if len(workerInstanceList) > 0 {
+		_ = d.Set("worker_id_list", workerInstanceList)
+	}
 	SdkResponseAutoResourceData(d, r, resourceMap, nil)
-	// d.Get("master_config")
 
-	// todo:
+	// todo: Done
 	// 把机器列表格式化一组字符串，然后将master_config也格式化成一组字符串，
 	// 然后把机器串匹配master_config，能匹配上就累加数字，如果最终有差异，就成为diff
 
@@ -723,20 +1021,20 @@ func convertInstanceToMapForSchema(insResp map[string]interface{}) (map[string]i
 
 	schemaMap := instanceConfig()
 
-	igonreFields := []string{"advanced_setting"}
+	ignoreFields := []string{"advanced_setting"}
 
 	// handle the top level fields
 	for k, v := range insResp {
 		// logger.Debug("convertInstanceToMapForSchema", "k", k, "v", v)
 		underK := helper.Hump2Underline(k)
-		if checkValueInSlice(igonreFields, underK) {
+		if checkValueInSlice(ignoreFields, underK) {
 			continue
 		}
 		if schemaMap[underK] == nil || schemaMap[underK].Elem != nil {
 			continue
 		}
 		insMap[underK] = v
-		// logger.Debug("convertInstanceToMapForSchema", "k", k, "v", v
+		logger.Debug("convertInstanceToMapForSchema", "k", k, "v", v)
 	}
 
 	// handle the special fields
@@ -761,9 +1059,7 @@ func convertInstanceToMapForSchema(insResp map[string]interface{}) (map[string]i
 			insMap["vpc_id"] = ni.VpcId
 
 			sgIds := make([]string, 0, len(ni.SecurityGroupSet))
-			for _, sg := range ni.SecurityGroupSet {
-				sgIds = append(sgIds, sg.SecurityGroupId)
-			}
+			sgIds = append(sgIds, ni.SecurityGroupSet[0].SecurityGroupId)
 			insMap["security_group_id"] = sgIds
 		}
 
@@ -788,4 +1084,10 @@ func handleAdvancedSetting2Map(advancedSetting kce.AdvancedSetting) map[string]i
 func localNodeCfgHashcode(d *schema.ResourceData, field string) int {
 	localConfig, _ := helper.GetSchemaListHeadMap(d, field)
 	return kceInstanceNodeHashFunc()(localConfig)
+}
+
+func generateInstanceIdWithHashcode(instance map[string]interface{}) string {
+	hashcode := kceInstanceNodeHashFunc()(instance)
+	instanceId := instance["instance_id"].(string)
+	return AssembleIds(instanceId, strconv.Itoa(hashcode))
 }
