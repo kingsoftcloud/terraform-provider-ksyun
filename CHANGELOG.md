@@ -1,3 +1,11 @@
+## 1.16.0 (Jul 05, 2024)
+
+FEATURES:
+
+- - **New Resource:** `ksyun_kce_cluster_attachment` KCE集群添加新节点
+- - **New Resource:** `ksyun_kce_cluster_attach_existence` KCE集群添加已有节点 替换 `ksyun_kce_worker`
+- - **New Resource:** `ksyun_kce_cluster` KCE集群支持创建多机型节点，支持托管集群
+
 ## 1.15.7 (May 28, 2024)
 
 IMPROVEMENTS:
