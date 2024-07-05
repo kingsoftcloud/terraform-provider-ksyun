@@ -199,7 +199,8 @@ KCE
 
 	Resource
 		ksyun_kce_cluster
-		ksyun_kce_worker
+		ksyun_kce_cluster_attach_existence
+		ksyun_kce_cluster_attachment
 
 KCR
 
@@ -557,7 +558,8 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_bare_metal":                       resourceKsyunBareMetal(),
 			"ksyun_tag":                              resourceKsyunTag(),
 			"ksyun_kce_cluster":                      resourceKsyunKceCluster(),
-			"ksyun_kce_worker":                       resourceKsyunKceWorker(),
+			"ksyun_kce_cluster_attachment":           resourceKsyunKceClusterAttachment(),
+			"ksyun_kce_cluster_attach_existence":     resourceKsyunKceClusterAttachExistence(),
 			"ksyun_ks3_bucket":                       resourceKsyunKs3Bucket(),
 			"ksyun_auto_snapshot_policy":             resourceKsyunAutoSnapshotPolicy(),
 			"ksyun_auto_snapshot_volume_association": resourceKsyunAutoSnapshotVolumeAssociation(),
