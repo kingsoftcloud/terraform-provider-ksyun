@@ -1,3 +1,14 @@
+## 1.16.1 (Jul 23, 2024)
+
+FEATURES:
+
+- - New Resource: `ksyun_lb_listener_associate_backendgroup` 监听器挂载后端服务器组
+
+IMPROVEMENTS:
+
+- `ksyun_lb_listener`: 新增`bind_type`
+- `ksyun_lb_backend_server_group`: 新增`protocol`
+
 ## 1.16.0 (Jul 05, 2024)
 
 FEATURES:
