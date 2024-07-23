@@ -1,8 +1,9 @@
 package ksyun
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 func TestAccKsyunBackendServerGroupsDataSource_basic(t *testing.T) {

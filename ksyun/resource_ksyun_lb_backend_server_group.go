@@ -89,6 +89,20 @@ func resourceKsyunBackendServerGroup() *schema.Resource {
 				ForceNew:    true,
 				Description: "The type of backend server group. Valid values: 'Server', 'Mirror'. Default is 'Server'.",
 			},
+
+			"protocol": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				ForceNew: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					"TCP",
+					"UDP",
+					"HTTP",
+				}, false),
+				Description: "The protocol of the backend server group. Valid values: 'TCP', 'UDP', 'HTTP'. Default `HTTP`.",
+			},
+
 			"health_check": {
 				Type:     schema.TypeList,
 				MaxItems: 1,
@@ -119,6 +133,7 @@ func resourceKsyunBackendServerGroup() *schema.Resource {
 		},
 	}
 }
+
 func resourceKsyunBackendServerGroupCreate(d *schema.ResourceData, meta interface{}) (err error) {
 	slbService := SlbService{meta.(*KsyunClient)}
 	err = slbService.CreateBackendServerGroup(d, resourceKsyunBackendServerGroup())

@@ -106,6 +106,18 @@ func resourceKsyunListener() *schema.Resource {
 				ForceNew:    true,
 				Description: "The protocol of listener.Valid Values:'TCP', 'UDP', 'HTTP', 'HTTPS'.",
 			},
+
+			"bind_type": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					"BackendServerGroup",
+					"RealServer",
+				}, false),
+				Description: "The bind type of listener. Valid Values:'BackendServerGroup', 'RealServer'.",
+			},
+
 			"certificate_id": {
 				Type:             schema.TypeString,
 				Optional:         true,
