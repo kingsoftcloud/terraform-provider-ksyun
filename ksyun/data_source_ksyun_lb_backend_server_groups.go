@@ -89,6 +89,11 @@ func dataSourceKsyunBackendServerGroups() *schema.Resource {
 							Computed:    true,
 							Description: "The type of backend server group.Valid values are Server and Mirror.",
 						},
+						"protocol": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The protocol of the backend server group. Valid values: 'TCP', 'UDP', 'HTTP'. Default `HTTP`.",
+						},
 						"create_time": {
 							Type:        schema.TypeString,
 							Computed:    true,

@@ -125,6 +125,7 @@ SLB
 		ksyun_lb_listener_associate_acl
 		ksyun_lb_listener_server
 		ksyun_lb_rule
+    ksyun_lb_listener_associate_backendgroup
 
 ALB
 
@@ -595,13 +596,16 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_security_group_entry":      resourceKsyunSecurityGroupEntry(),
 			"ksyun_security_group_entry_lite": resourceKsyunSecurityGroupEntryLite(),
 			// "ksyun_security_group_entry_set":  resourceKsyunSecurityGroupEntrySet(),
+
+			// lb
+			"ksyun_lb_listener_associate_backendgroup": resourceKsyunLbListenerAssociateBackendgroup(),
 		},
 		ConfigureFunc: providerConfigure,
 	}
 }
 
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
-	var retryNum = 3
+	retryNum := 3
 	if mr, ok := d.GetOk("max_retries"); ok {
 		retryNum = mr.(int)
 	}

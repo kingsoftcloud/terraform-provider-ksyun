@@ -152,6 +152,7 @@ func importLoadBalancerAclAssociate(d *schema.ResourceData, meta interface{}) ([
 	d.SetId(strings.Join(items[1:], ":"))
 	return []*schema.ResourceData{d}, nil
 }
+
 func importHealthcheck(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	var err error
 	items := strings.Split(d.Id(), ":")
@@ -298,8 +299,8 @@ func importTagV1Resource(d *schema.ResourceData, meta interface{}) ([]*schema.Re
 	}
 
 	return []*schema.ResourceData{d}, nil
-
 }
+
 func importTagResource(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	var err error
 	// ID => t_key + ":" + t_value + "," + r_type + ":" + r_id
@@ -318,7 +319,6 @@ func importTagResource(d *schema.ResourceData, meta interface{}) ([]*schema.Reso
 	}
 
 	return []*schema.ResourceData{d}, nil
-
 }
 
 func importAddressAssociate(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
@@ -362,6 +362,7 @@ func importKcrsNamespace(d *schema.ResourceData, meta interface{}) ([]*schema.Re
 	}
 	return []*schema.ResourceData{d}, nil
 }
+
 func importKcrsToken(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	var err error
 	items := strings.Split(d.Id(), ":")
@@ -484,7 +485,7 @@ func importKceCluster(d *schema.ResourceData, meta interface{}) ([]*schema.Resou
 	if err != nil {
 		return []*schema.ResourceData{d}, err
 	}
-	var instance = make([]kce.InstanceSet, 0, len(nodes))
+	instance := make([]kce.InstanceSet, 0, len(nodes))
 	_ = helper.MapstructureFiller(nodes, &instance, "")
 
 	masterIdList := make([]string, 0)
@@ -506,4 +507,25 @@ func importKceCluster(d *schema.ResourceData, meta interface{}) ([]*schema.Resou
 		_ = d.Set("worker_id", workerIdList)
 	}
 	return []*schema.ResourceData{d}, nil
+}
+
+// importListenerAssociateBackendgroup import listener
+func importListenerAssociateBackendgroup(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	var (
+		err  error
+		retD = []*schema.ResourceData{d}
+	)
+	items := strings.Split(d.Id(), ":")
+	if len(items) < 2 {
+		return retD, fmt.Errorf("import id must split with ':'")
+	}
+	err = d.Set("listener_id", items[0])
+	if err != nil {
+		return retD, err
+	}
+	err = d.Set("backend_server_group_id", items[1])
+	if err != nil {
+		return retD, err
+	}
+	return retD, nil
 }
