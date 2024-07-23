@@ -52,6 +52,7 @@ In addition to all arguments above, the following attributes are exported:
     * `timeout` - timeout of the health check.
     * `unhealthy_threshold` - Unhealthy threshold of health check.
     * `url_path` - path of the health check.
+  * `protocol` - The protocol of the backend server group. Valid values: 'TCP', 'UDP', 'HTTP'. Default `HTTP`.
   * `vpc_id` - Virtual private network ID.
 * `total_count` - Total number of BackendServerGroups that satisfy the condition.
 

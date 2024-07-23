@@ -31,6 +31,7 @@ The following arguments are supported:
 * `backend_server_group_name` - (Optional) The name of backend server group. Default: 'backend_server_group'.
 * `backend_server_group_type` - (Optional, ForceNew) The type of backend server group. Valid values: 'Server', 'Mirror'. Default is 'Server'.
 * `health_check` - (Optional) Health check information, only the mirror server has this parameter.
+* `protocol` - (Optional, ForceNew) The protocol of the backend server group. Valid values: 'TCP', 'UDP', 'HTTP'. Default `HTTP`.
 
 The `health_check` object supports the following:
 

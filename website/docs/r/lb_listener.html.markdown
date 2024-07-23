@@ -45,6 +45,7 @@ The following arguments are supported:
 
 * `listener_port` - (Required, ForceNew) The protocol port of listener.
 * `load_balancer_id` - (Required, ForceNew) The ID of the LB.
+* `bind_type` - (Optional) The bind type of listener. Valid Values:'BackendServerGroup', 'RealServer'.
 * `certificate_id` - (Optional) The ID of certificate.
 * `enable_http2` - (Optional) whether enable to HTTP2.
 * `health_check` - (Optional, **Deprecated**) This parameter is deprecated and will be removed in a future version, use `ksyun_healthcheck` instead. Health check.
