@@ -17,6 +17,11 @@ type SlbService struct {
 	client *KsyunClient
 }
 
+type listenerMountBackendRelation struct {
+	listenerId string
+	backendId  string
+}
+
 // start slb
 
 func (s *SlbService) ReadLoadBalancers(condition map[string]interface{}) (data []interface{}, err error) {
@@ -520,6 +525,27 @@ func (s *SlbService) ReadAndSetListener(d *schema.ResourceData, r *schema.Resour
 				return nil
 			},
 		},
+
+		"BackendServerGroupIdSet": {
+			Field: "mounted_backend_server_group",
+			FieldRespFunc: func(i interface{}) interface{} {
+				if i == nil {
+					return []interface{}{}
+				}
+
+				ret := make([]interface{}, 0)
+				for _, v := range i.([]interface{}) {
+					mountRelation := v.(map[string]interface{})
+					mountRelation["backend_server_group_id"] = mountRelation["BackendServerGroupId"]
+					ret = append(ret, mountRelation)
+				}
+				return ret
+			},
+		},
+	}
+
+	if _, ok := data["BackendServerGroupIdSet"]; !ok {
+		data["BackendServerGroupIdSet"] = nil
 	}
 	SdkResponseAutoResourceData(d, r, data, extra)
 	return err
@@ -646,6 +672,8 @@ func (s *SlbService) CreateHealthCheckWithListenerCall(d *schema.ResourceData, r
 }
 
 func (s *SlbService) CreateListener(d *schema.ResourceData, r *schema.Resource) (err error) {
+	apiProcess := NewApiProcess(context.Background(), d, s.client, false)
+
 	call, err := s.CreateListenerCall(d, r)
 	if err != nil {
 		return err
@@ -654,11 +682,16 @@ func (s *SlbService) CreateListener(d *schema.ResourceData, r *schema.Resource) 
 	if err != nil {
 		return err
 	}
-	var acl ApiCall
+	apiProcess.PutCalls(call, health)
 	if v, ok := d.GetOk("load_balancer_acl_id"); ok {
-		acl, err = s.CreateLoadBalancerAclAssociateWithListenerCall(d, r, v.(string))
+		acl, err := s.CreateLoadBalancerAclAssociateWithListenerCall(d, r, v.(string))
+		if err != nil {
+			return err
+		}
+		apiProcess.PutCalls(acl)
 	}
-	return ksyunApiCallNew([]ApiCall{call, health, acl}, d, s.client, false)
+
+	return apiProcess.Run()
 }
 
 func (s *SlbService) ModifyHealthCheckWithListenerCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
@@ -2989,6 +3022,63 @@ func (s *SlbService) RemoveBackendServer(d *schema.ResourceData) (err error) {
 	return ksyunApiCallNew([]ApiCall{call}, d, s.client, true)
 }
 
+func (s *SlbService) ListenerMountBackendGroupWithSet(d *schema.ResourceData) error {
+	mountProcess := NewApiProcess(context.Background(), d, s.client, true)
+
+	protocol := d.Get("listener_protocol").(string)
+	listenerId := d.Get("listener_id").(string)
+	mountFunc := s.listenerMountBackendGroupCall
+	switch protocol {
+	case "HTTP", "HTTPS":
+		mountFunc = s.listenerMountMirrorBackendGroupCall
+	}
+
+	getCallFunc := func(touchSet *schema.Set, mount bool) (err error) {
+		if touchSet == nil {
+			return nil
+		}
+		for _, v := range touchSet.List() {
+			vv := v.(map[string]interface{})
+			relation := listenerMountBackendRelation{
+				listenerId: listenerId,
+				backendId:  vv["backend_server_group_id"].(string),
+			}
+			call, err := mountFunc(d, relation, mount)
+			if err != nil {
+				return err
+			}
+			mountProcess.PutCalls(call)
+		}
+		return nil
+	}
+
+	var (
+		oldSet *schema.Set
+		newSet *schema.Set
+
+		detachSet *schema.Set
+		attachSet *schema.Set
+	)
+
+	oldSetIf, newSetIf := d.GetChange("mounted_backend_server_group")
+	oldSet = oldSetIf.(*schema.Set)
+
+	newSet = newSetIf.(*schema.Set)
+
+	detachSet = oldSet.Difference(newSet)
+	attachSet = newSet.Difference(oldSet)
+
+	if err := getCallFunc(detachSet, false); err != nil {
+		return fmt.Errorf("detach backend server group error: %s", err)
+	}
+
+	if err := getCallFunc(attachSet, true); err != nil {
+		return fmt.Errorf("attach backend server group error: %s", err)
+	}
+
+	return mountProcess.Run()
+}
+
 func (s *SlbService) MountOrUnmountBackendGroup(d *schema.ResourceData, r *schema.Resource, mounted bool) (err error) {
 	_, listenerProtocol, err := s.getLbListenerBindInfo(d)
 	if err != nil {
@@ -3015,7 +3105,13 @@ func (s *SlbService) MountOrUnmountBackendGroup(d *schema.ResourceData, r *schem
 
 func (s *SlbService) ListenerMountBackendGroup(d *schema.ResourceData, r *schema.Resource) (err error) {
 	apiProcess := NewApiProcess(context.Background(), d, s.client, true)
-	call, err := s.listenerMountBackendGroupCall(d, r, true)
+
+	mountRelation := listenerMountBackendRelation{
+		listenerId: d.Get("listener_id").(string),
+		backendId:  d.Get("backend_server_group_id").(string),
+	}
+
+	call, err := s.listenerMountBackendGroupCall(d, mountRelation, true)
 	if err != nil {
 		return err
 	}
@@ -3026,7 +3122,13 @@ func (s *SlbService) ListenerMountBackendGroup(d *schema.ResourceData, r *schema
 
 func (s *SlbService) ListenerUnmountBackendGroup(d *schema.ResourceData, r *schema.Resource) (err error) {
 	apiProcess := NewApiProcess(context.Background(), d, s.client, true)
-	call, err := s.listenerMountBackendGroupCall(d, r, false)
+
+	mountRelation := listenerMountBackendRelation{
+		listenerId: d.Get("listener_id").(string),
+		backendId:  d.Get("backend_server_group_id").(string),
+	}
+
+	call, err := s.listenerMountBackendGroupCall(d, mountRelation, false)
 	if err != nil {
 		return err
 	}
@@ -3037,7 +3139,13 @@ func (s *SlbService) ListenerUnmountBackendGroup(d *schema.ResourceData, r *sche
 
 func (s *SlbService) ListenerMountMirrorBackendGroup(d *schema.ResourceData, r *schema.Resource) error {
 	apiProcess := NewApiProcess(context.Background(), d, s.client, true)
-	call, err := s.listenerMountMirrorBackendGroupCall(d, r, true)
+
+	mountRelation := listenerMountBackendRelation{
+		listenerId: d.Get("listener_id").(string),
+		backendId:  d.Get("backend_server_group_id").(string),
+	}
+
+	call, err := s.listenerMountMirrorBackendGroupCall(d, mountRelation, true)
 	if err != nil {
 		return err
 	}
@@ -3048,7 +3156,13 @@ func (s *SlbService) ListenerMountMirrorBackendGroup(d *schema.ResourceData, r *
 
 func (s *SlbService) ListenerUnmountMirrorBackendGroup(d *schema.ResourceData, r *schema.Resource) error {
 	apiProcess := NewApiProcess(context.Background(), d, s.client, true)
-	call, err := s.listenerMountMirrorBackendGroupCall(d, r, false)
+
+	mountRelation := listenerMountBackendRelation{
+		listenerId: d.Get("listener_id").(string),
+		backendId:  d.Get("backend_server_group_id").(string),
+	}
+
+	call, err := s.listenerMountMirrorBackendGroupCall(d, mountRelation, false)
 	if err != nil {
 		return err
 	}
@@ -3058,10 +3172,10 @@ func (s *SlbService) ListenerUnmountMirrorBackendGroup(d *schema.ResourceData, r
 }
 
 // listenerMountMirrorBackendGroupCall registers_backend_server groups and its protocol is HTTP or HTTPS
-func (s *SlbService) listenerMountMirrorBackendGroupCall(d *schema.ResourceData, r *schema.Resource, mounted bool) (callback ApiCall, err error) {
+func (s *SlbService) listenerMountMirrorBackendGroupCall(d *schema.ResourceData, relation listenerMountBackendRelation, mounted bool) (callback ApiCall, err error) {
 	req := map[string]interface{}{
-		"ListenerId":           d.Get("listener_id").(string),
-		"BackendServerGroupId": d.Get("backend_server_group_id").(string),
+		"ListenerId":           relation.listenerId,
+		"BackendServerGroupId": relation.backendId,
 	}
 
 	callback = ApiCall{
@@ -3075,8 +3189,6 @@ func (s *SlbService) listenerMountMirrorBackendGroupCall(d *schema.ResourceData,
 		},
 		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
 			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
-			id := AssembleIds(d.Get("listener_id").(string), d.Get("backend_server_group_id").(string))
-			d.SetId(id)
 			return err
 		},
 	}
@@ -3095,10 +3207,10 @@ func (s *SlbService) listenerMountMirrorBackendGroupCall(d *schema.ResourceData,
 }
 
 // listenerMountBackendGroupCall registers backend groups and its protocol is TCP or UDP
-func (s *SlbService) listenerMountBackendGroupCall(d *schema.ResourceData, r *schema.Resource, mounted bool) (callback ApiCall, err error) {
+func (s *SlbService) listenerMountBackendGroupCall(d *schema.ResourceData, relation listenerMountBackendRelation, mounted bool) (callback ApiCall, err error) {
 	req := map[string]interface{}{
-		"ListenerId":           d.Get("listener_id").(string),
-		"BackendServerGroupId": d.Get("backend_server_group_id").(string),
+		"ListenerId":           relation.listenerId,
+		"BackendServerGroupId": relation.backendId,
 	}
 
 	callback = ApiCall{
@@ -3112,8 +3224,6 @@ func (s *SlbService) listenerMountBackendGroupCall(d *schema.ResourceData, r *sc
 		},
 		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
 			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
-			id := AssembleIds(d.Get("listener_id").(string), d.Get("backend_server_group_id").(string))
-			d.SetId(id)
 			return err
 		},
 	}

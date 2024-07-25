@@ -112,6 +112,9 @@ func resourceKsyunLbListenerAssociateBackendgroupCreate(d *schema.ResourceData, 
 	if err != nil {
 		return fmt.Errorf("error on mounting backend group onto listener %q, %s", d.Id(), err)
 	}
+
+	id := AssembleIds(d.Get("listener_id").(string), d.Get("backend_server_group_id").(string))
+	d.SetId(id)
 	return resourceKsyunLbListenerAssociateBackendgroupRead(d, meta)
 }
 
