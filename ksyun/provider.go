@@ -125,7 +125,6 @@ SLB
 		ksyun_lb_listener_associate_acl
 		ksyun_lb_listener_server
 		ksyun_lb_rule
-    ksyun_lb_listener_associate_backendgroup
 
 ALB
 
@@ -598,7 +597,7 @@ func Provider() terraform.ResourceProvider {
 			// "ksyun_security_group_entry_set":  resourceKsyunSecurityGroupEntrySet(),
 
 			// lb
-			"ksyun_lb_listener_associate_backendgroup": resourceKsyunLbListenerAssociateBackendgroup(),
+			// "ksyun_lb_listener_associate_backendgroup": resourceKsyunLbListenerAssociateBackendgroup(),
 		},
 		ConfigureFunc: providerConfigure,
 	}

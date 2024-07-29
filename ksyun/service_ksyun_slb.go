@@ -600,6 +600,9 @@ func (s *SlbService) CreateListenerCall(d *schema.ResourceData, r *schema.Resour
 		"load_balancer_acl_id": {
 			Ignore: true,
 		},
+		"backend_server_group_mounted": {
+			Ignore: true,
+		},
 	}
 	req, err := SdkRequestAutoMapping(d, r, false, transform, nil, SdkReqParameter{
 		onlyTransform: false,
