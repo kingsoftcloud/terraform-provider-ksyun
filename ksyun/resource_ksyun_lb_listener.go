@@ -256,9 +256,10 @@ func resourceKsyunListener() *schema.Resource {
 				// Computed: true,
 			},
 
-			"mounted_backend_server_group": {
+			"backend_server_group_mounted": {
 				Type:     schema.TypeSet,
 				Optional: true,
+				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"backend_server_group_id": {
@@ -293,7 +294,7 @@ func resourceKsyunListenerCreate(d *schema.ResourceData, meta interface{}) (err 
 		return fmt.Errorf("error on creating listener %q, %s", d.Id(), err)
 	}
 	// mount backend server group
-	if d.HasChange("mounted_backend_server_group") {
+	if d.HasChange("backend_server_group_mounted") {
 		err = slbService.ListenerMountBackendGroupWithSet(d)
 		if err != nil {
 			return fmt.Errorf("error on mounting backend server group %q, %s", d.Id(), err)
@@ -319,7 +320,7 @@ func resourceKsyunListenerUpdate(d *schema.ResourceData, meta interface{}) (err 
 	}
 
 	// mount backend server group
-	if d.HasChange("mounted_backend_server_group") {
+	if d.HasChange("backend_server_group_mounted") {
 		err = slbService.ListenerMountBackendGroupWithSet(d)
 		if err != nil {
 			return fmt.Errorf("error on mounting backend server group %q, %s", d.Id(), err)

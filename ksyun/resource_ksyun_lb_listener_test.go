@@ -84,6 +84,7 @@ func testAccCheckListenerExists(n string, val *map[string]interface{}) resource.
 		return nil
 	}
 }
+
 func testAccCheckListenerAttributes(val *map[string]interface{}) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if val != nil {
@@ -95,6 +96,7 @@ func testAccCheckListenerAttributes(val *map[string]interface{}) resource.TestCh
 		return nil
 	}
 }
+
 func testAccCheckListenerDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "ksyun_lb_listener" {
@@ -105,7 +107,6 @@ func testAccCheckListenerDestroy(s *terraform.State) error {
 		listener := make(map[string]interface{})
 		listener["ListenerId.1"] = rs.Primary.ID
 		ptr, err := client.slbconn.DescribeListeners(&listener)
-
 		// Verify the error is what we want
 		if err != nil {
 			return err
@@ -191,14 +192,7 @@ variable "az" {
 
 provider "ksyun" {
   region = "cn-beijing-6"
-  # access_key = "AKLTPxRVKpUcR5uIm8eJnVX6"
-  # secret_key = "OKFw4218fclk3x9vua9zD76wuNfBPkKQ073tvPqE"
 }
-
-
-
-
-
 
 resource "ksyun_vpc" "test" {
   vpc_name   = "tf-alb-vpc-1"
@@ -234,7 +228,7 @@ resource "ksyun_lb_listener" "default" {
   bind_type         = "BackendServerGroup"
   certificate_id    = data.ksyun_certificates.default.certificates.0.certificate_id
 
-  mounted_backend_server_group  {
+  backend_server_group_mounted  {
     backend_server_group_id = ksyun_lb_backend_server_group.default.id
   }
 }

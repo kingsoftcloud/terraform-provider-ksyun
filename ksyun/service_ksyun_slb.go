@@ -527,7 +527,7 @@ func (s *SlbService) ReadAndSetListener(d *schema.ResourceData, r *schema.Resour
 		},
 
 		"BackendServerGroupIdSet": {
-			Field: "mounted_backend_server_group",
+			Field: "backend_server_group_mounted",
 			FieldRespFunc: func(i interface{}) interface{} {
 				if i == nil {
 					return []interface{}{}
@@ -3060,7 +3060,7 @@ func (s *SlbService) ListenerMountBackendGroupWithSet(d *schema.ResourceData) er
 		attachSet *schema.Set
 	)
 
-	oldSetIf, newSetIf := d.GetChange("mounted_backend_server_group")
+	oldSetIf, newSetIf := d.GetChange("backend_server_group_mounted")
 	oldSet = oldSetIf.(*schema.Set)
 
 	newSet = newSetIf.(*schema.Set)

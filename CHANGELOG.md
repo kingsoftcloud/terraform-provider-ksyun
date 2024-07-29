@@ -1,3 +1,9 @@
+## 1.16.2 (unreleased)
+
+IMPROVEMENTS:
+
+- `ksyun_lb_listener`: 新增`backend_server_group_mounted`字段，支持挂载后端服务器组
+
 ## 1.16.1 (Jul 23, 2024)
 
 FEATURES:
