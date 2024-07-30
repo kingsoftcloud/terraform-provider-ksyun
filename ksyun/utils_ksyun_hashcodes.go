@@ -67,6 +67,7 @@ func securityGroupEntrySimpleHash(v interface{}) int {
 	buf := securityGroupEntryHashBase(v, false)
 	return hashcode.String(buf.String())
 }
+
 func securityGroupEntrySimpleHashWithHump(v interface{}) int {
 	if v == nil {
 		return hashcode.String("")

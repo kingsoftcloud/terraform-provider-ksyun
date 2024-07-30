@@ -45,6 +45,7 @@ The following arguments are supported:
 
 * `listener_port` - (Required, ForceNew) The protocol port of listener.
 * `load_balancer_id` - (Required, ForceNew) The ID of the LB.
+* `backend_server_group_mounted` - (Optional) The backend server group to mount.
 * `bind_type` - (Optional) The bind type of listener. Valid Values:'BackendServerGroup', 'RealServer'.
 * `certificate_id` - (Optional) The ID of certificate.
 * `enable_http2` - (Optional) whether enable to HTTP2.
@@ -58,6 +59,10 @@ The following arguments are supported:
 * `redirect_listener_id` - (Optional) The ID of the redirect listener.
 * `session` - (Optional) session.
 * `tls_cipher_policy` - (Optional) TLS cipher policy, valid values:'TlsCipherPolicy1.0','TlsCipherPolicy1.1','TlsCipherPolicy1.2','TlsCipherPolicy1.2-strict'.
+
+The `backend_server_group_mounted` object supports the following:
+
+* `backend_server_group_id` - (Required) The ID of backend server group.
 
 The `health_check` object supports the following:
 
