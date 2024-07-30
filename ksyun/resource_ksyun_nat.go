@@ -49,8 +49,10 @@ func resourceKsyunNat() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"nat_line_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true,
 				Description: "ID of the line.",
 			},
 			"project_id": {

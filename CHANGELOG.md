@@ -1,3 +1,15 @@
+## 1.16.2 (unreleased)
+
+FEATURES:
+
+- - **Deprecated Resource:** `ksyun_lb_listener_associate_backendgroup` 使用`backend_server_group_mounted` 字段替代
+
+IMPROVEMENTS:
+
+- `ksyun_lb_listener`: 新增`backend_server_group_mounted`字段，支持挂载后端服务器组
+- `ksyun_nat`: `nat_line_id` 标记为Computed
+
+
 ## 1.16.1 (Jul 23, 2024)
 
 FEATURES:

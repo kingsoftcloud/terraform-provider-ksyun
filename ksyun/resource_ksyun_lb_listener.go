@@ -44,6 +44,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/terraform-providers/terraform-provider-ksyun/ksyun/internal/pkg/helper"
 )
 
 func resourceKsyunListener() *schema.Resource {
@@ -255,6 +256,23 @@ func resourceKsyunListener() *schema.Resource {
 				// Computed: true,
 			},
 
+			"backend_server_group_mounted": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"backend_server_group_id": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The ID of backend server group.",
+						},
+					},
+				},
+				Description: "The backend server group to mount.",
+				Set:         helper.HashFuncWithKeys("backend_server_group_id"),
+			},
+
 			"listener_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -275,6 +293,13 @@ func resourceKsyunListenerCreate(d *schema.ResourceData, meta interface{}) (err 
 	if err != nil {
 		return fmt.Errorf("error on creating listener %q, %s", d.Id(), err)
 	}
+	// mount backend server group
+	if d.HasChange("backend_server_group_mounted") {
+		err = slbService.ListenerMountBackendGroupWithSet(d)
+		if err != nil {
+			return fmt.Errorf("error on mounting backend server group %q, %s", d.Id(), err)
+		}
+	}
 	return resourceKsyunListenerRead(d, meta)
 }
 
@@ -293,6 +318,15 @@ func resourceKsyunListenerUpdate(d *schema.ResourceData, meta interface{}) (err 
 	if err != nil {
 		return fmt.Errorf("error on updating listener %q, %s", d.Id(), err)
 	}
+
+	// mount backend server group
+	if d.HasChange("backend_server_group_mounted") {
+		err = slbService.ListenerMountBackendGroupWithSet(d)
+		if err != nil {
+			return fmt.Errorf("error on mounting backend server group %q, %s", d.Id(), err)
+		}
+	}
+
 	return resourceKsyunListenerRead(d, meta)
 }
 
