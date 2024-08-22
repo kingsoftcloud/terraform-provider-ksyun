@@ -52,7 +52,6 @@ import (
 )
 
 func instanceConfig() map[string]*schema.Schema {
-
 	return map[string]*schema.Schema{
 		"image_id": {
 			Type:        schema.TypeString,
@@ -299,9 +298,9 @@ func instanceConfig() map[string]*schema.Schema {
 			Description: "The hostname of the instance. only effective when image support cloud-init.",
 		},
 		"user_data": {
-			Type:             schema.TypeString,
-			Optional:         true,
-			ForceNew:         true,
+			Type:     schema.TypeString,
+			Optional: true,
+			// ForceNew:         true,
 			DiffSuppressFunc: kecImportDiffSuppress,
 			Description:      "The user data to be specified into this instance. Must be encrypted in base64 format and limited in 16 KB. only effective when image support cloud-init.",
 		},
