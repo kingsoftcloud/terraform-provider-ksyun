@@ -1,3 +1,9 @@
+## 1.16.3 (Aug 22, 2024)
+
+BUGFIX:
+
+- `ksyun_instance`: 修复云主机变更镜像时`user_data`不生效
+
 ## 1.16.2 (Jul 30, 2024)
 
 FEATURES:

@@ -275,7 +275,7 @@ The `master_config` object supports the following:
 * `sriov_net_support` - (Optional, ForceNew) whether support networking enhancement.
 * `system_disk` - (Optional) System disk parameters.
 * `tags` - (Optional) the tags of the resource.
-* `user_data` - (Optional, ForceNew) The user data to be specified into this instance. Must be encrypted in base64 format and limited in 16 KB. only effective when image support cloud-init.
+* `user_data` - (Optional) The user data to be specified into this instance. Must be encrypted in base64 format and limited in 16 KB. only effective when image support cloud-init.
 
 The `system_disk` object supports the following:
 
@@ -320,7 +320,7 @@ The `worker_config` object supports the following:
 * `sriov_net_support` - (Optional, ForceNew) whether support networking enhancement.
 * `system_disk` - (Optional) System disk parameters.
 * `tags` - (Optional) the tags of the resource.
-* `user_data` - (Optional, ForceNew) The user data to be specified into this instance. Must be encrypted in base64 format and limited in 16 KB. only effective when image support cloud-init.
+* `user_data` - (Optional) The user data to be specified into this instance. Must be encrypted in base64 format and limited in 16 KB. only effective when image support cloud-init.
 
 ## Attributes Reference
 
