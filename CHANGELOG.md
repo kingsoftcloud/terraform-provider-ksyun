@@ -776,3 +776,27 @@ DATA SOURCES:
 
 * redis read
 * redis security group read
+
+###  IAM
+
+DATA SOURCES:
+
+* iam users read
+* iam roles read
+* iam groups read
+* iam projects read
+
+RESOURCES:
+
+* iam user create
+* iam user read
+* iam user delete
+* iam role create
+* iam role read
+* iam role delete
+* iam group create
+* iam group read
+* iam group delete
+* iam project create
+* iam project read
+* iam policy create
