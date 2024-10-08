@@ -26,8 +26,8 @@ resource "ksyun_iam_group" "group" {
 
 The following arguments are supported:
 
-* `group_name` - (Required) IAM GroupName.
-* `description` - (Optional) IAM Group Description.
+* `group_name` - (Required, ForceNew) IAM GroupName.
+* `description` - (Optional, ForceNew) IAM Group Description.
 
 ## Attributes Reference
 

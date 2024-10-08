@@ -17,7 +17,7 @@ Provides a Iam Policy resource.
 
 ```hcl
 resource "ksyun_iam_policy" "policy" {
-  policy_name     = "TestPolicy3"
+  policy_name     = "TestPolicy1"
   policy_document = "{\"Version\": \"2015-11-01\",\"Statement\": [{\"Effect\": \"Allow\",\"Action\": [\"iam:List*\"],\"Resource\": [\"*\"]}]}"
 } `
 ```
@@ -26,15 +26,15 @@ resource "ksyun_iam_policy" "policy" {
 
 The following arguments are supported:
 
-* `policy_document` - (Required) IAM PolicyDocument.
-* `policy_name` - (Required) IAM PolicyName.
+* `policy_document` - (Required, ForceNew) IAM PolicyDocument.
+* `policy_name` - (Required, ForceNew) IAM PolicyName.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
 * `id` - ID of the resource.
-
+* `policy_krn` - IAM PolicyKrn.
 
 
 ## Import

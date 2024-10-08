@@ -324,13 +324,11 @@ IAM
 		ksyun_iam_users
 		ksyun_iam_roles
 		ksyun_iam_groups
-		ksyun_iam_projects
 
 	Resource
 		ksyun_iam_user
 		ksyun_iam_role
 		ksyun_iam_group
-		ksyun_iam_project
 		ksyun_iam_policy
 */
 
@@ -510,10 +508,9 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_kcrs_webhook_triggers": dataSourceKsyunKcrsWebhookTriggers(),
 
 			// iam
-			"ksyun_iam_users":    dataSourceKsyunIamUsers(),
-			"ksyun_iam_roles":    dataSourceKsyunIamRoles(),
-			"ksyun_iam_groups":   dataSourceKsyunIamGroups(),
-			"ksyun_iam_projects": dataSourceKsyunIamProjects(),
+			"ksyun_iam_users":  dataSourceKsyunIamUsers(),
+			"ksyun_iam_roles":  dataSourceKsyunIamRoles(),
+			"ksyun_iam_groups": dataSourceKsyunIamGroups(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"ksyun_alb":                              resourceKsyunAlb(),
@@ -612,11 +609,10 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_tag_v2_attachment": resourceKsyunTagv2Attachment(),
 
 			// iam
-			"ksyun_iam_user":    resourceKsyunIamUser(),
-			"ksyun_iam_role":    resourceKsyunIamRole(),
-			"ksyun_iam_group":   resourceKsyunIamGroup(),
-			"ksyun_iam_project": resourceKsyunIamProject(),
-			"ksyun_iam_policy":  resourceKsyunIamPolicy(),
+			"ksyun_iam_user":   resourceKsyunIamUser(),
+			"ksyun_iam_role":   resourceKsyunIamRole(),
+			"ksyun_iam_group":  resourceKsyunIamGroup(),
+			"ksyun_iam_policy": resourceKsyunIamPolicy(),
 
 			// security group
 			"ksyun_security_group":            resourceKsyunSecurityGroup(),

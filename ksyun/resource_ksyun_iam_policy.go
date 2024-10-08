@@ -6,7 +6,7 @@ Provides a Iam Policy resource.
 ```hcl
 
 resource "ksyun_iam_policy" "policy" {
-  policy_name = "TestPolicy3"
+  policy_name = "TestPolicy1"
   policy_document = "{\"Version\": \"2015-11-01\",\"Statement\": [{\"Effect\": \"Allow\",\"Action\": [\"iam:List*\"],\"Resource\": [\"*\"]}]}"
 }`
 
@@ -33,18 +33,25 @@ func resourceKsyunIamPolicy() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceKsyunIamPolicyCreate,
 		Read:   resourceKsyunIamPolicyRead,
-		Update: resourceKsyunIamPolicyUpdate,
 		Delete: resourceKsyunIamPolicyDelete,
 		Schema: map[string]*schema.Schema{
 			"policy_name": {
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "IAM PolicyName.",
 			},
 			"policy_document": {
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "IAM PolicyDocument.",
+			},
+			"policy_krn": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "IAM PolicyKrn.",
 			},
 		},
 	}
@@ -64,9 +71,19 @@ func resourceKsyunIamPolicyUpdate(d *schema.ResourceData, meta interface{}) (err
 }
 
 func resourceKsyunIamPolicyRead(d *schema.ResourceData, meta interface{}) (err error) {
+	iamPolicyService := IamPolicyService{meta.(*KsyunClient)}
+	err = iamPolicyService.ReadAndSetIamPolicy(d, resourceKsyunIamPolicy())
+	if err != nil {
+		return fmt.Errorf("error on reading IAM policy, %s", err)
+	}
 	return
 }
 
 func resourceKsyunIamPolicyDelete(d *schema.ResourceData, meta interface{}) (err error) {
+	iamPolicyService := IamPolicyService{meta.(*KsyunClient)}
+	err = iamPolicyService.DeleteIamPolicy(d)
+	if err != nil {
+		return fmt.Errorf("error on deleting IAM policy %q, %s", d.Id(), err)
+	}
 	return
 }

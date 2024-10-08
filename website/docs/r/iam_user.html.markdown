@@ -34,16 +34,16 @@ resource "ksyun_iam_user" "user" {
 
 The following arguments are supported:
 
-* `user_name` - (Required) IAM UserName.
-* `email` - (Optional) IAM Email.
-* `open_login_protection` - (Optional) Does IAM user enable login protection.
-* `open_security_protection` - (Optional) Does IAM user enable operation protection.
-* `password_reset_required` - (Optional) Does IAM user login reset password.
-* `password` - (Optional) IAM Password.
-* `phone` - (Optional) IAM Phone.
-* `real_name` - (Optional) IAM RealName.
-* `remark` - (Optional) IAM Remark.
-* `view_all_project` - (Optional) Can IAM users view all projects.
+* `user_name` - (Required, ForceNew) IAM UserName.
+* `email` - (Optional, ForceNew) IAM Email.
+* `open_login_protection` - (Optional, ForceNew) Does IAM user enable login protection.
+* `open_security_protection` - (Optional, ForceNew) Does IAM user enable operation protection.
+* `password_reset_required` - (Optional, ForceNew) Does IAM user login reset password.
+* `password` - (Optional, ForceNew) IAM Password.
+* `phone` - (Optional, ForceNew) IAM Phone.
+* `real_name` - (Optional, ForceNew) IAM RealName.
+* `remark` - (Optional, ForceNew) IAM Remark.
+* `view_all_project` - (Optional, ForceNew) Can IAM users view all projects.
 
 ## Attributes Reference
 

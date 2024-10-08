@@ -41,57 +41,66 @@ func resourceKsyunIamUser() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceKsyunIamUserCreate,
 		Read:   resourceKsyunIamUserRead,
-		Update: resourceKsyunIamUserUpdate,
 		Delete: resourceKsyunIamUserDelete,
 		Schema: map[string]*schema.Schema{
 			"user_name": {
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "IAM UserName.",
 			},
 			"real_name": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 				Description: "IAM RealName.",
 			},
 			"phone": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 				Description: "IAM Phone.",
 			},
 			"email": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 				Description: "IAM Email.",
 			},
 			"remark": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 				Description: "IAM Remark.",
 			},
 			"password": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 				Description: "IAM Password.",
 			},
 			"password_reset_required": {
 				Type:        schema.TypeInt,
 				Optional:    true,
+				ForceNew:    true,
 				Description: "Does IAM user login reset password.",
 			},
 			"open_login_protection": {
 				Type:        schema.TypeInt,
 				Optional:    true,
+				ForceNew:    true,
 				Description: "Does IAM user enable login protection.",
 			},
 			"open_security_protection": {
 				Type:        schema.TypeInt,
 				Optional:    true,
+				ForceNew:    true,
 				Description: "Does IAM user enable operation protection.",
 			},
 			"view_all_project": {
 				Type:        schema.TypeInt,
 				Optional:    true,
+				ForceNew:    true,
 				Description: "Can IAM users view all projects.",
 			},
 		},

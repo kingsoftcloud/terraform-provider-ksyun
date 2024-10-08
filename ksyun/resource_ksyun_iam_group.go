@@ -33,17 +33,18 @@ func resourceKsyunIamGroup() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceKsyunIamGroupCreate,
 		Read:   resourceKsyunIamGroupRead,
-		Update: resourceKsyunIamGroupUpdate,
 		Delete: resourceKsyunIamGroupDelete,
 		Schema: map[string]*schema.Schema{
 			"group_name": {
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "IAM GroupName.",
 			},
 			"description": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 				Description: "IAM Group Description.",
 			},
 		},

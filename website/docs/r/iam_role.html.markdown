@@ -27,9 +27,9 @@ resource "ksyun_iam_role" "role" {
 
 The following arguments are supported:
 
-* `role_name` - (Required) IAM RoleName.
-* `trust_accounts` - (Required) IAM TrustAccounts.
-* `description` - (Optional) IAM Description.
+* `role_name` - (Required, ForceNew) IAM RoleName.
+* `trust_accounts` - (Required, ForceNew) IAM TrustAccounts.
+* `description` - (Optional, ForceNew) IAM Description.
 
 ## Attributes Reference
 
