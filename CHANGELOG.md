@@ -6,6 +6,18 @@ IMPROVEMENTS:
 - `ksyun_alb`: 支持创建中阶版
 - `ksyun_alb_listener`: 新增`ca_enabled` `ca_certificate_id`开启双向验证，`enable_quic_upgrade`开启QUIC升级, `quic_listener_id` QUIC监听器ID
 
+## 1.17.0(Oct 08, 2024)
+
+FEATURES:
+
+- - **New Resource:** `ksyun_iam_user` IAM用户管理
+- - **New Resource:** `ksyun_iam_role` IAM角色管理
+- - **New Resource:** `ksyun_iam_group` IAM用户组管理
+- - **New Resource:** `ksyun_iam_policy` IAM策略管理
+- - **New Data Source:** `ksyun_iam_users` IAM用户列表
+- - **New Data Source:** `ksyun_iam_roles` IAM角色列表
+- - **New Data Source:** `ksyun_iam_groups` IAM角色列表
+
 ## 1.16.3 (Aug 22, 2024)
 
 BUGFIX:
@@ -784,3 +796,26 @@ DATA SOURCES:
 
 * redis read
 * redis security group read
+
+###  IAM
+
+DATA SOURCES:
+
+* iam users read
+* iam roles read
+* iam groups read
+
+RESOURCES:
+
+* iam user create
+* iam user read
+* iam user delete
+* iam role create
+* iam role read
+* iam role delete
+* iam group create
+* iam group read
+* iam group delete
+* iam policy create
+* iam policy read
+* iam policy delete
