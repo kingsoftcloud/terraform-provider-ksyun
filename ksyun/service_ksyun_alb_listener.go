@@ -264,6 +264,17 @@ func (s *AlbListenerService) modifyListenerCall(d *schema.ResourceData, r *schem
 			Ignore: true,
 		},
 	}
+	if d.HasChange("ca_enabled") {
+		transform["ca_certificate_id"] = SdkReqTransform{
+			mapping:          "CaCertificateId",
+			forceUpdateParam: true,
+		}
+	}
+	if d.HasChange("enable_quic_upgrade") {
+		transform["quic_listener_id"] = SdkReqTransform{
+			forceUpdateParam: true,
+		}
+	}
 	req, err := SdkRequestAutoMapping(d, r, true, transform, nil, SdkReqParameter{
 		onlyTransform: false,
 	})

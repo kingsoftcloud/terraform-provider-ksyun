@@ -313,6 +313,31 @@ func resourceKsyunAlbListener() *schema.Resource {
 				Description: "The custom configure for listener. [The details](https://docs.ksyun.com/documents/42615?type=3).",
 			},
 
+			"ca_certificate_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The ID of Client's CA certificate.",
+			},
+
+			"ca_enabled": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Whether enable to CA certificate.",
+			},
+
+			"quic_listener_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The ID of QUIC listener.",
+			},
+
+			"enable_quic_upgrade": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Whether enable to QUIC upgrade.",
+			},
+
 			// computed values
 			"alb_listener_id": {
 				Type:        schema.TypeString,
