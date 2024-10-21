@@ -176,6 +176,50 @@ func (alb *AlbService) modifyAccessLogCall(d *schema.ResourceData, r *schema.Res
 	return callback, err
 }
 
+func (alb *AlbService) setAlbDeleteProtectionCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
+	req := map[string]interface{}{}
+
+	callback = ApiCall{
+		param:  &req,
+		action: "SetAlbDeleteProtection",
+		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+			req["AlbId"] = d.Id()
+			req["DeleteProtection"] = d.Get("delete_protection")
+			conn := client.slbconn
+			logger.Debug(logger.RespFormat, call.action, *(call.param))
+			resp, err = conn.SetAlbDeleteProtection(call.param)
+			return resp, err
+		},
+		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+			return err
+		},
+	}
+	return callback, err
+}
+
+func (alb *AlbService) setAlbModificationProtectionCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
+	req := map[string]interface{}{}
+
+	callback = ApiCall{
+		param:  &req,
+		action: "SetAlbModificationProtection",
+		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+			req["AlbId"] = d.Id()
+			req["ModificationProtection"] = d.Get("modification_protection")
+			conn := client.slbconn
+			logger.Debug(logger.RespFormat, call.action, *(call.param))
+			resp, err = conn.SetAlbModificationProtection(call.param)
+			return resp, err
+		},
+		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+			return err
+		},
+	}
+	return callback, err
+}
+
 func (alb *AlbService) modifyAccessLogInfo(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
 	req := map[string]interface{}{}
 
@@ -236,6 +280,30 @@ func (alb *AlbService) ModifyAlb(d *schema.ResourceData, r *schema.Resource) (er
 			return err
 		}
 		calls = append(calls, modifyEnabledLogCall)
+	}
+
+	if d.HasChange("delete_protection") {
+		modifyDeleteProtectionCall, err := alb.setAlbDeleteProtectionCall(d, r)
+		if err != nil {
+			return err
+		}
+		calls = append(calls, modifyDeleteProtectionCall)
+	}
+
+	if d.HasChange("modification_protection") {
+		modifyModificationProtectionCall, err := alb.setAlbModificationProtectionCall(d, r)
+		if err != nil {
+			return err
+		}
+		calls = append(calls, modifyModificationProtectionCall)
+	}
+
+	if d.HasChanges("alb_version", "enable_hpa") {
+		modifyAlbCall, err := alb.modifyAlbCall(d, r)
+		if err != nil {
+			return err
+		}
+		calls = append(calls, modifyAlbCall)
 	}
 
 	// tagService := TagService{s.client}
@@ -366,7 +434,11 @@ func (alb *AlbService) ReadAndSetAlb(d *schema.ResourceData, r *schema.Resource)
 				return resource.NonRetryableError(fmt.Errorf("error on reading ALB %q, %s", d.Id(), callErr))
 			}
 		} else {
-			SdkResponseAutoResourceData(d, r, data, chargeExtraForVpc(data))
+			extra := chargeExtraForVpc(data)
+			extra["ModifyProtection"] = SdkResponseMapping{
+				Field: "modification_protection",
+			}
+			SdkResponseAutoResourceData(d, r, data, extra)
 			return nil
 		}
 	})
@@ -464,6 +536,39 @@ func (alb *AlbService) CreateAlb(d *schema.ResourceData, r *schema.Resource) (er
 	}
 
 	return ksyunApiCallNew(calls, d, alb.client, true)
+}
+
+func (alb *AlbService) modifyAlbCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
+	transform := map[string]SdkReqTransform{
+		"alb_version": {},
+		"enable_hpa":  {},
+	}
+	req, err := SdkRequestAutoMapping(d, r, false, transform, nil, SdkReqParameter{
+		onlyTransform: true,
+	})
+	if err != nil {
+		return callback, err
+	}
+	if len(req) > 0 {
+		req["AlbId"] = d.Id()
+
+		callback = ApiCall{
+			param:  &req,
+			action: "ModifyAlb",
+			executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+				conn := client.slbconn
+				logger.Debug(logger.RespFormat, call.action, *(call.param))
+
+				resp, err = conn.ModifyAlb(call.param)
+				return resp, err
+			},
+			afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+				logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+				return
+			},
+		}
+	}
+	return
 }
 
 func (alb *AlbService) CreateAlbBackendServerGroup(d *schema.ResourceData, r *schema.Resource) error {

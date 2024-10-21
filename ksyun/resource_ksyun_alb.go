@@ -81,8 +81,8 @@ func resourceKsyunAlb() *schema.Resource {
 				// Computed:     true,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validation.StringInSlice([]string{"standard", "advanced"}, false),
-				Description:  "The version of the ALB. valid values:'standard', 'advanced'.",
+				ValidateFunc: validation.StringInSlice([]string{"standard", "medium", "advanced"}, false),
+				Description:  "The version of the ALB. valid values:'standard', 'medium', 'advanced'.",
 			},
 			"alb_type": {
 				Type: schema.TypeString,
@@ -138,6 +138,35 @@ func resourceKsyunAlb() *schema.Resource {
 				ValidateFunc:     validation.IsIPAddress,
 				DiffSuppressFunc: albInternalDiffSuppressFunc,
 				Description:      "The private ip address. It not be empty, when 'alb_type' as '**internal**'.",
+			},
+			"enabled_quic": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Enable quic.",
+			},
+
+			"enable_hpa": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Enable hpa.",
+			},
+
+			"delete_protection": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.StringInSlice([]string{"off", "on"}, false),
+				Description:  "Whether delete protection is enabled or not. Values: `off` or `on`.",
+			},
+
+			"modification_protection": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.StringInSlice([]string{"off", "on"}, false),
+				Description:  "Whether modification protection is enabled or not. Values: `off` or `on`.",
 			},
 
 			"state": {
@@ -217,6 +246,7 @@ func resourceKsyunAlbCreate(d *schema.ResourceData, meta interface{}) (err error
 	}
 	return resourceKsyunAlbRead(d, meta)
 }
+
 func resourceKsyunAlbRead(d *schema.ResourceData, meta interface{}) (err error) {
 	s := AlbService{meta.(*KsyunClient)}
 	err = s.ReadAndSetAlb(d, resourceKsyunAlb())
@@ -225,6 +255,7 @@ func resourceKsyunAlbRead(d *schema.ResourceData, meta interface{}) (err error) 
 	}
 	return
 }
+
 func resourceKsyunAlbUpdate(d *schema.ResourceData, meta interface{}) (err error) {
 	s := AlbService{meta.(*KsyunClient)}
 	err = s.ModifyAlb(d, resourceKsyunAlb())
@@ -233,8 +264,12 @@ func resourceKsyunAlbUpdate(d *schema.ResourceData, meta interface{}) (err error
 	}
 	return resourceKsyunAlbRead(d, meta)
 }
+
 func resourceKsyunAlbDelete(d *schema.ResourceData, meta interface{}) (err error) {
 	s := AlbService{meta.(*KsyunClient)}
+	if d.Get("delete_protection") == "on" {
+		return fmt.Errorf("ALB %q is protected from deletion, if you want to delete it to set `delete_protection` as off", d.Id())
+	}
 	err = s.RemoveAlb(d)
 	if err != nil {
 		return fmt.Errorf("error on deleting ALB %q, %s", d.Id(), err)

@@ -1,3 +1,11 @@
+## 1.17.1 (Oct 21, 2024)
+
+IMPROVEMENTS:
+
+- `ksyun_alb`: 新增`enable_hpa`字段，支持开启HPA、`delete_protection`字段，支持开启删除保护、`modification_protection`字段，支持开启修改保护、`enabled_quic`字段，支持开启QUIC.
+- `ksyun_alb`: 支持创建中阶版
+- `ksyun_alb_listener`: 新增`ca_enabled` `ca_certificate_id`开启双向验证，`enable_quic_upgrade`开启QUIC升级, `quic_listener_id` QUIC监听器ID
+
 ## 1.16.3 (Aug 22, 2024)
 
 BUGFIX:

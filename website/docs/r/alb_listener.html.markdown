@@ -101,12 +101,16 @@ The following arguments are supported:
 * `protocol` - (Required, ForceNew) The protocol of listener. Valid Values: 'HTTP', 'HTTPS'.
 * `alb_listener_name` - (Optional) The name of the listener.
 * `alb_listener_state` - (Optional) The state of listener.Valid Values:'start', 'stop'.
+* `ca_certificate_id` - (Optional) The ID of Client's CA certificate.
+* `ca_enabled` - (Optional) Whether enable to CA certificate.
 * `certificate_id` - (Optional) The ID of certificate.
 * `config_content` - (Optional) The custom configure for listener. [The details](https://docs.ksyun.com/documents/42615?type=3).
 * `default_forward_rule` - (Optional) The default forward rule group.
 * `enable_http2` - (Optional) whether enable to HTTP2.
+* `enable_quic_upgrade` - (Optional) Whether enable to QUIC upgrade.
 * `http_protocol` - (Optional, **Deprecated**) This field will be removed soon. Please use 'enable_http2' instead to choose a protocol. Backend Protocol, valid values:'HTTP1.0','HTTP1.1'.
 * `method` - (Optional) Forwarding mode of listener. Valid Values:'RoundRobin', 'LeastConnections'.
+* `quic_listener_id` - (Optional) The ID of QUIC listener.
 * `redirect_alb_listener_id` - (Optional, **Deprecated**) This parameter is moved to 'default_forward_rule' block. The ID of the redirect ALB listener.
 * `session` - (Optional) Whether keeps session. Specific `session` block, if keeps session.
 * `tls_cipher_policy` - (Optional) TLS cipher policy, valid values:'TlsCipherPolicy1.0','TlsCipherPolicy1.1','TlsCipherPolicy1.2','TlsCipherPolicy1.2-strict','TlsCipherPolicy1.2-most-strict-with1.3'.
