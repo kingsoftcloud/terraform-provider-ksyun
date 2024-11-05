@@ -11,7 +11,7 @@ data "ksyun_lines" "default" {
 resource "ksyun_eip" "default" {
   line_id ="${data.ksyun_lines.default.lines.0.line_id}"
   band_width =1
-  charge_type = "PrePaidByMonth"
+  charge_type = "PostPaidByPeak"
   purchase_time =1
   project_id=0
 }
@@ -163,6 +163,7 @@ func resourceKsyunEip() *schema.Resource {
 		},
 	}
 }
+
 func resourceKsyunEipCreate(d *schema.ResourceData, meta interface{}) (err error) {
 	eipService := EipService{meta.(*KsyunClient)}
 	err = eipService.CreateAddress(d, resourceKsyunEip())
@@ -197,5 +198,4 @@ func resourceKsyunEipDelete(d *schema.ResourceData, meta interface{}) (err error
 		return fmt.Errorf("error on deleting address %q, %s", d.Id(), err)
 	}
 	return err
-
 }
