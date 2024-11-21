@@ -1,6 +1,7 @@
 package ksyun
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"reflect"
@@ -18,7 +19,7 @@ type KecService struct {
 	client *KsyunClient
 }
 
-func (s *KecService) readAndSetKecInstance(d *schema.ResourceData, r *schema.Resource, disableSetTag ...bool) (err error) {
+func (s *KecService) readAndSetKecInstance(d *schema.ResourceData, r *schema.Resource, isNew bool, flags ...bool) (err error) {
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
 		data, callErr := s.readKecInstance(d, "", false)
 		if callErr != nil {
@@ -102,12 +103,17 @@ func (s *KecService) readAndSetKecInstance(d *schema.ResourceData, r *schema.Res
 			}
 
 			// tag
-			if len(disableSetTag) == 0 || !disableSetTag[0] {
+			if len(flags) == 0 || !flags[0] {
 				err = mergeTagsData(d, &data, s.client, "instance")
 				if err != nil {
 					return resource.NonRetryableError(err)
 				}
 			}
+
+			// set data_disks by local data_disks
+			s.setKecDataDisks(d, r, data, isNew)
+			delete(data, "DataDisks")
+
 			SdkResponseAutoResourceData(d, r, data, extra)
 			if v, ok := d.GetOk("force_reinstall_system"); ok {
 				err = d.Set("force_reinstall_system", v)
@@ -121,6 +127,32 @@ func (s *KecService) readAndSetKecInstance(d *schema.ResourceData, r *schema.Res
 			return resource.NonRetryableError(err)
 		}
 	})
+}
+
+func (s *KecService) setKecDataDisks(d *schema.ResourceData, r *schema.Resource, data map[string]interface{}, isNew bool) {
+	if !isNew {
+		if localDataDisks, ok := d.GetOk("data_disks"); ok {
+			var setDataDisks []interface{}
+			remoteDataDisks := data["DataDisks"].([]interface{})
+			for _, remoteDataDisk := range remoteDataDisks {
+				remoteDataDiskMap := remoteDataDisk.(map[string]interface{})
+				for _, localDataDisk := range localDataDisks.(*schema.Set).List() {
+					localDataDiskMap := localDataDisk.(map[string]interface{})
+					if localDataDiskMap["disk_id"] == remoteDataDiskMap["DiskId"] {
+						setDataDisks = append(setDataDisks, remoteDataDisk)
+						break
+					}
+
+				}
+			}
+			if setDataDisks != nil {
+				SdkResponseAutoResourceData(d, r, map[string]interface{}{"DataDisks": setDataDisks}, nil)
+			}
+		}
+	} else {
+		SdkResponseAutoResourceData(d, r, map[string]interface{}{"DataDisks": data["DataDisks"]}, nil)
+	}
+	return
 }
 
 func (s *KecService) ReadAndSetKecInstances(d *schema.ResourceData, r *schema.Resource) (err error) {
@@ -325,7 +357,71 @@ func (s *KecService) createKecInstance(d *schema.ResourceData, resource *schema.
 	}
 	callbacks = append(callbacks, dnsCall)
 	// dryRun
-	return ksyunApiCallNew(callbacks, d, s.client, true)
+	err = ksyunApiCallNew(callbacks, d, s.client, true)
+	if err != nil {
+		return err
+	}
+	relatedTagsCall, err := s.kecRelatedAttachTags(d, resource)
+	if err != nil {
+		return fmt.Errorf("error on attach tags to ebs %s", err)
+	}
+	apiProcess := NewApiProcess(context.Background(), d, s.client, true)
+	apiProcess.PutCalls(relatedTagsCall...)
+	err = apiProcess.Run()
+	if err != nil {
+		return fmt.Errorf("error on attach tags to ebs %s", err)
+	}
+	return
+}
+
+func (s *KecService) kecRelatedAttachTags(d *schema.ResourceData, resource *schema.Resource) (calls []ApiCall, err error) {
+	if !d.HasChange("tags") {
+		return
+	}
+	dataDisksIf, ok := d.GetOk("data_disks")
+	if !ok {
+		return
+	}
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("error on attach tags to volumes %s", err)
+		}
+	}()
+	tagService := TagService{s.client}
+
+	var resourceType = "volume"
+	// instance
+	// ebs
+	// query ebs by instance id
+	dataDisks := dataDisksIf.(*schema.Set).List()
+	var (
+		tags      = Tags{}
+		volumeIds []string
+	)
+	for _, dataDisk := range dataDisks {
+		dataDiskMap := dataDisk.(map[string]interface{})
+		volumeId := dataDiskMap["disk_id"].(string)
+		volumeIds = append(volumeIds, volumeId)
+	}
+
+	desiredTags := d.Get("tags").(map[string]interface{})
+	for k, v := range desiredTags {
+		tags = append(tags, &Tag{
+			Key:   k,
+			Value: v.(string),
+		})
+	}
+
+	if len(volumeIds) > 0 {
+		params, _ := tags.GetTagsParams(resourceType, strings.Join(volumeIds, ","))
+		tagCall, err := tagService.ReplaceResourcesTagsCommonCall(params, false)
+		if err != nil {
+			return calls, fmt.Errorf("error on attach tags to volumes %s", err)
+		}
+		calls = append(calls, tagCall)
+
+	}
+	return calls, err
 }
 
 func (s *KecService) modifyKecInstance(d *schema.ResourceData, resource *schema.Resource) (err error) {
@@ -343,6 +439,11 @@ func (s *KecService) modifyKecInstance(d *schema.ResourceData, resource *schema.
 		return err
 	}
 	callbacks = append(callbacks, tagCall)
+	relatedTagCall, err := s.kecRelatedAttachTags(d, resource)
+	if err != nil {
+		return err
+	}
+	callbacks = append(callbacks, relatedTagCall...)
 	// name
 	nameCall, err := s.modifyKecInstanceName(d, resource)
 	if err != nil {
@@ -548,7 +649,7 @@ func (s *KecService) createKecInstanceCommon(d *schema.ResourceData, r *schema.R
 			if err != nil {
 				return err
 			}
-			return s.readAndSetKecInstance(d, r, true)
+			return s.readAndSetKecInstance(d, r, true, true)
 		},
 	}
 	return callback, err
@@ -874,7 +975,7 @@ func (s *KecService) updateKecInstanceNetwork(updateReq map[string]interface{}, 
 					return err
 				}
 				if init {
-					return s.readAndSetKecInstance(d, resource)
+					return s.readAndSetKecInstance(d, resource, false)
 				}
 				return err
 			},

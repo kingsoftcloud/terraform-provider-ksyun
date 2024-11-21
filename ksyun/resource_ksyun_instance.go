@@ -138,7 +138,7 @@ func instanceConfig() map[string]*schema.Schema {
 			Description:  "The size of the local SSD disk.",
 		},
 		"data_disks": {
-			Type:        schema.TypeList,
+			Type:        schema.TypeSet,
 			Optional:    true,
 			MinItems:    1,
 			MaxItems:    8,
@@ -434,7 +434,7 @@ func resourceKsyunInstanceCreate(d *schema.ResourceData, meta interface{}) (err 
 
 func resourceKsyunInstanceRead(d *schema.ResourceData, meta interface{}) (err error) {
 	kecService := KecService{meta.(*KsyunClient)}
-	err = kecService.readAndSetKecInstance(d, resourceKsyunInstance())
+	err = kecService.readAndSetKecInstance(d, resourceKsyunInstance(), false)
 	if err != nil {
 		return fmt.Errorf("error on reading Instance: %s", err)
 	}
