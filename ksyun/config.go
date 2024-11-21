@@ -108,6 +108,7 @@ func (c *Config) Client() (*KsyunClient, error) {
 var goSdkMutex = sync.RWMutex{} // The Go SDK is not thread-safe
 var loadSdkfromRemoteMutex = sync.Mutex{}
 var loadSdkEndpointMutex = sync.Mutex{}
+var tagsMutex = sync.Mutex{}
 
 func (client *KsyunClient) WithKs3BucketByName(bucketName string, do func(*ks3.Bucket) (interface{}, error)) (interface{}, error) {
 	return client.WithKs3Client(func(ks3Client *ks3.Client) (interface{}, error) {

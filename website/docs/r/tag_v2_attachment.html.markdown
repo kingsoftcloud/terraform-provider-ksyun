@@ -38,7 +38,7 @@ The following arguments are supported:
 
 * `key` - (Required) Tag key.
 * `resource_id` - (Required) Resource ID.
-* `resource_type` - (Required) Resource type. [supported type](https://docs.ksyun.com/documents/39807).
+* `resource_type` - (Required) Resource type. [supported type](https://docs.ksyun.com/documents/43391).
 * `value` - (Required) Tag value.
 
 ## Attributes Reference
