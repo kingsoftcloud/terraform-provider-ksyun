@@ -380,6 +380,13 @@ func instanceConfig() map[string]*schema.Schema {
 			Description: "Indicate whether to delete instance directly or not.",
 		},
 
+		"sync_tag": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     true,
+			Description: "Indicate whether to sync tags to instance.",
+		},
+
 		"network_interface_id": {
 			Type:        schema.TypeString,
 			Computed:    true,
@@ -434,7 +441,7 @@ func resourceKsyunInstanceCreate(d *schema.ResourceData, meta interface{}) (err 
 
 func resourceKsyunInstanceRead(d *schema.ResourceData, meta interface{}) (err error) {
 	kecService := KecService{meta.(*KsyunClient)}
-	err = kecService.readAndSetKecInstance(d, resourceKsyunInstance())
+	err = kecService.readAndSetKecInstance(d, resourceKsyunInstance(), false)
 	if err != nil {
 		return fmt.Errorf("error on reading Instance: %s", err)
 	}
