@@ -1,7 +1,6 @@
 package ksyun
 
 import (
-	"context"
 	"fmt"
 	"net"
 	"reflect"
@@ -379,21 +378,7 @@ func (s *KecService) createKecInstance(d *schema.ResourceData, resource *schema.
 	}
 	callbacks = append(callbacks, dnsCall)
 	// dryRun
-	err = ksyunApiCallNew(callbacks, d, s.client, true)
-	if err != nil {
-		return err
-	}
-	relatedTagsCall, err := s.kecRelatedAttachTags(d, resource)
-	if err != nil {
-		return fmt.Errorf("error on attach tags to ebs %s", err)
-	}
-	apiProcess := NewApiProcess(context.Background(), d, s.client, true)
-	apiProcess.PutCalls(relatedTagsCall...)
-	err = apiProcess.Run()
-	if err != nil {
-		return fmt.Errorf("error on attach tags to ebs %s", err)
-	}
-	return
+	return ksyunApiCallNew(callbacks, d, s.client, true)
 }
 
 func (s *KecService) kecRelatedAttachTags(d *schema.ResourceData, resource *schema.Resource) (calls []ApiCall, err error) {
@@ -605,9 +590,24 @@ func transKecInstanceParams(d *schema.ResourceData, resource *schema.Resource) (
 		"force_reinstall_system": {Ignore: true},
 		"tags":                   {Ignore: true},
 	}
-	return SdkRequestAutoMapping(d, resource, false, transform, nil, SdkReqParameter{
+
+	instanceParams, err := SdkRequestAutoMapping(d, resource, false, transform, nil, SdkReqParameter{
 		onlyTransform: false,
 	})
+	if err != nil {
+		return instanceParams, err
+	}
+	if tags, ok := d.GetOk("tags"); ok {
+		tagsMap := tags.(map[string]interface{})
+		idx := 1
+		for k, v := range tagsMap {
+			instanceParams["Tag."+strconv.Itoa(idx)+".Key"] = k
+			instanceParams["Tag."+strconv.Itoa(idx)+".Value"] = v
+			idx++
+		}
+	}
+
+	return instanceParams, nil
 }
 
 func (s *KecService) createKecInstanceCommon(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {

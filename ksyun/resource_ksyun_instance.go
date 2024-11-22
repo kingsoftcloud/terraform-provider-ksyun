@@ -380,6 +380,13 @@ func instanceConfig() map[string]*schema.Schema {
 			Description: "Indicate whether to delete instance directly or not.",
 		},
 
+		"sync_tag": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     true,
+			Description: "Indicate whether to sync tags to instance.",
+		},
+
 		"network_interface_id": {
 			Type:        schema.TypeString,
 			Computed:    true,
