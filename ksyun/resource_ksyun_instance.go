@@ -7,28 +7,51 @@ Example Usage
 
 ```hcl
 
-resource "ksyun_instance" "default" {
-  image_id="${data.ksyun_images.centos-7_5.images.0.image_id}"
-  instance_type="S4.1A"
-  system_disk{
-    disk_type="SSD3.0"
-    disk_size=30
+## get images list
+data "ksyun_images" "centos-8_0" {
+  platform = "centos-8.0"
+}
+
+data "ksyun_availability_zones" "default" {
+}
+
+## vpc settings of creating instance
+resource "ksyun_vpc" "default" {
+  vpc_name   = "ksyun-vpc-tf"
+  cidr_block = "10.7.0.0/21"
+}
+resource "ksyun_subnet" "default" {
+  subnet_name       = "ksyun-subnet-tf"
+  cidr_block        = "10.7.0.0/21"
+  subnet_type       = "Normal"
+  vpc_id            = ksyun_vpc.default.id
+  availability_zone = data.ksyun_availability_zones.default.availability_zones[0].availability_zone_name
+}
+
+resource "ksyun_security_group" "default" {
+  vpc_id              = ksyun_vpc.default.id
+  security_group_name = "ksyun-security-group"
+}
+
+resource "ksyun_instance" "foo" {
+  image_id      = data.ksyun_images.centos-8_0.images[0].image_id
+  instance_type = "N3.2B"
+
+  subnet_id         = ksyun_subnet.default.id
+  instance_password = "Xuan663222"
+  keep_image_login  = false
+  charge_type       = "Daily"
+  purchase_time     = 1
+  security_group_id = [ksyun_security_group.default.id]
+  instance_name     = "ksyun-kec-tf-demotion"
+  sriov_net_support = "false"
+  data_disks {
+    disk_type            = "SSD3.0"
+    disk_size            = 40
+    delete_with_instance = true
   }
-  data_disk_gb=0
-  subnet_id="${ksyun_subnet.default.id}"
-  instance_password="Xuan663222"
-  keep_image_login=false
-  charge_type="Daily"
-  purchase_time=1
-  security_group_id=["${ksyun_security_group.default.id}"]
-  private_ip_address=""
-  instance_name="xuan-tf-combine"
-  instance_name_suffix=""
-  sriov_net_support=false
-  project_id=0
-  data_guard_id=""
-  key_id=["${ksyun_ssh_key.default.id}"]
-  force_delete=true
+  key_id          = []
+  auto_create_ebs = true
 }
 ```
 

@@ -41,6 +41,15 @@ func (t Tags) GetTagsParams(rsType, rsUuid string) (map[string]interface{}, erro
 	return m, nil
 }
 
+func (tag Tag) GetTagParam(rsType, rsUuid string) map[string]interface{} {
+	m := make(map[string]interface{})
+	m["TagKey"] = tag.Key
+	m["TagValue"] = tag.Value
+	m["ResourceType"] = rsType
+	m["ResourceUuid"] = rsUuid
+	return m
+}
+
 func (s *TagService) ReadTags(condition map[string]interface{}) (data []interface{}, err error) {
 	var (
 		resp    *map[string]interface{}
@@ -167,9 +176,7 @@ func (s *TagService) ReadTagsByResourceIds(condition map[string]interface{}) (da
 }
 
 func (s *TagService) ReadTagByTagValue(d *schema.ResourceData, tagKey string, tagValue string) (data map[string]interface{}, err error) {
-	var (
-		results []interface{}
-	)
+	var results []interface{}
 	req := map[string]interface{}{
 		"TagKeys": tagKey,
 	}
@@ -271,6 +278,7 @@ func (s *TagService) CreateTag(d *schema.ResourceData, r *schema.Resource) error
 	apiProcess.PutCalls(createTagCall)
 	return apiProcess.Run()
 }
+
 func (s *TagService) CreateTagResourceAttachment(d *schema.ResourceData, r *schema.Resource) error {
 	apiProcess := NewApiProcess(context.Background(), d, s.client, true)
 
@@ -294,6 +302,7 @@ func (s *TagService) tagAttachResourceWithCall(d *schema.ResourceData, r *schema
 	}
 	tags := Tags{t}
 
+	tagsMutex.Lock()
 	// query existed tags
 	results, err := s.ReadTagByResourceId(d, rsId, rsType)
 	if err != nil {
@@ -321,8 +330,48 @@ func (s *TagService) tagAttachResourceWithCall(d *schema.ResourceData, r *schema
 
 	req, _ = tags.GetTagsParams(rsType, rsId)
 
-	return s.ReplaceResourcesTagsCommonCall(req, true)
-
+	attachCall, err := s.ReplaceResourcesTagsCommonCall(req, true)
+	if err != nil {
+		return ApiCall{}, err
+	}
+	rawExecuteCall := attachCall.executeCall
+	attachCall.executeCall = func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+		retryErr := resource.Retry(5*time.Minute, func() *resource.RetryError {
+			resp, err = rawExecuteCall(d, client, call)
+			if err != nil {
+				return resource.NonRetryableError(err)
+			}
+			readErr := s.ReadAndSetTagAttachment(d, nil)
+			if readErr != nil {
+				if notFoundError(readErr) {
+					return resource.RetryableError(readErr)
+				}
+				return resource.NonRetryableError(readErr)
+			}
+			return nil
+		})
+		if retryErr != nil {
+			return nil, retryErr
+		}
+		return
+	}
+	rawErrorCall := attachCall.callError
+	attachCall.callError = func(d *schema.ResourceData, client *KsyunClient, call ApiCall, baseErr error) error {
+		defer tagsMutex.Unlock()
+		if rawErrorCall != nil {
+			return rawErrorCall(d, client, call, baseErr)
+		}
+		return nil
+	}
+	rawAfterCall := attachCall.afterCall
+	attachCall.afterCall = func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) error {
+		defer tagsMutex.Unlock()
+		if rawAfterCall != nil {
+			return rawAfterCall(d, client, resp, call)
+		}
+		return nil
+	}
+	return attachCall, nil
 }
 
 func (s *TagService) DetachResourceTags(d *schema.ResourceData) error {
@@ -437,7 +486,7 @@ func (s *TagService) ReadAndSetTagAttachment(d *schema.ResourceData, r *schema.R
 
 exit:
 	if !found {
-		return fmt.Errorf("the attachment between tag and resource %s is not exsit", rsId)
+		return fmt.Errorf("the attachment between tag and resource %s is not exist", rsId)
 	}
 	return nil
 }

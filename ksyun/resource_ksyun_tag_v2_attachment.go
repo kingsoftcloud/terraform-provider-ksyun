@@ -63,7 +63,7 @@ func resourceKsyunTagv2Attachment() *schema.Resource {
 			"resource_type": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Resource type. [supported type](https://docs.ksyun.com/documents/39807).",
+				Description: "Resource type. [supported type](https://docs.ksyun.com/documents/43391).",
 			},
 			"resource_id": {
 				Type:        schema.TypeString,
