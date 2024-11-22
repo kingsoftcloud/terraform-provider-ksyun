@@ -1,3 +1,9 @@
+## 1.17.2 (Nov 22, 2024)
+
+BUGFIX:
+
+- `ksyun_tag_v2_attachment` 修复批量创建时出现的资源找不到的问题
+
 ## 1.17.1 (Oct 21, 2024)
 
 IMPROVEMENTS:
