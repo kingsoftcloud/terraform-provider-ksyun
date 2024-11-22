@@ -138,7 +138,7 @@ func instanceConfig() map[string]*schema.Schema {
 			Description:  "The size of the local SSD disk.",
 		},
 		"data_disks": {
-			Type:        schema.TypeSet,
+			Type:        schema.TypeList,
 			Optional:    true,
 			MinItems:    1,
 			MaxItems:    8,

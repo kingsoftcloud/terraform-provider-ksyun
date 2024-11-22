@@ -264,26 +264,19 @@ func transformWithN(v interface{}, k string, t SdkReqTransform, req *map[string]
 }
 
 func transformListN(v interface{}, k string, t SdkReqTransform, req *map[string]interface{}) error {
-	var list []interface{}
-	switch v.(type) {
-	case map[string]interface{}:
-		list = v.([]interface{})
-	case *schema.Set:
-		list = (*v.(*schema.Set)).List()
-	default:
-		return nil
-	}
-	if ok, _, err := transformFieldReqFunc(v, k, t, 0, req); ok {
-		if err != nil {
-			return fmt.Errorf("error on transformListN with transformFieldReqFunc %s", err)
+	if list, ok := v.([]interface{}); ok {
+		if ok, _, err := transformFieldReqFunc(v, k, t, 0, req); ok {
+			if err != nil {
+				return fmt.Errorf("error on transformListN with transformFieldReqFunc %s", err)
+			}
+			return nil
 		}
-		return nil
-	}
-	for index, v1 := range list {
-		if m1, ok := v1.(map[string]interface{}); ok {
-			for k2, v2 := range m1 {
-				k3 := getFinalKey(t, k) + "." + strconv.Itoa(index+1) + "." + getFinalKey(t, k2)
-				(*req)[k3] = v2
+		for index, v1 := range list {
+			if m1, ok := v1.(map[string]interface{}); ok {
+				for k2, v2 := range m1 {
+					k3 := getFinalKey(t, k) + "." + strconv.Itoa(index+1) + "." + getFinalKey(t, k2)
+					(*req)[k3] = v2
+				}
 			}
 		}
 	}

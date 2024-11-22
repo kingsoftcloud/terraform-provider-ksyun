@@ -11,6 +11,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-ksyun/ksyun/internal/pkg/helper"
 	"github.com/terraform-providers/terraform-provider-ksyun/ksyun/internal/pkg/network"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
 )
@@ -134,10 +135,11 @@ func (s *KecService) setKecDataDisks(d *schema.ResourceData, r *schema.Resource,
 		if localDataDisks, ok := d.GetOk("data_disks"); ok {
 			var setDataDisks []interface{}
 			remoteDataDisks := data["DataDisks"].([]interface{})
-			for _, remoteDataDisk := range remoteDataDisks {
-				remoteDataDiskMap := remoteDataDisk.(map[string]interface{})
-				for _, localDataDisk := range localDataDisks.(*schema.Set).List() {
-					localDataDiskMap := localDataDisk.(map[string]interface{})
+			for _, localDataDisk := range localDataDisks.([]interface{}) {
+				localDataDiskMap := localDataDisk.(map[string]interface{})
+				for _, remoteDataDisk := range remoteDataDisks {
+					remoteDataDiskMap := remoteDataDisk.(map[string]interface{})
+
 					if localDataDiskMap["disk_id"] == remoteDataDiskMap["DiskId"] {
 						setDataDisks = append(setDataDisks, remoteDataDisk)
 						break
@@ -150,7 +152,27 @@ func (s *KecService) setKecDataDisks(d *schema.ResourceData, r *schema.Resource,
 			}
 		}
 	} else {
-		SdkResponseAutoResourceData(d, r, map[string]interface{}{"DataDisks": data["DataDisks"]}, nil)
+		if localDataDisks, ok := d.GetOk("data_disks"); ok {
+			var setDataDisks []interface{}
+			remoteDataDisks := data["DataDisks"].([]interface{})
+			for _, remoteDataDisk := range remoteDataDisks {
+				remoteDataDiskMap := remoteDataDisk.(map[string]interface{})
+
+				for _, localDataDisk := range localDataDisks.([]interface{}) {
+					localDataDiskMap := localDataDisk.(map[string]interface{})
+					localHashFunc := helper.HashFuncWithKeys("disk_type", "disk_size", "delete_with_instance")
+					remoteHashFunc := helper.HashFuncWithKeys("DiskType", "DiskSize", "DeleteWithInstance")
+					if localHashFunc(localDataDiskMap) == remoteHashFunc(remoteDataDiskMap) {
+						setDataDisks = append(setDataDisks, remoteDataDisk)
+						break
+					}
+
+				}
+			}
+			if setDataDisks != nil {
+				SdkResponseAutoResourceData(d, r, map[string]interface{}{"DataDisks": setDataDisks}, nil)
+			}
+		}
 	}
 	return
 }
@@ -393,7 +415,7 @@ func (s *KecService) kecRelatedAttachTags(d *schema.ResourceData, resource *sche
 	// instance
 	// ebs
 	// query ebs by instance id
-	dataDisks := dataDisksIf.(*schema.Set).List()
+	dataDisks := dataDisksIf.([]interface{})
 	var (
 		tags      = Tags{}
 		volumeIds []string
