@@ -143,7 +143,7 @@ func testAccCheckInstanceDestroy(s *terraform.State) error {
 
 const testAccInstanceConfig = `
 provider "ksyun" {
-	region =  "cn-guangzhou-1"
+	region =  "cn-beijing-6"
 }
 data "ksyun_images" "centos-7_5" {
   platform= "centos-7.5"
@@ -172,7 +172,7 @@ resource "ksyun_instance" "foo" {
   image_id="${data.ksyun_images.centos-7_5.images.0.image_id}"
   instance_type="N3.4B"
 
-  data_disk_gb=16
+  #data_disk_gb=16
   #max_count=1
   #min_count=1
   subnet_id="${ksyun_subnet.default.id}"
@@ -186,6 +186,23 @@ resource "ksyun_instance" "foo" {
   project_id=0
   data_guard_id=""
   key_id=[]
+  data_disks {
+    disk_type            = "SSD3.0"
+    disk_size            = 80
+    delete_with_instance = true
+  }
+  data_disks {
+    disk_type            = "SSD3.0"
+    disk_size            = 80
+    delete_with_instance = true
+  }
+
+
+
+  tags = {
+	"ter_test1" : "value1",
+    "ter_test2" : "value2"
+}
 }
 
 `
