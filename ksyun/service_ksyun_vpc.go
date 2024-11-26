@@ -1147,6 +1147,7 @@ func (s *VpcService) CreateNat(d *schema.ResourceData, r *schema.Resource) (err 
 func (s *VpcService) ModifyNatCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
 	transform := map[string]SdkReqTransform{
 		"project_id": {Ignore: true},
+		"tags":       {Ignore: true},
 	}
 	req, err := SdkRequestAutoMapping(d, r, true, transform, nil, SdkReqParameter{false})
 	if err != nil {
