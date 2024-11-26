@@ -128,7 +128,21 @@ func (s *EbsService) ReadAndSetVolume(d *schema.ResourceData, r *schema.Resource
 				return resource.NonRetryableError(fmt.Errorf("error on  reading volume %q, %s", d.Id(), callErr))
 			}
 		} else {
-			SdkResponseAutoResourceData(d, r, data, chargeExtraForVpc(data))
+			extra := chargeExtraForVpc(data)
+			extra["Tags"] = SdkResponseMapping{
+				Field: "tags",
+				FieldRespFunc: func(i interface{}) interface{} {
+					tags := i.([]interface{})
+					tagMap := make(map[string]interface{})
+					for _, tag := range tags {
+						_m := tag.(map[string]interface{})
+						tagMap[_m["TagKey"].(string)] = _m["TagValue"].(string)
+					}
+					return tagMap
+				},
+			}
+
+			SdkResponseAutoResourceData(d, r, data, extra)
 			return nil
 		}
 	})
@@ -161,6 +175,7 @@ func (s *EbsService) ReadAndSetVolumes(d *schema.ResourceData, r *schema.Resourc
 func (s *EbsService) CreateVolumeCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
 	transform := map[string]SdkReqTransform{
 		"online_resize": {Ignore: true},
+		"tags":          {Ignore: true},
 	}
 	req, err := SdkRequestAutoMapping(d, r, false, transform, nil, SdkReqParameter{
 		onlyTransform: false,
@@ -199,7 +214,12 @@ func (s *EbsService) CreateVolume(d *schema.ResourceData, r *schema.Resource) (e
 	if err != nil {
 		return err
 	}
-	return ksyunApiCallNew([]ApiCall{call}, d, s.client, true)
+	tagsService := TagService{client: s.client}
+	tagsCall, err := tagsService.ReplaceResourcesTagsWithResourceCall(d, r, "volume", false, false)
+	if err != nil {
+		return err
+	}
+	return ksyunApiCallNew([]ApiCall{call, tagsCall}, d, s.client, true)
 }
 
 func (s *EbsService) ModifyVolumeProjectCall(d *schema.ResourceData, resource *schema.Resource) (callback ApiCall, err error) {
@@ -229,6 +249,7 @@ func (s *EbsService) ModifyVolumeInfoCall(d *schema.ResourceData, r *schema.Reso
 		"project_id":    {Ignore: true},
 		"size":          {Ignore: true},
 		"online_resize": {Ignore: true},
+		"tags":          {Ignore: true},
 	}
 	req, err := SdkRequestAutoMapping(d, r, true, transform, nil, SdkReqParameter{
 		false,
@@ -323,7 +344,13 @@ func (s *EbsService) ModifyVolume(d *schema.ResourceData, r *schema.Resource) (e
 	if err != nil {
 		return err
 	}
-	return ksyunApiCallNew([]ApiCall{projectCall, infoCall, call}, d, s.client, true)
+
+	tagsService := TagService{client: s.client}
+	tagsCall, err := tagsService.ReplaceResourcesTagsWithResourceCall(d, r, "volume", true, false)
+	if err != nil {
+		return err
+	}
+	return ksyunApiCallNew([]ApiCall{projectCall, infoCall, call, tagsCall}, d, s.client, true)
 }
 
 func (s *EbsService) RemoveVolumeCall(d *schema.ResourceData) (callback ApiCall, err error) {

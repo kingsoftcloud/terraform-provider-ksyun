@@ -30,6 +30,7 @@ The following arguments are supported:
 * `line_id` - (Required, ForceNew) The id of the line.
 * `band_width_share_name` - (Optional) name of the BWS.
 * `project_id` - (Optional) ID of the project.
+* `tags` - (Optional) the tags of the resource.
 
 ## Attributes Reference
 

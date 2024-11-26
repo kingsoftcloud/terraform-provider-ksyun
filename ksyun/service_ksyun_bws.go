@@ -55,6 +55,11 @@ func (s *BwsService) ReadBandWidthShare(d *schema.ResourceData, bwsId string) (d
 	if err != nil {
 		return data, err
 	}
+
+	if _, ok := d.GetOk("tags"); ok {
+		req["IsContainTag"] = true
+	}
+
 	results, err = s.ReadBandWidthShares(req)
 	if err != nil {
 		return data, err
@@ -81,7 +86,20 @@ func (s *BwsService) ReadAndSetBandWidthShare(d *schema.ResourceData, r *schema.
 				return resource.NonRetryableError(fmt.Errorf("error on  reading bandWidthShare %q, %s", d.Id(), callErr))
 			}
 		} else {
-			SdkResponseAutoResourceData(d, r, data, chargeExtraForVpc(data))
+			extra := chargeExtraForVpc(data)
+			extra["TagSet"] = SdkResponseMapping{
+				Field: "tags",
+				FieldRespFunc: func(i interface{}) interface{} {
+					tags := i.([]interface{})
+					tagMap := make(map[string]interface{})
+					for _, tag := range tags {
+						_m := tag.(map[string]interface{})
+						tagMap[_m["TagKey"].(string)] = _m["TagValue"].(string)
+					}
+					return tagMap
+				},
+			}
+			SdkResponseAutoResourceData(d, r, data, extra)
 			return nil
 		}
 	})
@@ -171,7 +189,12 @@ func (s *BwsService) CreateBandWidthShare(d *schema.ResourceData, r *schema.Reso
 	if err != nil {
 		return err
 	}
-	return ksyunApiCallNew([]ApiCall{call}, d, s.client, true)
+	tagsService := TagService{client: s.client}
+	tagsCall, err := tagsService.ReplaceResourcesTagsWithResourceCall(d, r, "bws", false, false)
+	if err != nil {
+		return err
+	}
+	return ksyunApiCallNew([]ApiCall{call, tagsCall}, d, s.client, true)
 }
 
 func (s *BwsService) ModifyBandWidthShareProjectCall(d *schema.ResourceData, resource *schema.Resource) (callback ApiCall, err error) {
@@ -199,6 +222,7 @@ func (s *BwsService) ModifyBandWidthShareProjectCall(d *schema.ResourceData, res
 func (s *BwsService) ModifyBandWidthShareCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
 	transform := map[string]SdkReqTransform{
 		"project_id": {Ignore: true},
+		"tags":       {Ignore: true},
 	}
 	req, err := SdkRequestAutoMapping(d, r, true, transform, nil, SdkReqParameter{
 		false,
@@ -227,15 +251,27 @@ func (s *BwsService) ModifyBandWidthShareCall(d *schema.ResourceData, r *schema.
 }
 
 func (s *BwsService) ModifyBandWidthShare(d *schema.ResourceData, r *schema.Resource) (err error) {
+	var calls []ApiCall
 	projectCall, err := s.ModifyBandWidthShareProjectCall(d, r)
 	if err != nil {
 		return err
 	}
+	calls = append(calls, projectCall)
 	call, err := s.ModifyBandWidthShareCall(d, r)
 	if err != nil {
 		return err
 	}
-	return ksyunApiCallNew([]ApiCall{projectCall, call}, d, s.client, true)
+	calls = append(calls, call)
+	if d.HasChange("tags") {
+		tagsService := TagService{client: s.client}
+		tagsCall, err := tagsService.ReplaceResourcesTagsWithResourceCall(d, r, "bws", true, false)
+		if err != nil {
+			return err
+		}
+		calls = append(calls, tagsCall)
+	}
+
+	return ksyunApiCallNew(calls, d, s.client, true)
 }
 
 func (s *BwsService) RemoveBandWidthShareCall(d *schema.ResourceData) (callback ApiCall, err error) {
