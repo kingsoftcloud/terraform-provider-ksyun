@@ -1,3 +1,13 @@
+## 1.17.3 (Nov 26, 2024)
+
+IMPROVEMENTS:
+
+- `ksyun_instance`: 新增ebs tag同步，优化data_disks管理
+- `ksyun_nat`: 新增tags嵌入管理
+- `ksyun_alb`: 新增tags嵌入管理
+- `ksyun_ebs`: 新增tags嵌入管理
+- `ksyun_bws`: 新增tags嵌入管理
+
 ## 1.17.2 (Nov 22, 2024)
 
 BUGFIX:
