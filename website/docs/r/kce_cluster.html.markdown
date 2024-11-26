@@ -273,6 +273,7 @@ The `master_config` object supports the following:
 * `purchase_time` - (Optional, ForceNew) The duration that you will buy the resource.
 * `role` - (Optional) 
 * `sriov_net_support` - (Optional, ForceNew) whether support networking enhancement.
+* `sync_tag` - (Optional) Indicate whether to sync tags to instance.
 * `system_disk` - (Optional) System disk parameters.
 * `tags` - (Optional) the tags of the resource.
 * `user_data` - (Optional) The user data to be specified into this instance. Must be encrypted in base64 format and limited in 16 KB. only effective when image support cloud-init.
@@ -318,6 +319,7 @@ The `worker_config` object supports the following:
 * `purchase_time` - (Optional, ForceNew) The duration that you will buy the resource.
 * `role` - (Optional) The role of instance. Valid values: Worker.
 * `sriov_net_support` - (Optional, ForceNew) whether support networking enhancement.
+* `sync_tag` - (Optional) Indicate whether to sync tags to instance.
 * `system_disk` - (Optional) System disk parameters.
 * `tags` - (Optional) the tags of the resource.
 * `user_data` - (Optional) The user data to be specified into this instance. Must be encrypted in base64 format and limited in 16 KB. only effective when image support cloud-init.
