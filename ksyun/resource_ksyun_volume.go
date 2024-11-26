@@ -33,8 +33,9 @@ package ksyun
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -64,10 +65,10 @@ func resourceKsyunVolume() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 				ValidateFunc: validation.StringInSlice([]string{
-					//"SSD2.0",
-					//"SSD3.0",
-					//"EHDD",
-					//"SATA2.0",
+					// "SSD2.0",
+					// "SSD3.0",
+					// "EHDD",
+					// "SATA2.0",
 					"SSD3.0",
 					"EHDD",
 					"ESSD_PL0",
@@ -151,6 +152,8 @@ func resourceKsyunVolume() *schema.Resource {
 				DiffSuppressFunc: kecDiskSnapshotIdDiffSuppress,
 				Description:      "When the cloud disk snapshot opens, the snapshot id is entered.",
 			},
+
+			"tags": tagsSchema(),
 		},
 	}
 }

@@ -137,6 +137,8 @@ func resourceKsyunNat() *schema.Resource {
 				Description:      "The PurchaseTime of the Nat, value range [1, 36]. If charge_type is Monthly this Field is Required.",
 			},
 
+			"tags": tagsSchema(),
+
 			"nat_ip_set": {
 				Type:        schema.TypeList,
 				Computed:    true,

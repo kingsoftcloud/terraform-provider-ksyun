@@ -71,6 +71,7 @@ The following arguments are supported:
 * `project_id` - (Optional) The ID of the project.
 * `state` - (Optional) The state of the ALB, Valid Values:'start', 'stop'.
 * `subnet_id` - (Optional, ForceNew) The Id of Subnet that's type is **Reserve**. It not be empty, when 'alb_type' as '**internal**'.
+* `tags` - (Optional) the tags of the resource.
 
 The `klog_info` object supports the following:
 

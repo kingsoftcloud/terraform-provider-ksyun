@@ -1017,6 +1017,9 @@ func (s *VpcService) ReadNat(d *schema.ResourceData, natId string) (data map[str
 	if err != nil {
 		return data, err
 	}
+	if _, ok := d.GetOk("tags"); ok {
+		req["IsContainTag"] = true
+	}
 	results, err = s.ReadNats(req)
 	if err != nil {
 		return data, err
@@ -1081,7 +1084,21 @@ func (s *VpcService) ReadAndSetNat(d *schema.ResourceData, r *schema.Resource) (
 				return resource.NonRetryableError(fmt.Errorf("error on  reading nat %q, %s", d.Id(), callErr))
 			}
 		} else {
-			SdkResponseAutoResourceData(d, r, data, chargeExtraForVpc(data))
+			extra := chargeExtraForVpc(data)
+			extra["TagSet"] = SdkResponseMapping{
+				Field: "tags",
+				FieldRespFunc: func(i interface{}) interface{} {
+					tags := i.([]interface{})
+					tagMap := make(map[string]interface{})
+					for _, tag := range tags {
+						_m := tag.(map[string]interface{})
+						tagMap[_m["TagKey"].(string)] = _m["TagValue"].(string)
+					}
+					return tagMap
+				},
+			}
+
+			SdkResponseAutoResourceData(d, r, data, extra)
 			return nil
 		}
 	})
@@ -1119,7 +1136,12 @@ func (s *VpcService) CreateNat(d *schema.ResourceData, r *schema.Resource) (err 
 	if err != nil {
 		return err
 	}
-	return ksyunApiCallNew([]ApiCall{call}, d, s.client, true)
+	tagsService := TagService{client: s.client}
+	tagsCall, err := tagsService.ReplaceResourcesTagsWithResourceCall(d, r, "nat", false, false)
+	if err != nil {
+		return err
+	}
+	return ksyunApiCallNew([]ApiCall{call, tagsCall}, d, s.client, true)
 }
 
 func (s *VpcService) ModifyNatCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
@@ -1267,6 +1289,13 @@ func (s *VpcService) ModifyNat(d *schema.ResourceData, r *schema.Resource) (err 
 		return err
 	}
 	apiProcess.PutCalls(natIPCall)
+
+	tagsService := TagService{client: s.client}
+	tagsCall, err := tagsService.ReplaceResourcesTagsWithResourceCall(d, r, "nat", true, false)
+	if err != nil {
+		return err
+	}
+	apiProcess.PutCalls(tagsCall)
 	return apiProcess.Run()
 }
 
