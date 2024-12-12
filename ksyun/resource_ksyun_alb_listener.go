@@ -260,7 +260,7 @@ func resourceKsyunAlbListener() *schema.Resource {
 							Type:          schema.TypeString,
 							Optional:      true,
 							ConflictsWith: []string{"default_forward_rule.0.redirect_alb_listener_id", "default_forward_rule.0.fixed_response_config"},
-							AtLeastOneOf:  []string{"default_forward_rule.0.backend_server_group_id", "default_forward_rule.0.redirect_alb_listener_id", "default_forward_rule.0.fixed_response_config"},
+							AtLeastOneOf:  []string{"default_forward_rule.0.backend_server_group_id", "default_forward_rule.0.redirect_alb_listener_id", "default_forward_rule.0.fixed_response_config", "default_forward_rule.0.rewrite_config"},
 							Description:   "The backend server group id for default forward rule group.",
 						},
 
@@ -269,8 +269,8 @@ func resourceKsyunAlbListener() *schema.Resource {
 						"redirect_alb_listener_id": {
 							Type:          schema.TypeString,
 							Optional:      true,
-							ConflictsWith: []string{"default_forward_rule.0.backend_server_group_id", "default_forward_rule.0.fixed_response_config"},
-							AtLeastOneOf:  []string{"default_forward_rule.0.backend_server_group_id", "default_forward_rule.0.redirect_alb_listener_id", "default_forward_rule.0.fixed_response_config"},
+							ConflictsWith: []string{"default_forward_rule.0.backend_server_group_id", "default_forward_rule.0.fixed_response_config", "default_forward_rule.0.rewrite_config"},
+							AtLeastOneOf:  []string{"default_forward_rule.0.backend_server_group_id", "default_forward_rule.0.redirect_alb_listener_id", "default_forward_rule.0.fixed_response_config", "default_forward_rule.0.rewrite_config"},
 							Description:   "The ID of the alternative redirect ALB listener.",
 						},
 						"redirect_http_code": {
@@ -290,9 +290,20 @@ func resourceKsyunAlbListener() *schema.Resource {
 							Type:          schema.TypeList,
 							Optional:      true,
 							MaxItems:      1,
-							ConflictsWith: []string{"default_forward_rule.0.backend_server_group_id", "default_forward_rule.0.redirect_alb_listener_id"},
-							AtLeastOneOf:  []string{"default_forward_rule.0.backend_server_group_id", "default_forward_rule.0.redirect_alb_listener_id", "default_forward_rule.0.fixed_response_config"},
+							ConflictsWith: []string{"default_forward_rule.0.backend_server_group_id", "default_forward_rule.0.redirect_alb_listener_id", "default_forward_rule.0.rewrite_config"},
+							AtLeastOneOf:  []string{"default_forward_rule.0.backend_server_group_id", "default_forward_rule.0.redirect_alb_listener_id", "default_forward_rule.0.fixed_response_config", "default_forward_rule.0.rewrite_config"},
 							Elem:          fixedResponseConfigResourceElem(),
+						},
+						"rewrite_config": {
+							Type:          schema.TypeList,
+							Optional:      true,
+							MaxItems:      1,
+							ConflictsWith: []string{"default_forward_rule.0.redirect_alb_listener_id", "default_forward_rule.0.fixed_response_config"},
+							AtLeastOneOf:  []string{"default_forward_rule.0.backend_server_group_id", "default_forward_rule.0.redirect_alb_listener_id", "default_forward_rule.0.fixed_response_config", "default_forward_rule.0.rewrite_config"},
+							Elem: &schema.Resource{
+								Schema: rewriteConfigSchema,
+							},
+							Description: "The config of rewrite.",
 						},
 
 						"alb_rule_group_id": {

@@ -224,6 +224,45 @@ func AlbRuleGroupSyncOffDiffSuppressFunc(k, old, new string, d *schema.ResourceD
 	return true
 }
 
+func albRuleGroupDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bool {
+	var (
+		fieldKey    string
+		resourceKey string
+	)
+	if strings.Contains(k, ".") {
+		keys := strings.Split(k, ".")
+		fieldKey = keys[2]
+		resourceKey = strings.Join(keys[:2], ".") + ".alb_rule_type"
+	}
+	switch d.Get(resourceKey) {
+	case "url", "domain":
+		if fieldKey == "alb_rule_value" {
+			return false
+		}
+	case "header":
+		if fieldKey == "header_value" {
+			return false
+		}
+	case "method":
+		if fieldKey == "method_value" {
+			return false
+		}
+	case "sourceIp":
+		if fieldKey == "source_ip_value" {
+			return false
+		}
+	case "query":
+		if fieldKey == "query_value" {
+			return false
+		}
+	case "cookie":
+		if fieldKey == "cookie_value" {
+			return false
+		}
+	}
+	return true
+}
+
 func lbListenerDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bool {
 	if d.Get("listener_protocol") != "HTTPS" && (k == "certificate_id" || k == "tls_cipher_policy" || k == "enable_http2") {
 		return true

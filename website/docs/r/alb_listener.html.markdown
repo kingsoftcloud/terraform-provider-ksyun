@@ -121,6 +121,13 @@ The `default_forward_rule` object supports the following:
 * `fixed_response_config` - (Optional) 
 * `redirect_alb_listener_id` - (Optional) The ID of the alternative redirect ALB listener.
 * `redirect_http_code` - (Optional) The http code for redirect action. Valid Values: 301|302|307.
+* `rewrite_config` - (Optional) The config of rewrite.
+
+The `rewrite_config` object supports the following:
+
+* `http_host` - (Optional) The host of the rewrite.
+* `query_string` - (Optional) The query string of the rewrite.
+* `url` - (Optional) The url of the rewrite.
 
 The `session` object supports the following:
 
