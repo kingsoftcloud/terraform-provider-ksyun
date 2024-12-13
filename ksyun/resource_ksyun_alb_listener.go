@@ -306,6 +306,14 @@ func resourceKsyunAlbListener() *schema.Resource {
 							Description: "The config of rewrite.",
 						},
 
+						"type": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							ForceNew:    true,
+							Description: "The type of default forward rule group. Valid Values: 'Redirect', 'FixedResponse', 'Rewrite', 'ForwardGroup.",
+						},
+
 						"alb_rule_group_id": {
 							Type:        schema.TypeString,
 							Computed:    true,

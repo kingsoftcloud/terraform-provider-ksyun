@@ -69,7 +69,11 @@ alb_rule_set {
     alb_rule_type = "domain"
     alb_rule_value = "www.ksyun.com"
   }
-
+  rewrite_config {
+    http_host    = "www.ksyun.com"
+    url          = "/dasssww/wwwq"
+    query_string = "ksyun"
+  }
   listener_sync = "off"
   session_state              = "start"
   session_persistence_period = 333

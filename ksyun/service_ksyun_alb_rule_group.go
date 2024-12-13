@@ -24,6 +24,7 @@ const (
 	albRuleTypeForwardGroup  = "ForwardGroup"
 	albRuleTypeRedirect      = "Redirect"
 	albRuleTypeFixedResponse = "FixedResponse"
+	albRuleTypeRewrite       = "Rewrite"
 )
 
 var (
@@ -409,7 +410,13 @@ func (s *AlbRuleGroup) modifyRuleGroupCall(d *schema.ResourceData, r *schema.Res
 		transform["redirect_alb_listener_id"] = SdkReqTransform{
 			Ignore: true,
 		}
-
+	case albRuleTypeRewrite:
+		transform["backend_server_group_id"] = SdkReqTransform{
+			forceUpdateParam: true,
+		}
+		transform["rewrite_config"] = SdkReqTransform{
+			forceUpdateParam: true,
+		}
 	default:
 	}
 
