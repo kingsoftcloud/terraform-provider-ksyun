@@ -1,3 +1,9 @@
+## 1.17.4(Dec 13, 2024)
+
+FEATURES:
+
+- - **New Resource:** `ksyun_iam_relation_policy` IAM策略关联
+
 ## 1.17.3 (Nov 26, 2024)
 
 IMPROVEMENTS:
