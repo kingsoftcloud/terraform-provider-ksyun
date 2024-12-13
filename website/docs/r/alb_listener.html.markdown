@@ -122,6 +122,7 @@ The `default_forward_rule` object supports the following:
 * `redirect_alb_listener_id` - (Optional) The ID of the alternative redirect ALB listener.
 * `redirect_http_code` - (Optional) The http code for redirect action. Valid Values: 301|302|307.
 * `rewrite_config` - (Optional) The config of rewrite.
+* `type` - (Optional, ForceNew) The type of default forward rule group. Valid Values: 'Redirect', 'FixedResponse', 'Rewrite', 'ForwardGroup.
 
 The `rewrite_config` object supports the following:
 

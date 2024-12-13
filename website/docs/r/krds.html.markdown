@@ -184,6 +184,7 @@ The following arguments are supported:
 * `preferred_backup_time` - (Optional) backup time.
 * `project_id` - (Optional) project ID.
 * `security_group_id` - (Optional) proprietary security group id for krds.
+* `tags` - (Optional) the tags of the resource.
 * `vip` - (Optional) virtual IP.
 
 The `parameters` object supports the following:

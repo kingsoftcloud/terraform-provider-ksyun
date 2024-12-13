@@ -166,7 +166,7 @@ The following arguments are supported:
 * `session_persistence_period` - (Optional) Session hold timeout. Valid Values:1-86400. Should set it value, when `listener_sync` is off.
 * `session_state` - (Optional) The state of session. Valid Values:'start', 'stop'. Should set it value, when `listener_sync` is off.
 * `timeout` - (Optional) Health check timeout.Valid Values:1-3600. Should set it value, when `listener_sync` is off.
-* `type` - (Optional) The type of rule group, Valid Values: ForwardGroup|Redirect|FixedResponse. Default: ForwardGroup. 
+* `type` - (Optional, ForceNew) The type of rule group, Valid Values: ForwardGroup|Redirect|FixedResponse. Default: ForwardGroup. 
 **Notes**: The type is supposed to be of consistency with backend instance. `ForwardGroup -> backend_server_group_id`, `Redirect -> redirect_alb_listener_id`, `FixedResponse -> fixed_response_config`.
 * `unhealthy_threshold` - (Optional) Unhealthy threshold.Valid Values:1-10. Should set it value, when `listener_sync` is off.
 * `url_path` - (Optional) Link to HTTP type listener health check. Should set it value, when `listener_sync` is off.

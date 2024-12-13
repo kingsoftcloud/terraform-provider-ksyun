@@ -34,10 +34,12 @@ package ksyun
 
 import (
 	"errors"
+	"fmt"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"time"
 )
 
 func resourceKsyunMongodbInstance() *schema.Resource {
@@ -183,6 +185,9 @@ func resourceKsyunMongodbInstance() *schema.Resource {
 				}, false),
 				Description: "the type of network.",
 			},
+
+			"tags": tagsSchema(),
+
 			"user_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -297,6 +302,17 @@ func resourceMongodbInstanceCreate(d *schema.ResourceData, meta interface{}) (er
 	if err != nil {
 		return err
 	}
+	client := meta.(*KsyunClient)
+	if d.HasChange("tags") {
+		tagService := TagService{client}
+		tagCall, err := tagService.ReplaceResourcesTagsWithResourceCall(d, resourceKsyunKrds(), "mongodb-instance", false, true)
+		if err != nil {
+			return err
+		}
+		if err = tagCall.RightNow(d, client, false); err != nil {
+			return fmt.Errorf("touching tags error: %s", err)
+		}
+	}
 	return resourceMongodbInstanceRead(d, meta)
 }
 
@@ -319,6 +335,17 @@ func resourceMongodbInstanceUpdate(d *schema.ResourceData, meta interface{}) (er
 	err = modifyMongodbInstanceCommon(d, meta, resourceKsyunMongodbInstance())
 	if err != nil {
 		return err
+	}
+	client := meta.(*KsyunClient)
+	if d.HasChange("tags") {
+		tagService := TagService{client}
+		tagCall, err := tagService.ReplaceResourcesTagsWithResourceCall(d, resourceKsyunKrds(), "mongodb-instance", false, true)
+		if err != nil {
+			return err
+		}
+		if err = tagCall.RightNow(d, client, false); err != nil {
+			return fmt.Errorf("touching tags error: %s", err)
+		}
 	}
 	return resourceMongodbInstanceRead(d, meta)
 }

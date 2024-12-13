@@ -1,3 +1,10 @@
+## 1.17.5 (unrelease)
+
+IMPROVEMENT:
+
+- `ksyun_alb_listener`: 新增默认转发规则返回固定响应和重写配置
+- `ksyun_alb_rule_group`: 新增默认转发规则返回固定响应和重写配置， rule_set 新增header、method、query、sourceip等类型
+
 ## 1.17.1 (Oct 21, 2024)
 
 IMPROVEMENTS:

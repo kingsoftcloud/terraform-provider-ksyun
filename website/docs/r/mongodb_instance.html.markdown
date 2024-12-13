@@ -51,6 +51,7 @@ The following arguments are supported:
 * `node_num` - (Optional) The num of instance node.
 * `pay_type` - (Optional, ForceNew) Instance charge type, if not defined `pay_type`, the instance will use `byMonth`.
 * `storage` - (Optional) The size of instance disk, measured in GB (GigaByte).
+* `tags` - (Optional) the tags of the resource.
 
 ## Attributes Reference
 
