@@ -1,3 +1,9 @@
+## 1.17.5(Dec 16, 2024)
+
+IMPROVEMENTS:
+
+- `ksyun_iam_relation_policy`: 新增policy_type(system、custom)类型，支持创建系统或自定义策略
+
 ## 1.17.4(Dec 13, 2024)
 
 FEATURES:

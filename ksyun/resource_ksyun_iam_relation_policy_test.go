@@ -27,4 +27,5 @@ resource "ksyun_iam_relation_policy" "user" {
   name = "username01"
   policy_name = "IAMReadOnlyAccess"
   relation_type = 1
+  policy_type = "system"
 }`
