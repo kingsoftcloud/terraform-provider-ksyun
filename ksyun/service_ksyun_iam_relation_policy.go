@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
+	"regexp"
 	"time"
 )
 
@@ -49,7 +50,23 @@ func (s *IamRelationPolicyService) CreateIAMRelationPolicyCommonCall(req map[str
 	if req["RelationType"] == 1 {
 		sendParams := map[string]interface{}{}
 		sendParams["UserName"] = req["Name"]
-		sendParams["PolicyKrn"] = fmt.Sprintf("krn:ksc:iam::ksc:policy/%s", req["PolicyName"])
+
+		conn := s.client.iamconn
+		action := "GetUser"
+		logger.Debug(logger.ReqFormat, action, sendParams)
+		resp, err := conn.GetUser(&sendParams)
+		if err != nil {
+			return callback, err
+		}
+		user := (*resp)["GetUserResult"].(map[string]interface{})["User"].(map[string]interface{})
+		re := regexp.MustCompile(`::(\d+):`)
+		match := re.FindStringSubmatch(user["Krn"].(string))
+		accountId := match[1]
+		if req["PolicyType"] == "system" {
+			sendParams["PolicyKrn"] = fmt.Sprintf("krn:ksc:iam::ksc:policy/%s", req["PolicyName"])
+		} else {
+			sendParams["PolicyKrn"] = fmt.Sprintf("krn:ksc:iam::%s:policy/%s", accountId, req["PolicyName"])
+		}
 
 		callback = ApiCall{
 			param:  &sendParams,
@@ -59,7 +76,7 @@ func (s *IamRelationPolicyService) CreateIAMRelationPolicyCommonCall(req map[str
 				logger.Debug(logger.RespFormat, call.action, *(call.param))
 				resp, err = conn.AttachUserPolicy(call.param)
 				if err == nil {
-					d.SetId(fmt.Sprintf("%s-%s", sendParams["UserName"], sendParams["PolicyKrn"]))
+					d.SetId(fmt.Sprintf("%s", accountId))
 				}
 				return resp, err
 			},
@@ -77,6 +94,10 @@ func (s *IamRelationPolicyService) CreateIAMRelationPolicyCommonCall(req map[str
 				if err != nil {
 					return err
 				}
+				err = d.Set("policy_type", req["PolicyType"])
+				if err != nil {
+					return err
+				}
 				return err
 			},
 		}
@@ -84,7 +105,23 @@ func (s *IamRelationPolicyService) CreateIAMRelationPolicyCommonCall(req map[str
 	} else {
 		sendParams := map[string]interface{}{}
 		sendParams["RoleName"] = req["Name"]
-		sendParams["PolicyKrn"] = fmt.Sprintf("krn:ksc:iam::ksc:policy/%s", req["PolicyName"])
+
+		conn := s.client.iamconn
+		action := "GetRole"
+		logger.Debug(logger.ReqFormat, action, sendParams)
+		resp, err := conn.GetRole(&sendParams)
+		if err != nil {
+			return callback, err
+		}
+		user := (*resp)["GetRoleResult"].(map[string]interface{})["Role"].(map[string]interface{})
+		re := regexp.MustCompile(`::(\d+):`)
+		match := re.FindStringSubmatch(user["Krn"].(string))
+		accountId := match[1]
+		if req["PolicyType"] == "system" {
+			sendParams["PolicyKrn"] = fmt.Sprintf("krn:ksc:iam::ksc:policy/%s", req["PolicyName"])
+		} else {
+			sendParams["PolicyKrn"] = fmt.Sprintf("krn:ksc:iam::%s:policy/%s", accountId, req["PolicyName"])
+		}
 
 		callback = ApiCall{
 			param:  &sendParams,
@@ -94,7 +131,7 @@ func (s *IamRelationPolicyService) CreateIAMRelationPolicyCommonCall(req map[str
 				logger.Debug(logger.RespFormat, call.action, *(call.param))
 				resp, err = conn.AttachRolePolicy(call.param)
 				if err == nil {
-					d.SetId(fmt.Sprintf("%s-%s", sendParams["RoleName"], sendParams["PolicyKrn"]))
+					d.SetId(fmt.Sprintf("%s", accountId))
 				}
 				return resp, err
 			},
@@ -156,8 +193,13 @@ func (s *IamRelationPolicyService) DeleteIamRelationPolicyCall(d *schema.Resourc
 		// 构成参数
 		params := map[string]interface{}{}
 		params["UserName"] = d.Get("name").(string)
-		params["PolicyKrn"] = fmt.Sprintf("krn:ksc:iam::ksc:policy/%s", d.Get("policy_name").(string))
 
+		policyType := d.Get("policy_type").(string)
+		if policyType == "system" {
+			params["PolicyKrn"] = fmt.Sprintf("krn:ksc:iam::ksc:policy/%s", d.Get("policy_name").(string))
+		} else {
+			params["PolicyKrn"] = fmt.Sprintf("krn:ksc:iam::%s:policy/%s", d.Id(), d.Get("policy_name").(string))
+		}
 		callback = ApiCall{
 			param:  &params,
 			action: "DetachUserPolicy",
@@ -193,7 +235,12 @@ func (s *IamRelationPolicyService) DeleteIamRelationPolicyCall(d *schema.Resourc
 		// 构成参数
 		params := map[string]interface{}{}
 		params["RoleName"] = d.Get("name").(string)
-		params["PolicyKrn"] = fmt.Sprintf("krn:ksc:iam::ksc:policy/%s", d.Get("policy_name").(string))
+		policyType := d.Get("policy_type").(string)
+		if policyType == "system" {
+			params["PolicyKrn"] = fmt.Sprintf("krn:ksc:iam::ksc:policy/%s", d.Get("policy_name").(string))
+		} else {
+			params["PolicyKrn"] = fmt.Sprintf("krn:ksc:iam::%s:policy/%s", d.Id(), d.Get("policy_name").(string))
+		}
 
 		callback = ApiCall{
 			param:  &params,
