@@ -147,7 +147,7 @@ func readAndSetKrdsInstance(d *schema.ResourceData, meta interface{}, isRR bool)
 		},
 	}
 	if _, ok := d.GetOk("tags"); ok {
-		err = mergeTagsData(d, &data, meta.(*KsyunClient), "redis-instance")
+		err = mergeTagsData(d, &data, meta.(*KsyunClient), "krds")
 		if err != nil {
 			return fmt.Errorf("reading tags error: %s", err)
 		}

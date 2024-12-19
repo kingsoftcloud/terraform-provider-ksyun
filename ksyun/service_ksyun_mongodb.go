@@ -2,12 +2,13 @@ package ksyun
 
 import (
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
-	"strings"
-	"time"
 )
 
 func readMongodbSupportRegions(meta interface{}) (regions []interface{}, err error) {
@@ -164,7 +165,7 @@ func checkMongodbAvailabilityZonesValid(d *schema.ResourceData, meta interface{}
 					break
 				}
 			}
-			//az not support
+			// az not support
 			if !exist {
 				return fmt.Errorf("availability_zone %s not support in region %s ", az, *meta.(*KsyunClient).mongodbconn.Config.Region)
 			}
@@ -500,7 +501,7 @@ func modifyMongodbInstanceNodeNum(d *schema.ResourceData, meta interface{}, r *s
 }
 
 func modifyMongodbInstanceCommon(d *schema.ResourceData, meta interface{}, r *schema.Resource) (err error) {
-	//valid cidrs
+	// valid cidrs
 	err, addV4, delV4, addV6, delV6 := checkMongodbSecurityGroupRulesChange(d, meta, "cidrs", "")
 	if err != nil {
 		return fmt.Errorf("error on update instance %q, %s", d.Id(), err)
@@ -525,7 +526,7 @@ func modifyMongodbInstanceCommon(d *schema.ResourceData, meta interface{}, r *sc
 	if err != nil {
 		return fmt.Errorf("error on update instance %q, %s", d.Id(), err)
 	}
-	//wait mongodb state
+	// wait mongodb state
 	err = checkMongodbState(d, meta, "", d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return fmt.Errorf("error on update instance %q, %s", d.Id(), err)
@@ -544,22 +545,22 @@ func modifyMongodbInstanceCommon(d *schema.ResourceData, meta interface{}, r *sc
 }
 
 func createMongodbInstanceCommon(d *schema.ResourceData, meta interface{}, r *schema.Resource) (err error) {
-	//valid availability_zone
+	// valid availability_zone
 	err = checkMongodbAvailabilityZonesValid(d, meta)
 	if err != nil {
 		return fmt.Errorf("error on creating instance: %s", err)
 	}
-	//valid cidrs
+	// valid cidrs
 	err, addV4, _, addV6, _ := checkMongodbSecurityGroupRulesChange(d, meta, "cidrs", "")
 	if err != nil {
 		return fmt.Errorf("error on creating instance: %s", err)
 	}
-	//create mongodb instance
+	// create mongodb instance
 	err = createMongodbInstance(d, meta, r)
 	if err != nil {
 		return fmt.Errorf("error on creating instance: %s", err)
 	}
-	//wait mongodb state
+	// wait mongodb state
 	err = checkMongodbState(d, meta, "", d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return fmt.Errorf("error on creating instance: %s", err)
@@ -599,7 +600,7 @@ func readMongodbInstanceCommon(d *schema.ResourceData, meta interface{}, r *sche
 			},
 		},
 	}
-	//rules
+	// rules
 	cidrs, err = readMongodbSecurityGroupCidrs(d, meta, "cidrs", "")
 	if err != nil {
 		return err
@@ -607,9 +608,15 @@ func readMongodbInstanceCommon(d *schema.ResourceData, meta interface{}, r *sche
 	if cidrs != "" {
 		data["Cidrs"] = cidrs
 	}
-	//special
+	// special
 	if _, ok := data["InstanceAccount"]; !ok {
 		err = d.Set("instance_account", "root")
+	}
+	if _, ok := d.GetOk("tags"); ok {
+		err = mergeTagsData(d, &data, meta.(*KsyunClient), "mongodb-instance")
+		if err != nil {
+			return fmt.Errorf("reading tags error: %s", err)
+		}
 	}
 	SdkResponseAutoResourceData(d, r, data, extra)
 	return err
