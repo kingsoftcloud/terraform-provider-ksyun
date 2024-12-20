@@ -3,7 +3,6 @@ package ksyun
 import (
 	"errors"
 	"fmt"
-	"reflect"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -25,6 +24,7 @@ const (
 	albRuleTypeForwardGroup  = "ForwardGroup"
 	albRuleTypeRedirect      = "Redirect"
 	albRuleTypeFixedResponse = "FixedResponse"
+	albRuleTypeRewrite       = "Rewrite"
 )
 
 var (
@@ -51,6 +51,16 @@ var (
 	}
 )
 
+var albRuleTypeMappingFields = map[string]string{
+	"domain":   "alb_rule_value",
+	"url":      "alb_rule_value",
+	"header":   "header_value",
+	"cookie":   "cookie_value",
+	"query":    "query_value",
+	"method":   "method_value",
+	"sourceIp": "source_ip_value",
+}
+
 func (s *AlbRuleGroup) createRuleGroupCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
 	transform := map[string]SdkReqTransform{
 		// "alb_rule_set": {mappings: map[string]string{
@@ -60,6 +70,9 @@ func (s *AlbRuleGroup) createRuleGroupCall(d *schema.ResourceData, r *schema.Res
 		"fixed_response_config": {
 			Ignore: false,
 		},
+		"rewrite_config": {
+			Ignore: false,
+		},
 	}
 	req, err := SdkRequestAutoMapping(d, r, false, transform, nil, SdkReqParameter{
 		onlyTransform: false,
@@ -67,10 +80,13 @@ func (s *AlbRuleGroup) createRuleGroupCall(d *schema.ResourceData, r *schema.Res
 
 	var albRuleSet []map[string]interface{}
 	for _, item := range req["AlbRuleSet"].([]interface{}) {
-		albRuleSet = append(albRuleSet, map[string]interface{}{
-			"AlbRuleType":  item.(map[string]interface{})["alb_rule_type"],
-			"AlbRuleValue": item.(map[string]interface{})["alb_rule_value"],
-		})
+		_item := item.(map[string]interface{})
+		// _m := make(map[string]interface{}, len(_item))
+		// if err := recursiveMapToTransformListN(_item, SdkReqTransform{}, &_m, ""); err != nil {
+		// 	return callback, fmt.Errorf("error on recursiveMapToTransformListN, %s", err)
+		// }
+		_m := helper.ConvertMapKey2Title(_item, true)
+		albRuleSet = append(albRuleSet, _m)
 	}
 	req["AlbRuleSet"] = albRuleSet
 
@@ -81,6 +97,12 @@ func (s *AlbRuleGroup) createRuleGroupCall(d *schema.ResourceData, r *schema.Res
 	if _, ok := d.GetOk("fixed_response_config"); ok {
 		if mm, mOk := helper.GetSchemaListHeadMap(d, "fixed_response_config"); mOk {
 			req["FixedResponseConfig"] = helper.ConvertMapKey2Title(mm, true)
+		}
+	}
+
+	if _, ok := d.GetOk("rewrite_config"); ok {
+		if mm, mOk := helper.GetSchemaListHeadMap(d, "rewrite_config"); mOk {
+			req["RewriteConfig"] = helper.ConvertMapKey2Title(mm, true)
 		}
 	}
 
@@ -227,17 +249,18 @@ func (s *AlbRuleGroup) ReadAndSetRuleGroup(d *schema.ResourceData, r *schema.Res
 			if t != "alb_rule_type" {
 				continue
 			}
-			m := make(map[string]interface{}, 2)
 			for _, retItem := range retRuleSet {
 				retM := retItem.(map[string]interface{})
-				for rt, rv := range retM {
-					if reflect.DeepEqual(rt, "AlbRuleType") && reflect.DeepEqual(v, rv) {
-						m["alb_rule_value"] = retM["AlbRuleValue"]
-						m["alb_rule_type"] = rv
-						storeRuleSet = append(storeRuleSet, m)
+				// 1. get rule type
+				// 2. get type field
+				if retM["AlbRuleType"] == v {
+					hashFunc := helper.HashFuncWithKeys("alb_rule_type", albRuleTypeMappingFields[v.(string)])
+					convertMap := helper.ConvertMapKey2Underline(retM)
+					convertAlbMap := helper.ConvertMapKey2Underline(albRule)
+					if hashFunc(convertMap) == hashFunc(convertAlbMap) {
+						storeRuleSet = append(storeRuleSet, convertMap)
 						goto breakDouble
 					}
-
 				}
 
 			}
@@ -387,7 +410,13 @@ func (s *AlbRuleGroup) modifyRuleGroupCall(d *schema.ResourceData, r *schema.Res
 		transform["redirect_alb_listener_id"] = SdkReqTransform{
 			Ignore: true,
 		}
-
+	case albRuleTypeRewrite:
+		transform["backend_server_group_id"] = SdkReqTransform{
+			forceUpdateParam: true,
+		}
+		transform["rewrite_config"] = SdkReqTransform{
+			forceUpdateParam: true,
+		}
 	default:
 	}
 
@@ -395,6 +424,10 @@ func (s *AlbRuleGroup) modifyRuleGroupCall(d *schema.ResourceData, r *schema.Res
 		forceUpdateParam: true,
 	}
 	transform["fixed_response_config"] = SdkReqTransform{
+		Ignore: true,
+	}
+
+	transform["rewrite_config"] = SdkReqTransform{
 		Ignore: true,
 	}
 
@@ -406,18 +439,29 @@ func (s *AlbRuleGroup) modifyRuleGroupCall(d *schema.ResourceData, r *schema.Res
 		return callback, err
 	}
 
-	// if the number of fixed_response_config more than 0, always set it
-	if mm, mOk := helper.GetSchemaListHeadMap(d, "fixed_response_config"); mOk {
-		req["FixedResponseConfig"] = helper.ConvertMapKey2Title(mm, true)
+	if d.HasChange("fixed_response_config") {
+		// if the number of fixed_response_config more than 0, always set it
+		if mm, mOk := helper.GetSchemaListHeadMap(d, "fixed_response_config"); mOk {
+			req["FixedResponseConfig"] = helper.ConvertMapKey2Title(mm, true)
+		}
+	}
+
+	if d.HasChange("rewrite_config") {
+		if mm, mOk := helper.GetSchemaListHeadMap(d, "rewrite_config"); mOk {
+			req["RewriteConfig"] = helper.ConvertMapKey2Title(mm, true)
+		}
 	}
 
 	if albRuleSetParams, ok := req["AlbRuleSet"]; ok {
 		var albRuleSet []map[string]interface{}
 		for _, item := range albRuleSetParams.([]interface{}) {
-			albRuleSet = append(albRuleSet, map[string]interface{}{
-				"AlbRuleType":  item.(map[string]interface{})["alb_rule_type"],
-				"AlbRuleValue": item.(map[string]interface{})["alb_rule_value"],
-			})
+			_item := item.(map[string]interface{})
+			// _m := make(map[string]interface{}, len(_item))
+			// if err := recursiveMapToTransformListN(_item, SdkReqTransform{}, &_m, ""); err != nil {
+			// 	return callback, fmt.Errorf("error on recursiveMapToTransformListN, %s", err)
+			// }
+			_m := helper.ConvertMapKey2Title(_item, true)
+			albRuleSet = append(albRuleSet, _m)
 		}
 
 		if albRuleSet != nil && len(albRuleSet) > 0 {

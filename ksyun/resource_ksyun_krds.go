@@ -376,6 +376,8 @@ func resourceKsyunKrds() *schema.Resource {
 				Default:     false,
 				Description: "Set it to true to make some parameter efficient when modifying them. Default to false.",
 			},
+
+			"tags": tagsSchema(),
 		},
 	}
 }
@@ -392,6 +394,17 @@ func resourceKsyunKrdsCreate(d *schema.ResourceData, meta interface{}) (err erro
 	err = createKrdsInstance(d, meta, false)
 	if err != nil {
 		return fmt.Errorf("error on creating instance , error is %e", err)
+	}
+	client := meta.(*KsyunClient)
+	if d.HasChange("tags") {
+		tagService := TagService{client}
+		tagCall, err := tagService.ReplaceResourcesTagsWithResourceCall(d, resourceKsyunKrds(), "krds", false, true)
+		if err != nil {
+			return err
+		}
+		if err = tagCall.RightNow(d, client, false); err != nil {
+			return fmt.Errorf("touching tags error: %s", err)
+		}
 	}
 	return resourceKsyunKrdsRead(d, meta)
 }
@@ -417,6 +430,18 @@ func resourceKsyunKrdsUpdate(d *schema.ResourceData, meta interface{}) (err erro
 	if err != nil {
 		return fmt.Errorf("error on updating instance , error is %e", err)
 	}
+	client := meta.(*KsyunClient)
+	if d.HasChange("tags") {
+		tagService := TagService{client}
+		tagCall, err := tagService.ReplaceResourcesTagsWithResourceCall(d, resourceKsyunKrds(), "krds", false, true)
+		if err != nil {
+			return err
+		}
+		if err = tagCall.RightNow(d, client, false); err != nil {
+			return fmt.Errorf("touching tags error: %s", err)
+		}
+	}
+
 	err = resourceKsyunKrdsRead(d, meta)
 	if err != nil {
 		return fmt.Errorf("error on updating instance , error is %e", err)

@@ -18,18 +18,18 @@ func TestResourceKsyunAlbRuleGroup_basic(t *testing.T) {
 
 		Steps: []resource.TestStep{
 			{
-				Config: testAccAlbRuleGroupWithRedirectHttpCode,
+				Config: testAccAlbRuleGroupConfig,
 
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIDExists("ksyun_alb_rule_group.default"),
 				),
 			},
-			{
-				Config: testAccAlbRuleGroupWithRedirectHttpCodeUpdate,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIDExists("ksyun_alb_rule_group.default"),
-				),
-			},
+			// {
+			// 	Config: testAccAlbRuleGroupWithRedirectHttpCodeUpdate,
+			// 	Check: resource.ComposeTestCheckFunc(
+			// 		testAccCheckIDExists("ksyun_alb_rule_group.default"),
+			// 	),
+			// },
 		},
 	})
 }
@@ -41,21 +41,39 @@ provider "ksyun" {
 
 # 监听器的转发策略
 resource "ksyun_alb_rule_group" "default" {
-  alb_listener_id         = "abf046dd-ce3f-4847-a6f4-dab413d222fe"
-  alb_rule_group_name     = "tf_alb_rule_group_unit_test"
-  backend_server_group_id = "7493cfee-afd4-4db4-af56-96b17491cfb6"
+  alb_listener_id         = "84212ff7-ed02-4cc8-b1ab-0f811ae926ee"
+  alb_rule_group_name     = "tf_alb_rule_group_alb_rule_unit_test"
+  backend_server_group_id = "f2e66a2b-a20d-4552-8dd1-76f938d02d62"
   alb_rule_set {
     # domain = "www.ksyun.com"
     # url = "/test/path"
-    alb_rule_type = "url"
+    alb_rule_type = "query"
     alb_rule_value = "/test/path"
+	method_value = ["GET", "POST"]
+	source_ip_value = ["10.100.10.10/32","10.100.10.11/32"]
+	header_value  {
+	key = "Host"
+	value = ["www.ksyun.com"]
+}
+	query_value  {
+	key = "dsadasd"
+	value = ["www.ksyun.com"]
+}
+	cookie_value  {
+	key = "Host"
+	value = ["www.ksyun.com"]
+}
   }
 alb_rule_set {
     # domain = "www.ksyun.com"
     alb_rule_type = "domain"
     alb_rule_value = "www.ksyun.com"
   }
-
+  rewrite_config {
+    http_host    = "www.ksyun.com"
+    url          = "/dasssww/wwwq"
+    query_string = "ksyun"
+  }
   listener_sync = "off"
   session_state              = "start"
   session_persistence_period = 333

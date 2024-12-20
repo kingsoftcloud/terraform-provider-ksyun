@@ -44,9 +44,20 @@ func HashFuncWithKeys(keys ...string) schema.SchemaSetFunc {
 					} else {
 						buf.WriteString("[")
 						for _, vvv := range vvs {
-							buf.WriteString(fmt.Sprintf("%s", strings.ToLower(vvv.(string))))
+							buf.WriteString(fmt.Sprintf("%v", vvv))
 						}
 						buf.WriteString("]")
+					}
+				case map[string]interface{}:
+					vvs := vv.([]interface{})
+					if len(vvs) < 1 {
+						buf.WriteString("{}")
+					} else {
+						buf.WriteString("{")
+						for _, vvv := range vvs {
+							buf.WriteString(fmt.Sprintf("%v", vvv))
+						}
+						buf.WriteString("}")
 					}
 				}
 			}

@@ -224,6 +224,88 @@ func AlbRuleGroupSyncOffDiffSuppressFunc(k, old, new string, d *schema.ResourceD
 	return true
 }
 
+func albRuleGroupDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bool {
+	var (
+		fieldKey    string
+		resourceKey string
+	)
+	if strings.Contains(k, ".") {
+		keys := strings.Split(k, ".")
+		fieldKey = keys[2]
+		resourceKey = strings.Join(keys[:2], ".") + ".alb_rule_type"
+	}
+	switch d.Get(resourceKey) {
+	case "url", "domain":
+		if fieldKey == "alb_rule_value" {
+			return false
+		}
+	case "header":
+		if fieldKey == "header_value" {
+			return false
+		}
+	case "method":
+		if fieldKey == "method_value" {
+			return false
+		}
+	case "sourceIp":
+		if fieldKey == "source_ip_value" {
+			return false
+		}
+	case "query":
+		if fieldKey == "query_value" {
+			return false
+		}
+	case "cookie":
+		if fieldKey == "cookie_value" {
+			return false
+		}
+	}
+	return true
+}
+
+func albRuleGroupTypeDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bool {
+	var (
+		fieldKey    string
+		resourceKey string
+	)
+	if strings.Contains(k, ".") {
+		keys := strings.Split(k, ".")
+		fieldKey = keys[0]
+		resourceKey = "type"
+	} else {
+		resourceKey = "type"
+		fieldKey = k
+	}
+
+	switch d.Get(resourceKey) {
+	case albRuleTypeForwardGroup:
+		if fieldKey == "backend_server_group_id" {
+			return false
+		}
+		return true
+	case albRuleTypeRewrite:
+		switch fieldKey {
+		case "backend_server_group_id", "rewrite_config":
+			return false
+		}
+		return true
+
+	case albRuleTypeFixedResponse:
+		if fieldKey == "fixed_response_config" {
+			return false
+		}
+		return true
+
+	case albRuleTypeRedirect:
+		switch fieldKey {
+		case "redirect_alb_listener_id", "redirect_http_code":
+			return false
+		}
+		return true
+	}
+	return false
+}
+
 func lbListenerDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bool {
 	if d.Get("listener_protocol") != "HTTPS" && (k == "certificate_id" || k == "tls_cipher_policy" || k == "enable_http2") {
 		return true

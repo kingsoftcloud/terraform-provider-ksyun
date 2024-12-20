@@ -162,24 +162,51 @@ The following arguments are supported:
 * `method` - (Optional) Forwarding mode of listener. Valid Values:'RoundRobin', 'LeastConnections'.
 * `redirect_alb_listener_id` - (Optional) The id of redirect alb listener. Conflict with 'backend_server_group_id' and 'fixed_response_config'.
 * `redirect_http_code` - (Optional) The http code of redirecting. Valid Values: 301|302|307.
+* `rewrite_config` - (Optional) The config of rewrite.
 * `session_persistence_period` - (Optional) Session hold timeout. Valid Values:1-86400. Should set it value, when `listener_sync` is off.
 * `session_state` - (Optional) The state of session. Valid Values:'start', 'stop'. Should set it value, when `listener_sync` is off.
 * `timeout` - (Optional) Health check timeout.Valid Values:1-3600. Should set it value, when `listener_sync` is off.
-* `type` - (Optional) The type of rule group, Valid Values: ForwardGroup|Redirect|FixedResponse. Default: ForwardGroup. 
+* `type` - (Optional, ForceNew) The type of rule group, Valid Values: ForwardGroup|Redirect|FixedResponse. Default: ForwardGroup. 
 **Notes**: The type is supposed to be of consistency with backend instance. `ForwardGroup -> backend_server_group_id`, `Redirect -> redirect_alb_listener_id`, `FixedResponse -> fixed_response_config`.
 * `unhealthy_threshold` - (Optional) Unhealthy threshold.Valid Values:1-10. Should set it value, when `listener_sync` is off.
 * `url_path` - (Optional) Link to HTTP type listener health check. Should set it value, when `listener_sync` is off.
 
 The `alb_rule_set` object supports the following:
 
-* `alb_rule_type` - (Required) Rule type. valid values: 'domain', 'url'.
-* `alb_rule_value` - (Required) Rule value.
+* `alb_rule_type` - (Required) Rule type. valid values: (domain|url|method|sourceIp|header|query|cookie).
+* `alb_rule_value` - (Optional) Rule value. It works, when `alb_rule_type` is domain or url.
+* `cookie_value` - (Optional) The cookie value of the rule. It works, when `alb_rule_type` is cookie.
+* `header_value` - (Optional) The header value of the rule. It works, when `alb_rule_type` is header.
+* `method_value` - (Optional) The method value of the rule. It works, when `alb_rule_type` is method.
+* `query_value` - (Optional) The query value of the rule. It works, when `alb_rule_type` is query.
+* `source_ip_value` - (Optional) The source ip value of the rule. It works, when `alb_rule_type` is sourceIp.
+
+The `cookie_value` object supports the following:
+
+* `key` - (Required) The key of querying.
+* `value` - (Optional) The value of querying.
 
 The `fixed_response_config` object supports the following:
 
 * `http_code` - (Required) The response http code. Valid Values: 2xx|4xx|5xx. e.g. 503.
 * `content_type` - (Optional) The type of content. Valid Values: `text/plain`|`text/css`|`text/html`|`application/javascript`|`application/json`.
 * `content` - (Optional) The content of response.
+
+The `header_value` object supports the following:
+
+* `key` - (Required) The key of querying.
+* `value` - (Optional) The value of querying.
+
+The `query_value` object supports the following:
+
+* `key` - (Required) The key of querying.
+* `value` - (Optional) The value of querying.
+
+The `rewrite_config` object supports the following:
+
+* `http_host` - (Optional) The host of the rewrite.
+* `query_string` - (Optional) The query string of the rewrite.
+* `url` - (Optional) The url of the rewrite.
 
 ## Attributes Reference
 

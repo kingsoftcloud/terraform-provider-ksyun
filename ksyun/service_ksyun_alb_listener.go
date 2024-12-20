@@ -19,6 +19,7 @@ type AlbListenerService struct {
 
 const (
 	fixedResponseConfig = "FixedResponseConfig"
+	rewriteConfig       = "RewriteConfig"
 )
 
 func (s *AlbListenerService) createListenerCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
@@ -35,6 +36,12 @@ func (s *AlbListenerService) createListenerCall(d *schema.ResourceData, r *schem
 			Type: TransformListUnique,
 		},
 		"config_content": {
+			Ignore: true,
+		},
+		"rewrite_config": {
+			Ignore: true,
+		},
+		"fixed_response_config": {
 			Ignore: true,
 		},
 	}
@@ -56,6 +63,10 @@ func (s *AlbListenerService) createListenerCall(d *schema.ResourceData, r *schem
 			kk := strings.Replace(k, "DefaultForwardRule.", "", -1)
 			if strings.Contains(kk, fixedResponseConfig) {
 				if vv, ok := helper.GetSchemaListHeadMap(d, "default_forward_rule.0.fixed_response_config"); ok {
+					v = helper.ConvertMapKey2Title(vv, true)
+				}
+			} else if strings.Contains(kk, rewriteConfig) {
+				if vv, ok := helper.GetSchemaListHeadMap(d, "default_forward_rule.0.rewrite_config"); ok {
 					v = helper.ConvertMapKey2Title(vv, true)
 				}
 			}
@@ -434,7 +445,7 @@ breakDouble:
 		for k := range defaultBackendField.Schema {
 			humpKey := Downline2Hump(k)
 			if v, ok := defaultRule[humpKey]; ok && v != "" {
-				if strings.Contains(humpKey, fixedResponseConfig) {
+				if strings.Contains(humpKey, fixedResponseConfig) || strings.Contains(humpKey, rewriteConfig) {
 					vm := v.(map[string]interface{})
 					if len(vm) < 1 {
 						continue
@@ -476,6 +487,10 @@ func (s *AlbListenerService) modifyAlbListenerDefaultRuleGroupCall(d *schema.Res
 			kk := strings.Replace(k, "DefaultForwardRule.", "", -1)
 			if strings.Contains(kk, fixedResponseConfig) {
 				if vv, ok := helper.GetSchemaListHeadMap(d, "default_forward_rule.0.fixed_response_config"); ok {
+					v = helper.ConvertMapKey2Title(vv, true)
+				}
+			} else if strings.Contains(kk, rewriteConfig) {
+				if vv, ok := helper.GetSchemaListHeadMap(d, "default_forward_rule.0.rewrite_config"); ok {
 					v = helper.ConvertMapKey2Title(vv, true)
 				}
 			}

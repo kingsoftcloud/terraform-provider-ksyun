@@ -125,6 +125,7 @@ The following arguments are supported:
 * `shard_num` - (Optional) shard number.
 * `shard_size` - (Optional) each shard mem size GB.
 * `slave_num` - (Optional, ForceNew) The readonly node num required by the user. Valid values: {0-7}.
+* `tags` - (Optional) the tags of the resource.
 * `timezone` - (Optional) Auto backup time zone. Example: "03:00-04:00".
 * `timing_switch` - (Optional) auto backup On or Off.
 
