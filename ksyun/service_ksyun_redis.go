@@ -2,13 +2,14 @@ package ksyun
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/terraform-providers/terraform-provider-ksyun/logger"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-ksyun/logger"
 )
 
 func resourceRedisInstanceParamRead(d *schema.ResourceData, meta interface{}) error {
@@ -37,7 +38,10 @@ func resourceRedisInstanceParamRead(d *schema.ResourceData, meta interface{}) er
 		return fmt.Errorf("error on reading instance parameter %q, %s", d.Id(), err)
 	}
 	logger.Debug(logger.RespFormat, action, readReq, *resp)
-	data := (*resp)["Data"].([]interface{})
+	respData := (*resp)["Data"].(map[string]interface{})
+
+	// compatibility with old list
+	data := respData["serverParam"].([]interface{})
 	if len(data) == 0 {
 		return nil
 	}
@@ -197,7 +201,7 @@ func resourceRedisInstanceSgRead(d *schema.ResourceData, meta interface{}) error
 		if err != nil {
 			return err
 		}
-		//err =  d.Set("security_group_ids", itemSetSlice)
+		// err =  d.Set("security_group_ids", itemSetSlice)
 	}
 	return err
 }
@@ -252,7 +256,7 @@ func modifyRedisInstanceNameAndProject(d *schema.ResourceData, meta interface{})
 	if err != nil {
 		return fmt.Errorf("error on updating instance , error is %s", err)
 	}
-	//modify project
+	// modify project
 	err = ModifyProjectInstance(d.Id(), &req, meta)
 	if err != nil {
 		return fmt.Errorf("error on updating instance iam_project_id , error is %s", err)
@@ -535,7 +539,7 @@ func resourceRedisInstanceParameterCheckAndPrepare(d *schema.ResourceData, meta 
 		}
 	}
 
-	//reset_all_parameters and parameters Conflict
+	// reset_all_parameters and parameters Conflict
 	if r, ok := d.GetOk("reset_all_parameters"); ok && !isUpdate && r.(bool) && len(parameters) > 0 {
 		err = fmt.Errorf("parameters is not empty,can not set reset_all_parameters true")
 		return &req, err
@@ -560,7 +564,7 @@ func resourceRedisInstanceParameterCheckAndPrepare(d *schema.ResourceData, meta 
 		return &req, d.Set("reset_all_parameters", reset)
 	}
 
-	//condition on set parameters, check parameter key and value valid
+	// condition on set parameters, check parameter key and value valid
 	defaultReq := map[string]interface{}{
 		"ParamVersion": d.Get("protocol"),
 	}
@@ -611,7 +615,10 @@ func resourceRedisInstanceParameterCheckAndPrepare(d *schema.ResourceData, meta 
 		if err != nil {
 			return &req, fmt.Errorf("error on DescribeCacheParameters: %s", err)
 		}
-		data, err = getSdkValue("Data", *resp)
+		data, err = getSdkValue("Data.serverParam", *resp)
+		if data == nil {
+			return &req, fmt.Errorf("error on DescribeCacheParameters: cache parameter is empty")
+		}
 		for _, item := range data.([]interface{}) {
 			name, err := getSdkValue("name", item)
 			if err != nil {
@@ -760,7 +767,7 @@ func processRedisSecurityGroupRule(d *schema.ResourceData, meta interface{}, tra
 		if sgId == "" {
 			sgId = d.Id()
 		}
-		//read one time and merge available_zone
+		// read one time and merge available_zone
 		resp, err = readRedisSecurityGroup(d, meta, sgId)
 		req["SecurityGroupId"] = sgId
 		req["AvailableZone"] = d.Get("available_zone")
@@ -799,7 +806,7 @@ func processRedisSecurityGroupAllocate(d *schema.ResourceData, meta interface{},
 		if sgId == "" {
 			sgId = d.Id()
 		}
-		//read one time and merge available_zone
+		// read one time and merge available_zone
 		resp, err = readRedisSecurityGroup(d, meta, sgId)
 		if err != nil {
 			return err
@@ -973,7 +980,7 @@ func readRedisSecurityGroupAllocate(d *schema.ResourceData, meta interface{}, sg
 }
 
 func updateRedisSecurityGroupAllocate(d *schema.ResourceData, meta interface{}, sgId string) (err error) {
-	//cache_ids
+	// cache_ids
 	if d.HasChange("cache_ids") {
 		var (
 			err      error
@@ -1056,7 +1063,7 @@ func updateRedisSecurityGroupAllocate(d *schema.ResourceData, meta interface{}, 
 }
 
 func updateRedisSecurityGroupRules(d *schema.ResourceData, meta interface{}, sgId string) (err error) {
-	//rule
+	// rule
 	if d.HasChange("rules") {
 		var (
 			oldArray []string
@@ -1071,7 +1078,7 @@ func updateRedisSecurityGroupRules(d *schema.ResourceData, meta interface{}, sgI
 		}
 		data := (*resp)["Data"].(map[string]interface{})
 		rulesMap := make(map[string]interface{})
-		//get rule id for del
+		// get rule id for del
 		if rules, ok := data["rules"]; ok {
 			for _, r := range rules.([]interface{}) {
 				rule := r.(map[string]interface{})

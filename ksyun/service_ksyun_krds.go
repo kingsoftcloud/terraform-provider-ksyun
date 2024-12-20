@@ -146,7 +146,12 @@ func readAndSetKrdsInstance(d *schema.ResourceData, meta interface{}, isRR bool)
 			Field: "db_parameter_group_id",
 		},
 	}
-
+	if _, ok := d.GetOk("tags"); ok {
+		err = mergeTagsData(d, &data, meta.(*KsyunClient), "krds")
+		if err != nil {
+			return fmt.Errorf("reading tags error: %s", err)
+		}
+	}
 	if isRR {
 		extra["DBSource"] = SdkResponseMapping{
 			Field: "db_instance_identifier",

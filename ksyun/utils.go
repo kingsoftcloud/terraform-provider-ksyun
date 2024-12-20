@@ -1031,3 +1031,73 @@ func AssembleIds(ids ...string) (s string) {
 func DisassembleIds(aId string) []string {
 	return strings.Split(aId, ":")
 }
+
+func recursiveMapToTransformListN(m map[string]interface{}, t SdkReqTransform, req *map[string]interface{}, parentKey string) error {
+	for k, v := range m {
+		if parentKey != "" {
+			k = parentKey + "." + Downline2Hump(k)
+		} else {
+			k = Downline2Hump(k)
+		}
+		switch v.(type) {
+		case map[string]interface{}:
+			v1 := v.(map[string]interface{})
+			if err := recursiveMapToTransformListN(v1, t, req, k); err != nil {
+				return err
+			}
+		case []interface{}:
+			err := transformListNWithRecursive(v, k, t, req)
+			if err != nil {
+				return err
+			}
+		default:
+			if err := transformDefault(v, k, t, req); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func transformListNWithRecursive(v interface{}, k string, t SdkReqTransform, req *map[string]interface{}) error {
+	if list, ok := v.([]interface{}); ok {
+		if ok, _, err := transformFieldReqFunc(v, k, t, 0, req); ok {
+			if err != nil {
+				return fmt.Errorf("error on transformListN with transformFieldReqFunc %s", err)
+			}
+			return nil
+		}
+		for index, v1 := range list {
+			switch v1.(type) {
+			case map[string]interface{}:
+				m1 := v1.(map[string]interface{})
+				for k2, v2 := range m1 {
+					k3 := getFinalKey(t, k) + "." + strconv.Itoa(index+1) + "." + getFinalKey(t, k2)
+					var (
+						err error
+					)
+					switch v2.(type) {
+					case []interface{}:
+						err = transformListNWithRecursive(v2, k3, t, req)
+						if err != nil {
+							return err
+						}
+					case map[string]interface{}:
+						_v2 := v2.(map[string]interface{})
+						if err = recursiveMapToTransformListN(_v2, t, req, k3); err != nil {
+							return err
+						}
+					default:
+						(*req)[k3] = v2
+					}
+
+				}
+			default:
+				k3 := getFinalKey(t, k) + "." + strconv.Itoa(index+1)
+				(*req)[k3] = v1
+			}
+
+		}
+	}
+	return nil
+}

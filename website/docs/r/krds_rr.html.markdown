@@ -51,6 +51,7 @@ The following arguments are supported:
 * `port` - (Optional) port number.
 * `project_id` - (Optional) project ID.
 * `security_group_id` - (Optional) proprietary security group id for krds.
+* `tags` - (Optional) the tags of the resource.
 * `vip` - (Optional) virtual IP.
 
 The `parameters` object supports the following:

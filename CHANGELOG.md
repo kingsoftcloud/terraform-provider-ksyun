@@ -1,3 +1,18 @@
+## 1.17.6 (unrelease)
+
+IMPROVEMENT:
+
+- `ksyun_alb_listener`: 新增默认转发规则返回固定响应和重写配置
+- `ksyun_alb_rule_group`: 新增默认转发规则返回固定响应和重写配置， rule_set 新增header、method、query、sourceip等类型
+- `ksyun_krds`: 增加tags字段
+- `ksyun_krds_rr`: 增加tags字段
+- `ksyun_redis_instance`: 增加tags字段
+- `ksyun_mongodb_instance`: 增加tags字段
+
+BUGFIX:
+
+- `ksyun_redis_instance`: 修复查询实例的配置参数的响应变更问题
+
 ## 1.17.5(Dec 16, 2024)
 
 IMPROVEMENTS:

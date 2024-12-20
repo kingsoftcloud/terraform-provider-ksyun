@@ -142,12 +142,43 @@ package ksyun
 
 import (
 	"fmt"
-	"reflect"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
+
+var hqcValueSchema = map[string]*schema.Schema{
+	"key": {
+		Type:        schema.TypeString,
+		Required:    true,
+		Description: "The key of querying.",
+	},
+	"value": {
+		Type:        schema.TypeList,
+		Optional:    true,
+		Description: "The value of querying.",
+		Elem:        &schema.Schema{Type: schema.TypeString},
+	},
+}
+
+var rewriteConfigSchema = map[string]*schema.Schema{
+	"http_host": {
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "The host of the rewrite.",
+	},
+	"url": {
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "The url of the rewrite.",
+	},
+	"query_string": {
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "The query string of the rewrite.",
+	},
+}
 
 func resourceKsyunAlbRuleGroup() *schema.Resource {
 	return &schema.Resource{
@@ -174,30 +205,66 @@ func resourceKsyunAlbRuleGroup() *schema.Resource {
 				Description: "The name of the ALB rule group.",
 			},
 			"backend_server_group_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: albRuleGroupTypeDiffSuppressFunc,
+
 				ConflictsWith: []string{"redirect_alb_listener_id", "fixed_response_config"},
 				AtLeastOneOf:  []string{"backend_server_group_id", "redirect_alb_listener_id", "fixed_response_config"},
 				Description:   "The ID of the backend server group. Conflict with 'backend_server_group_id' and 'fixed_response_config'.",
 			},
 			"alb_rule_set": {
 				Type:        schema.TypeList,
-				MinItems:    1,
-				MaxItems:    2,
 				Required:    true,
 				Description: "Rule set, define strategies for being load-balance of backend server.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"alb_rule_type": {
-							Type:         schema.TypeString,
-							Required:     true,
-							ValidateFunc: validation.StringInSlice([]string{"domain", "url"}, false),
-							Description:  "Rule type. valid values: 'domain', 'url'.",
+							Type:     schema.TypeString,
+							Required: true,
+							// ValidateFunc: validation.StringInSlice([]string{"domain", "url"}, false),
+							Description: "Rule type. valid values: (domain|url|method|sourceIp|header|query|cookie).",
 						},
 						"alb_rule_value": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Rule value.",
+							Type:             schema.TypeString,
+							Optional:         true,
+							DiffSuppressFunc: albRuleGroupDiffSuppressFunc,
+							Description:      "Rule value. It works, when `alb_rule_type` is domain or url.",
+						},
+						"method_value": {
+							Type:             schema.TypeList,
+							Optional:         true,
+							Description:      "The method value of the rule. It works, when `alb_rule_type` is method.",
+							DiffSuppressFunc: albRuleGroupDiffSuppressFunc,
+							Elem:             &schema.Schema{Type: schema.TypeString},
+						},
+						"source_ip_value": {
+							Type:             schema.TypeList,
+							Optional:         true,
+							DiffSuppressFunc: albRuleGroupDiffSuppressFunc,
+							Elem:             &schema.Schema{Type: schema.TypeString},
+							Description:      "The source ip value of the rule. It works, when `alb_rule_type` is sourceIp.",
+						},
+						"header_value": {
+							Type:             schema.TypeList,
+							Optional:         true,
+							DiffSuppressFunc: albRuleGroupDiffSuppressFunc,
+							Description:      "The header value of the rule. It works, when `alb_rule_type` is header.",
+							Elem:             &schema.Resource{Schema: hqcValueSchema},
+						},
+						"cookie_value": {
+							Type:             schema.TypeList,
+							Optional:         true,
+							DiffSuppressFunc: albRuleGroupDiffSuppressFunc,
+							Description:      "The cookie value of the rule. It works, when `alb_rule_type` is cookie.",
+							Elem:             &schema.Resource{Schema: hqcValueSchema},
+						},
+						"query_value": {
+							Type:             schema.TypeList,
+							Optional:         true,
+							DiffSuppressFunc: albRuleGroupDiffSuppressFunc,
+							Description:      "The query value of the rule. It works, when `alb_rule_type` is query.",
+							Elem:             &schema.Resource{Schema: hqcValueSchema},
 						},
 					},
 				},
@@ -346,48 +413,58 @@ func resourceKsyunAlbRuleGroup() *schema.Resource {
 			},
 
 			"redirect_alb_listener_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: albRuleGroupTypeDiffSuppressFunc,
+
 				ConflictsWith: []string{"backend_server_group_id", "fixed_response_config"},
 				AtLeastOneOf:  []string{"backend_server_group_id", "redirect_alb_listener_id", "fixed_response_config"},
 				Description:   "The id of redirect alb listener. Conflict with 'backend_server_group_id' and 'fixed_response_config'.",
 			},
 			"redirect_http_code": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "301",
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					if reflect.DeepEqual(d.Get("type"), "Redirect") && d.Get("redirect_alb_listener_id") != "" {
-						return false
-					}
-					return true
-				},
-				Description: "The http code of redirecting. Valid Values: 301|302|307.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          "301",
+				DiffSuppressFunc: albRuleGroupTypeDiffSuppressFunc,
+				Description:      "The http code of redirecting. Valid Values: 301|302|307.",
 			},
 
 			"type": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Default:  "ForwardGroup",
+				Computed: true,
+				ForceNew: true,
+				// Default:  "ForwardGroup",
 				Description: "The type of rule group, Valid Values: ForwardGroup|Redirect|FixedResponse. Default: ForwardGroup. \n" +
 					"**Notes**: The type is supposed to be of consistency with backend instance. `ForwardGroup -> backend_server_group_id`," +
 					" `Redirect -> redirect_alb_listener_id`, `FixedResponse -> fixed_response_config`.",
 			},
 
 			"fixed_response_config": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				MaxItems:      1,
-				ConflictsWith: []string{"backend_server_group_id", "redirect_alb_listener_id"},
-				AtLeastOneOf:  []string{"backend_server_group_id", "redirect_alb_listener_id", "fixed_response_config"},
-				Description:   "The config of fixed response. Conflict with 'backend_server_group_id' and 'fixed_response_config'.",
-				Elem:          fixedResponseConfigResourceElem(),
+				Type:             schema.TypeList,
+				Optional:         true,
+				MaxItems:         1,
+				DiffSuppressFunc: albRuleGroupTypeDiffSuppressFunc,
+				ConflictsWith:    []string{"backend_server_group_id", "redirect_alb_listener_id"},
+				AtLeastOneOf:     []string{"backend_server_group_id", "redirect_alb_listener_id", "fixed_response_config"},
+				Description:      "The config of fixed response. Conflict with 'backend_server_group_id' and 'fixed_response_config'.",
+				Elem:             fixedResponseConfigResourceElem(),
 			},
 
 			"alb_rule_group_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The ID of the rule group.",
+			},
+			"rewrite_config": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: rewriteConfigSchema,
+				},
+				DiffSuppressFunc: albRuleGroupTypeDiffSuppressFunc,
+				Description:      "The config of rewrite.",
 			},
 		},
 	}

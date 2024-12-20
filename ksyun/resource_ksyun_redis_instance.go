@@ -102,9 +102,10 @@ package ksyun
 import (
 	"errors"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"strings"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -239,14 +240,14 @@ func resourceRedisInstance() *schema.Resource {
 				Elem:        schema.TypeString,
 				Description: "Set of parameters needs to be set after instance was launched. Available parameters can refer to the  docs https://docs.ksyun.com/documents/1018.",
 			},
-			//"security_group_ids": {
+			// "security_group_ids": {
 			//	Type:     schema.TypeSet,
 			//	Computed: true,
 			//	Elem: &schema.Schema{
 			//		Type: schema.TypeString,
 			//	},
 			//	Set: schema.HashString,
-			//},
+			// },
 			"net_type": {
 				Type:         schema.TypeInt,
 				Optional:     true,
@@ -392,6 +393,8 @@ func resourceRedisInstance() *schema.Resource {
 				Computed:    true,
 				Description: "project name.",
 			},
+
+			"tags": tagsSchema(),
 		},
 	}
 }
@@ -402,9 +405,9 @@ func resourceRedisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 		err  error
 	)
 	// valid parameters ...
-	//d.Set("delete_directly", d.Get("delete_directly"))
+	// d.Set("delete_directly", d.Get("delete_directly"))
 
-	//logger.Debug(logger.ReqFormat, "delete_directly", d.Get("delete_directly"))
+	// logger.Debug(logger.ReqFormat, "delete_directly", d.Get("delete_directly"))
 	createParam, err := resourceRedisInstanceParameterCheckAndPrepare(d, meta, false)
 	if err != nil {
 		return fmt.Errorf("error on creating instance: %s", err)
@@ -435,11 +438,11 @@ func resourceRedisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 			}
 		}},
 	}
-	//generate req
+	// generate req
 	createReq, err := SdkRequestAutoMapping(d, r, false, transform, nil, SdkReqParameter{
 		onlyTransform: false,
 	})
-	//create redis instance
+	// create redis instance
 	action := "CreateCacheCluster"
 	logger.Debug(logger.ReqFormat, action, createReq)
 	resp, err = conn.CreateCacheCluster(&createReq)
@@ -454,7 +457,7 @@ func resourceRedisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 	if err != nil {
 		return fmt.Errorf("error on create Instance: %s", err)
 	}
-	//AllocateSecurityGroup
+	// AllocateSecurityGroup
 	err = modifyRedisInstanceSg(d, meta, false)
 	if err != nil {
 		return fmt.Errorf("error on create Instance: %s", err)
@@ -483,6 +486,17 @@ func resourceRedisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 		logger.Debug(logger.RespFormat, action, autoBackupReq, *resp)
 	}
 
+	client := meta.(*KsyunClient)
+	if d.HasChange("tags") {
+		tagService := TagService{client}
+		tagCall, err := tagService.ReplaceResourcesTagsWithResourceCall(d, resourceKsyunKrds(), "redis-instance", false, true)
+		if err != nil {
+			return err
+		}
+		if err = tagCall.RightNow(d, client, false); err != nil {
+			return fmt.Errorf("touching tags error: %s", err)
+		}
+	}
 	return resourceRedisInstanceRead(d, meta)
 }
 
@@ -554,7 +568,7 @@ func resourceRedisInstanceUpdate(d *schema.ResourceData, meta interface{}) (err 
 	if err != nil {
 		return fmt.Errorf("error on update instance: %s", err)
 	}
-	//sg
+	// sg
 	err = modifyRedisInstanceSg(d, meta, true)
 	if err != nil {
 		return fmt.Errorf("error on update instance: %s", err)
@@ -578,6 +592,18 @@ func resourceRedisInstanceUpdate(d *schema.ResourceData, meta interface{}) (err 
 		}
 	}
 	err = d.Set("reset_all_parameters", d.Get("reset_all_parameters"))
+
+	client := meta.(*KsyunClient)
+	if d.HasChange("tags") {
+		tagService := TagService{client}
+		tagCall, err := tagService.ReplaceResourcesTagsWithResourceCall(d, resourceKsyunKrds(), "redis-instance", false, true)
+		if err != nil {
+			return err
+		}
+		if err = tagCall.RightNow(d, client, false); err != nil {
+			return fmt.Errorf("touching tags error: %s", err)
+		}
+	}
 	return err
 }
 
@@ -619,15 +645,22 @@ func resourceRedisInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	extra["size"] = SdkResponseMapping{
 		Field: "capacity",
 	}
+
+	if _, ok := d.GetOk("tags"); ok {
+		err = mergeTagsData(d, &item, meta.(*KsyunClient), "redis-instance")
+		if err != nil {
+			return fmt.Errorf("reading tags error: %s", err)
+		}
+	}
 	SdkResponseAutoResourceData(d, resourceRedisInstance(), item, extra)
 
-	//merge parameters
+	// merge parameters
 	err = resourceRedisInstanceParamRead(d, meta)
 	if err != nil {
 		return fmt.Errorf("error on reading instance %q, %s", d.Id(), err)
 	}
 
-	//merge securityGroupIds
+	// merge securityGroupIds
 	err = resourceRedisInstanceSgRead(d, meta)
 	if err != nil {
 		return fmt.Errorf("error on reading instance %q, %s", d.Id(), err)

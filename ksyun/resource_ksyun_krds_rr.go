@@ -126,6 +126,19 @@ func resourceKsyunKrdsRrCreate(d *schema.ResourceData, meta interface{}) (err er
 	if err != nil {
 		return fmt.Errorf("error on creating rr instance , error is %e", err)
 	}
+
+	client := meta.(*KsyunClient)
+	if d.HasChange("tags") {
+		tagService := TagService{client}
+		tagCall, err := tagService.ReplaceResourcesTagsWithResourceCall(d, resourceKsyunKrds(), "krds", false, true)
+		if err != nil {
+			return err
+		}
+		if err = tagCall.RightNow(d, client, false); err != nil {
+			return fmt.Errorf("touching tags error: %s", err)
+		}
+	}
+
 	return resourceKsyunKrdsRrRead(d, meta)
 }
 
@@ -138,6 +151,19 @@ func resourceKsyunKrdsRrUpdate(d *schema.ResourceData, meta interface{}) (err er
 	if err != nil {
 		return fmt.Errorf("error on updating rr instance , error is %e", err)
 	}
+
+	client := meta.(*KsyunClient)
+	if d.HasChange("tags") {
+		tagService := TagService{client}
+		tagCall, err := tagService.ReplaceResourcesTagsWithResourceCall(d, resourceKsyunKrds(), "krds", false, true)
+		if err != nil {
+			return err
+		}
+		if err = tagCall.RightNow(d, client, false); err != nil {
+			return fmt.Errorf("touching tags error: %s", err)
+		}
+	}
+
 	err = resourceKsyunKrdsRrRead(d, meta)
 	if err != nil {
 		return fmt.Errorf("error on updating rr instance , error is %e", err)

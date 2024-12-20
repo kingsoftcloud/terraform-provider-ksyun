@@ -140,6 +140,15 @@ func ConvertMapKey2Title(m map[string]interface{}, hitBlankStr bool) map[string]
 			if hitBlankStr && cv == "" {
 				continue
 			}
+		case map[string]interface{}:
+			cv = ConvertMapKey2Title(cv.(map[string]interface{}), hitBlankStr)
+		case []interface{}:
+			for i, v := range cv.([]interface{}) {
+				switch v.(type) {
+				case map[string]interface{}:
+					cv.([]interface{})[i] = ConvertMapKey2Title(v.(map[string]interface{}), hitBlankStr)
+				}
+			}
 		}
 		rm[Underline2Hump(ck)] = cv
 		// delete(m, ck)
@@ -149,6 +158,17 @@ func ConvertMapKey2Title(m map[string]interface{}, hitBlankStr bool) map[string]
 func ConvertMapKey2Underline(m map[string]interface{}) map[string]interface{} {
 	rm := make(map[string]interface{}, len(m))
 	for ck, cv := range m {
+		switch cv.(type) {
+		case map[string]interface{}:
+			cv = ConvertMapKey2Underline(cv.(map[string]interface{}))
+		case []interface{}:
+			for i, v := range cv.([]interface{}) {
+				switch v.(type) {
+				case map[string]interface{}:
+					cv.([]interface{})[i] = ConvertMapKey2Underline(v.(map[string]interface{}))
+				}
+			}
+		}
 		rm[Hump2Underline(ck)] = cv
 	}
 	return rm
