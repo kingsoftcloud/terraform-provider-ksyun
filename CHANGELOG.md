@@ -1,4 +1,4 @@
-## 1.17.6 (unrelease)
+## 1.17.6 (Dec 20, 2024)
 
 IMPROVEMENT:
 
