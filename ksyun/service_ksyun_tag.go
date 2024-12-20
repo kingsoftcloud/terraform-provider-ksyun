@@ -580,7 +580,7 @@ func (s *TagService) ReplaceResourcesTagsWithResourceCall(d *schema.ResourceData
 	if err != nil {
 		return callback, err
 	}
-	if len(req) > 0 {
+	if len(req) > 0 || d.HasChange("tags") {
 		req["ResourceType"] = resourceType
 		return s.ReplaceResourcesTagsCommonCall(req, disableDryRun)
 	}

@@ -13,6 +13,34 @@ BUGFIX:
 
 - `ksyun_redis_instance`: 修复查询实例的配置参数的响应变更问题
 
+## 1.17.5(Dec 16, 2024)
+
+IMPROVEMENTS:
+
+- `ksyun_iam_relation_policy`: 新增policy_type(system、custom)类型，支持创建系统或自定义策略
+
+## 1.17.4(Dec 13, 2024)
+
+FEATURES:
+
+- - **New Resource:** `ksyun_iam_relation_policy` IAM策略关联
+
+## 1.17.3 (Nov 26, 2024)
+
+IMPROVEMENTS:
+
+- `ksyun_instance`: 新增ebs tag同步，优化data_disks管理
+- `ksyun_nat`: 新增tags嵌入管理
+- `ksyun_alb`: 新增tags嵌入管理
+- `ksyun_ebs`: 新增tags嵌入管理
+- `ksyun_bws`: 新增tags嵌入管理
+
+## 1.17.2 (Nov 22, 2024)
+
+BUGFIX:
+
+- `ksyun_tag_v2_attachment` 修复批量创建时出现的资源找不到的问题
+
 ## 1.17.1 (Oct 21, 2024)
 
 IMPROVEMENTS:

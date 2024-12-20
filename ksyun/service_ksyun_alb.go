@@ -79,6 +79,10 @@ func (alb *AlbService) readAlb(d *schema.ResourceData, albId string, allProject 
 		}
 	}
 
+	if _, ok := d.GetOk("tags"); ok {
+		req["IsContainTag"] = true
+	}
+
 	results, err = alb.readAlbs(req)
 	if err != nil {
 		return data, err
@@ -306,11 +310,14 @@ func (alb *AlbService) ModifyAlb(d *schema.ResourceData, r *schema.Resource) (er
 		calls = append(calls, modifyAlbCall)
 	}
 
-	// tagService := TagService{s.client}
-	// tagCall, err := tagService.ReplaceResourcesTagsWithResourceCall(d, r, "eip", true, false)
-	// if err != nil {
-	//	return err
-	// }
+	if d.HasChange("tags") {
+		tagService := TagService{alb.client}
+		tagsCall, err := tagService.ReplaceResourcesTagsWithResourceCall(d, r, "loadbalancer", true, false)
+		if err != nil {
+			return err
+		}
+		calls = append(calls, tagsCall)
+	}
 	return ksyunApiCallNew(calls, d, alb.client, true)
 }
 
@@ -438,6 +445,18 @@ func (alb *AlbService) ReadAndSetAlb(d *schema.ResourceData, r *schema.Resource)
 			extra["ModifyProtection"] = SdkResponseMapping{
 				Field: "modification_protection",
 			}
+			extra["TagSet"] = SdkResponseMapping{
+				Field: "tags",
+				FieldRespFunc: func(i interface{}) interface{} {
+					tags := i.([]interface{})
+					tagMap := make(map[string]interface{})
+					for _, tag := range tags {
+						_m := tag.(map[string]interface{})
+						tagMap[_m["TagKey"].(string)] = _m["TagValue"].(string)
+					}
+					return tagMap
+				},
+			}
 			SdkResponseAutoResourceData(d, r, data, extra)
 			return nil
 		}
@@ -533,6 +552,15 @@ func (alb *AlbService) CreateAlb(d *schema.ResourceData, r *schema.Resource) (er
 			}
 			calls = append(calls, callEnableLog)
 		}
+	}
+
+	if d.HasChange("tags") {
+		tagsService := TagService{client: alb.client}
+		tagsCall, err := tagsService.ReplaceResourcesTagsWithResourceCall(d, r, "loadbalancer", false, false)
+		if err != nil {
+			return err
+		}
+		calls = append(calls, tagsCall)
 	}
 
 	return ksyunApiCallNew(calls, d, alb.client, true)

@@ -45,6 +45,7 @@ The following arguments are supported:
 * `nat_type` - (Optional, ForceNew) Type of the NAT, valid values: 'public'.
 * `project_id` - (Optional) ID of the project.
 * `purchase_time` - (Optional, ForceNew) The PurchaseTime of the Nat, value range [1, 36]. If charge_type is Monthly this Field is Required.
+* `tags` - (Optional) the tags of the resource.
 
 ## Attributes Reference
 

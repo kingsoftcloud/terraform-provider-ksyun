@@ -211,6 +211,8 @@ func resourceKsyunAlb() *schema.Resource {
 				},
 			},
 
+			"tags": tagsSchema(),
+
 			// computed values
 			"create_time": {
 				Type:        schema.TypeString,

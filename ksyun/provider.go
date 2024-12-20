@@ -330,6 +330,7 @@ IAM
 		ksyun_iam_role
 		ksyun_iam_group
 		ksyun_iam_policy
+		ksyun_iam_relation_policy
 */
 
 package ksyun
@@ -609,10 +610,11 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_tag_v2_attachment": resourceKsyunTagv2Attachment(),
 
 			// iam
-			"ksyun_iam_user":   resourceKsyunIamUser(),
-			"ksyun_iam_role":   resourceKsyunIamRole(),
-			"ksyun_iam_group":  resourceKsyunIamGroup(),
-			"ksyun_iam_policy": resourceKsyunIamPolicy(),
+			"ksyun_iam_user":            resourceKsyunIamUser(),
+			"ksyun_iam_role":            resourceKsyunIamRole(),
+			"ksyun_iam_group":           resourceKsyunIamGroup(),
+			"ksyun_iam_policy":          resourceKsyunIamPolicy(),
+			"ksyun_iam_relation_policy": resourceKsyunIamRelationPolicy(),
 
 			// security group
 			"ksyun_security_group":            resourceKsyunSecurityGroup(),

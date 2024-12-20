@@ -25,6 +25,7 @@ package ksyun
 
 import (
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
@@ -76,6 +77,7 @@ func resourceKsyunBandWidthShare() *schema.Resource {
 				Default:     0,
 				Description: "ID of the project.",
 			},
+			"tags": tagsSchema(),
 		},
 	}
 }
