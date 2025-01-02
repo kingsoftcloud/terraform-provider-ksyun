@@ -57,10 +57,9 @@ func (alb *AlbService) readAlbs(condition map[string]interface{}) (data []interf
 		return data, err
 	})
 }
+
 func (alb *AlbService) readAlb(d *schema.ResourceData, albId string, allProject bool) (data map[string]interface{}, err error) {
-	var (
-		results []interface{}
-	)
+	var results []interface{}
 	if albId == "" {
 		albId = d.Id()
 	}
@@ -138,6 +137,7 @@ func (alb *AlbService) modifyStateCall(d *schema.ResourceData, r *schema.Resourc
 	}
 	return callback, err
 }
+
 func (alb *AlbService) modifyAlbNameCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
 	req := map[string]interface{}{}
 	req["AlbId"] = d.Id()
@@ -158,6 +158,7 @@ func (alb *AlbService) modifyAlbNameCall(d *schema.ResourceData, r *schema.Resou
 	}
 	return callback, err
 }
+
 func (alb *AlbService) modifyAccessLogCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
 	req := map[string]interface{}{}
 
@@ -379,6 +380,7 @@ func (alb *AlbService) removeAlbCall(d *schema.ResourceData) (callback ApiCall, 
 	}
 	return
 }
+
 func (alb *AlbService) RemoveAlb(d *schema.ResourceData) (err error) {
 	call, err := alb.removeAlbCall(d)
 	if err != nil {
@@ -463,11 +465,10 @@ func (alb *AlbService) ReadAndSetAlb(d *schema.ResourceData, r *schema.Resource)
 	})
 	// return
 }
+
 func (alb *AlbService) stateRefreshFunc(d *schema.ResourceData, albId string, failStates []string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		var (
-			err error
-		)
+		var err error
 		data, err := alb.readAlb(d, albId, true)
 		if err != nil {
 			return nil, "", err
@@ -486,6 +487,7 @@ func (alb *AlbService) stateRefreshFunc(d *schema.ResourceData, albId string, fa
 		return data, status.(string), nil
 	}
 }
+
 func (alb *AlbService) checkState(d *schema.ResourceData, albId string, target []string, timeout time.Duration) (state interface{}, err error) {
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{},
@@ -497,6 +499,7 @@ func (alb *AlbService) checkState(d *schema.ResourceData, albId string, target [
 	}
 	return stateConf.WaitForState()
 }
+
 func (alb *AlbService) createAlbCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
 	transform := map[string]SdkReqTransform{}
 	req, err := SdkRequestAutoMapping(d, r, false, transform, nil, SdkReqParameter{
@@ -529,6 +532,7 @@ func (alb *AlbService) createAlbCall(d *schema.ResourceData, r *schema.Resource)
 	}
 	return
 }
+
 func (alb *AlbService) CreateAlb(d *schema.ResourceData, r *schema.Resource) (err error) {
 	calls := []ApiCall{}
 	call, err := alb.createAlbCall(d, r)
@@ -623,6 +627,7 @@ func (alb *AlbService) ModifyAlbBackendServerGroup(d *schema.ResourceData, r *sc
 
 	return apiProcess.Run()
 }
+
 func (alb *AlbService) ReadAndSetAlbBackendServerGroup(d *schema.ResourceData, r *schema.Resource) error {
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
 		data, callErr := alb.readAlbBackendServerGroup(d, "")
@@ -641,6 +646,7 @@ func (alb *AlbService) ReadAndSetAlbBackendServerGroup(d *schema.ResourceData, r
 		}
 	})
 }
+
 func (alb *AlbService) RemoveAlbBackendServerGroup(d *schema.ResourceData) error {
 	apiProcess := NewApiProcess(context.Background(), d, alb.client, true)
 
@@ -704,6 +710,7 @@ func (alb *AlbService) createAlbBackendServerGroupCall(d *schema.ResourceData, r
 	}
 	return callback, err
 }
+
 func (alb *AlbService) modifyAlbBackendServerGroupCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
 	transform := map[string]SdkReqTransform{
 		"name":               {},
@@ -750,8 +757,8 @@ func (alb *AlbService) removeAlbBackendServerGroupCall(d *schema.ResourceData) (
 			return resp, err
 		},
 		callError: func(d *schema.ResourceData, client *KsyunClient, call ApiCall, baseErr error) error {
-			return resource.Retry(15*time.Minute, func() *resource.RetryError {
-				data, callErr := alb.readAlb(d, "", true)
+			return resource.Retry(3*time.Minute, func() *resource.RetryError {
+				data, callErr := alb.readAlbBackendServerGroup(d, "")
 				logger.Debug(logger.RespFormat, call.action, data, callErr)
 				if callErr != nil {
 					if notFoundError(callErr) {
@@ -800,9 +807,7 @@ func (alb *AlbService) readAlbBackendServerGroups(condition map[string]interface
 }
 
 func (alb *AlbService) readAlbBackendServerGroup(d *schema.ResourceData, backendId string) (data map[string]interface{}, err error) {
-	var (
-		results []interface{}
-	)
+	var results []interface{}
 	if backendId == "" {
 		backendId = d.Id()
 	}
@@ -913,7 +918,6 @@ func (alb *AlbService) ReadAlbBackendServers(condition map[string]interface{}) (
 	)
 
 	return pageQuery(condition, "MaxResults", "NextToken", 200, 1, func(condition map[string]interface{}) ([]interface{}, error) {
-
 		conn := alb.client.slbconn
 		action := "DescribeAlbBackendServers"
 		logger.Debug(logger.ReqFormat, action, condition)
@@ -933,9 +937,7 @@ func (alb *AlbService) ReadAlbBackendServers(condition map[string]interface{}) (
 }
 
 func (alb *AlbService) ReadAlbBackendServer(d *schema.ResourceData, backendServerId string) (data map[string]interface{}, err error) {
-	var (
-		results []interface{}
-	)
+	var results []interface{}
 	if backendServerId == "" {
 		backendServerId = d.Id()
 	}
