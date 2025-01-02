@@ -1,3 +1,9 @@
+## 1.17.7 (Jan 02, 2025)
+
+BUGFIX:
+
+- `ksyun_alb_backend_server_group`: 修复当删除触发异常时，无法正确处理异常，误认为服务器组已被删除
+
 ## 1.17.6 (Dec 20, 2024)
 
 IMPROVEMENT:
