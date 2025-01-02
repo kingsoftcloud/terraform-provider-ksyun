@@ -2787,7 +2787,7 @@ func (s *SlbService) RemoveBackendServerGroupCall(d *schema.ResourceData) (callb
 			return resp, err
 		},
 		callError: func(d *schema.ResourceData, client *KsyunClient, call ApiCall, baseErr error) error {
-			return resource.Retry(15*time.Minute, func() *resource.RetryError {
+			return resource.Retry(3*time.Minute, func() *resource.RetryError {
 				_, callErr := s.ReadBackendServerGroup(d, "")
 				if callErr != nil {
 					if notFoundError(callErr) {
