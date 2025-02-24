@@ -449,6 +449,9 @@ func resourceKsyunInstanceRead(d *schema.ResourceData, meta interface{}) (err er
 }
 
 func resourceKsyunInstanceUpdate(d *schema.ResourceData, meta interface{}) (err error) {
+	if d.HasChange("sync_tag") {
+		return fmt.Errorf("changing sync_tag is not supported")
+	}
 	kecService := KecService{meta.(*KsyunClient)}
 	err = kecService.modifyKecInstance(d, resourceKsyunInstance())
 	if err != nil {
