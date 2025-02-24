@@ -396,7 +396,7 @@ func (s *KecService) kecRelatedAttachTags(d *schema.ResourceData, resource *sche
 	}()
 	tagService := TagService{s.client}
 
-	var resourceType = "volume"
+	resourceType := "volume"
 	// instance
 	// ebs
 	// query ebs by instance id
@@ -597,6 +597,11 @@ func transKecInstanceParams(d *schema.ResourceData, resource *schema.Resource) (
 	if err != nil {
 		return instanceParams, err
 	}
+
+	var syncTag interface{}
+	syncTag = d.Get("sync_tag")
+	instanceParams["SyncTag"] = syncTag
+
 	if tags, ok := d.GetOk("tags"); ok {
 		tagsMap := tags.(map[string]interface{})
 		idx := 1
