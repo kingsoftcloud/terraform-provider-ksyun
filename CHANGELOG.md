@@ -1,3 +1,9 @@
+## 1.17.7 (Feb 24, 2025)
+
+BUGFIX:
+
+- `ksyun_instance`: 修复sync_tag字段设置为false时无法获取字段信息
+  
 ## 1.17.7 (Jan 02, 2025)
 
 BUGFIX:
