@@ -26,8 +26,8 @@ resource "ksyun_iam_policy" "policy" {
 
 The following arguments are supported:
 
-* `policy_document` - (Required, ForceNew) IAM PolicyDocument.
 * `policy_name` - (Required, ForceNew) IAM PolicyName.
+* `policy_document` - (Optional) IAM PolicyDocument.
 
 ## Attributes Reference
 
