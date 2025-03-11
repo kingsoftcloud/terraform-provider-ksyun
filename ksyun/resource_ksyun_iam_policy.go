@@ -33,6 +33,7 @@ func resourceKsyunIamPolicy() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceKsyunIamPolicyCreate,
 		Read:   resourceKsyunIamPolicyRead,
+		Update: resourceKsyunIamPolicyUpdate,
 		Delete: resourceKsyunIamPolicyDelete,
 		Schema: map[string]*schema.Schema{
 			"policy_name": {
@@ -43,14 +44,12 @@ func resourceKsyunIamPolicy() *schema.Resource {
 			},
 			"policy_document": {
 				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Optional:    true,
 				Description: "IAM PolicyDocument.",
 			},
 			"policy_krn": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				ForceNew:    true,
 				Description: "IAM PolicyKrn.",
 			},
 		},
@@ -67,6 +66,11 @@ func resourceKsyunIamPolicyCreate(d *schema.ResourceData, meta interface{}) (err
 }
 
 func resourceKsyunIamPolicyUpdate(d *schema.ResourceData, meta interface{}) (err error) {
+	iamPolicyService := IamPolicyService{meta.(*KsyunClient)}
+	err = iamPolicyService.UpdateIamPolicy(d, resourceKsyunIamPolicy())
+	if err != nil {
+		return fmt.Errorf("error on updating IAM policy %q, %s", d.Id(), err)
+	}
 	return
 }
 

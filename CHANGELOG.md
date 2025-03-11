@@ -1,3 +1,9 @@
+## 1.17.9 (Mar 11, 2025)
+
+BUGFIX:
+
+- `ksyun_iam_policy`: 修复change策略文档不生效问题
+
 ## 1.17.8 (Feb 24, 2025)
 
 BUGFIX:

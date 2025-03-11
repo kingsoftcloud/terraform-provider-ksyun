@@ -5,6 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
+	"sort"
 	"time"
 )
 
@@ -78,6 +79,24 @@ func (s *IamPolicyService) DeleteIamPolicy(d *schema.ResourceData) error {
 }
 
 func (s *IamPolicyService) DeleteIamPolicyCall(d *schema.ResourceData) (callback ApiCall, err error) {
+	ListPolicy, err := s.ReadPolicy(map[string]interface{}{"PolicyKrn": d.Get("policy_krn").(string)})
+	if err != nil {
+		return callback, err
+	}
+	if len(ListPolicy) > 1 {
+		for _, policyInterface := range ListPolicy {
+			policy := policyInterface.(map[string]interface{})
+			if policy["IsDefaultVersion"].(string) == "false" {
+				err = s.DeletePolicyVersionCommonCall(d, map[string]interface{}{
+					"PolicyKrn": d.Get("policy_krn").(string),
+					"VersionId": policy["VersionId"].(string),
+				})
+				if err != nil {
+					return callback, err
+				}
+			}
+		}
+	}
 	// 构成参数
 	params := map[string]interface{}{}
 	params["PolicyKrn"] = d.Get("policy_krn").(string)
@@ -123,6 +142,119 @@ func (s *IamPolicyService) ReadAndSetIamPolicy(d *schema.ResourceData, r *schema
 	data, err = s.ReadPolicy(params)
 	SdkResponseAutoResourceData(d, r, data, nil)
 
+	return
+}
+
+func (s *IamPolicyService) UpdateIamPolicy(d *schema.ResourceData, r *schema.Resource) (err error) {
+	apiProcess := NewApiProcess(context.Background(), d, s.client, false)
+
+	updateIamPolicyCall, err := s.UpdateIamPolicyCall(d, r)
+	if err != nil {
+		return err
+	}
+	apiProcess.PutCalls(updateIamPolicyCall)
+	return apiProcess.Run()
+}
+
+func (s *IamPolicyService) UpdateIamPolicyCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
+	req, err := SdkRequestAutoMapping(d, r, true, nil, nil)
+	if err != nil {
+		return callback, err
+	}
+	return s.UpdateIAMPolicyCommonCall(d, req)
+}
+
+func (s *IamPolicyService) DeletePolicyVersionCommonCall(d *schema.ResourceData, params map[string]interface{}) error {
+	callback := ApiCall{
+		param:  &params,
+		action: "DeletePolicyVersion",
+		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+			conn := client.iamconn
+			logger.Debug(logger.RespFormat, call.action, *(call.param))
+			resp, err = conn.DeletePolicyVersion(call.param)
+			return resp, err
+		},
+		callError: func(d *schema.ResourceData, client *KsyunClient, call ApiCall, baseErr error) error {
+			return resource.Retry(5*time.Minute, func() *resource.RetryError {
+				if notFoundError(baseErr) {
+					return nil
+				}
+				if isExpectError(baseErr, []string{
+					"PolicyVersionNoSuchEntity",
+					"PolicyDefaultVersionDeleteConflict",
+				}) {
+					return resource.NonRetryableError(baseErr)
+				}
+				return resource.RetryableError(baseErr)
+			})
+		},
+		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+			return err
+		},
+	}
+	apiProcess := NewApiProcess(context.Background(), d, s.client, false)
+	apiProcess.PutCalls(callback)
+	return apiProcess.Run()
+}
+
+func (s *IamPolicyService) UpdateIAMPolicyCommonCall(d *schema.ResourceData, req map[string]interface{}) (callback ApiCall, err error) {
+	// 构成参数
+	params := map[string]interface{}{}
+	params["PolicyKrn"] = d.Get("policy_krn").(string)
+	params["SetAsDefault"] = "true"
+	params["PolicyDocument"] = req["PolicyDocument"].(string)
+	ListPolicy, err := s.ReadPolicy(map[string]interface{}{"PolicyKrn": d.Get("policy_krn").(string)})
+	if err != nil {
+		return callback, err
+	}
+	if len(ListPolicy) >= 5 {
+		// 将 ListPolicy 顺序倒过来
+		sort.Slice(ListPolicy, func(i, j int) bool {
+			return i > j
+		})
+		for _, policyInterface := range ListPolicy {
+			policy := policyInterface.(map[string]interface{})
+			if policy["IsDefaultVersion"].(string) == "false" {
+				err = s.DeletePolicyVersionCommonCall(d, map[string]interface{}{
+					"PolicyKrn": d.Get("policy_krn").(string),
+					"VersionId": policy["VersionId"].(string),
+				})
+				if err != nil {
+					return callback, err
+				}
+				break
+			}
+		}
+	}
+	callback = ApiCall{
+		param:  &params,
+		action: "CreatePolicyVersion",
+		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+			conn := client.iamconn
+			logger.Debug(logger.RespFormat, call.action, *(call.param))
+			resp, err = conn.CreatePolicyVersion(call.param)
+			return resp, err
+		},
+		callError: func(d *schema.ResourceData, client *KsyunClient, call ApiCall, baseErr error) error {
+			return resource.Retry(5*time.Minute, func() *resource.RetryError {
+				if notFoundError(baseErr) {
+					return nil
+				}
+				if isExpectError(baseErr, []string{
+					"PolicyDocumentInvalid",
+					"PolicyVersionLimitExceeded",
+				}) {
+					return resource.NonRetryableError(baseErr)
+				}
+				return resource.RetryableError(baseErr)
+			})
+		},
+		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+			return err
+		},
+	}
 	return
 }
 
