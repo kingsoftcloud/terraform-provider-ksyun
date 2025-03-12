@@ -389,38 +389,38 @@ func resourceKsyunBareMetal() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"Daily", "Trial"}, false),
 				Description:  "Charge Type.",
 			},
-			// "address_band_width": {
-			// 	Type:        schema.TypeString,
-			// 	Optional:    true,
-			// 	Description: "The band width of elastic ip.",
-			// },
-			// "line_id": {
-			// 	Type:        schema.TypeString,
-			// 	Optional:    true,
-			// 	Description: "Line id.",
-			// },
+			"address_band_width": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The band width of elastic ip.",
+			},
+			"line_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Line id.",
+			},
 			"band_width_share_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The id of share band width.",
 			},
-			// "address_charge_type": {
-			// 	Type:        schema.TypeString,
-			// 	Optional:    true,
-			// 	Description: "The charge type of elastic ip.",
-			// },
-			// "address_purchase_time": {
-			// 	Type:        schema.TypeString,
-			// 	Optional:    true,
-			// 	Description: "The purchase time.",
-			// },
-			//
-			// "address_project_id": {
-			// 	Type:        schema.TypeString,
-			// 	Optional:    true,
-			// 	Description: "The project id of elastic ip.",
-			// },
-			//
+			"address_charge_type": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The charge type of elastic ip.",
+			},
+			"address_purchase_time": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The purchase time.",
+			},
+
+			"address_project_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The project id of elastic ip.",
+			},
+
 			"kes_agent": {
 				Type:             schema.TypeString,
 				Optional:         true,
