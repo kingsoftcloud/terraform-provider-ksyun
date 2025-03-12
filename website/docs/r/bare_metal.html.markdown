@@ -44,6 +44,10 @@ The following arguments are supported:
 * `security_group_ids` - (Required) The security_group_id set of the Bare Metal primary network interface.
 * `subnet_id` - (Required) The subnet id of the Bare Metal primary network interface.
 * `activate_hot_standby` - (Optional) Activate hot standby epc. it works, when this instance is standby.
+* `address_band_width` - (Optional) The band width of elastic ip.
+* `address_charge_type` - (Optional) The charge type of elastic ip.
+* `address_project_id` - (Optional) The project id of elastic ip.
+* `address_purchase_time` - (Optional) The purchase time.
 * `band_width_share_id` - (Optional) The id of share band width.
 * `bond_attribute` - (Optional) The bond attribute of the Bare Metal. Valid Values:'bond0','bond1'.Default is 'bond1'. Only effective when network_interface_mode is bond4.
 * `charge_type` - (Optional, ForceNew) Charge Type.
@@ -69,6 +73,7 @@ The following arguments are supported:
 * `kes_agent` - (Optional) The KES Agent.
 * `key_id` - (Optional) The certificate id of the Bare Metal.
 * `kmr_agent` - (Optional) The KMR Agent.
+* `line_id` - (Optional) Line id.
 * `network_interface_mode` - (Optional) The network interface mode of the Bare Metal. Valid Values:'bond4','single','dual'.Default is 'bond4'.When bond4->single,single->bond4,dual->single,dual->bond4 can modify,otherwise is ForceNew.
 * `nvme_data_disk_catalogue_suffix` - (Optional) The nvme data disk catalogue suffix of the Bare Metal.Valid Values:'NoSuffix','NaturalNumber','NaturalNumberFromZero'.
 * `nvme_data_disk_catalogue` - (Optional) The nvme data disk catalogue of the Bare Metal.Valid Values:'/DATA/disk','/data'.
@@ -95,7 +100,7 @@ The following arguments are supported:
 The `hot_standby` object supports the following:
 
 * `hot_stand_by_host_id` - (Required) The id of hot standby.
-* `retain_instance_info` - (Optional) Whether retain the instance info.
+* `retain_instance_info` - (Optional) Whether retain the instance info. Valid Values: `RetainPrivateIP` `Notretain`.
 
 ## Attributes Reference
 
