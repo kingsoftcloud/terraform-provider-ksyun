@@ -407,10 +407,36 @@ func bareMetalDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bool 
 	if (d.Id() == "" || d.Get("host_type") != "COLO") && (k == "server_ip" || k == "path") {
 		return true
 	}
-	if d.Id() == "" && (k == "host_status" || k == "force_re_install") {
-		return true
+	// if d.Id() == "" && (k == "host_status" || k == "force_re_install") {
+	// 	return true
+	// }
+	return false
+}
+
+func bareMetalReinstallDiffSuppressFunc(k, oldV, newV string, d *schema.ResourceData) bool {
+	if d.HasChange("force_re_install") && d.Get("force_re_install").(bool) {
+		if helper.StringInSlice(k, []string{"gpu_image_driver_id", "overclocking_attribute", "kmr_agent", "kes_agent", "computer_name", "container_agent"}) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func bareMetalRoceNetwork(k, old, new string, d *schema.ResourceData) bool {
+	if d.Id() != "" {
+		if k == "roce_network" {
+			return true
+		}
 	}
 	return false
+}
+
+func activateHotStandbyDSF(k, old, new string, d *schema.ResourceData) bool {
+	if d.Get("host_status") == "HotStandbyToBeActivated" && d.Get(k).(bool) {
+		return false
+	}
+	return true
 }
 
 func vpnV2ParamsDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bool {

@@ -41,10 +41,12 @@ The following arguments are supported:
 * `availability_zone` - (Required, ForceNew) The Availability Zone.
 * `host_type` - (Required, ForceNew) The Bare Metal Host Type (e.g. CAL-III).
 * `image_id` - (Required) ID of the image.
-* `key_id` - (Required) The certificate id of the Bare Metal.
 * `security_group_ids` - (Required) The security_group_id set of the Bare Metal primary network interface.
 * `subnet_id` - (Required) The subnet id of the Bare Metal primary network interface.
+* `activate_hot_standby` - (Optional) Activate hot standby epc. it works, when this instance is standby.
+* `band_width_share_id` - (Optional) The id of share band width.
 * `bond_attribute` - (Optional) The bond attribute of the Bare Metal. Valid Values:'bond0','bond1'.Default is 'bond1'. Only effective when network_interface_mode is bond4.
+* `charge_type` - (Optional, ForceNew) Charge Type.
 * `cloud_monitor_agent` - (Optional) The cloud monitor agent choice of the Bare Metal.Valid Values:'classic','no'.Default is 'no'.
 * `computer_name` - (Optional) The computer name of the Bare Metal.
 * `container_agent` - (Optional) Whether to support KCE cluster, valid values: 'supported', 'unsupported'.
@@ -59,13 +61,19 @@ The following arguments are supported:
 * `extension_security_group_ids` - (Optional) The security_group_id set of the Bare Metal extension network interface.Max is 3.Only effective when network_interface_mode is dual and Required.
 * `extension_subnet_id` - (Optional) The subnet id of the Bare Metal primary extension interface.Only effective when network_interface_mode is dual and Required.
 * `force_re_install` - (Optional) Indicate whether to reinstall system.
+* `gpu_image_driver_id` - (Optional) The GPU version.
 * `host_name` - (Optional) The name of the Bare Metal.Default is 'ksc_epc'.
 * `host_status` - (Optional) The status of Bare Metal instance. That can set your Bare Metal instance status, `Running` or `Stopped`, on ksyun. In detail, the instance will start, when `host_status` is `Running` but its status is `Stopped` on ksyun. Similarly, the instance will be power off, when `host_status` is `Stopped` but its status is `Running` on ksyun. <br> Value Options: `Running`, `Stopped`.
+* `hot_standby` - (Optional) Indicate the hot standby to instead the master Host.
 * `hyper_threading` - (Optional) The HyperThread status of the Bare Metal. Valid Values:'Open','Close','NoChange'.Default is 'NoChange'.
+* `kes_agent` - (Optional) The KES Agent.
+* `key_id` - (Optional) The certificate id of the Bare Metal.
+* `kmr_agent` - (Optional) The KMR Agent.
 * `network_interface_mode` - (Optional) The network interface mode of the Bare Metal. Valid Values:'bond4','single','dual'.Default is 'bond4'.When bond4->single,single->bond4,dual->single,dual->bond4 can modify,otherwise is ForceNew.
 * `nvme_data_disk_catalogue_suffix` - (Optional) The nvme data disk catalogue suffix of the Bare Metal.Valid Values:'NoSuffix','NaturalNumber','NaturalNumberFromZero'.
 * `nvme_data_disk_catalogue` - (Optional) The nvme data disk catalogue of the Bare Metal.Valid Values:'/DATA/disk','/data'.
 * `nvme_data_file_type` - (Optional) The nvme data file type of the Bare Metal.Valid Values:'EXT4','XFS'.
+* `overclocking_attribute` - (Optional) The overclocking attribute.
 * `password` - (Optional) The password of the Bare Metal.
 * `path` - (Optional) The path of the Bare Metal.Only effective on modify and host type is COLO.
 * `private_ip_address` - (Optional) The private ip address of the Bare Metal primary network interface.
@@ -76,6 +84,18 @@ The following arguments are supported:
 * `security_agent` - (Optional) The security agent choice of the Bare Metal. Valid Values:'classic','no'. Default is 'no'.
 * `server_ip` - (Optional) The pxe server ip of the Bare Metal.Only effective on modify and host type is COLO.
 * `system_file_type` - (Optional) The system disk file type of the Bare Metal.Valid Values:'EXT4','XFS'.Default is 'EXT4'.
+* `system_volume_size` - (Optional) System disk size of cloud disk.
+* `system_volume_type` - (Optional) System disk type of cloud disk.
+* `tags` - (Optional) the tags of the resource.
+* `timed_regularization` - (Optional) Trial timed conversion to regular status, when charge_type is `Trial`. Valid Values: `support`, `unsupported`.
+* `use_hot_standby` - (Optional) Whether use hot standy. Valid Values: `support`, `unsupported` and `onlyHotStandby`.
+* `zone_id` - (Optional) The zone id, when creating pdns, is required.
+* `zone_type` - (Optional) The zone type, when creating pdns, is required.
+
+The `hot_standby` object supports the following:
+
+* `hot_stand_by_host_id` - (Required) The id of hot standby.
+* `retain_instance_info` - (Optional) Whether retain the instance info.
 
 ## Attributes Reference
 

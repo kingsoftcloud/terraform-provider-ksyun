@@ -352,6 +352,160 @@ func dataSourceKsyunBareMetals() *schema.Resource {
 							Computed:    true,
 							Description: "Whether to enable bond.",
 						},
+						"data_disk_catalogue_suffix": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Data disk catalogue suffix.",
+						},
+						"data_file_type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Data file type.",
+						},
+						"system_volume_size": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "System Volume Size.",
+						},
+						"nvme_data_disk_catalogue": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Nvme data disk catalogue.",
+						},
+						"enable_container": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Whether enable container.",
+						},
+						"cluster_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Cluster ID.",
+						},
+						"hyper_threading": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Hyper Threading.",
+						},
+						"cabinet_name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Cabinet Name.",
+						},
+						"key_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Key ID.",
+						},
+						"allow_modify_hyper_threading": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Allow Modify Hyper Threading.",
+						},
+						"releasable_time": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Releasable Time.",
+						},
+						"rack_name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Rack Name.",
+						},
+						"kmr_agent": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "KMR Agent.",
+						},
+						"nvme_data_disk_catalogue_suffix": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Nvme data disk catalogue suffix.",
+						},
+						"support_ebs": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Whether support EBS.",
+						},
+						"kpl_agent": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "KPL Agent.",
+						},
+						"service_end_time": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Servcie end time.",
+						},
+						"charge_type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Charge type.",
+						},
+						"gpu": {
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Computed:    true,
+							Description: "Gpu specification.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"model": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "model of the cpu.",
+									},
+									"frequence": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "frequence of the cpu.",
+									},
+									"count": {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "number of CPUs.",
+									},
+									"core_count": {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "number of CPU cores.",
+									},
+									"gpu_count": {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "number of GPU cores.",
+									},
+								},
+							},
+						},
+						"roces": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Roces.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"ip": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Ip of the roce network.",
+									},
+									"mask": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Mask of the roce network.",
+									},
+									"gate_way": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Gateway.",
+									},
+									"type": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Type of roce.",
+									},
+								},
+							},
+						},
 					},
 				},
 			},

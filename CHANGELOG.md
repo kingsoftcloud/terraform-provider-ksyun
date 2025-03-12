@@ -1,3 +1,9 @@
+## 1.18.0 (unrelease)
+
+IMPROVEMENT:
+
+- `ksyun_bare_metal`: 新增热备机处理，更新实例创建字段
+
 ## 1.17.6 (unrelease)
 
 IMPROVEMENT:
