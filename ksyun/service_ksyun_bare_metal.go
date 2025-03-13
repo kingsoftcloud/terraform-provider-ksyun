@@ -105,6 +105,12 @@ func (s *BareMetalService) ReadAndSetBareMetal(d *schema.ResourceData, r *schema
 				}
 				delete(data, "NetworkInterfaceAttributeSet")
 			}
+
+			if chargeTypeIf, ok := data["ChargeType"]; ok && d.Get("trial").(bool) {
+				if chargeType, ok := chargeTypeIf.(string); ok && chargeType == "Trial" {
+					data["ChargeType"] = "Daily"
+				}
+			}
 			extra := map[string]SdkResponseMapping{
 				"RaidTemplateId": {
 					Field: "raid_id",
@@ -286,6 +292,9 @@ func (s *BareMetalService) CreateBareMetalCall(d *schema.ResourceData, resource 
 	}
 
 	req["ChargeType"] = d.Get("charge_type")
+	if d.Get("trial").(bool) {
+		req["ChargeType"] = "Trial"
+	}
 
 	callback = ApiCall{
 		param:  &req,

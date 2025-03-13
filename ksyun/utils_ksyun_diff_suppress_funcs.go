@@ -432,6 +432,16 @@ func bareMetalRoceNetwork(k, old, new string, d *schema.ResourceData) bool {
 	return false
 }
 
+func bareMetalCreateDiff(k, old, new string, d *schema.ResourceData) bool {
+	if d.Id() != "" {
+		switch k {
+		case "roce_network", "trial":
+			return true
+		}
+	}
+	return false
+}
+
 func activateHotStandbyDSF(k, old, new string, d *schema.ResourceData) bool {
 	if d.Get("host_status") == "HotStandbyToBeActivated" && d.Get(k).(bool) {
 		return false
