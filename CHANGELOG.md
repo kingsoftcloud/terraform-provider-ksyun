@@ -1,3 +1,10 @@
+
+## 1.18.0 (Mar 13, 2025)
+
+IMPROVEMENT:
+
+- `ksyun_bare_metal`: 新增热备机处理，更新实例创建字段
+
 ## 1.17.9 (Mar 11, 2025)
 
 BUGFIX:
