@@ -1,4 +1,11 @@
 
+## 1.18.1 (Mar 13, 2025)
+
+IMPROVEMENT:
+
+- `ksyun_bare_metal`: 变更raid枚举值，支持指定试用时间
+- `ksyun_bare_metal_hot_standby_action`: 新增热备机替换操作
+  
 ## 1.18.0 (Mar 13, 2025)
 
 IMPROVEMENT:
