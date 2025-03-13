@@ -16,9 +16,7 @@ func GetSchemaListHeadMap(d *schema.ResourceData, key string) (result map[string
 	if !ok {
 		return
 	}
-	var (
-		interfaces []interface{}
-	)
+	var interfaces []interface{}
 	switch v.(type) {
 	case []interface{}:
 		interfaces = v.([]interface{})
@@ -49,9 +47,7 @@ func GetSchemaMapListWithKey(d *schema.ResourceData, key string) (result []map[s
 	if !ok {
 		return
 	}
-	var (
-		interfaces []interface{}
-	)
+	var interfaces []interface{}
 	switch v.(type) {
 	case []interface{}:
 		interfaces = v.([]interface{})
@@ -155,6 +151,7 @@ func ConvertMapKey2Title(m map[string]interface{}, hitBlankStr bool) map[string]
 	}
 	return rm
 }
+
 func ConvertMapKey2Underline(m map[string]interface{}) map[string]interface{} {
 	rm := make(map[string]interface{}, len(m))
 	for ck, cv := range m {
@@ -229,9 +226,7 @@ func GetDiffMap(base map[string]interface{}, targets ...map[string]interface{}) 
 	if len(targets) == 0 {
 		return base
 	}
-	var (
-		isDiff bool
-	)
+	var isDiff bool
 
 	diff = make(map[string]interface{}, len(base))
 	for _, target := range targets {
@@ -241,7 +236,6 @@ func GetDiffMap(base map[string]interface{}, targets ...map[string]interface{}) 
 		}
 	}
 	return
-
 }
 
 func diffMap(base map[string]interface{}, target map[string]interface{}) (diff map[string]interface{}, isDiff bool) {
@@ -340,12 +334,10 @@ func MapstructureFiller(i interface{}, o interface{}, tag string) (err error) {
 						}
 						tempList = append(tempList, tempMap)
 					}
-
 				}
 				if len(tempList) > 0 {
 					(*oMap)[tagName] = tempList
 				}
-
 			}
 
 			if len(tagList) > 1 {
@@ -360,7 +352,6 @@ func MapstructureFiller(i interface{}, o interface{}, tag string) (err error) {
 				(*oMap)[tagName] = []interface{}{(*oMap)[tagName]}
 			}
 		}
-
 	}
 
 	return nil
@@ -395,4 +386,13 @@ func decodeHookFunc() mapstructure.DecodeHookFunc {
 
 func isZeroOfUnderlyingType(x interface{}) bool {
 	return reflect.DeepEqual(x, reflect.Zero(reflect.TypeOf(x)).Interface())
+}
+
+func StringInSlice(str string, list []string) bool {
+	for _, v := range list {
+		if v == str {
+			return true
+		}
+	}
+	return false
 }

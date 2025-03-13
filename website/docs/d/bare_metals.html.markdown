@@ -54,25 +54,42 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 * `bare_metals` - It is a nested type which documented below.
+  * `allow_modify_hyper_threading` - Allow Modify Hyper Threading.
   * `availability_zone` - availability zone name.
   * `cabinet_id` - ID of the Cabinet.
+  * `cabinet_name` - Cabinet Name.
+  * `charge_type` - Charge type.
   * `cloud_monitor_agent` - The cloud monitor agent of the Bare Metal.
+  * `cluster_id` - Cluster ID.
   * `cpu` - cpu specification.
     * `core_count` - number of CPU cores.
     * `count` - number of CPUs.
     * `frequence` - frequence of the cpu.
     * `model` - model of the cpu.
   * `create_time` - The time of creation for Bare Metal.
+  * `data_disk_catalogue_suffix` - Data disk catalogue suffix.
+  * `data_file_type` - Data file type.
   * `disk_set` - a list of disks.
     * `disk_type` - type of the disk.
     * `raid` - raid type of the disk.
     * `space` - space of the disk.
   * `enable_bond` - Whether to enable bond.
+  * `enable_container` - Whether enable container.
+  * `gpu` - Gpu specification.
+    * `core_count` - number of CPU cores.
+    * `count` - number of CPUs.
+    * `frequence` - frequence of the cpu.
+    * `gpu_count` - number of GPU cores.
+    * `model` - model of the cpu.
   * `host_id` - The ID of the Bare Metal.
   * `host_name` - The name of the Bare Metal.
   * `host_status` - status of the Bare Metal.
   * `host_type` - type of the Bare Metal.
+  * `hyper_threading` - Hyper Threading.
   * `image_id` - ID of the Image.
+  * `key_id` - Key ID.
+  * `kmr_agent` - KMR Agent.
+  * `kpl_agent` - KPL Agent.
   * `memory` - the memory of the Bare Metal.
   * `network_interface_attribute_set` - a list of network interfaces.
     * `dns1` - DNS1 of the network instance.
@@ -86,11 +103,23 @@ In addition to all arguments above, the following attributes are exported:
     * `subnet_id` - the ID of the subnet.
     * `vpc_id` - The ID of the VPC.
   * `network_interface_mode` - mode of the network interface.
+  * `nvme_data_disk_catalogue_suffix` - Nvme data disk catalogue suffix.
+  * `nvme_data_disk_catalogue` - Nvme data disk catalogue.
   * `os_name` - name of the OS.
   * `product_type` - product type of the Bare metal.
+  * `rack_name` - Rack Name.
   * `raid` - The Raid type of the Bare Metal.
+  * `releasable_time` - Releasable Time.
+  * `roces` - Roces.
+    * `gate_way` - Gateway.
+    * `ip` - Ip of the roce network.
+    * `mask` - Mask of the roce network.
+    * `type` - Type of roce.
   * `security_agent` - The security agent of the Bare Metal.
+  * `service_end_time` - Servcie end time.
   * `sn` - SN of the Bare Metal.
+  * `support_ebs` - Whether support EBS.
+  * `system_volume_size` - System Volume Size.
 * `total_count` - Total number of Bare Metals that satisfy the condition.
 
 

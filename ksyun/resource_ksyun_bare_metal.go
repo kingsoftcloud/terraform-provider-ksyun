@@ -88,7 +88,9 @@ func resourceKsyunBareMetal() *schema.Resource {
 					"Open",
 					"Close",
 				}, false),
-				Description: "The value of roce network that indicates acquiring whether an instance supplied roce network. Valid Options: `Open` and `Close`.",
+
+				DiffSuppressFunc: bareMetalRoceNetwork,
+				Description:      "The value of roce network that indicates acquiring whether an instance supplied roce network. Valid Options: `Open` and `Close`.",
 			},
 			"host_status": {
 				Type:     schema.TypeString,
@@ -189,7 +191,7 @@ func resourceKsyunBareMetal() *schema.Resource {
 			},
 			"key_id": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Description: "The certificate id of the Bare Metal.",
 			},
 			"host_name": {
@@ -340,14 +342,16 @@ func resourceKsyunBareMetal() *schema.Resource {
 					"supported",
 					"unsupported",
 				}, false),
-				Default:     "unsupported",
-				Description: "Whether to support KCE cluster, valid values: 'supported', 'unsupported'.",
+				Default:          "unsupported",
+				DiffSuppressFunc: bareMetalReinstallDiffSuppressFunc,
+				Description:      "Whether to support KCE cluster, valid values: 'supported', 'unsupported'.",
 			},
 			"computer_name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The computer name of the Bare Metal.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				Computed:         true,
+				DiffSuppressFunc: bareMetalReinstallDiffSuppressFunc,
+				Description:      "The computer name of the Bare Metal.",
 			},
 			"server_ip": {
 				Type:             schema.TypeString,
@@ -368,6 +372,140 @@ func resourceKsyunBareMetal() *schema.Resource {
 				DiffSuppressFunc: bareMetalDiffSuppressFunc,
 				Description:      "Indicate whether to reinstall system.",
 			},
+
+			// 2025/03/10 20:02 added fields
+			// "sn": {
+			// 	Type:        schema.TypeString,
+			// 	Optional:    true,
+			// 	Computed:    true,
+			// 	Description: "Cloud physical host serial number.",
+			// },
+			//
+			"charge_type": {
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+
+				ValidateFunc: validation.StringInSlice([]string{"Daily", "Trial"}, false),
+				Description:  "Charge Type. Valid Value: `Daily` `Trial`.",
+			},
+			"address_band_width": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The band width of elastic ip.",
+			},
+			"line_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Line id.",
+			},
+			"band_width_share_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The id of share band width.",
+			},
+			"address_charge_type": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The charge type of elastic ip.",
+			},
+			"address_purchase_time": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The purchase time.",
+			},
+
+			"address_project_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The project id of elastic ip.",
+			},
+
+			"kes_agent": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          "unsupport",
+				DiffSuppressFunc: bareMetalReinstallDiffSuppressFunc,
+				Description:      "The KES Agent.",
+			},
+			"kmr_agent": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          "unsupport",
+				DiffSuppressFunc: bareMetalReinstallDiffSuppressFunc,
+				Description:      "The KMR Agent.",
+			},
+			"overclocking_attribute": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The overclocking attribute.",
+			},
+			"gpu_image_driver_id": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: bareMetalReinstallDiffSuppressFunc,
+				Description:      "The GPU version.",
+			},
+			"system_volume_type": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "System disk type of cloud disk.",
+			},
+			"system_volume_size": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "System disk size of cloud disk.",
+			},
+			"zone_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The zone id, when creating pdns, is required.",
+			},
+			"zone_type": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The zone type, when creating pdns, is required.",
+			},
+			"use_hot_standby": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Whether use hot standy. Valid Values: `support`, `unsupported` and `onlyHotStandby`.",
+			},
+			"timed_regularization": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Trial timed conversion to regular status, when charge_type is `Trial`. Valid Values: `support`, `unsupported`.",
+			},
+			"tags": tagsSchema(),
+
+			"hot_standby": {
+				Type:     schema.TypeSet,
+				MaxItems: 1,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"hot_stand_by_host_id": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The id of hot standby.",
+						},
+						"retain_instance_info": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Whether retain the instance info. Valid Values: `RetainPrivateIP` `Notretain`.",
+						},
+					},
+				},
+				Description: "Indicate the hot standby to instead the master Host.",
+			},
+
+			"activate_hot_standby": {
+				Type:             schema.TypeBool,
+				Optional:         true,
+				DiffSuppressFunc: activateHotStandbyDSF,
+				Description:      "Activate hot standby epc. it works, when this instance is standby.",
+			},
+
 			"extension_network_interface_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -405,6 +543,11 @@ func resourceKsyunBareMetalUpdate(d *schema.ResourceData, meta interface{}) (err
 	if d.HasChange("roce_network") {
 		return fmt.Errorf("argument `roce_network` cannot be modified for now")
 	}
+
+	notAllowModifyFields := []string{"system_volume_size", "system_volume_type"}
+	if d.HasChanges(notAllowModifyFields...) {
+		return fmt.Errorf("argument %v cannot be modified for now", notAllowModifyFields)
+	}
 	err = bareMetalService.ModifyBareMetal(d, resourceKsyunBareMetal())
 	if err != nil {
 		return fmt.Errorf("error on updating bare metal %q, %s", d.Id(), err)
@@ -419,5 +562,4 @@ func resourceKsyunBareMetalDelete(d *schema.ResourceData, meta interface{}) (err
 		return fmt.Errorf("error on deleting bare metal %q, %s", d.Id(), err)
 	}
 	return err
-
 }
