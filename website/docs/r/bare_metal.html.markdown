@@ -39,7 +39,7 @@ resource "ksyun_bare_metal" "default" {
 The following arguments are supported:
 
 * `availability_zone` - (Required, ForceNew) The Availability Zone.
-* `charge_type` - (Required, ForceNew) Charge Type. Valid Value: `Daily` `Trial`.
+* `charge_type` - (Required, ForceNew) Charge Type. Valid Value: `Daily`.
 * `host_type` - (Required, ForceNew) The Bare Metal Host Type (e.g. CAL-III).
 * `image_id` - (Required) ID of the image.
 * `security_group_ids` - (Required) The security_group_id set of the Bare Metal primary network interface.
@@ -83,6 +83,7 @@ The following arguments are supported:
 * `path` - (Optional) The path of the Bare Metal.Only effective on modify and host type is COLO.
 * `private_ip_address` - (Optional) The private ip address of the Bare Metal primary network interface.
 * `project_id` - (Optional) The project id of the Bare Metal.Default is '0'.
+* `purchase_time` - (Optional, ForceNew) Purchase time. If trial is true, it works. Default: 7.
 * `raid_id` - (Optional) The Raid template id of Bare Metal.Conflict raid. If you don't set raid,raid_id is Required. If you want to use raid_id,you must in user white list.
 * `raid` - (Optional) The Raid type of the Bare Metal. Valid Values:'Raid0','Raid1','Raid5','Raid10','Raid50','SRaid0'. Conflict raid_id. If you don't set raid_id,raid is Required.
 * `roce_network` - (Optional) The value of roce network that indicates acquiring whether an instance supplied roce network. Valid Options: `Open` and `Close`.
@@ -94,7 +95,7 @@ The following arguments are supported:
 * `tags` - (Optional) the tags of the resource.
 * `timed_regularization` - (Optional) Trial timed conversion to regular status, when charge_type is `Trial`. Valid Values: `support`, `unsupported`.
 * `trial` - (Optional) Trial this epc instance.
-* `use_hot_standby` - (Optional) Whether use hot standy. Valid Values: `support`, `unsupported` and `onlyHotStandby`.
+* `use_hot_standby` - (Optional) Whether use hot standy. Valid Values: `support`, `unsupport` and `onlyHotStandby`.
 * `zone_id` - (Optional) The zone id, when creating pdns, is required.
 * `zone_type` - (Optional) The zone type, when creating pdns, is required.
 

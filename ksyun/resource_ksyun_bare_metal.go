@@ -387,7 +387,7 @@ func resourceKsyunBareMetal() *schema.Resource {
 				ForceNew: true,
 
 				ValidateFunc: validation.StringInSlice([]string{"Daily"}, false),
-				Description:  "Charge Type. Valid Value: `Daily` `Trial`.",
+				Description:  "Charge Type. Valid Value: `Daily`.",
 			},
 
 			"trial": {
@@ -395,6 +395,14 @@ func resourceKsyunBareMetal() *schema.Resource {
 				Optional:         true,
 				DiffSuppressFunc: bareMetalCreateDiff,
 				Description:      "Trial this epc instance.",
+			},
+
+			"purchase_time": {
+				Type:             schema.TypeInt,
+				Optional:         true,
+				DiffSuppressFunc: purchaseTimeTrialDiffSuppressFunc,
+				ForceNew:         true,
+				Description:      "Purchase time. If trial is true, it works. Default: 7.",
 			},
 			"address_band_width": {
 				Type:        schema.TypeString,
@@ -476,7 +484,7 @@ func resourceKsyunBareMetal() *schema.Resource {
 			"use_hot_standby": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Whether use hot standy. Valid Values: `support`, `unsupported` and `onlyHotStandby`.",
+				Description: "Whether use hot standy. Valid Values: `support`, `unsupport` and `onlyHotStandby`.",
 			},
 			"timed_regularization": {
 				Type:        schema.TypeString,
