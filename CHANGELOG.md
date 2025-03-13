@@ -1,10 +1,29 @@
-## 1.18.0 (unrelease)
+
+## 1.18.0 (Mar 13, 2025)
 
 IMPROVEMENT:
 
 - `ksyun_bare_metal`: 新增热备机处理，更新实例创建字段
 
-## 1.17.6 (unrelease)
+## 1.17.9 (Mar 11, 2025)
+
+BUGFIX:
+
+- `ksyun_iam_policy`: 修复change策略文档不生效问题
+
+## 1.17.8 (Feb 24, 2025)
+
+BUGFIX:
+
+- `ksyun_instance`: 修复sync_tag字段设置为false时无法获取字段信息
+  
+## 1.17.7 (Jan 02, 2025)
+
+BUGFIX:
+
+- `ksyun_alb_backend_server_group`: 修复当删除触发异常时，无法正确处理异常，误认为服务器组已被删除
+
+## 1.17.6 (Dec 20, 2024)
 
 IMPROVEMENT:
 
