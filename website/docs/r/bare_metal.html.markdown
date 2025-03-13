@@ -39,6 +39,7 @@ resource "ksyun_bare_metal" "default" {
 The following arguments are supported:
 
 * `availability_zone` - (Required, ForceNew) The Availability Zone.
+* `charge_type` - (Required, ForceNew) Charge Type. Valid Value: `Daily` `Trial`.
 * `host_type` - (Required, ForceNew) The Bare Metal Host Type (e.g. CAL-III).
 * `image_id` - (Required) ID of the image.
 * `security_group_ids` - (Required) The security_group_id set of the Bare Metal primary network interface.
@@ -50,7 +51,6 @@ The following arguments are supported:
 * `address_purchase_time` - (Optional) The purchase time.
 * `band_width_share_id` - (Optional) The id of share band width.
 * `bond_attribute` - (Optional) The bond attribute of the Bare Metal. Valid Values:'bond0','bond1'.Default is 'bond1'. Only effective when network_interface_mode is bond4.
-* `charge_type` - (Optional, ForceNew) Charge Type.
 * `cloud_monitor_agent` - (Optional) The cloud monitor agent choice of the Bare Metal.Valid Values:'classic','no'.Default is 'no'.
 * `computer_name` - (Optional) The computer name of the Bare Metal.
 * `container_agent` - (Optional) Whether to support KCE cluster, valid values: 'supported', 'unsupported'.

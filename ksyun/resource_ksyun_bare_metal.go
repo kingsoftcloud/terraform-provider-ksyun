@@ -382,12 +382,12 @@ func resourceKsyunBareMetal() *schema.Resource {
 			// },
 			//
 			"charge_type": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     true,
-				Computed:     true,
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+
 				ValidateFunc: validation.StringInSlice([]string{"Daily", "Trial"}, false),
-				Description:  "Charge Type.",
+				Description:  "Charge Type. Valid Value: `Daily` `Trial`.",
 			},
 			"address_band_width": {
 				Type:        schema.TypeString,

@@ -284,7 +284,8 @@ func (s *BareMetalService) CreateBareMetalCall(d *schema.ResourceData, resource 
 	if err != nil {
 		return callback, err
 	}
-	req["ChargeType"] = "Daily"
+
+	req["ChargeType"] = d.Get("charge_type")
 
 	callback = ApiCall{
 		param:  &req,
