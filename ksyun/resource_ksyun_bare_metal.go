@@ -386,8 +386,15 @@ func resourceKsyunBareMetal() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 
-				ValidateFunc: validation.StringInSlice([]string{"Daily", "Trial"}, false),
+				ValidateFunc: validation.StringInSlice([]string{"Daily"}, false),
 				Description:  "Charge Type. Valid Value: `Daily` `Trial`.",
+			},
+
+			"trial": {
+				Type:             schema.TypeBool,
+				Optional:         true,
+				DiffSuppressFunc: bareMetalCreateDiff,
+				Description:      "Trial this epc instance.",
 			},
 			"address_band_width": {
 				Type:        schema.TypeString,
