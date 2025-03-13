@@ -105,16 +105,16 @@ func resourceKsyunBareMetal() *schema.Resource {
 			"raid": {
 				Type:     schema.TypeString,
 				Optional: true,
-				ValidateFunc: validation.StringInSlice([]string{
-					"Raid0",
-					"Raid1",
-					"Raid5",
-					"Raid10",
-					"Raid50",
-					"SRaid0",
-				}, false),
+				// ValidateFunc: validation.StringInSlice([]string{
+				// 	"Raid0",
+				// 	"Raid1",
+				// 	"Raid5",
+				// 	"Raid10",
+				// 	"Raid50",
+				// 	"SRaid0",
+				// }, false),
 				ConflictsWith: []string{"raid_id"},
-				Description:   "The Raid type of the Bare Metal. Valid Values:'Raid0','Raid1','Raid5','Raid10','Raid50','SRaid0'. Conflict raid_id. If you don't set raid_id,raid is Required.",
+				Description:   "The Raid type of the Bare Metal. Valid Values:'Raid0','Raid1','Raid5','Raid10','Raid50','SRaid0', 'Jbod'. Conflict raid_id. If you don't set raid_id,raid is Required.",
 			},
 			"raid_id": {
 				Type:          schema.TypeString,
