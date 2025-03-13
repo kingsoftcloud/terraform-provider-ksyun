@@ -106,6 +106,7 @@ func (s *BareMetalService) ReadAndSetBareMetal(d *schema.ResourceData, r *schema
 				delete(data, "NetworkInterfaceAttributeSet")
 			}
 
+			data["ChargeType"] = "Daily"
 			if chargeTypeIf, ok := data["ChargeType"]; ok && d.Get("trial").(bool) {
 				if chargeType, ok := chargeTypeIf.(string); ok && chargeType == "Trial" {
 					data["ChargeType"] = "Daily"
