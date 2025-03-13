@@ -81,7 +81,7 @@ func resourceKsyunBareMetalHotStandbyActionCreate(d *schema.ResourceData, meta i
 	}
 
 	if call.executeCall != nil {
-		err = call.RightNow(d, bmSrv.client, true)
+		err = call.RightNow(d, bmSrv.client, false)
 		if err != nil {
 			return fmt.Errorf("error on using hot standby for epc %q, %s", d.Id(), err)
 		}
