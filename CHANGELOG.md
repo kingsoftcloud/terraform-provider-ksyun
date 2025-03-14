@@ -1,3 +1,8 @@
+## 1.18.1 (Mar 14, 2025)
+
+BUGFIX:
+
+- `ksyun_bare_metal`: 兼容openapi返回tags
 
 ## 1.18.1 (Mar 13, 2025)
 
