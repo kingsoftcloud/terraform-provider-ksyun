@@ -421,8 +421,8 @@ func bareMetalDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bool 
 }
 
 func bareMetalReinstallDiffSuppressFunc(k, oldV, newV string, d *schema.ResourceData) bool {
-	if d.HasChange("force_re_install") && d.Get("force_re_install").(bool) {
-		if helper.StringInSlice(k, []string{"gpu_image_driver_id", "overclocking_attribute", "kmr_agent", "kes_agent", "computer_name", "container_agent"}) {
+	if d.Id() == "" || (d.HasChange("force_re_install") && d.Get("force_re_install").(bool)) {
+		if helper.StringInSlice(k, []string{"gpu_image_driver_id", "overclocking_attribute", "kmr_agent", "kes_agent", "computer_name", "container_agent", "password_inherit", "data_disk_mount"}) {
 			return false
 		}
 	}

@@ -264,7 +264,7 @@ func (s *BareMetalService) CheckBareMetalState(d *schema.ResourceData, hostId st
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{},
 		Target:     target,
-		Refresh:    s.BareMetalStateRefreshFunc(d, hostId, []string{"failed"}),
+		Refresh:    s.BareMetalStateRefreshFunc(d, hostId, []string{"failed", "InstallFailed", "ReinstallFailed"}),
 		Timeout:    timeout,
 		Delay:      1 * time.Minute,
 		MinTimeout: 1 * time.Minute,
@@ -296,6 +296,7 @@ func (s *BareMetalService) CreateBareMetalCall(d *schema.ResourceData, resource 
 			mapping: "ExtensionDNS2",
 		},
 		"force_re_install": {Ignore: true},
+		"tags":             {Ignore: true},
 	}
 	req, err := SdkRequestAutoMapping(d, resource, false, transform, nil, SdkReqParameter{
 		onlyTransform: false,
@@ -570,22 +571,24 @@ func (s *BareMetalService) ReinstallBareMetalCall(d *schema.ResourceData, resour
 		return callback, err
 	}
 	transform := map[string]SdkReqTransform{
-		"host_name":                    {Ignore: true},
-		"dns1":                         {Ignore: true},
-		"dns2":                         {Ignore: true},
-		"private_ip_address":           {Ignore: true},
-		"security_group_ids":           {Ignore: true},
-		"subnet_id":                    {Ignore: true},
-		"extension_dns1":               {Ignore: true},
-		"extension_dns2":               {Ignore: true},
-		"extension_security_group_ids": {Ignore: true},
-		"extension_private_ip_address": {Ignore: true},
-		"extension_subnet_id":          {Ignore: true},
-		"server_ip":                    {Ignore: true},
-		"path":                         {Ignore: true},
-		"force_re_install":             {Ignore: true},
-		"host_status":                  {Ignore: true},
-		"roce_network":                 {Ignore: true},
+		"host_name":                      {Ignore: true},
+		"dns1":                           {Ignore: true},
+		"dns2":                           {Ignore: true},
+		"private_ip_address":             {Ignore: true},
+		"security_group_ids":             {Ignore: true},
+		"subnet_id":                      {Ignore: true},
+		"extension_dns1":                 {Ignore: true},
+		"extension_dns2":                 {Ignore: true},
+		"extension_security_group_ids":   {Ignore: true},
+		"extension_private_ip_address":   {Ignore: true},
+		"extension_subnet_id":            {Ignore: true},
+		"server_ip":                      {Ignore: true},
+		"path":                           {Ignore: true},
+		"force_re_install":               {Ignore: true},
+		"host_status":                    {Ignore: true},
+		"roce_network":                   {Ignore: true},
+		"tags":                           {Ignore: true},
+		"storage_roce_network_card_name": {Ignore: true},
 	}
 	if d.HasChange("force_re_install") && d.Get("force_re_install").(bool) {
 		transform["image_id"] = SdkReqTransform{
