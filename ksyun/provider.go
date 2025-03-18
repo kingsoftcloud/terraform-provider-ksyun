@@ -331,6 +331,10 @@ IAM
 		ksyun_iam_group
 		ksyun_iam_policy
 		ksyun_iam_relation_policy
+KPFS
+	Resource
+		ksyun_kpfs_acl
+
 */
 
 package ksyun
@@ -624,6 +628,9 @@ func Provider() terraform.ResourceProvider {
 
 			// lb
 			// "ksyun_lb_listener_associate_backendgroup": resourceKsyunLbListenerAssociateBackendgroup(),
+
+			//kpfs
+			"ksyun_kpfs_acl": resourceKsyunKpfsAcl(),
 		},
 		ConfigureFunc: providerConfigure,
 	}
