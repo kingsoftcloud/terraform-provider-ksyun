@@ -19,6 +19,13 @@ func purchaseTimeDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bo
 	return true
 }
 
+func purchaseTimeTrialDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bool {
+	if d.Get("trial").(bool) {
+		return false
+	}
+	return true
+}
+
 func chargeSchemaDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bool {
 	mappings := map[string]string{
 		"PostPaidByPeak":     "Peak",

@@ -105,16 +105,16 @@ func resourceKsyunBareMetal() *schema.Resource {
 			"raid": {
 				Type:     schema.TypeString,
 				Optional: true,
-				ValidateFunc: validation.StringInSlice([]string{
-					"Raid0",
-					"Raid1",
-					"Raid5",
-					"Raid10",
-					"Raid50",
-					"SRaid0",
-				}, false),
+				// ValidateFunc: validation.StringInSlice([]string{
+				// 	"Raid0",
+				// 	"Raid1",
+				// 	"Raid5",
+				// 	"Raid10",
+				// 	"Raid50",
+				// 	"SRaid0",
+				// }, false),
 				ConflictsWith: []string{"raid_id"},
-				Description:   "The Raid type of the Bare Metal. Valid Values:'Raid0','Raid1','Raid5','Raid10','Raid50','SRaid0'. Conflict raid_id. If you don't set raid_id,raid is Required.",
+				Description:   "The Raid type of the Bare Metal. Valid Values:'Raid0','Raid1','Raid5','Raid10','Raid50','SRaid0', 'Jbod'. Conflict raid_id. If you don't set raid_id,raid is Required.",
 			},
 			"raid_id": {
 				Type:          schema.TypeString,
@@ -387,7 +387,7 @@ func resourceKsyunBareMetal() *schema.Resource {
 				ForceNew: true,
 
 				ValidateFunc: validation.StringInSlice([]string{"Daily"}, false),
-				Description:  "Charge Type. Valid Value: `Daily` `Trial`.",
+				Description:  "Charge Type. Valid Value: `Daily`.",
 			},
 
 			"trial": {
@@ -395,6 +395,14 @@ func resourceKsyunBareMetal() *schema.Resource {
 				Optional:         true,
 				DiffSuppressFunc: bareMetalCreateDiff,
 				Description:      "Trial this epc instance.",
+			},
+
+			"purchase_time": {
+				Type:             schema.TypeInt,
+				Optional:         true,
+				DiffSuppressFunc: purchaseTimeTrialDiffSuppressFunc,
+				ForceNew:         true,
+				Description:      "Purchase time. If trial is true, it works. Default: 7.",
 			},
 			"address_band_width": {
 				Type:        schema.TypeString,
@@ -476,7 +484,7 @@ func resourceKsyunBareMetal() *schema.Resource {
 			"use_hot_standby": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Whether use hot standy. Valid Values: `support`, `unsupported` and `onlyHotStandby`.",
+				Description: "Whether use hot standy. Valid Values: `support`, `unsupport` and `onlyHotStandby`.",
 			},
 			"timed_regularization": {
 				Type:        schema.TypeString,

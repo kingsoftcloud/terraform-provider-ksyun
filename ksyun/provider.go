@@ -190,6 +190,7 @@ Bare Metal
 
 	Resource
 		ksyun_bare_metal
+    ksyun_bare_metal_hot_standby_action
 
 KCE
 
@@ -626,6 +627,7 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_security_group_entry_lite": resourceKsyunSecurityGroupEntryLite(),
 			// "ksyun_security_group_entry_set":  resourceKsyunSecurityGroupEntrySet(),
 
+			"ksyun_bare_metal_hot_standby_action": resourceKsyunBareMetalHotStandbyAction(),
 			// lb
 			// "ksyun_lb_listener_associate_backendgroup": resourceKsyunLbListenerAssociateBackendgroup(),
 

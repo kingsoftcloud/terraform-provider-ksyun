@@ -1,10 +1,22 @@
-
-## 1.19.0 (Mar 18, 2025)
+## 1.18.3 (Mar 18, 2025)
 
 FEATURES:
 
 - - **New Resource:** `ksyun_kpfs_acl` KPFS posix授权管理
+ 
+## 1.18.2 (Mar 14, 2025)
 
+BUGFIX:
+
+- `ksyun_bare_metal`: 兼容openapi返回tags
+
+## 1.18.1 (Mar 13, 2025)
+
+IMPROVEMENT:
+
+- `ksyun_bare_metal`: 变更raid枚举值，支持指定试用时间
+- `ksyun_bare_metal_hot_standby_action`: 新增热备机替换操作
+  
 ## 1.18.0 (Mar 13, 2025)
 
 IMPROVEMENT:

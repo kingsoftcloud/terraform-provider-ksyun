@@ -106,6 +106,7 @@ func (s *BareMetalService) ReadAndSetBareMetal(d *schema.ResourceData, r *schema
 				delete(data, "NetworkInterfaceAttributeSet")
 			}
 
+			data["ChargeType"] = "Daily"
 			if chargeTypeIf, ok := data["ChargeType"]; ok && d.Get("trial").(bool) {
 				if chargeType, ok := chargeTypeIf.(string); ok && chargeType == "Trial" {
 					data["ChargeType"] = "Daily"
@@ -147,11 +148,23 @@ func (s *BareMetalService) ReadAndSetBareMetal(d *schema.ResourceData, r *schema
 						return value
 					},
 				},
+				"Tags": {
+					Field: "tags",
+					FieldRespFunc: func(i interface{}) interface{} {
+						tags, ok := i.([]interface{})
+						if !ok {
+							return i
+						}
+						tagMap := make(map[string]interface{})
+						for _, tag := range tags {
+							_m := tag.(map[string]interface{})
+							tagMap[_m["Key"].(string)] = _m["Value"].(string)
+						}
+						return tagMap
+					},
+				},
 			}
 
-			if _, ok := d.GetOk("tags"); ok {
-				_ = mergeTagsData(d, &data, s.client, "epc-instance")
-			}
 			SdkResponseAutoResourceData(d, r, data, extra)
 			return nil
 		}
