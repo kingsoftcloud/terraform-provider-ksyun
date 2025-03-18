@@ -56,6 +56,7 @@ The following arguments are supported:
 * `container_agent` - (Optional) Whether to support KCE cluster, valid values: 'supported', 'unsupported'.
 * `data_disk_catalogue_suffix` - (Optional) The data disk catalogue suffix of the Bare Metal.Valid Values:'NoSuffix','NaturalNumber','NaturalNumberFromZero'.Default is 'NaturalNumber'.
 * `data_disk_catalogue` - (Optional) The data disk catalogue of the Bare Metal.Valid Values:'/DATA/disk','/data'.Default is '/DATA/disk'.
+* `data_disk_mount` - (Optional) Whether mount for data disk. Valid Values: `support` `unsupport`.
 * `data_file_type` - (Optional) The data disk file type of the Bare Metal.Valid Values:'EXT4','XFS'.Default is 'XFS'.
 * `dns1` - (Optional) The dns1 of the Bare Metal primary network interface.
 * `dns2` - (Optional) The dns2 of the Bare Metal primary network interface.
@@ -79,6 +80,7 @@ The following arguments are supported:
 * `nvme_data_disk_catalogue` - (Optional) The nvme data disk catalogue of the Bare Metal.Valid Values:'/DATA/disk','/data'.
 * `nvme_data_file_type` - (Optional) The nvme data file type of the Bare Metal.Valid Values:'EXT4','XFS'.
 * `overclocking_attribute` - (Optional) The overclocking attribute.
+* `password_inherit` - (Optional) Inherit password or keys from image, Valid Values: `support` `unsupport`.
 * `password` - (Optional) The password of the Bare Metal.
 * `path` - (Optional) The path of the Bare Metal.Only effective on modify and host type is COLO.
 * `private_ip_address` - (Optional) The private ip address of the Bare Metal primary network interface.
@@ -89,6 +91,7 @@ The following arguments are supported:
 * `roce_network` - (Optional) The value of roce network that indicates acquiring whether an instance supplied roce network. Valid Options: `Open` and `Close`.
 * `security_agent` - (Optional) The security agent choice of the Bare Metal. Valid Values:'classic','no'. Default is 'no'.
 * `server_ip` - (Optional) The pxe server ip of the Bare Metal.Only effective on modify and host type is COLO.
+* `storage_roce_network_card_name` - (Optional) The name of storage roce network card. Valid Values `eth8x_bond` `storage_bond`.
 * `system_file_type` - (Optional) The system disk file type of the Bare Metal.Valid Values:'EXT4','XFS'.Default is 'EXT4'.
 * `system_volume_size` - (Optional) System disk size of cloud disk.
 * `system_volume_type` - (Optional) System disk type of cloud disk.

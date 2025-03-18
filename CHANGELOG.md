@@ -1,3 +1,10 @@
+## 1.18.4 (Mar 18, 2025)
+
+IMPROVEMENTS:
+
+- `ksyun_bare_metal`: 增加`password_inherit` `data_disk_mount` `storage_roce_network_card_name`
+
+
 ## 1.18.3 (Mar 18, 2025)
 
 FEATURES:
