@@ -521,6 +521,25 @@ func resourceKsyunBareMetal() *schema.Resource {
 				Description:      "Activate hot standby epc. it works, when this instance is standby.",
 			},
 
+			// 2025, Mar 18
+			"password_inherit": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: bareMetalReinstallDiffSuppressFunc,
+				Description:      "Inherit password or keys from image, Valid Values: `support` `unsupport`.",
+			},
+			"data_disk_mount": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: bareMetalReinstallDiffSuppressFunc,
+				Description:      "Whether mount for data disk. Valid Values: `support` `unsupport`.",
+			},
+			"storage_roce_network_card_name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The name of storage roce network card. Valid Values `eth8x_bond` `storage_bond`.",
+			},
+
 			"extension_network_interface_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
