@@ -264,7 +264,7 @@ func (s *BareMetalService) CheckBareMetalState(d *schema.ResourceData, hostId st
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{},
 		Target:     target,
-		Refresh:    s.BareMetalStateRefreshFunc(d, hostId, []string{"failed"}),
+		Refresh:    s.BareMetalStateRefreshFunc(d, hostId, []string{"failed", "InstallFailed", "ReinstallFailed"}),
 		Timeout:    timeout,
 		Delay:      1 * time.Minute,
 		MinTimeout: 1 * time.Minute,
