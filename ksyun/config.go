@@ -23,6 +23,7 @@ import (
 	"github.com/KscSDK/ksc-sdk-go/service/kcsv2"
 	"github.com/KscSDK/ksc-sdk-go/service/kec"
 	"github.com/KscSDK/ksc-sdk-go/service/knad"
+	"github.com/KscSDK/ksc-sdk-go/service/kpfs"
 	"github.com/KscSDK/ksc-sdk-go/service/krds"
 	"github.com/KscSDK/ksc-sdk-go/service/mongodb"
 	"github.com/KscSDK/ksc-sdk-go/service/pdns"
@@ -100,8 +101,9 @@ func (c *Config) Client() (*KsyunClient, error) {
 	client.knadconn = knad.SdkNew(cli, cfg, url)
 	client.pdnsconn = pdns.SdkNew(cli, cfg, url)
 	client.kcrsconn = kcrs.SdkNew(cli, cfg, url)
+	client.kpfsconn = kpfs.SdkNew(cli, cfg, url)
 
-	// 懒加载ks3-client 所以不在此初始化
+	// 懒加载ks3-client 所以不在此初始
 	return &client, nil
 }
 

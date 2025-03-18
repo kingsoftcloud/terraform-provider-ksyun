@@ -1,4 +1,10 @@
 
+## 1.19.0 (Mar 18, 2025)
+
+FEATURES:
+
+- - **New Resource:** `ksyun_kpfs_acl` KPFS posix授权管理
+
 ## 1.18.0 (Mar 13, 2025)
 
 IMPROVEMENT:
