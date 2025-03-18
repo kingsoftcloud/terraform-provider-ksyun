@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/KscSDK/ksc-sdk-go v0.8.0
-	github.com/aws/aws-sdk-go v1.44.320
+	github.com/aws/aws-sdk-go v1.25.3
 	github.com/client9/misspell v0.3.4
 	github.com/fatih/color v1.7.0
 	github.com/golangci/golangci-lint v1.23.7
@@ -14,7 +14,7 @@ require (
 	github.com/ks3sdklib/ksyun-ks3-go-sdk v1.1.0
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/pkg/errors v0.9.1
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.8.4
 )
 
 require (
@@ -57,7 +57,7 @@ require (
 	github.com/golangci/prealloc v0.0.0-20180630174525-215b22d4de21 // indirect
 	github.com/golangci/revgrep v0.0.0-20180526074752-d9c87f5ffaf0 // indirect
 	github.com/golangci/unconvert v0.0.0-20180507085042-28b1c447d1f4 // indirect
-	github.com/google/go-cmp v0.6.0 // indirect
+	github.com/google/go-cmp v0.3.1 // indirect
 	github.com/google/uuid v1.1.1 // indirect
 	github.com/googleapis/gax-go/v2 v2.0.5 // indirect
 	github.com/gostaticanalysis/analysisutil v0.0.0-20190318220348-4088753ea4d3 // indirect
@@ -80,7 +80,7 @@ require (
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jingyugao/rowserrcheck v0.0.0-20191204022205-72ab7603b68a // indirect
 	github.com/jirfag/go-printf-func-name v0.0.0-20191110105641-45db9963cdd3 // indirect
-	github.com/jmespath/go-jmespath v0.4.0 // indirect
+	github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af // indirect
 	github.com/kisielk/gotool v1.0.0 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.1 // indirect
 	github.com/magiconair/properties v1.8.1 // indirect
@@ -108,7 +108,7 @@ require (
 	github.com/spf13/jwalterweatherman v1.0.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.6.1 // indirect
-	github.com/stretchr/objx v0.5.2 // indirect
+	github.com/stretchr/objx v0.5.0 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
 	github.com/timakin/bodyclose v0.0.0-20190930140734-f7f2e9bca95e // indirect
 	github.com/tommy-muehle/go-mnd v1.1.1 // indirect
@@ -120,22 +120,21 @@ require (
 	github.com/zclconf/go-cty v1.2.1 // indirect
 	github.com/zclconf/go-cty-yaml v1.0.1 // indirect
 	go.opencensus.io v0.22.0 // indirect
-	golang.org/x/crypto v0.36.0 // indirect
-	golang.org/x/mod v0.17.0 // indirect
-	golang.org/x/net v0.37.0 // indirect
+	golang.org/x/crypto v0.11.0 // indirect
+	golang.org/x/mod v0.9.0 // indirect
+	golang.org/x/net v0.12.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45 // indirect
-	golang.org/x/sync v0.12.0 // indirect
-	golang.org/x/sys v0.31.0 // indirect
-	golang.org/x/text v0.23.0 // indirect
+	golang.org/x/sys v0.10.0 // indirect
+	golang.org/x/text v0.11.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
-	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
+	golang.org/x/tools v0.7.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/api v0.9.0 // indirect
 	google.golang.org/appengine v1.6.1 // indirect
 	google.golang.org/genproto v0.0.0-20190819201941-24fa4b261c55 // indirect
 	google.golang.org/grpc v1.23.0 // indirect
 	gopkg.in/ini.v1 v1.51.0 // indirect
-	gopkg.in/yaml.v2 v2.2.8 // indirect
+	gopkg.in/yaml.v2 v2.2.7 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	honnef.co/go/tools v0.0.1-2019.2.3 // indirect
 	mvdan.cc/interfacer v0.0.0-20180901003855-c20040233aed // indirect
