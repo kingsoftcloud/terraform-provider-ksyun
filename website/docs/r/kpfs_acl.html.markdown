@@ -42,6 +42,6 @@ In addition to all arguments above, the following attributes are exported:
 KPFS ACL rules can be imported using the id, e.g.
 
 ```
-$ terraform import ksyun_kpfs_acl.example ${epc_id}
+$ terraform import ksyun_kpfs_acl.example ${epc_id}_${kpfs_acl_id}
 ```
 
