@@ -1,3 +1,9 @@
+## 1.18.5 (Mar 18, 2025)
+
+BUGFIX:
+
+- `ksyun_kpfs_acl`:  修复terraform import 的问题，更新import示例
+
 ## 1.18.4 (Mar 18, 2025)
 
 IMPROVEMENTS:
