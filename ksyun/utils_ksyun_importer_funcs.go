@@ -529,3 +529,23 @@ func importListenerAssociateBackendgroup(d *schema.ResourceData, meta interface{
 	}
 	return retD, nil
 }
+
+func importKpfsAcl(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	var (
+		err  error
+		retD = []*schema.ResourceData{d}
+	)
+	items := strings.Split(d.Id(), "_")
+	if len(items) < 2 {
+		return retD, fmt.Errorf("import id must split with '_'")
+	}
+	err = d.Set("epc_id", items[0])
+	if err != nil {
+		return retD, err
+	}
+	err = d.Set("kpfs_acl_id", items[1])
+	if err != nil {
+		return retD, err
+	}
+	return retD, nil
+}
