@@ -67,19 +67,15 @@ func resourceKsyunPerformanceOnePosixAclRead(d *schema.ResourceData, meta interf
 func resourceKsyunPerformanceOnePosixAclCreate(d *schema.ResourceData, meta interface{}) (err error) {
 	kpfsService := KpfsService{meta.(*KsyunClient)}
 	r := resourceKsyunKpfsAcl()
-	err = kpfsService.updatePerformanceOnePosixAcl(d, r)
+	err = kpfsService.addPosixAclIp(d, r)
 	if err != nil {
-		return fmt.Errorf("error on add posix acl %s", err)
+		return fmt.Errorf("error on add posix acl ip %s", err)
 	}
-	err = resourceKsyunPerformanceOnePosixAclRead(d, meta)
 	transform := map[string]SdkReqTransform{
 		"epc_id":      {mapping: "epcId"},
 		"kpfs_acl_id": {mapping: "aclId"},
 	}
 	req, err := SdkRequestAutoMapping(d, r, false, transform, nil)
-	if err != nil {
-		return fmt.Errorf("error on add posix acl %s", err)
-	}
 	d.SetId(fmt.Sprintf("%s-%s", req["epcId"], req["aclId"]))
 	return err
 }

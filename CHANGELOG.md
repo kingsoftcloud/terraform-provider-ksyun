@@ -1,3 +1,9 @@
+## 1.18.6 (Mar 26, 2025)
+
+BUGFIX:
+
+- `ksyun_kpfs_acl`:  修复并发更新acl时数据不一致的问题
+
 ## 1.18.5 (Mar 18, 2025)
 
 BUGFIX:

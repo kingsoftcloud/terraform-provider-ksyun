@@ -45,44 +45,21 @@ func (s *KpfsService) readPerformanceOnePosixAcl(d *schema.ResourceData, r *sche
 
 }
 
-func (s *KpfsService) updatePerformanceOnePosixAcl(d *schema.ResourceData, r *schema.Resource) (err error) {
+func (s *KpfsService) addPosixAclIp(d *schema.ResourceData, r *schema.Resource) (err error) {
 	sorceIp, err := s.getStorageIp(d, r)
 	if err != nil {
 		return err
 	}
-	aclData, err := s.getPerformanceOnePosixAclList(d, r)
+	transform := map[string]SdkReqTransform{
+		"kpfs_acl_id": {mapping: "PosixAclId"},
+	}
+	req, err := SdkRequestAutoMapping(d, r, false, transform, nil)
 	if err != nil {
 		return err
 	}
-	data, err := getSdkValue("Data", *aclData)
-	if err != nil {
-		return err
-	}
-
-	datas := data.([]interface{})
-	if len(datas) == 0 {
-		return fmt.Errorf("acl is empty")
-	}
-
-	firstData := datas[0].(map[string]interface{})
-
-	ips := firstData["Ips"].([]interface{})
-	// 修改 ips 列表
-	hasAdd := false
-	for _, v := range ips {
-		if v.(string) == sorceIp {
-			hasAdd = true
-		}
-	}
-	if hasAdd {
-		return nil
-	}
-	ips = append(ips, sorceIp)
-
-	//修改aclData 的ips属性
-	updateAclData := datas[0].(map[string]interface{}) // 断言为 map[string]interface{}
-	updateAclData["Ips"] = ips
-	return s.updatePerformanceOnePosixAclIps(updateAclData)
+	req["Ip"] = sorceIp
+	//追加 acl 的ip属性
+	return s.addPerformanceOnePosixAclIp(req)
 }
 
 func (s *KpfsService) deletePerformanceOnePosixAclIp(d *schema.ResourceData, r *schema.Resource) (err error) {
@@ -90,52 +67,21 @@ func (s *KpfsService) deletePerformanceOnePosixAclIp(d *schema.ResourceData, r *
 	if err != nil {
 		return err
 	}
-	aclData, err := s.getPerformanceOnePosixAclList(d, r)
+	transform := map[string]SdkReqTransform{
+		"kpfs_acl_id": {mapping: "PosixAclId"},
+	}
+	req, err := SdkRequestAutoMapping(d, r, false, transform, nil)
 	if err != nil {
 		return err
 	}
-	data, err := getSdkValue("Data", *aclData)
-	if err != nil {
-		return err
-	}
+	req["Ip"] = sorceIp
 
-	datas := data.([]interface{})
-	if len(datas) == 0 {
-		return nil
-	}
-
-	firstData := datas[0].(map[string]interface{})
-	ips := firstData["Ips"].([]interface{})
-	// 修改 ips 列表
-	var newIps []interface{}
-	hasRemove := false
-	for _, v := range ips {
-		ip := v.(string)
-		if ip != sorceIp {
-			newIps = append(newIps, ip)
-		}
-		if v.(string) == sorceIp {
-			hasRemove = true
-		}
-	}
-
-	if !hasRemove {
-		return nil
-	}
-
-	//修改aclData 的ips属性
-	updateAclData := datas[0].(map[string]interface{}) // 断言为 map[string]interface{}
-	updateAclData["Ips"] = newIps
-
-	if len(newIps) == 0 {
-		return s.deletePerformanceOnePosixAcl(updateAclData)
-	}
-	return s.updatePerformanceOnePosixAclIps(updateAclData)
+	return s.removePerformanceOnePosixAclIp(req)
 }
 
-func (s *KpfsService) deletePerformanceOnePosixAcl(aclData map[string]interface{}) error {
+func (s *KpfsService) removePerformanceOnePosixAclIp(aclData map[string]interface{}) error {
 	kpfsconn := s.client.kpfsconn
-	_, err := kpfsconn.DeletePerformanceOnePosixAcl(&aclData)
+	_, err := kpfsconn.RemovePerformanceOnePosixAclIp(&aclData)
 	if err != nil {
 		return fmt.Errorf("failed to delete acl ip: %v", err)
 	}
@@ -143,12 +89,12 @@ func (s *KpfsService) deletePerformanceOnePosixAcl(aclData map[string]interface{
 }
 
 // 定义 updatePerformanceOnePosixAclIps 方法
-func (s *KpfsService) updatePerformanceOnePosixAclIps(aclData map[string]interface{}) error {
+func (s *KpfsService) addPerformanceOnePosixAclIp(aclData map[string]interface{}) error {
 	// 调用 SDK 更新 ACL 的 IP 列表
 	kpfsconn := s.client.kpfsconn
-	_, err := kpfsconn.UpdatePerformanceOnePosixAcl(&aclData)
+	_, err := kpfsconn.AddPerformanceOnePosixAclIp(&aclData)
 	if err != nil {
-		return fmt.Errorf("failed to update PerformanceOnePosixAcl: %v", err)
+		return fmt.Errorf("failed to update AddPerformanceOnePosixAclIp: %v", err)
 	}
 	return nil
 }
