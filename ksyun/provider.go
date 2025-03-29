@@ -416,7 +416,7 @@ func Provider() terraform.ResourceProvider {
 			"max_retries": {
 				Type:         schema.TypeInt,
 				Optional:     true,
-				Default:      3,
+				Default:      0,
 				ValidateFunc: validation.IntBetween(0, 99),
 			},
 			"http_proxy": {
@@ -631,7 +631,7 @@ func Provider() terraform.ResourceProvider {
 			// lb
 			// "ksyun_lb_listener_associate_backendgroup": resourceKsyunLbListenerAssociateBackendgroup(),
 
-			//kpfs
+			// kpfs
 			"ksyun_kpfs_acl": resourceKsyunKpfsAcl(),
 		},
 		ConfigureFunc: providerConfigure,
@@ -639,7 +639,7 @@ func Provider() terraform.ResourceProvider {
 }
 
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
-	retryNum := 3
+	retryNum := 0
 	if mr, ok := d.GetOk("max_retries"); ok {
 		retryNum = mr.(int)
 	}
