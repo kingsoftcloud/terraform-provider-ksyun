@@ -1,4 +1,4 @@
-## unrelease
+## 1.18.7 (Apr 16, 2025)
 
 IMPROVEMENTS:
 
