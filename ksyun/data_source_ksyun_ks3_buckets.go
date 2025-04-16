@@ -294,6 +294,13 @@ func dataSourceKsyunKs3Buckets() *schema.Resource {
 							Computed:    true,
 							Description: "Bucket Policy is an authorization policy for Bucket introduced by KS3. You can authorize other users to access the KS3 resources you specify through the space policy. If you want to turn off this setting, just leave it blank in the configuration.",
 						},
+
+						"tags": {
+							Type:        schema.TypeMap,
+							Optional:    true,
+							Computed:    true,
+							Description: "the tags of the resource.",
+						},
 					},
 				},
 			},
@@ -563,6 +570,25 @@ func bucketsDescriptionAttributes(d *schema.ResourceData, buckets []ks3.BucketPr
 			log.Printf("[WARN] Unable to get policy information for the bucket %s: %v", bucket.Name, err)
 		}
 		mapping["policy"] = policy
+
+		// tags
+		tagsMap := make(map[string]string)
+		raw, err = client.WithKs3Client(func(ks3Client *ks3.Client) (interface{}, error) {
+			requestInfo = ks3Client
+			return ks3Client.GetBucketTagging(bucket.Name)
+		})
+		if err == nil {
+			if debugOn() {
+				addDebug("GetBucketTagging", raw, requestInfo, map[string]string{"bucketName": bucket.Name})
+			}
+			tagging, _ := raw.(ks3.GetBucketTaggingResult)
+			for _, t := range tagging.Tags {
+				tagsMap[t.Key] = t.Value
+			}
+		} else {
+			log.Printf("[WARN] Unable to get tagging information for the bucket %s: %v", bucket.Name, err)
+		}
+		mapping["tags"] = tagsMap
 
 		ids = append(ids, bucket.Name)
 		s = append(s, mapping)

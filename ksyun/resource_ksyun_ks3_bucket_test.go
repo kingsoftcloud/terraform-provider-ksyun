@@ -158,5 +158,9 @@ resource "ksyun_ks3_bucket" "bucket-create2" {
       storage_class = "ARCHIVE"
     }
   }
+  tags = {
+    key1 = "value1"
+    key2 = "value2"
+  }
 }
 `
