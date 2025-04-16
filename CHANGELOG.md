@@ -1,3 +1,9 @@
+## unrelease
+
+IMPROVEMENTS:
+
+- `ksyun_ks3_bucket`: 新增`tags`字段
+
 ## 1.18.6 (Mar 29, 2025)
 
 BUGFIX:
