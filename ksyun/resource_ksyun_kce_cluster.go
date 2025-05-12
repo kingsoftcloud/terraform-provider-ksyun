@@ -205,9 +205,7 @@ const (
 	kceManagedModeDedicated = "DedicatedCluster"
 )
 
-var (
-	instanceNodeForceNewField = []string{"image_id", "instance_name", "subnet_id", "security_group_id", "charge_type", "instance_type", "instance_password"}
-)
+var instanceNodeForceNewField = []string{"image_id", "instance_name", "subnet_id", "security_group_id", "charge_type", "instance_type", "instance_password"}
 
 func nodeAdvancedSetting() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
@@ -410,7 +408,6 @@ func instanceForNode() map[string]*schema.Schema {
 	// }
 
 	return m
-
 }
 
 func instanceForWorkerNode() map[string]*schema.Schema {
@@ -518,11 +515,11 @@ func resourceKsyunKceCluster() *schema.Resource {
 				Description:  "The maximum number of pods that can be run on each node. valid values: 16, 32, 64, 128, 256.",
 			},
 			"network_type": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.StringInSlice([]string{"Flannel", "Canal"}, false),
-				Description:  "The network type of the cluster. valid values: 'Flannel', 'Canal'.",
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+				// ValidateFunc: validation.StringInSlice([]string{"Flannel", "Canal"}, false),
+				Description: "The network type of the cluster. valid values: 'Flannel', 'Canal', 'Calico'.",
 			},
 			"k8s_version": {
 				Type:     schema.TypeString,
@@ -637,6 +634,7 @@ func resourceKsyunKceClusterCreate(d *schema.ResourceData, meta interface{}) (er
 	}
 	return resourceKsyunKceClusterRead(d, meta)
 }
+
 func resourceKsyunKceClusterUpdate(d *schema.ResourceData, meta interface{}) (err error) {
 	err = kcePreinspection(d)
 	if err != nil {
@@ -655,6 +653,7 @@ func resourceKsyunKceClusterUpdate(d *schema.ResourceData, meta interface{}) (er
 
 	return resourceKsyunKceClusterRead(d, meta)
 }
+
 func resourceKsyunKceClusterRead(d *schema.ResourceData, meta interface{}) (err error) {
 	srv := KceService{meta.(*KsyunClient)}
 	err = srv.ReadAndSetKceCluster(d, resourceKsyunKceCluster())
@@ -663,6 +662,7 @@ func resourceKsyunKceClusterRead(d *schema.ResourceData, meta interface{}) (err 
 	}
 	return
 }
+
 func resourceKsyunKceClusterDelete(d *schema.ResourceData, meta interface{}) (err error) {
 	srv := KceService{meta.(*KsyunClient)}
 	err = srv.DeleteKceCluster(d, resourceKsyunKceCluster())
