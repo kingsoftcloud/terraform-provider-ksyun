@@ -479,6 +479,13 @@ func (s *KceService) DeleteKceCluster(d *schema.ResourceData, r *schema.Resource
 		logger.Debug(logger.ReqFormat, "DeleteCluster", req)
 
 		data, err = s.readKceClusters(req)
+		if err != nil {
+			if notFoundError(err) {
+				return nil
+			} else {
+				return resource.RetryableError(fmt.Errorf("error on reading cluster when delete %q, %s", d.Id(), err))
+			}
+		}
 		if len(data) == 0 {
 			return nil
 		}
