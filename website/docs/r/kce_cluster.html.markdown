@@ -194,7 +194,7 @@ The following arguments are supported:
 
 * `cluster_name` - (Required) The name of the cluster.
 * `k8s_version` - (Required, ForceNew) The latest three kubernetes version. Current valid values:"v1.25.7", "v1.23.17", "v1.21.3". **Notes:** The version is updated in real time with the K8s official. Therefore, you can view the maintaining strategies in [Kingsoft Cloud K8s Version Strategies](https://docs.ksyun.com/documents/43229?type=3) and get the latest versions.
-* `network_type` - (Required, ForceNew) The network type of the cluster. valid values: 'Flannel', 'Canal'.
+* `network_type` - (Required, ForceNew) The network type of the cluster. valid values: 'Flannel', 'Canal', 'Calico'.
 * `pod_cidr` - (Required, ForceNew) The pod CIDR block.
 * `reserve_subnet_id` - (Required, ForceNew) The ID of the reserve subnet.
 * `service_cidr` - (Required, ForceNew) The service CIDR block.
