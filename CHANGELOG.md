@@ -1,3 +1,9 @@
+## 1.18.8 (May 12, 2025)
+
+IMPROVEMENTS:
+
+- `ksyun_alb_backend_server_group`: 新增`session`字段，新增`health_check`字段，新增`method`字段
+
 ## 1.18.6 (Mar 29, 2025)
 
 BUGFIX:
@@ -16,13 +22,12 @@ IMPROVEMENTS:
 
 - `ksyun_bare_metal`: 增加`password_inherit` `data_disk_mount` `storage_roce_network_card_name`
 
-
 ## 1.18.3 (Mar 18, 2025)
 
 FEATURES:
 
 - - **New Resource:** `ksyun_kpfs_acl` KPFS posix授权管理
- 
+
 ## 1.18.2 (Mar 14, 2025)
 
 BUGFIX:
@@ -140,7 +145,6 @@ IMPROVEMENTS:
 - `ksyun_lb_listener`: 新增`backend_server_group_mounted`字段，支持挂载后端服务器组
 - `ksyun_nat`: `nat_line_id` 标记为Computed
 
-
 ## 1.16.1 (Jul 23, 2024)
 
 FEATURES:
@@ -169,34 +173,39 @@ IMPROVEMENTS:
 ## 1.15.6 (May 13, 2024)
 
 BUGFIX:
-- `ksyun_security_group_entry` 修复了在创建安全组规则时，触发的not exist问题
 
+- `ksyun_security_group_entry` 修复了在创建安全组规则时，触发的not exist问题
 
 ## 1.15.5 (May 13, 2024)
 
 BUGFIX:
+
 - `ksyun_security_group_entry_lite` 增加cidr_block字段重复判定，修复部分创建成功但terraform无法感知的问题
 
 ## 1.15.4 (Apr 23, 2024)
 
 BUGFIX:
+
 - `ksyun_alb_backend_server_group` 修复`protocol` change
   
 ## 1.15.3 (Mar 27, 2024)
 
 BUGFIX:
+
 - `ksyun_lb_listener` 弃用`http_protocol`字段
 - `ksyun_alb_backend_server_group` 新增`protocol`字段，支持`http`和`grpc`两种协议
 
 ## 1.15.2 (Mar 18, 2024)
 
 BUGFIX:
+
 - `ksyun_lb_listener` 修复`health_check`在stop状态下触发的plan diff
 - `ksyun_alb_backend_server_group` 移除health_check配置
 
 ## 1.15.1 (Mar 4, 2024)
 
 BUGFIX:
+
 - `ksyun_lb_listener` 支持`method`参数被修改
 
 ## 1.15.0 (Feb 19, 2024)
@@ -250,7 +259,7 @@ BUGFIX:
 
 - `ksyun_alb_backend_server_group` 弃用健康检查配置
 
-## 1.13.1 (Dec 28, 2023) 
+## 1.13.1 (Dec 28, 2023)
 
 IMPROVEMENTS:
 
@@ -258,20 +267,19 @@ IMPROVEMENTS:
 - `ksyun_alb_rule_group` 新增`type` type类型须与后端资源类型对应
 - `ksyun_alb_listener` 新增`fixed_response_config` 默认转发策略增加固定响应配置
 
-## 1.13.0 (Dec 18, 2023) 
+## 1.13.0 (Dec 18, 2023)
 
 FEATURES:
 
 - - **New Resource:** `ksyun_tag_v2` 标签管理
-- - **New Resource:** `ksyun_tag_v2_attachment` 资源绑定标签，支持控制台所有的`resource_type` 
+- - **New Resource:** `ksyun_tag_v2_attachment` 资源绑定标签，支持控制台所有的`resource_type`
 
-## 1.12.1 (Dec 14, 2023) 
+## 1.12.1 (Dec 14, 2023)
 
 IMPROVEMENTS:
 
 - `ksyun_healthcheck` 新增`health_check_connect_port`健康检查端口
 - `ksyun_alb_listener` 新增`config_content` 个性化配置
-
 
 ## 1.12.0 (Dec 7, 2023)
 
@@ -299,8 +307,8 @@ FEATURES:
 - - **New Resource:** `ksyun_private_dns_zone` 内网DNS2.0
 - - **New Resource:** `ksyun_private_dns_record` 内网DNS解析记录
 - - **New Resource:** `ksyun_private_dns_zone_vpc_attachment` 内网DNS Zone绑定VPC
-- - **New Data Source:** `ksyun_private_dns_records` 
-- - **New Data Source:** `data_source_ksyun_private_dns_zone` 
+- - **New Data Source:** `ksyun_private_dns_records`
+- - **New Data Source:** `data_source_ksyun_private_dns_zone`
 
 ## 1.10.1 (Oct 20, 2023)
 
@@ -357,6 +365,7 @@ IMPROVEMENTS:
 ## 1.7.2 (Aug 14, 2023)
 
 BUGFIX:
+
 - `ksyun_vpc` 修复可能触发的无法删除vpc的操作
 
 ## 1.7.1 (Aug 3, 2023)
@@ -365,7 +374,6 @@ IMPROVEMENTS:
 
 - `ksyun_bare_metal` 新增裸金属开机/关机操作
 - `ksyun_bare_metal` 支持创建roce网络机型
-
 
 ## 1.7.0 (Jul 26, 2023)
 
@@ -397,7 +405,7 @@ FEATURES:
 
 - - **New Resource:** `ksyun_knad` knad 原生高防
 - - **New Resource:** `ksyun_knad_associate`
-- - **New Data Source:** `ksyun_knads` 
+- - **New Data Source:** `ksyun_knads`
 
 ## 1.4.2 (Jul 07, 2023)
 
@@ -487,10 +495,10 @@ BUG FIXES:
 
   RESOURCES:
 
-  * bucket create
-  * bucket read
-  * bucket update 
-  * bucket delete
+  - bucket create
+  - bucket read
+  - bucket update
+  - bucket delete
 
 ## 1.3.68 (Mar 20, 2023)
 
@@ -548,13 +556,11 @@ BUG FIXES:
 
 - 修复EIP通过其他方式修改项目制后，无法从tf获取EIP数据的问题。
 
-
 ## 1.3.59 (Dec 2, 2022)
 
 BUG FIXES:
 
 - 修复krds只读实例不能更配的问题：ksyun_krds_rr的db_instance_class字段，ForceNew置为false
-
 
 ## 1.3.58 (Nov 9, 2022)
 
@@ -562,13 +568,11 @@ BUG FIXES:
 
 - 修复LB监听器绑定ACL后，如果通过其他方式解绑，tf不能正常获取到解绑状态的问题
 
-
 ## 1.3.57 (Nov 9, 2022)
 
 IMPROVEMENTS:
 
 - 使用整机镜像创建主机，默认不自动使用镜像关联的快照创建数据盘，需要手动配置盘资源。
-
 
 ## 1.3.56 (Nov 1, 2022)
 
@@ -585,7 +589,6 @@ BUG FIXES:
 - 修复更配无法触发的问题
 - 修复机型其他属性修改触发网卡更新的问题
 
-
 ## 1.3.55 (Oct 8, 2022)
 
 BUG FIXES:
@@ -593,20 +596,17 @@ BUG FIXES:
 - 修正LB日志参数的文档错误
 - 修正LB的TAG资源类型问题
 
-
 ## 1.3.54 (Sep 28, 2022)
 
 BUG FIXES:
 
 - 修正创建LB同时开启日志不生效的问题
 
-
 ## 1.3.53 (Sep 28, 2022)
 
 BUG FIXES:
 
-- 更正LB日志功能的example和文档 
-
+- 更正LB日志功能的example和文档
 
 ## 1.3.52 (Sep 20, 2022)
 
@@ -614,20 +614,17 @@ BUG FIXES:
 
 - 修正EBS盘未修改但触发resize的问题
 
-
 ## 1.3.51 (Sep 15, 2022)
 
 BUG FIXES:
 
 - 修正KRDS的日志bug，增加KRDS绑定EIP的参数示例
 
-
 ## 1.3.50 (Sep 14, 2022)
 
 BUG FIXES:
 
 - 修正KRDS磁盘参数校验的正则
-
 
 ## 1.3.49 (Sep 6, 2022)
 
@@ -641,15 +638,11 @@ BUG FIXES:
 
 - releaser配置增加windows和arm的配置
 
-
 ## 1.3.47 (Sep 6, 2022)
 
 BUG FIXES:
 
 - 修复import子网不能获取到AZ属性的问题
-
-
-
 
 ## 1.1.0 (Dec 21,2020)
 
@@ -698,229 +691,227 @@ FEATURES:
 
 RESOURCES:
 
-* instance create
-* instance read
-* instance update
-    * reset instance
-    * reset password
-    * reset keyid
-    * update instance name
-    * update host name
-    * update security groups
-    * update network interface
-* instance delete
+- instance create
+- instance read
+- instance update
+  - reset instance
+  - reset password
+  - reset keyid
+  - update instance name
+  - update host name
+  - update security groups
+  - update network interface
+- instance delete
 
 DATA SOURCES:
 
-* image read
-* instance read
+- image read
+- instance read
 
 ### VPC
 
 RESOURCES:
 
-* vpc create
-* vpc read
-* vpc update (update vpc_name)
-* vpc delete
-* subnet create
-* subnet read
-* subnet update (update subnet_name,dns1,dns2)
-* subnet delete
-* security group create
-* security group read
-* security group update (update security_group_name)
-* security group delete
-* security group entry create
-* security group entry read
-* security group entry delete
-
+- vpc create
+- vpc read
+- vpc update (update vpc_name)
+- vpc delete
+- subnet create
+- subnet read
+- subnet update (update subnet_name,dns1,dns2)
+- subnet delete
+- security group create
+- security group read
+- security group update (update security_group_name)
+- security group delete
+- security group entry create
+- security group entry read
+- security group entry delete
 
 DATA SOURCES:
 
-* vpc read
-* subnet read
-* security group read
-* subnet allocated ip addresses read
-* subnet available addresses read
-* network interface read
-
+- vpc read
+- subnet read
+- security group read
+- subnet allocated ip addresses read
+- subnet available addresses read
+- network interface read
 
 ### EIP
 
 RESOURCES:
 
-* eip create
-* eip read
-* eip update (update band_width)
-* eip delete
-* associate address
-* disassociate address
+- eip create
+- eip read
+- eip update (update band_width)
+- eip delete
+- associate address
+- disassociate address
 
 DATA SOURCES:
 
-* eip read
-* line read
+- eip read
+- line read
 
 ### KCM
 
 RESOURCES:
 
-* certificate create
-* certificate read
-* certificate update (update certificate_name)
-* certificate delete
+- certificate create
+- certificate read
+- certificate update (update certificate_name)
+- certificate delete
 
 DATA SOURCES:
 
-* certificate read
+- certificate read
 
 ### SLB
 
 RESOURCES:
 
-* health check create
-* health check read
-* health check update (update health_check_state,healthy_threshold,interval,timeout,unhealthy_threshold,is_default_host_name,host_name,url_path)
-* health check delete
-* lb create
-* lb read
-* lb update (update load_balancer_name,load_balancer_state)
-* lb delete
-* lb acl create
-* lb acl read
-* lb acl update (update load_balancer_acl_name)
-* lb acl delete
-* lb acl entry create
-* lb acl entry read
-* lb acl entry delete
-* lb listener create
-* lb listener read
-* lb listener update (update certificate_id,listener_name,listener_state,method)
-* lb listener delete
-* lb listener server create
-* lb listener server read
-* lb listener server delete
-* lb listener associate acl create
-* lb listener associate acl read
-* lb listener associate acl delete
+- health check create
+- health check read
+- health check update (update health_check_state,healthy_threshold,interval,timeout,unhealthy_threshold,is_default_host_name,host_name,url_path)
+- health check delete
+- lb create
+- lb read
+- lb update (update load_balancer_name,load_balancer_state)
+- lb delete
+- lb acl create
+- lb acl read
+- lb acl update (update load_balancer_acl_name)
+- lb acl delete
+- lb acl entry create
+- lb acl entry read
+- lb acl entry delete
+- lb listener create
+- lb listener read
+- lb listener update (update certificate_id,listener_name,listener_state,method)
+- lb listener delete
+- lb listener server create
+- lb listener server read
+- lb listener server delete
+- lb listener associate acl create
+- lb listener associate acl read
+- lb listener associate acl delete
 
 DATA SOURCES:
 
-* lb read
-* lb health check read
-* lb acl read
-* lb listener read
-* lb listener server read
+- lb read
+- lb health check read
+- lb acl read
+- lb listener read
+- lb listener server read
 
 ### EBS
 
 RESOURCES:
 
-* volume create
-* volume read
-* volume update (update name,volume_desc,size)
-* volume delete
-* volume attach create
-* volume attach read
-* volume attach delete
+- volume create
+- volume read
+- volume update (update name,volume_desc,size)
+- volume delete
+- volume attach create
+- volume attach read
+- volume attach delete
 
 DATA SOURCES:
 
-* volume read
+- volume read
 
 ### KRDS
 
 RESOURCES:
-* krds create
-* krds read
-* krds update (update name,class,type,version,password,security_group,preferred_backup_time)
-* krds delete
-* krds read replica create
-* krds read replica read
-* krds read replica delete
-* krds security group create
-* krds security group read
-* krds security group update (update name,security_group_description,security_group_rule)
-* krds security group delete
-* krds sqlserver create
-* krds sqlserver read
-* krds sqlserver delete
+- krds create
+- krds read
+- krds update (update name,class,type,version,password,security_group,preferred_backup_time)
+- krds delete
+- krds read replica create
+- krds read replica read
+- krds read replica delete
+- krds security group create
+- krds security group read
+- krds security group update (update name,security_group_description,security_group_rule)
+- krds security group delete
+- krds sqlserver create
+- krds sqlserver read
+- krds sqlserver delete
 
 DATA SOURCES:
 
-* krds read
-* krds security groups read
-* krds sqlservers read
+- krds read
+- krds security groups read
+- krds sqlservers read
 
 ### MONGODB
 
 RESOURCES:
 
-* mongodb instance create
-* mongodb instance read
-* mongodb instance update (update name,node_num)
-* mongodb instance delete
-* mongodb security rule create
-* mongodb security rule read
-* mongodb security rule update (update cidrs)
-* mongodb security rule delete
-* mongodb shard instance create
-* mongodb shard instance read
-* mongodb shard instance delete
+- mongodb instance create
+- mongodb instance read
+- mongodb instance update (update name,node_num)
+- mongodb instance delete
+- mongodb security rule create
+- mongodb security rule read
+- mongodb security rule update (update cidrs)
+- mongodb security rule delete
+- mongodb shard instance create
+- mongodb shard instance read
+- mongodb shard instance delete
 
 DATA SOURCES:
 
-* mongodb instance read
+- mongodb instance read
 
 ### KCS
 
 RESOURCES:
 
-* redis instance create
-* redis instance read
-* redis instance update (update name,pass_word,capacity)
-* redis instance delete
-* ~~redis security rule create~~
-* ~~redis security rule read~~
-* ~~redis security rule update (update rules)~~
-* ~~redis security rule delete~~
-* redis security group create
-* redis security group read
-* redis security group update (update name, description)
-* redis security group delete
-* redis security group allocate instance
-* redis security group deallocate instance
-* redis security group read allocate instance
-* redis security group rule create
-* redis security group rule read
-* redis security group rule update (update rules)
-* redis security group rule delete
+- redis instance create
+- redis instance read
+- redis instance update (update name,pass_word,capacity)
+- redis instance delete
+- ~~redis security rule create~~
+- ~~redis security rule read~~
+- ~~redis security rule update (update rules)~~
+- ~~redis security rule delete~~
+- redis security group create
+- redis security group read
+- redis security group update (update name, description)
+- redis security group delete
+- redis security group allocate instance
+- redis security group deallocate instance
+- redis security group read allocate instance
+- redis security group rule create
+- redis security group rule read
+- redis security group rule update (update rules)
+- redis security group rule delete
 
 DATA SOURCES:
 
-* redis read
-* redis security group read
+- redis read
+- redis security group read
 
-###  IAM
+### IAM
 
 DATA SOURCES:
 
-* iam users read
-* iam roles read
-* iam groups read
+- iam users read
+- iam roles read
+- iam groups read
 
 RESOURCES:
 
-* iam user create
-* iam user read
-* iam user delete
-* iam role create
-* iam role read
-* iam role delete
-* iam group create
-* iam group read
-* iam group delete
-* iam policy create
-* iam policy read
-* iam policy delete
+- iam user create
+- iam user read
+- iam user delete
+- iam role create
+- iam role read
+- iam role delete
+- iam group create
+- iam group read
+- iam group delete
+- iam policy create
+- iam policy read
+- iam policy delete

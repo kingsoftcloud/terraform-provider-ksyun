@@ -39,7 +39,7 @@ import (
 func resourceKsyunAlbBackendServerGroup() *schema.Resource {
 	entry := resourceKsyunHealthCheck().Schema
 	for k, v := range entry {
-		if k == "listener_id" || k == "listener_protocol" || k == "is_default_host_name" || k == "host_name" {
+		if k == "listener_id" || k == "listener_protocol" || k == "is_default_host_name" || k == "host_name" || k == "lb_type" {
 			delete(entry, k)
 		} else {
 			v.ForceNew = false
@@ -48,7 +48,7 @@ func resourceKsyunAlbBackendServerGroup() *schema.Resource {
 
 		switch k {
 		case "http_method":
-			v.Optional = false
+			v.Optional = true
 			v.Computed = true
 			v.ValidateFunc = nil
 		}
@@ -59,6 +59,18 @@ func resourceKsyunAlbBackendServerGroup() *schema.Resource {
 		// Default:      "default",
 		ValidateFunc: validation.StringIsNotWhiteSpace,
 		Description:  "hostname of the health check.",
+	}
+	entry["health_code"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Computed:    true,
+		Description: "The health check code.",
+	}
+	entry["health_protocol"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Computed:    true,
+		Description: "The health check protocol. Valid values: 'HTTP', 'TCP'.",
 	}
 
 	return &schema.Resource{
@@ -119,13 +131,69 @@ func resourceKsyunAlbBackendServerGroup() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: entry,
 				},
-				Optional:         true,
-				Computed:         true,
-				ForceNew:         true,
-				Deprecated:       "Alb does not support health checks at this time. If you need a health check configuration on this server group, you are supposed to use 'ksyun_alb_rule_group'",
-				Removed:          "This parameter is removed in the latest version. Please use 'ksyun_alb_rule_group' to configure health check.",
-				DiffSuppressFunc: lbBackendServerDiffSuppressFunc,
+				Optional: true,
+				Computed: true,
+				// ForceNew: true,
+				// Deprecated:       "Alb does not support health checks at this time. If you need a health check configuration on this server group, you are supposed to use 'ksyun_alb_rule_group'",
+				// Removed:          "This parameter is removed in the latest version. Please use 'ksyun_alb_rule_group' to configure health check.",
+				DiffSuppressFunc: lbBackendServerHealthCheckDiffSuppressFunc,
 				Description:      "Health check information.",
+			},
+
+			"method": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "Forwarding mode of listener. Valid Values:'RoundRobin', 'LeastConnections'.",
+			},
+			"session": {
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				MinItems:    1,
+				Optional:    true,
+				Computed:    true,
+				Description: "Whether keeps session. Specific `session` block, if keeps session.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"session_state": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+							// Default:  "stop",
+							ValidateFunc: validation.StringInSlice([]string{
+								"start",
+								"stop",
+							}, false),
+							Description: "The state of session. Valid Values:'start', 'stop'.",
+						},
+						"session_persistence_period": {
+							Type:     schema.TypeInt,
+							Optional: true,
+							Computed: true,
+							// Default:      3600,
+							// ValidateFunc: validation.IntBetween(1, 86400),
+							Description: "Session hold timeout. Valid Values:1-86400.",
+						},
+						"cookie_type": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+							// Default:  "ImplantCookie",
+							// ValidateFunc: validation.StringInSlice([]string{
+							// 	"ImplantCookie",
+							// 	"RewriteCookie",
+							// }, false),
+							Description: "The type of cookie, valid values: 'ImplantCookie','RewriteCookie'.",
+						},
+						"cookie_name": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The name of cookie.",
+						},
+					},
+				},
+				DiffSuppressFunc: AlbListenerDiffSuppressFunc,
 			},
 
 			"create_time": {
@@ -146,6 +214,7 @@ func resourceKsyunAlbBackendServerGroup() *schema.Resource {
 		},
 	}
 }
+
 func resourceKsyunAlbBackendServerGroupCreate(d *schema.ResourceData, meta interface{}) (err error) {
 	albService := AlbService{meta.(*KsyunClient)}
 	err = albService.CreateAlbBackendServerGroup(d, resourceKsyunAlbBackendServerGroup())
