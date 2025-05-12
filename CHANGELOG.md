@@ -3,6 +3,7 @@
 IMPROVEMENTS:
 
 - `ksyun_alb_backend_server_group`: 新增`session`字段，新增`health_check`字段，新增`method`字段
+- `ksyun_kce_cluster` 取消network_type限制，支持calico类型
 
 ## 1.18.7 (Apr 16, 2025)
 
