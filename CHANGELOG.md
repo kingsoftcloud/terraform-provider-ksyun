@@ -4,6 +4,12 @@ IMPROVEMENTS:
 
 - `ksyun_alb_backend_server_group`: 新增`session`字段，新增`health_check`字段，新增`method`字段
 
+## 1.18.7 (Apr 16, 2025)
+
+IMPROVEMENTS:
+
+- `ksyun_ks3_bucket`: 新增`tags`字段
+
 ## 1.18.6 (Mar 29, 2025)
 
 BUGFIX:
