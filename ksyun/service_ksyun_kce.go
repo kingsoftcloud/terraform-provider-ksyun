@@ -52,11 +52,9 @@ func (s *KceService) readKceClusters(condition map[string]interface{}) (data []i
 		// logger.Debug("kce list", "123", data)
 		return data, err
 	})
-
 }
 
 func (s *KceService) ReadAndSetKceClusters(d *schema.ResourceData, r *schema.Resource) (err error) {
-
 	transform := map[string]SdkReqTransform{
 		"cluster_id": {
 			mapping: "ClusterId",
@@ -101,7 +99,6 @@ func isEmpty(v interface{}) bool {
 }
 
 func formatKceInstancePara(nodeConfig map[string]interface{}) (para string) {
-
 	// todo: 网卡管理是缺失的
 
 	ignoreFields := []string{
@@ -204,7 +201,6 @@ func formatKceClusterReq(d *schema.ResourceData, resource *schema.Resource) (cre
 	})
 
 	handleKecPara := func(createParams *map[string]interface{}, nodeConfigs []interface{}, index int, topKey string) int {
-
 		for idx, nodeConfigSrc := range nodeConfigs {
 			nodeConfig := nodeConfigSrc.(map[string]interface{})
 
@@ -241,9 +237,7 @@ func formatKceClusterReq(d *schema.ResourceData, resource *schema.Resource) (cre
 		return index
 	}
 
-	var (
-		instanceIdx int
-	)
+	var instanceIdx int
 
 	if nodeConfigs, ok := createReq["MasterConfig"]; ok {
 		logger.Debug("[%s] %+v", "test", createReq)
@@ -301,7 +295,6 @@ func (s *KceService) checkClusterState(clusterId string, target []string, timeou
 func (s *KceService) CreateCluster(d *schema.ResourceData, r *schema.Resource) (err error) {
 	var createReq map[string]interface{}
 	createReq, err = formatKceClusterReq(d, r)
-
 	if err != nil {
 		return
 	}
@@ -348,9 +341,7 @@ func (s *KceService) CreateCluster(d *schema.ResourceData, r *schema.Resource) (
 			)
 
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-				var (
-					queryErr error
-				)
+				var queryErr error
 
 				nodes, queryErr = s.getAllNodeWithFilter(clusterId.(string), nil)
 				if queryErr != nil {
@@ -406,7 +397,6 @@ func (s *KceService) CreateCluster(d *schema.ResourceData, r *schema.Resource) (
 						masterNodeIds = append(masterNodeIds, nodeHashAndId)
 					}
 				}
-
 			}
 
 			_ = d.Set("master_id_list", masterNodeIds)
@@ -422,7 +412,6 @@ func (s *KceService) CreateCluster(d *schema.ResourceData, r *schema.Resource) (
 }
 
 func (s *KceService) getAllNodeWithFilter(clusterId string, filter map[string]interface{}) ([]interface{}, error) {
-
 	var (
 		resp                   *map[string]interface{}
 		clusterInstanceResults interface{}
@@ -476,7 +465,6 @@ func (s *KceService) getAllNodeWithFilter(clusterId string, filter map[string]in
 		list = clusterInstanceResults.([]interface{})
 		return list, err
 	})
-
 }
 
 func (s *KceService) DeleteKceCluster(d *schema.ResourceData, r *schema.Resource) (err error) {
@@ -491,20 +479,26 @@ func (s *KceService) DeleteKceCluster(d *schema.ResourceData, r *schema.Resource
 		logger.Debug(logger.ReqFormat, "DeleteCluster", req)
 
 		data, err = s.readKceClusters(req)
+		if err != nil {
+			if notFoundError(err) {
+				return nil
+			} else {
+				return resource.RetryableError(fmt.Errorf("error on reading cluster when delete %q, %s", d.Id(), err))
+			}
+		}
 		if len(data) == 0 {
 			return nil
 		}
 
-		status, err := getSdkValue("Status", data[0])
-		if err != nil {
-			return resource.NonRetryableError(err)
-		}
-		if status.(string) != "deleting" {
-			err = errors.New("cluster status not available")
-			return resource.NonRetryableError(err)
-		}
+		// status, err := getSdkValue("Status", data[0])
+		// if err != nil {
+		// 	return resource.NonRetryableError(err)
+		// }
+		// if status.(string) != "deleting" {
+		// 	err = errors.New("cluster status not available")
+		// 	return resource.NonRetryableError(err)
+		// }
 		return resource.RetryableError(errors.New("deleting"))
-
 	})
 }
 
@@ -584,7 +578,6 @@ func (s *KceService) readKceInstanceImages(condition map[string]interface{}) (da
 	data = results.([]interface{})
 	return data, err
 	// })
-
 }
 
 func (s *KceService) ReadAndSetKceInstanceImages(d *schema.ResourceData, r *schema.Resource) (err error) {
@@ -674,7 +667,7 @@ func (s *KceService) readAndSetInstance(d *schema.ResourceData, r *schema.Resour
 		if infraErr != nil {
 			return nil, infraErr
 		}
-		var instance = &kce.InstanceSet{}
+		instance := &kce.InstanceSet{}
 		_ = helper.MapstructureFiller(nodes[0], instance, "")
 		return instance, nil
 	}
@@ -778,9 +771,7 @@ func (s *KceService) readAndSetInstance(d *schema.ResourceData, r *schema.Resour
 		}
 	}
 
-	var (
-		resourceMap = make(map[string]interface{})
-	)
+	resourceMap := make(map[string]interface{})
 
 	// query the role and some information of master instances in kce cluster
 	// and convert attributes of the master instances to tf schema map.
@@ -887,9 +878,7 @@ func (s *KceService) readAndSetInstance(d *schema.ResourceData, r *schema.Resour
 				continue
 			}
 
-			var (
-				block string
-			)
+			var block string
 			theFirstNode := _nodeInfoList.list[0]
 			theFirstMap := theFirstNode.nodeMap
 			switch theFirstNode.role {
@@ -1062,7 +1051,6 @@ func convertInstanceToMapForSchema(insResp map[string]interface{}) (map[string]i
 			sgIds = append(sgIds, ni.SecurityGroupSet[0].SecurityGroupId)
 			insMap["security_group_id"] = sgIds
 		}
-
 	}
 
 	systemDiskMap := make(map[string]interface{}, 2)

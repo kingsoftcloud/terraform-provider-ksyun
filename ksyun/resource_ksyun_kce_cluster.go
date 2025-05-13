@@ -244,10 +244,10 @@ func nodeAdvancedSetting() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Optional:    true,
 			ForceNew:    true,
-			Description: "Container Runtime.",
-			ValidateFunc: validation.StringInSlice([]string{
-				"docker", "containerd",
-			}, false),
+			Description: "Container Runtime. Valid Values: `docker`, `containerd`.",
+			// ValidateFunc: validation.StringInSlice([]string{
+			// 	"docker", "containerd",
+			// }, false),
 		},
 		"docker_path": {
 			Type:        schema.TypeString,
@@ -507,12 +507,12 @@ func resourceKsyunKceCluster() *schema.Resource {
 				Description:  "The service CIDR block.",
 			},
 			"max_pod_per_node": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Computed:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.IntInSlice([]int{16, 32, 64, 128, 256}),
-				Description:  "The maximum number of pods that can be run on each node. valid values: 16, 32, 64, 128, 256.",
+				Type:     schema.TypeInt,
+				Optional: true,
+				Computed: true,
+				ForceNew: true,
+				// ValidateFunc: validation.IntInSlice([]int{16, 32, 64, 128, 256}),
+				Description: "The maximum number of pods that can be run on each node. valid values: 16, 32, 64, 128, 256.",
 			},
 			"network_type": {
 				Type:     schema.TypeString,

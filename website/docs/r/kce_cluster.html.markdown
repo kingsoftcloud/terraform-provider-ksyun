@@ -213,7 +213,7 @@ The `advanced_setting` object supports the following:
 * `container_log_max_files` - (Optional, ForceNew) Customize the number of log files. The default value is 10.
 * `container_log_max_size` - (Optional, ForceNew) Customize the maximum size of the log file. The default value is 100m.
 * `container_path` - (Optional, ForceNew) The storage path of the container. The default value is /data/container. **Notes:** If this path is specified, the docker_path field will be ignored.
-* `container_runtime` - (Optional, ForceNew) Container Runtime.
+* `container_runtime` - (Optional, ForceNew) Container Runtime. Valid Values: `docker`, `containerd`.
 * `data_disk` - (Optional, ForceNew) The mount setting of data disk. **Notes:** Only impact on the first data disk.
 * `docker_path` - (Optional, ForceNew) The storage path of the container. The default value is /data/docker.
 * `extra_arg` - (Optional, ForceNew) The extra arguments for the kubelet. The format is key=value. For example, --kubelet-extra-args="key1=value1,key2=value2".
