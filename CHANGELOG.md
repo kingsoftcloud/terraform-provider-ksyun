@@ -1,3 +1,9 @@
+## 1.18.9 (May 13, 2025)
+
+BUGFIX:
+
+- `ksyun_kce_cluster` 修复删除集群时的状态延迟异常
+
 ## 1.18.8 (May 12, 2025)
 
 IMPROVEMENTS:
