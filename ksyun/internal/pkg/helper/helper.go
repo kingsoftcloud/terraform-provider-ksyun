@@ -5,6 +5,7 @@ import (
 	"log"
 	"reflect"
 	"strings"
+	"unsafe"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/mitchellh/mapstructure"
@@ -94,6 +95,24 @@ func Underline2Hump(s string) string {
 	var s1 []string
 	ss := strings.Split(s, "_")
 	for _, v := range ss {
+		vv := strings.ToUpper(v[:1]) + v[1:]
+		s1 = append(s1, vv)
+	}
+	return strings.Join(s1, "")
+}
+
+func Underline2SmallHump(s string) string {
+	s = strings.TrimSpace(s)
+	if len(s) == 0 {
+		return strings.Title(s)
+	}
+	var s1 []string
+	ss := strings.Split(s, "_")
+	for idx, v := range ss {
+		if idx == 0 {
+			s1 = append(s1, strings.ToLower(v[:1])+v[1:])
+			continue
+		}
 		vv := strings.ToUpper(v[:1]) + v[1:]
 		s1 = append(s1, vv)
 	}
@@ -395,4 +414,8 @@ func StringInSlice(str string, list []string) bool {
 		}
 	}
 	return false
+}
+
+func BytesToString(b []byte) string {
+	return *(*string)(unsafe.Pointer(&b))
 }

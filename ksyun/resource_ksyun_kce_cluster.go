@@ -448,6 +448,309 @@ func instanceForMasterNode() map[string]*schema.Schema {
 	return m
 }
 
+func vkConfig() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"version": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The version of the virtual kubelet.",
+		},
+		"kubeconfig": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The config string of the virtual kubelet.",
+		},
+		"nodename": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The name of the virtual kubelet node.",
+		},
+		"namespace": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The namespace of the virtual kubelet.",
+		},
+		"anonymous_auth": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Whether to enable anonymous authentication.",
+		},
+		"enable_node_lease": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Whether to enable node lease.",
+		},
+		"server": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			MaxItems:    1,
+			Description: "The server of the virtual kubelet.",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"listen_port": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Description: "The port of the virtual kubelet server.",
+					},
+					"server_cert_file": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "The server certificate file of the virtual kubelet.",
+					},
+					"server_key_file": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "The server key file of the virtual kubelet.",
+					},
+				},
+			},
+		},
+		"openapi": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			MaxItems:    1,
+			Description: "The openapi of the virtual kubelet.",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"aksk_config_map": {
+						Type:        schema.TypeMap,
+						Optional:    true,
+						Description: "The aksk config map of the virtual kubelet.",
+					},
+					"region": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "The region of the virtual kubelet.",
+					},
+					"access_key": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "The access key of the virtual kubelet.",
+					},
+					"secret_key": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "The secret key of the virtual kubelet.",
+					},
+				},
+			},
+		},
+		"metrics_server": {
+			Type:        schema.TypeMap,
+			Optional:    true,
+			Description: "The metrics server of the virtual kubelet.",
+		},
+		"log_level": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The log level of the virtual kubelet.",
+		},
+		"startup_timeout": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Description: "The startup timeout of the virtual kubelet.",
+		},
+		"custom_labels": {
+			Type:        schema.TypeMap,
+			Optional:    true,
+			Description: "The custom labels of the virtual kubelet.",
+		},
+		"taints": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "Taints.",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"key": {
+						Type:     schema.TypeString,
+						Required: true,
+						// ForceNew:    true,
+						Description: "The key of the taint.",
+					},
+					"value": {
+						Type:     schema.TypeString,
+						Required: true,
+						// ForceNew:    true,
+						Description: "The value of the taint.",
+					},
+					"effect": {
+						Type:     schema.TypeString,
+						Required: true,
+						// ForceNew:    true,
+						Description: "The effect of the taint. Valid values: NoSchedule, PreferNoSchedule, NoExecute.",
+					},
+				},
+			},
+		},
+		"disable_taint": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Whether to disable taint.",
+		},
+		"capacity": {
+			Type:        schema.TypeMap,
+			Optional:    true,
+			Description: "The capacity of the virtual kubelet.",
+		},
+		"allow_privileged": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Whether to allow privileged containers.",
+		},
+		"cluster_id": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The ID of the cluster.",
+		},
+		"kcilet_heartbeat": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			MaxItems:    1,
+			Description: "The heartbeat of the virtual kubelet.",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"failuret_threshold": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Description: "The failure threshold of the virtual kubelet.",
+					},
+					"period": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Description: "The period of the virtual kubelet.",
+					},
+				},
+			},
+		},
+		"kcilet_kubeconfig_path": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The kubeconfig path of the virtual kubelet.",
+		},
+		"kci_pod_deletion_cost": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Description: "The pod deletion cost of the virtual kubelet.",
+		},
+		"cluster_dns": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "The DNS of the virtual kubelet.",
+			Elem:        &schema.Schema{Type: schema.TypeString},
+		},
+		"cluster_domain": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The domain of the virtual kubelet.",
+		},
+		"instance_settings": {
+			Type:        schema.TypeMap,
+			Optional:    true,
+			Description: "The instance settings of the virtual kubelet.",
+		},
+		"advanced_setting": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The advanced settings of the virtual kubelet.",
+		},
+	}
+}
+
+func componentForNode() map[string]*schema.Schema {
+	m := make(map[string]*schema.Schema)
+	m["name"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Required:    true,
+		Description: "The name of the component.",
+	}
+	m["release_name"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Required:    true,
+		Description: "The name of the release.",
+	}
+	m["namespace"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Required:    true,
+		Description: "The namespace of the component.",
+	}
+
+	m["version"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "The version of the component.",
+	}
+	m["config"] = &schema.Schema{
+		Type:     schema.TypeList,
+		Optional: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"config_string": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "The config string of the component.",
+				},
+				"virtual_kubelet": {
+					Type:        schema.TypeList,
+					Optional:    true,
+					Description: "The config of the virtual kubelet.",
+					MaxItems:    1,
+					Elem:        &schema.Resource{Schema: vkConfig()},
+				},
+			},
+		},
+		Description: "The config of the component.",
+	}
+
+	m["resources"] = &schema.Schema{
+		Type:        schema.TypeList,
+		Optional:    true,
+		MaxItems:    1,
+		Description: "The resources of the component.",
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"requests": {
+					Type:        schema.TypeList,
+					Optional:    true,
+					Description: "The requests of the component.",
+					MaxItems:    1,
+					Elem: &schema.Resource{
+						Schema: resourcesForComponent(),
+					},
+				},
+				"limits": {
+					Type:        schema.TypeList,
+					Optional:    true,
+					Description: "The limits of the component.",
+					MaxItems:    1,
+					Elem: &schema.Resource{
+						Schema: resourcesForComponent(),
+					},
+				},
+			},
+		},
+	}
+
+	return m
+}
+
+func resourcesForComponent() map[string]*schema.Schema {
+	m := map[string]*schema.Schema{
+		"cpu": {
+			Type:     schema.TypeString,
+			Optional: true,
+			// ForceNew:    true,
+			Description: "The cpu of the component.",
+		},
+		"memory": {
+			Type:     schema.TypeString,
+			Optional: true,
+			// ForceNew:    true,
+			Description: "The memory of the component.",
+		},
+	}
+	return m
+}
+
 // 独立集群和托管集群分开管理？？？
 func resourceKsyunKceCluster() *schema.Resource {
 	return &schema.Resource{
@@ -601,6 +904,17 @@ func resourceKsyunKceCluster() *schema.Resource {
 					"If the unique identification is changed, that leads to the cluster **re-creation**.",
 			},
 
+			"component": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Description: "The component of the cluster.",
+				Set:         helper.HashFuncWithKeys("name", "release_name", "namespace"),
+				Elem: &schema.Resource{
+					Schema: componentForNode(),
+				},
+			},
+
 			"master_id_list": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -632,6 +946,13 @@ func resourceKsyunKceClusterCreate(d *schema.ResourceData, meta interface{}) (er
 	if err != nil {
 		return fmt.Errorf("error on create kce cluster: %s", err)
 	}
+
+	if d.HasChange("component") {
+		err = srv.InstallComponentInCluster(d, resourceKsyunKceCluster())
+		if err != nil {
+			return fmt.Errorf("error on install component in kce cluster: %s", err)
+		}
+	}
 	return resourceKsyunKceClusterRead(d, meta)
 }
 
@@ -641,14 +962,19 @@ func resourceKsyunKceClusterUpdate(d *schema.ResourceData, meta interface{}) (er
 		return
 	}
 
+	srv := KceService{meta.(*KsyunClient)}
+	if d.HasChange("component") {
+		err = srv.InstallComponentInCluster(d, resourceKsyunKceCluster())
+		if err != nil {
+			return fmt.Errorf("error on install component in kce cluster: %s", err)
+		}
+	}
+
 	if d.HasChanges("cluster_name", "cluster_desc") {
-		srv := KceService{meta.(*KsyunClient)}
 		err = srv.UpdateCluster(d, resourceKsyunKceCluster())
 		if err != nil {
 			return fmt.Errorf("error on update kce cluster: %s", err)
 		}
-	} else {
-		return fmt.Errorf("error on update kce cluster: %s", "this field is not supported to update at now. if you want to modify the information of this cluster, please move on the console to operate.")
 	}
 
 	return resourceKsyunKceClusterRead(d, meta)
@@ -659,6 +985,13 @@ func resourceKsyunKceClusterRead(d *schema.ResourceData, meta interface{}) (err 
 	err = srv.ReadAndSetKceCluster(d, resourceKsyunKceCluster())
 	if err != nil {
 		return fmt.Errorf("error on create kce cluster: %s", err)
+	}
+
+	if _, ok := d.GetOk("component"); ok {
+		err = srv.ReadComponentInCluster(d, resourceKsyunKceCluster())
+		if err != nil {
+			return fmt.Errorf("error on read component in kce cluster: %s", err)
+		}
 	}
 	return
 }
