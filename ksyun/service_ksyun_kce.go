@@ -1,11 +1,13 @@
 package ksyun
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -195,6 +197,9 @@ func formatKceClusterReq(d *schema.ResourceData, resource *schema.Resource) (cre
 		"managed_cluster_multi_master": {
 			Type: TransformListN,
 		},
+		"component": {
+			Ignore: true,
+		},
 	}
 	createReq, err = SdkRequestAutoMapping(d, resource, false, transform, nil, SdkReqParameter{
 		onlyTransform: false,
@@ -335,10 +340,7 @@ func (s *KceService) CreateCluster(d *schema.ResourceData, r *schema.Resource) (
 			// 统一拿到最外层的create方法处理
 			// err = s.ReadAndSetKceCluster(d, resource)
 
-			// TODO: query all nodes and set to tf
-			var (
-				nodes []interface{}
-			)
+			var nodes []interface{}
 
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 				var queryErr error
@@ -516,6 +518,274 @@ func (s *KceService) UpdateCluster(d *schema.ResourceData, r *schema.Resource) (
 	return
 }
 
+func (s *KceService) InstallComponentInCluster(d *schema.ResourceData, r *schema.Resource) (err error) {
+	err = s.checkClusterWorkreAvailable(d.Id(), d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return fmt.Errorf("cluster worker has not any available node, %s", err)
+	}
+
+	time.Sleep(3 * time.Second)
+	apiProcess := NewApiProcess(context.TODO(), d, s.client, true)
+	// 计算增加的组件
+	// 计算卸载的组件
+
+	pre, cur := d.GetChange("component")
+	preSet := pre.(*schema.Set)
+	curSet := cur.(*schema.Set)
+	uninstallSet := preSet.Difference(curSet)
+	installSet := curSet.Difference(preSet)
+
+	if installSet.Len() > 0 {
+		for _, component := range installSet.List() {
+			componentMap := component.(map[string]interface{})
+
+			call, err := s.installComponent(d.Id(), componentMap)
+			if err != nil {
+				return err
+			}
+			apiProcess.PutCalls(call)
+		}
+	}
+
+	if uninstallSet.Len() > 0 {
+		for _, component := range uninstallSet.List() {
+			componentMap := component.(map[string]interface{})
+			call, err := s.uninstallComponent(d.Id(), componentMap)
+			if err != nil {
+				return err
+			}
+			apiProcess.PutCalls(call)
+		}
+	}
+
+	return apiProcess.Run()
+}
+
+func (s *KceService) checkClusterWorkreAvailable(clusterId string, timeout time.Duration) (err error) {
+	return resource.Retry(timeout, func() *resource.RetryError {
+		data, err := s.client.kceconn.DescribeCluster(&map[string]interface{}{
+			"ClusterId": clusterId,
+		})
+		// logger.Debug("[%s] %+v, %+v", "DescribeCluster", data, err)
+		if err != nil {
+			return resource.NonRetryableError(err)
+		}
+		if data == nil {
+			return resource.NonRetryableError(fmt.Errorf("cluster not found"))
+		}
+		clusterSet := (*data)["ClusterSet"].([]interface{})
+
+		if len(clusterSet) <= 0 {
+			return resource.NonRetryableError(fmt.Errorf("cluster not found"))
+		}
+		clusterInfo := clusterSet[0].(map[string]interface{})
+		if availableNodeNum, ok := clusterInfo["NormalNodeNum"]; ok {
+			if vv, ok := availableNodeNum.(float64); ok && vv == 0 {
+				return resource.RetryableError(fmt.Errorf("cluster not available"))
+			} else {
+				return nil
+			}
+		}
+		return resource.RetryableError(fmt.Errorf("cluster not available"))
+	})
+}
+
+func (s *KceService) installComponent(clusterId string, componentMap map[string]interface{}) (callback ApiCall, err error) {
+	req := make(map[string]interface{})
+
+	// specifically deal with the config of component
+	componentConfig, ok := componentMap["config"]
+	cpName := componentMap["name"].(string)
+	relName := componentMap["release_name"].(string)
+	if ok {
+		componentConfigMapIf, _ := componentConfig.([]interface{})
+		if len(componentConfigMapIf) != 0 {
+			ccMap, ok := componentConfigMapIf[0].(map[string]interface{})
+			if !ok {
+				return callback, errors.New("configs is not a map")
+			}
+			for k, v := range ccMap {
+				switch k {
+				case "configs_string":
+					if !helper.IsEmpty(v) {
+						req["Component."+"1"+".Config"] = componentMap["configs_string"]
+					}
+				default:
+					kk := strings.Replace(k, "_", "-", -1)
+					if kk == cpName {
+						vl, _ := v.([]interface{})
+						if len(vl) != 0 {
+							vMap := convertSchemaMap(vkConfig(), vl[0].(map[string]interface{}))
+							if vers, ok := vMap["version"]; ok {
+								vMap["Version"] = vers
+								delete(vMap, "version")
+							}
+							if nn, ok := vMap["nodename"]; !ok || helper.IsEmpty(nn) {
+								vMap["nodename"] = relName
+							}
+							configB, err := json.Marshal(vMap)
+							if err != nil {
+								return callback, err
+							}
+							req["Component."+"1"+".Config"] = helper.BytesToString(configB)
+						}
+					}
+				}
+			}
+			delete(componentMap, "config")
+		}
+
+	}
+
+	err = transformListNTopWithRecursive([]interface{}{componentMap}, "Component", SdkReqTransform{}, &req, true)
+	if err != nil {
+		return callback, err
+	}
+	if len(req) > 0 {
+		req["ClusterId"] = clusterId
+
+		callback = ApiCall{
+			param:  &req,
+			action: "InstallComponent",
+			executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+				var (
+					msg interface{}
+					n   = 3
+				)
+				conn := client.kceconn
+			retry:
+				logger.Debug(logger.RespFormat, call.action, *(call.param))
+				resp, err = conn.InstallComponent(call.param)
+				if err != nil {
+					return resp, err
+				}
+
+				msg, _ = getSdkValue("Message", *resp)
+				if msg != nil && n > 0 {
+					n--
+					time.Sleep(3 * time.Second)
+					goto retry
+				}
+
+				if msg != nil {
+					return resp, fmt.Errorf("install component failed: %s", msg)
+				}
+
+				err = s.checkComponentOfClusterState(clusterId, cpName, relName, []string{"Installed", "Deleted"}, d.Timeout(schema.TimeoutCreate))
+				if err != nil {
+					return resp, err
+				}
+
+				return resp, err
+			},
+			afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+				logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+				return err
+			},
+		}
+	}
+
+	return
+}
+
+func (s *KceService) uninstallComponent(clusterId string, component map[string]interface{}) (callback ApiCall, err error) {
+	req := make(map[string]interface{})
+	req["ComponentName"] = component["name"]
+	req["ReleaseName"] = component["release_name"]
+
+	if len(req) > 0 {
+		req["ClusterId"] = clusterId
+
+		callback = ApiCall{
+			param:  &req,
+			action: "DeleteComponentInstance",
+			executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+				conn := client.kceconn
+				logger.Debug(logger.RespFormat, call.action, *(call.param))
+				resp, err = conn.DeleteComponentInstance(call.param)
+				return resp, err
+			},
+			afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+				logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+
+				// TODO: waiting for the component to be uninstalled
+				err = s.checkComponentOfClusterState(clusterId, component["name"].(string), component["release_name"].(string), []string{"Deleted"}, d.Timeout(schema.TimeoutDelete))
+				if err != nil {
+					return err
+				}
+				return err
+			},
+		}
+	}
+
+	return
+}
+
+func (s *KceService) checkComponentOfClusterState(clusterId, cn, rn string, target []string, timeout time.Duration) (err error) {
+	stateConf := &resource.StateChangeConf{
+		Pending:      []string{},
+		Target:       target,
+		Refresh:      s.kceClusterComponentStateRefreshFunc(clusterId, cn, rn, []string{"Failed"}),
+		Timeout:      timeout,
+		PollInterval: 5 * time.Second,
+		Delay:        10 * time.Second,
+		MinTimeout:   1 * time.Second,
+	}
+	_, err = stateConf.WaitForState()
+	return err
+}
+
+func (s *KceService) kceClusterComponentStateRefreshFunc(clusterId, cn, rn string, failStates []string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		// return
+		data, err := s.client.kceconn.ListComponentInstance(&map[string]interface{}{
+			"ClusterId":     clusterId,
+			"ComponentName": cn,
+		})
+		logger.Debug("[%s] %s %s", "Component Info", cn, rn)
+		if err != nil {
+			return nil, "", err
+		}
+		componentsIf, err := getSdkValue("Data", *data)
+		logger.Debug("[%s] %+v %+v %+v", "DescribeCluster", data, err, componentsIf)
+		if err != nil {
+			return nil, "", err
+		}
+		status := ""
+
+		components, ok := componentsIf.([]interface{})
+		if !ok {
+			return nil, "", fmt.Errorf("convert component instance failed: %s", err)
+		}
+		if len(components) == 0 {
+			status = "Deleted"
+			return nil, status, nil
+		}
+
+		find := false
+		for _, component := range components {
+			componentMap, ok := component.(map[string]interface{})
+			if !ok {
+				return nil, "", fmt.Errorf("convert component instance failed: %s", err)
+			}
+			if componentMap["ReleaseName"] == rn {
+				status, _ = componentMap["Status"].(string)
+				find = true
+				break
+			}
+		}
+		if !find {
+			status = "Deleted"
+			return data, status, nil
+		}
+		if stringSliceContains(failStates, status) {
+			return nil, "", fmt.Errorf("instance status  error, status:%v", status)
+		}
+
+		return data, status, nil
+	}
+}
+
 func (s *KceService) ReadAndSetKceCluster(d *schema.ResourceData, r *schema.Resource) (err error) {
 	// fmt.Println(d, resource)
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -548,6 +818,56 @@ func (s *KceService) ReadAndSetKceCluster(d *schema.ResourceData, r *schema.Reso
 
 		return nil
 	})
+}
+
+func (s *KceService) ReadComponentInCluster(d *schema.ResourceData, r *schema.Resource) (err error) {
+	// 获取集群信息
+
+	componentSet := d.Get("component").(*schema.Set)
+	remoteComponent := make([]interface{}, 0, componentSet.Len())
+
+	for _, component := range componentSet.List() {
+		localComponentMap := component.(map[string]interface{})
+		componentName := localComponentMap["name"].(string)
+		// componentReleaseName := localComponentMap["release_name"].(string)
+
+		data, err := s.client.kceconn.ListComponentInstance(&map[string]interface{}{
+			"ClusterId":     d.Id(),
+			"ComponentName": componentName,
+		})
+		if err != nil {
+			return err
+		}
+
+		componentsIf, err := getSdkValue("Data", *data)
+		logger.Debug("[%s] %+v %+v %+v", "ListComponentInstance", data, err, componentsIf)
+		if err != nil {
+			return err
+		}
+
+		components, ok := componentsIf.([]interface{})
+		if !ok {
+			return fmt.Errorf("convert component instance failed: %s", err)
+		}
+
+		for _, component := range components {
+			componentMap, ok := component.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			m := make(map[string]interface{})
+
+			m["name"] = componentMap["ComponentName"]
+			m["release_name"] = componentMap["ReleaseName"]
+			m["namespace"] = componentMap["Namespace"]
+			m["version"] = componentMap["ComponentVersion"]
+			logger.Debug("[%s] %+v %+v %+v", "ListComponentInstance", data, err, m)
+			remoteComponent = append(remoteComponent, m)
+		}
+	}
+
+	logger.Debug("[%s] %+v %+v", "ListComponentInstance", err, remoteComponent)
+	return d.Set("component", remoteComponent)
 }
 
 func (s *KceService) readKceInstanceImages(condition map[string]interface{}) (data []interface{}, err error) {
@@ -1058,6 +1378,41 @@ func convertInstanceToMapForSchema(insResp map[string]interface{}) (map[string]i
 	insMap["system_disk"] = []interface{}{systemDiskMap}
 
 	return insMap, nil
+}
+
+func convertSchemaMap(schemaMap map[string]*schema.Schema, valueMap map[string]interface{}) map[string]interface{} {
+	result := make(map[string]interface{})
+
+	for key, schemaDef := range schemaMap {
+		saveKey := helper.Underline2SmallHump(key)
+
+		switch schemaDef.Type {
+		case schema.TypeBool, schema.TypeInt:
+			result[saveKey] = valueMap[key]
+		case schema.TypeList:
+			if helper.IsEmpty(valueMap[key]) {
+				continue
+			}
+			if schemaDef.MaxItems == 1 {
+				if elemR, ok := schemaDef.Elem.(*schema.Resource); ok {
+					elemMap := elemR.Schema
+					if len(valueMap[key].([]interface{})) > 0 {
+						if vm, ok := valueMap[key].([]interface{})[0].(map[string]interface{}); ok {
+							result[saveKey] = convertSchemaMap(elemMap, vm)
+						}
+					}
+				} else {
+					result[saveKey] = valueMap[key]
+				}
+			}
+		case schema.TypeMap, schema.TypeString:
+			if helper.IsEmpty(valueMap[key]) {
+				continue
+			}
+			result[saveKey] = valueMap[key]
+		}
+	}
+	return result
 }
 
 func handleAdvancedSetting2Map(advancedSetting kce.AdvancedSetting) map[string]interface{} {

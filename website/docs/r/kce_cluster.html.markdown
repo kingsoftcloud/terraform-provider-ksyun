@@ -201,6 +201,7 @@ The following arguments are supported:
 * `vpc_id` - (Required, ForceNew) The ID of the VPC.
 * `cluster_desc` - (Optional) The description of the cluster.
 * `cluster_manage_mode` - (Optional, ForceNew) The management mode of the master node.
+* `component` - (Optional) The component of the cluster.
 * `managed_cluster_multi_master` - (Optional) The configuration for the managed cluster multi master. If the cluster_manage_mode is ManagedCluster, this field is **required**.
 * `master_config` - (Optional, ForceNew) The configuration for the master nodes. If the cluster_manage_mode is DedicatedCluster, this field is **required**. **Notes:** work_config block is identified by the **instance_type, subnet_id, security_group_id, role, image_id**. If the unique identification is the same, the instance config block is conflict, and then **cause an error**.If the unique identification is changed, that leads to the cluster **re-creation**.
 * `master_etcd_separate` - (Optional, ForceNew) The deployment method for the Master and Etcd components of the cluster. if set to True, Deploy the Master and Etcd components on dedicated nodes. if set to false, Deploy the Master and Etcd components on shared nodes.
@@ -222,6 +223,20 @@ The `advanced_setting` object supports the following:
 * `taints` - (Optional, ForceNew) Taints.
 * `user_script` - (Optional, ForceNew) A user script encoded in base64, which will be executed on the node **after** the Kubernetes components run. Users need to ensure the script's re-entrant and retry logic. The script and its generated logs can be found in the directory /usr/local/ksyun/kce/pre_userscript.
 
+The `component` object supports the following:
+
+* `name` - (Required) The name of the component.
+* `namespace` - (Required) The namespace of the component.
+* `release_name` - (Required) The name of the release.
+* `config` - (Optional) The config of the component.
+* `resources` - (Optional) The resources of the component.
+* `version` - (Optional) The version of the component.
+
+The `config` object supports the following:
+
+* `config_string` - (Optional) The config string of the component.
+* `virtual_kubelet` - (Optional) The config of the virtual kubelet.
+
 The `data_disk` object supports the following:
 
 * `auto_format_and_mount` - (Optional, ForceNew) Whether to format and mount the data disk, default value: true. If this field is filled with false, then the file_system and mount_target fields will not take effect.
@@ -237,6 +252,16 @@ The `data_disks` object supports the following:
 
 The `extension_network_interface` object supports the following:
 
+
+The `kcilet_heartbeat` object supports the following:
+
+* `failuret_threshold` - (Optional) The failure threshold of the virtual kubelet.
+* `period` - (Optional) The period of the virtual kubelet.
+
+The `limits` object supports the following:
+
+* `cpu` - (Optional) The cpu of the component.
+* `memory` - (Optional) The memory of the component.
 
 The `managed_cluster_multi_master` object supports the following:
 
@@ -278,6 +303,29 @@ The `master_config` object supports the following:
 * `tags` - (Optional) the tags of the resource.
 * `user_data` - (Optional) The user data to be specified into this instance. Must be encrypted in base64 format and limited in 16 KB. only effective when image support cloud-init.
 
+The `openapi` object supports the following:
+
+* `access_key` - (Optional) The access key of the virtual kubelet.
+* `aksk_config_map` - (Optional) The aksk config map of the virtual kubelet.
+* `region` - (Optional) The region of the virtual kubelet.
+* `secret_key` - (Optional) The secret key of the virtual kubelet.
+
+The `requests` object supports the following:
+
+* `cpu` - (Optional) The cpu of the component.
+* `memory` - (Optional) The memory of the component.
+
+The `resources` object supports the following:
+
+* `limits` - (Optional) The limits of the component.
+* `requests` - (Optional) The requests of the component.
+
+The `server` object supports the following:
+
+* `listen_port` - (Optional) The port of the virtual kubelet server.
+* `server_cert_file` - (Optional) The server certificate file of the virtual kubelet.
+* `server_key_file` - (Optional) The server key file of the virtual kubelet.
+
 The `system_disk` object supports the following:
 
 * `disk_size` - (Optional) The size of the data disk. value range: [20, 500].
@@ -285,9 +333,42 @@ The `system_disk` object supports the following:
 
 The `taints` object supports the following:
 
+* `effect` - (Required) The effect of the taint. Valid values: NoSchedule, PreferNoSchedule, NoExecute.
+* `key` - (Required) The key of the taint.
+* `value` - (Required) The value of the taint.
+
+The `taints` object supports the following:
+
 * `effect` - (Required, ForceNew) The effect of the taint. Valid values: NoSchedule, PreferNoSchedule, NoExecute.
 * `key` - (Required, ForceNew) The key of the taint.
 * `value` - (Required, ForceNew) The value of the taint.
+
+The `virtual_kubelet` object supports the following:
+
+* `advanced_setting` - (Optional) The advanced settings of the virtual kubelet.
+* `allow_privileged` - (Optional) Whether to allow privileged containers.
+* `anonymous_auth` - (Optional) Whether to enable anonymous authentication.
+* `capacity` - (Optional) The capacity of the virtual kubelet.
+* `cluster_dns` - (Optional) The DNS of the virtual kubelet.
+* `cluster_domain` - (Optional) The domain of the virtual kubelet.
+* `cluster_id` - (Optional) The ID of the cluster.
+* `custom_labels` - (Optional) The custom labels of the virtual kubelet.
+* `disable_taint` - (Optional) Whether to disable taint.
+* `enable_node_lease` - (Optional) Whether to enable node lease.
+* `instance_settings` - (Optional) The instance settings of the virtual kubelet.
+* `kci_pod_deletion_cost` - (Optional) The pod deletion cost of the virtual kubelet.
+* `kcilet_heartbeat` - (Optional) The heartbeat of the virtual kubelet.
+* `kcilet_kubeconfig_path` - (Optional) The kubeconfig path of the virtual kubelet.
+* `kubeconfig` - (Optional) The config string of the virtual kubelet.
+* `log_level` - (Optional) The log level of the virtual kubelet.
+* `metrics_server` - (Optional) The metrics server of the virtual kubelet.
+* `namespace` - (Optional) The namespace of the virtual kubelet.
+* `nodename` - (Optional) The name of the virtual kubelet node.
+* `openapi` - (Optional) The openapi of the virtual kubelet.
+* `server` - (Optional) The server of the virtual kubelet.
+* `startup_timeout` - (Optional) The startup timeout of the virtual kubelet.
+* `taints` - (Optional) Taints.
+* `version` - (Optional) The version of the virtual kubelet.
 
 The `worker_config` object supports the following:
 
