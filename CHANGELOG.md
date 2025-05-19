@@ -1,3 +1,14 @@
+## 1.19.0 (May 19, 2025)
+
+FEATURES:
+
+- `ksyun_kce_cluster`: 增加kce集群管理组件支持`virtual-kubelet`组件
+
+BUGFIX：
+
+- `ksyun_bws_associate`: 修复`ksyun_bws_associate`读取关系时，openapi存在的读取延迟问题。
+- `ksyun_nat`: 兼容openAPI返回的tags字段。
+
 ## 1.18.8 (May 12, 2025)
 
 IMPROVEMENTS:
@@ -823,6 +834,7 @@ DATA SOURCES:
 ### KRDS
 
 RESOURCES:
+
 - krds create
 - krds read
 - krds update (update name,class,type,version,password,security_group,preferred_backup_time)
