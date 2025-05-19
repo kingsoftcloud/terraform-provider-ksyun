@@ -139,6 +139,10 @@ resource "ksyun_ks3_bucket" "bucket-create2" {
       storage_class = "ARCHIVE"
     }
   }
+  tags = {
+    key1 = "value1"
+    key2 = "value2"
+  }
 }
 
 ```
@@ -416,6 +420,8 @@ func resourceKsyunKs3Bucket() *schema.Resource {
 				Optional:    true,
 				Description: "Bucket Policy is an authorization policy for Bucket introduced by KS3. You can authorize other users to access the KS3 resources you specify through the space policy. If you want to turn off this setting, just leave it blank in the configuration.",
 			},
+
+			"tags": tagsSchema(),
 		},
 	}
 }
@@ -657,6 +663,26 @@ func resourceKsyunKs3BucketRead(d *schema.ResourceData, meta interface{}) error 
 		return WrapError(err)
 	}
 
+	// Read the tags configuration
+	raw, err = client.WithKs3Client(func(ks3Client *ks3.Client) (interface{}, error) {
+		return ks3Client.GetBucketTagging(d.Id())
+	})
+
+	if err != nil {
+		return WrapErrorf(err, DefaultErrorMsg, d.Id(), "GetBucketTagging", KsyunKs3GoSdk)
+	}
+	addDebug("GetBucketTagging", raw, requestInfo, request)
+	tagging, _ := raw.(ks3.GetBucketTaggingResult)
+	tagsMap := make(map[string]string)
+	if len(tagging.Tags) > 0 {
+		for _, t := range tagging.Tags {
+			tagsMap[t.Key] = t.Value
+		}
+	}
+	if err := d.Set("tags", tagsMap); err != nil {
+		return WrapError(err)
+	}
+
 	return nil
 }
 
@@ -704,6 +730,13 @@ func resourceKsyunKs3BucketUpdate(d *schema.ResourceData, meta interface{}) erro
 			return WrapError(err)
 		}
 		d.SetPartial("policy")
+	}
+
+	if d.HasChange("tags") {
+		if err := resourceKsyunKs3BucketTaggingUpdate(client, d); err != nil {
+			return WrapError(err)
+		}
+		d.SetPartial("tags")
 	}
 
 	d.Partial(false)
@@ -970,6 +1003,43 @@ func resourceKsyunKs3BucketPolicyUpdate(client *KsyunClient, d *schema.ResourceD
 		return WrapErrorf(err, DefaultErrorMsg, d.Id(), "SetBucketPolicy", KsyunKs3GoSdk)
 	}
 	addDebug("SetBucketPolicy", raw, requestInfo, map[string]string{"bucketName": bucket})
+	return nil
+}
+
+func resourceKsyunKs3BucketTaggingUpdate(client *KsyunClient, d *schema.ResourceData) error {
+	tagsMap := d.Get("tags").(map[string]interface{})
+	var requestInfo *ks3.Client
+	if tagsMap == nil || len(tagsMap) == 0 {
+		raw, err := client.WithKs3Client(func(ks3Client *ks3.Client) (interface{}, error) {
+			requestInfo = ks3Client
+			return nil, ks3Client.DeleteBucketTagging(d.Id())
+		})
+		if err != nil {
+			return WrapErrorf(err, DefaultErrorMsg, d.Id(), "DeleteBucketTagging", KsyunKs3GoSdk)
+		}
+		addDebug("DeleteBucketTagging", raw, requestInfo, map[string]string{"bucketName": d.Id()})
+		return nil
+	}
+
+	// Put tagging
+	var bTagging ks3.Tagging
+	for k, v := range tagsMap {
+		bTagging.Tags = append(bTagging.Tags, ks3.Tag{
+			Key:   k,
+			Value: v.(string),
+		})
+	}
+	raw, err := client.WithKs3Client(func(ks3Client *ks3.Client) (interface{}, error) {
+		requestInfo = ks3Client
+		return nil, ks3Client.SetBucketTagging(d.Id(), bTagging)
+	})
+	if err != nil {
+		return WrapErrorf(err, DefaultErrorMsg, d.Id(), "SetBucketTagging", KsyunKs3GoSdk)
+	}
+	addDebug("SetBucketTagging", raw, requestInfo, map[string]interface{}{
+		"bucketName": d.Id(),
+		"tagging":    bTagging,
+	})
 	return nil
 }
 

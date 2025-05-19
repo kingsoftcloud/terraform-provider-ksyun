@@ -58,5 +58,6 @@ To use this interface, you need to have permission to perform the ks3: PutBucket
   * `policy` - Bucket Policy is an authorization policy for Bucket introduced by KS3. You can authorize other users to access the KS3 resources you specify through the space policy. If you want to turn off this setting, just leave it blank in the configuration.
   * `region` - The region where the bucket is located.
   * `storage_class` - The class of storage used to store the object.
+  * `tags` - the tags of the resource.
 
 
