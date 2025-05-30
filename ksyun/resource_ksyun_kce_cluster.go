@@ -632,6 +632,26 @@ func vkConfig() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "The pod deletion cost of the virtual kubelet.",
 		},
+		"batch_create_enable": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Whether to enable batch creation of pods in the virtual kubelet.",
+		},
+		"pod_sync_rate": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Description: "The rate of pod synchronization in the virtual kubelet.",
+		},
+		"pod_sync_bucket_size": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Description: "The bucket size of pod synchronization in the virtual kubelet.",
+		},
+		"summary_sync_interval": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The interval of summary synchronization in the virtual kubelet.",
+		},
 		"cluster_dns": {
 			Type:        schema.TypeList,
 			Optional:    true,

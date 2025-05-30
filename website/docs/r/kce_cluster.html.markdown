@@ -348,6 +348,7 @@ The `virtual_kubelet` object supports the following:
 * `advanced_setting` - (Optional) The advanced settings of the virtual kubelet.
 * `allow_privileged` - (Optional) Whether to allow privileged containers.
 * `anonymous_auth` - (Optional) Whether to enable anonymous authentication.
+* `batch_create_enable` - (Optional) Whether to enable batch creation of pods in the virtual kubelet.
 * `capacity` - (Optional) The capacity of the virtual kubelet.
 * `cluster_dns` - (Optional) The DNS of the virtual kubelet.
 * `cluster_domain` - (Optional) The domain of the virtual kubelet.
@@ -365,8 +366,11 @@ The `virtual_kubelet` object supports the following:
 * `namespace` - (Optional) The namespace of the virtual kubelet.
 * `nodename` - (Optional) The name of the virtual kubelet node.
 * `openapi` - (Optional) The openapi of the virtual kubelet.
+* `pod_sync_bucket_size` - (Optional) The bucket size of pod synchronization in the virtual kubelet.
+* `pod_sync_rate` - (Optional) The rate of pod synchronization in the virtual kubelet.
 * `server` - (Optional) The server of the virtual kubelet.
 * `startup_timeout` - (Optional) The startup timeout of the virtual kubelet.
+* `summary_sync_interval` - (Optional) The interval of summary synchronization in the virtual kubelet.
 * `taints` - (Optional) Taints.
 * `version` - (Optional) The version of the virtual kubelet.
 
