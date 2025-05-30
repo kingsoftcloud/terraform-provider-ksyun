@@ -642,10 +642,10 @@ func vkConfig() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "The rate of pod synchronization in the virtual kubelet.",
 		},
-		"pod_sync_interval": {
+		"pod_sync_bucket_size": {
 			Type:        schema.TypeInt,
 			Optional:    true,
-			Description: "The interval of pod synchronization in the virtual kubelet.",
+			Description: "The bucket size of pod synchronization in the virtual kubelet.",
 		},
 		"summary_sync_interval": {
 			Type:        schema.TypeString,
