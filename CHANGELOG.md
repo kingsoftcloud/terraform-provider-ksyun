@@ -1,3 +1,9 @@
+## 1.19.1 (May 30, 2025)
+
+IMPROVEMENTS:
+
+- `ksyun_kce_cluster`: 新增vk组件参数
+  
 ## 1.19.0 (May 19, 2025)
 
 FEATURES:
