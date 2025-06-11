@@ -4,6 +4,12 @@ IMPROVEMENTS:
 
 - `ksyun_kce_cluster`: 新增`kubelet_config`字段，支持kubelet配置
 
+## 1.19.1 (May 30, 2025)
+
+IMPROVEMENTS:
+
+- `ksyun_kce_cluster`: 新增vk组件参数
+  
 ## 1.19.0 (May 19, 2025)
 
 FEATURES:
@@ -15,11 +21,24 @@ BUGFIX：
 - `ksyun_bws_associate`: 修复`ksyun_bws_associate`读取关系时，openapi存在的读取延迟问题。
 - `ksyun_nat`: 兼容openAPI返回的tags字段。
 
+## 1.18.9 (May 13, 2025)
+
+BUGFIX:
+
+- `ksyun_kce_cluster` 修复删除集群时的状态延迟异常
+
 ## 1.18.8 (May 12, 2025)
 
 IMPROVEMENTS:
 
 - `ksyun_alb_backend_server_group`: 新增`session`字段，新增`health_check`字段，新增`method`字段
+- `ksyun_kce_cluster` 取消network_type限制，支持calico类型
+
+## 1.18.7 (Apr 16, 2025)
+
+IMPROVEMENTS:
+
+- `ksyun_ks3_bucket`: 新增`tags`字段
 
 ## 1.18.6 (Mar 29, 2025)
 
