@@ -356,6 +356,7 @@ The `virtual_kubelet` object supports the following:
 * `custom_labels` - (Optional) The custom labels of the virtual kubelet.
 * `disable_taint` - (Optional) Whether to disable taint.
 * `enable_node_lease` - (Optional) Whether to enable node lease.
+* `image_cache_enabled` - (Optional) Whether to enable image cache in the virtual kubelet.
 * `instance_settings` - (Optional) The instance settings of the virtual kubelet.
 * `kci_pod_deletion_cost` - (Optional) The pod deletion cost of the virtual kubelet.
 * `kcilet_heartbeat` - (Optional) The heartbeat of the virtual kubelet.
@@ -368,6 +369,7 @@ The `virtual_kubelet` object supports the following:
 * `openapi` - (Optional) The openapi of the virtual kubelet.
 * `pod_sync_bucket_size` - (Optional) The bucket size of pod synchronization in the virtual kubelet.
 * `pod_sync_rate` - (Optional) The rate of pod synchronization in the virtual kubelet.
+* `pod_sync_workers` - (Optional) The number of workers for pod synchronization in the virtual kubelet.
 * `server` - (Optional) The server of the virtual kubelet.
 * `startup_timeout` - (Optional) The startup timeout of the virtual kubelet.
 * `summary_sync_interval` - (Optional) The interval of summary synchronization in the virtual kubelet.
