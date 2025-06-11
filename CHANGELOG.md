@@ -1,3 +1,9 @@
+## 1.19.2 (Jun 11, 2025)
+
+IMPROVEMENTS:
+
+- `ksyun_kce_cluster`: 新增`kubelet_config`字段，支持kubelet配置
+
 ## 1.19.0 (May 19, 2025)
 
 FEATURES:
