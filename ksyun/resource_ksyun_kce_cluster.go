@@ -642,6 +642,16 @@ func vkConfig() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "The rate of pod synchronization in the virtual kubelet.",
 		},
+		"pod_sync_workers": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Description: "The number of workers for pod synchronization in the virtual kubelet.",
+		},
+		"image_cache_enable": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Whether to enable image cache in the virtual kubelet.",
+		},
 		"pod_sync_bucket_size": {
 			Type:        schema.TypeInt,
 			Optional:    true,
