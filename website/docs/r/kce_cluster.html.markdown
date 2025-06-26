@@ -288,7 +288,7 @@ The `master_config` object supports the following:
 * `host_name` - (Optional) The hostname of the instance. only effective when image support cloud-init.
 * `iam_role_name` - (Optional) name of iam role.
 * `instance_name` - (Optional, ForceNew) The name of instance, which contains 2-64 characters and only support Chinese, English, numbers.
-* `instance_password` - (Optional, ForceNew) Password to an instance is a string of 8 to 32 characters.
+* `instance_password` - (Optional) Password to an instance is a string of 8 to 32 characters.
 * `instance_status` - (Optional) The state of instance.
 * `keep_image_login` - (Optional) Keep the initial settings of the custom image.
 * `key_id` - (Optional) The certificate id of the instance.
@@ -356,7 +356,7 @@ The `virtual_kubelet` object supports the following:
 * `custom_labels` - (Optional) The custom labels of the virtual kubelet.
 * `disable_taint` - (Optional) Whether to disable taint.
 * `enable_node_lease` - (Optional) Whether to enable node lease.
-* `image_cache_enabled` - (Optional) Whether to enable image cache in the virtual kubelet.
+* `image_cache_enable` - (Optional) Whether to enable image cache in the virtual kubelet.
 * `instance_settings` - (Optional) The instance settings of the virtual kubelet.
 * `kci_pod_deletion_cost` - (Optional) The pod deletion cost of the virtual kubelet.
 * `kcilet_heartbeat` - (Optional) The heartbeat of the virtual kubelet.
@@ -396,7 +396,7 @@ The `worker_config` object supports the following:
 * `host_name` - (Optional) The hostname of the instance. only effective when image support cloud-init.
 * `iam_role_name` - (Optional) name of iam role.
 * `instance_name` - (Optional, ForceNew) The name of instance, which contains 2-64 characters and only support Chinese, English, numbers.
-* `instance_password` - (Optional, ForceNew) Password to an instance is a string of 8 to 32 characters.
+* `instance_password` - (Optional) Password to an instance is a string of 8 to 32 characters.
 * `instance_status` - (Optional) The state of instance.
 * `keep_image_login` - (Optional) Keep the initial settings of the custom image.
 * `key_id` - (Optional) The certificate id of the instance.

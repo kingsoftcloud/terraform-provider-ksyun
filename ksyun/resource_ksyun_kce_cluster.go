@@ -205,7 +205,7 @@ const (
 	kceManagedModeDedicated = "DedicatedCluster"
 )
 
-var instanceNodeForceNewField = []string{"image_id", "instance_name", "subnet_id", "security_group_id", "charge_type", "instance_type", "instance_password"}
+var instanceNodeForceNewField = []string{"image_id", "instance_name", "subnet_id", "security_group_id", "charge_type", "instance_type"}
 
 func nodeAdvancedSetting() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
@@ -244,6 +244,7 @@ func nodeAdvancedSetting() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Optional:    true,
 			ForceNew:    true,
+			Computed:    true,
 			Description: "Container Runtime. Valid Values: `docker`, `containerd`.",
 			// ValidateFunc: validation.StringInSlice([]string{
 			// 	"docker", "containerd",

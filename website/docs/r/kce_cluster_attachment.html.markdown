@@ -118,7 +118,7 @@ The `worker_config` object supports the following:
 * `host_name` - (Optional) The hostname of the instance. only effective when image support cloud-init.
 * `iam_role_name` - (Optional) name of iam role.
 * `instance_name` - (Optional, ForceNew) The name of instance, which contains 2-64 characters and only support Chinese, English, numbers.
-* `instance_password` - (Optional, ForceNew) Password to an instance is a string of 8 to 32 characters.
+* `instance_password` - (Optional) Password to an instance is a string of 8 to 32 characters.
 * `instance_status` - (Optional) The state of instance.
 * `keep_image_login` - (Optional) Keep the initial settings of the custom image.
 * `key_id` - (Optional) The certificate id of the instance.
