@@ -1,3 +1,10 @@
+## 1.19.3 (Jun 26, 2025)
+
+IMPROVEMENTS:
+
+- `ksyun_kce_cluster`: 取消instance_password字段的ForceNew
+- `ksyun_bws`: 取消charge_type限制，交由openAPI处理
+
 ## 1.19.2 (Jun 11, 2025)
 
 IMPROVEMENTS:
