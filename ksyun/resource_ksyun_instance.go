@@ -381,9 +381,15 @@ func instanceConfig() map[string]*schema.Schema {
 		},
 
 		"sync_tag": {
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     true,
+			Type:     schema.TypeBool,
+			Optional: true,
+			Default:  true,
+			DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+				if d.Id() != "" {
+					return true
+				}
+				return false
+			},
 			Description: "Indicate whether to sync tags to instance.",
 		},
 

@@ -69,7 +69,9 @@ The following arguments are supported:
 * `modification_protection` - (Optional) Whether modification protection is enabled or not. Values: `off` or `on`.
 * `private_ip_address` - (Optional, ForceNew) The private ip address. It not be empty, when 'alb_type' as '**internal**'.
 * `project_id` - (Optional) The ID of the project.
+* `protocol_layers` - (Optional) The protocol layers of the ALB, valid values: 'L4', 'L7', 'L4-L7'.
 * `state` - (Optional) The state of the ALB, Valid Values:'start', 'stop'.
+* `status` - (Optional) The status of the ALB.
 * `subnet_id` - (Optional, ForceNew) The Id of Subnet that's type is **Reserve**. It not be empty, when 'alb_type' as '**internal**'.
 * `tags` - (Optional) the tags of the resource.
 
@@ -85,7 +87,6 @@ In addition to all arguments above, the following attributes are exported:
 * `id` - ID of the resource.
 * `create_time` - The creation time.
 * `public_ip` - The public IP address.
-* `status` - The status of the ALB.
 
 
 ## Import
