@@ -1,3 +1,12 @@
+## 1.19.4 (Jul 1, 2025)
+
+IMPROVEMENTS:
+
+- `ksyun_alb`: 支持创建L4 L4-L7 L7负载均衡
+- `ksyun_alb_listener`: 增加TCP, UDP, TCPSSL协议，增加ServerGroupId。兼容默认转发策略
+- `ksyun_alb_backend_server_group`: 支持udp的健康检查请求/响应串，增加4层负载均衡相关参数
+- `ksyun_alb_register_backend_server`: 增加`MasterSlaveType`
+  
 ## 1.19.3 (Jun 26, 2025)
 
 IMPROVEMENTS:
