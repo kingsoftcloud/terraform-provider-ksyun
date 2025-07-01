@@ -397,6 +397,9 @@ func resourceKsyunAlbListener() *schema.Resource {
 }
 
 func resourceKsyunAlbListenerCreate(d *schema.ResourceData, meta interface{}) (err error) {
+	if err := checkDefaultForwardRule(d); err != nil {
+		return err
+	}
 	s := AlbListenerService{meta.(*KsyunClient)}
 	err = s.CreateListener(d, resourceKsyunAlbListener())
 	if err != nil {
@@ -435,4 +438,14 @@ func resourceKsyunAlbListenerDelete(d *schema.ResourceData, meta interface{}) (e
 		return fmt.Errorf("error on deleting listener %q, %s", d.Id(), err)
 	}
 	return
+}
+
+func checkDefaultForwardRule(d *schema.ResourceData) error {
+	switch d.Get("protocol").(string) {
+	case "HTTP", "HTTPS":
+		if d.Get("default_forward_rule") == nil || len(d.Get("default_forward_rule").([]interface{})) == 0 {
+			return fmt.Errorf("The 7 layers listener must provide the default forward rule")
+		}
+	}
+	return nil
 }
