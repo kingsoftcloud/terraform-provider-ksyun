@@ -320,7 +320,40 @@ func (alb *AlbService) ModifyAlb(d *schema.ResourceData, r *schema.Resource) (er
 		}
 		calls = append(calls, tagsCall)
 	}
+
+	if d.HasChange("protocol_layers") {
+		modifyProtocolLayersCall, err := alb.modifyProtocolLayersCall(d, r)
+		if err != nil {
+			return err
+		}
+		calls = append(calls, modifyProtocolLayersCall)
+	}
 	return ksyunApiCallNew(calls, d, alb.client, true)
+}
+
+func (alb *AlbService) modifyProtocolLayersCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
+	req := map[string]interface{}{}
+	req["AlbId"] = d.Id()
+	if protocolLayers, ok := d.GetOk("protocol_layers"); ok {
+		req["ProtocolLayers"] = protocolLayers
+	} else {
+		req["ProtocolLayers"] = []string{"http", "https"}
+	}
+	callback = ApiCall{
+		param:  &req,
+		action: "ModifyAlbProtocolLayers",
+		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+			conn := client.slbconn
+			logger.Debug(logger.RespFormat, call.action, *(call.param))
+			resp, err = conn.SetLbProtocolLayers(call.param)
+			return resp, err
+		},
+		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+			return nil
+		},
+	}
+	return callback, err
 }
 
 func (alb *AlbService) removeAlbCall(d *schema.ResourceData) (callback ApiCall, err error) {

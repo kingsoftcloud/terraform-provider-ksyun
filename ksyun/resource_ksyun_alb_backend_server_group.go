@@ -36,6 +36,21 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
 
+func unapplicationAbsgChange(k, old, new string, d *schema.ResourceData) bool {
+	switch d.Get("protocol").(string) {
+	case "TCP", "UDP":
+		return true
+	}
+	return false
+}
+
+func unapplicationAbsgChangeUDP(k, old, new string, d *schema.ResourceData) bool {
+	if d.Get("protocol").(string) == "UDP" {
+		return true
+	}
+	return false
+}
+
 func resourceKsyunAlbBackendServerGroup() *schema.Resource {
 	entry := resourceKsyunHealthCheck().Schema
 	for k, v := range entry {
@@ -51,14 +66,19 @@ func resourceKsyunAlbBackendServerGroup() *schema.Resource {
 			v.Optional = true
 			v.Computed = true
 			v.ValidateFunc = nil
+			v.DiffSuppressFunc = unapplicationAbsgChange
+		case "url_path":
+			v.DiffSuppressFunc = unapplicationAbsgChange
+
 		}
 	}
 	entry["host_name"] = &schema.Schema{
 		Type:     schema.TypeString,
 		Optional: true,
 		// Default:      "default",
-		ValidateFunc: validation.StringIsNotWhiteSpace,
-		Description:  "hostname of the health check.",
+		ValidateFunc:     validation.StringIsNotWhiteSpace,
+		Description:      "hostname of the health check.",
+		DiffSuppressFunc: unapplicationAbsgChange,
 	}
 	entry["health_code"] = &schema.Schema{
 		Type:        schema.TypeString,
@@ -70,7 +90,19 @@ func resourceKsyunAlbBackendServerGroup() *schema.Resource {
 		Type:        schema.TypeString,
 		Optional:    true,
 		Computed:    true,
-		Description: "The health check protocol. Valid values: 'HTTP', 'TCP'.",
+		Description: "The health check protocol. Valid values: 'HTTP', 'TCP', 'ICMP', 'UDP'.",
+	}
+	entry["health_check_req"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Computed:    true,
+		Description: "The request of health check.",
+	}
+	entry["health_check_exp"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Computed:    true,
+		Description: "The expected response of health check.",
 	}
 
 	return &schema.Resource{
@@ -97,13 +129,15 @@ func resourceKsyunAlbBackendServerGroup() *schema.Resource {
 			},
 			"upstream_keepalive": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
+				Computed: true,
 				ValidateFunc: validation.StringInSlice([]string{
 					"adaptation",
 					"keepalive",
 					"shortconnection",
 				}, false),
-				Description: "The upstream keepalive type. Valid Value: `adaptation`, `keepalive`, `shortconnection`.",
+				DiffSuppressFunc: unapplicationAbsgChangeUDP,
+				Description:      "The upstream keepalive type. Valid Value: `adaptation`, `keepalive`, `shortconnection`.",
 			},
 			"backend_server_type": {
 				Type:     schema.TypeString,
@@ -122,7 +156,7 @@ func resourceKsyunAlbBackendServerGroup() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 				Computed:    true,
-				Description: "The protocol of backend server. Valid values: 'HTTP', 'gRPC'. Default is 'HTTP'.",
+				Description: "The protocol of backend server. Valid values: 'HTTP', 'gRPC', 'TCP', 'UDP', 'HTTPS'. Default is 'HTTP'.",
 			},
 
 			"health_check": {
@@ -144,7 +178,7 @@ func resourceKsyunAlbBackendServerGroup() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "Forwarding mode of listener. Valid Values:'RoundRobin', 'LeastConnections'.",
+				Description: "Forwarding mode of listener. Valid Values:'RoundRobin', 'LeastConnections', 'MasterSlave', 'QUIC_CID', 'IPHash'.",
 			},
 			"session": {
 				Type:        schema.TypeList,
@@ -183,13 +217,15 @@ func resourceKsyunAlbBackendServerGroup() *schema.Resource {
 							// 	"ImplantCookie",
 							// 	"RewriteCookie",
 							// }, false),
-							Description: "The type of cookie, valid values: 'ImplantCookie','RewriteCookie'.",
+							Description:      "The type of cookie, valid values: 'ImplantCookie','RewriteCookie'.",
+							DiffSuppressFunc: unapplicationAbsgChange,
 						},
 						"cookie_name": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The name of cookie.",
+							Type:             schema.TypeString,
+							Optional:         true,
+							Computed:         true,
+							Description:      "The name of cookie.",
+							DiffSuppressFunc: unapplicationAbsgChange,
 						},
 					},
 				},

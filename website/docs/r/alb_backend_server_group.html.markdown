@@ -33,21 +33,23 @@ resource "ksyun_alb_backend_server_group" "foo" {
 
 The following arguments are supported:
 
-* `upstream_keepalive` - (Required) The upstream keepalive type. Valid Value: `adaptation`, `keepalive`, `shortconnection`.
 * `vpc_id` - (Required, ForceNew) ID of the VPC.
 * `backend_server_type` - (Optional, ForceNew) The type of backend server. Valid values: 'Host', 'DirectConnect'. Default is 'Host'.
 * `health_check` - (Optional) Health check information.
-* `method` - (Optional) Forwarding mode of listener. Valid Values:'RoundRobin', 'LeastConnections'.
+* `method` - (Optional) Forwarding mode of listener. Valid Values:'RoundRobin', 'LeastConnections', 'MasterSlave', 'QUIC_CID', 'IPHash'.
 * `name` - (Optional) The name of alb backend server group. Default: 'ksc_bsg'.
-* `protocol` - (Optional, ForceNew) The protocol of backend server. Valid values: 'HTTP', 'gRPC'. Default is 'HTTP'.
+* `protocol` - (Optional, ForceNew) The protocol of backend server. Valid values: 'HTTP', 'gRPC', 'TCP', 'UDP', 'HTTPS'. Default is 'HTTP'.
 * `session` - (Optional) Whether keeps session. Specific `session` block, if keeps session.
+* `upstream_keepalive` - (Optional) The upstream keepalive type. Valid Value: `adaptation`, `keepalive`, `shortconnection`.
 
 The `health_check` object supports the following:
 
 * `health_check_connect_port` - (Optional) The port of connecting for health check.
+* `health_check_exp` - (Optional) The expected response of health check.
+* `health_check_req` - (Optional) The request of health check.
 * `health_check_state` - (Optional) Status maintained by health examination.Valid Values:'start', 'stop'.
 * `health_code` - (Optional) The health check code.
-* `health_protocol` - (Optional) The health check protocol. Valid values: 'HTTP', 'TCP'.
+* `health_protocol` - (Optional) The health check protocol. Valid values: 'HTTP', 'TCP', 'ICMP', 'UDP'.
 * `healthy_threshold` - (Optional) Health threshold.Valid Values:1-10. Default is 5.
 * `host_name` - (Optional) hostname of the health check.
 * `http_method` - (Optional) The http requests' method. Valid Value: GET|HEAD.

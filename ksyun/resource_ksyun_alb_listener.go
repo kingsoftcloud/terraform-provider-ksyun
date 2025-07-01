@@ -125,21 +125,21 @@ func resourceKsyunAlbListener() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "RoundRobin",
-				ValidateFunc: validation.StringInSlice([]string{
-					"RoundRobin",
-					"LeastConnections",
-				}, false),
+				// ValidateFunc: validation.StringInSlice([]string{
+				// 	"RoundRobin",
+				// 	"LeastConnections",
+				// }, false),
 				Description: "Forwarding mode of listener. Valid Values:'RoundRobin', 'LeastConnections'.",
 			},
 			"protocol": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
-				ValidateFunc: validation.StringInSlice([]string{
-					"HTTP",
-					"HTTPS",
-				}, false),
-				Description: "The protocol of listener. Valid Values: 'HTTP', 'HTTPS'.",
+				// ValidateFunc: validation.StringInSlice([]string{
+				// 	"HTTP",
+				// 	"HTTPS",
+				// }, false),
+				Description: "The protocol of listener. Valid Values: 'HTTP', 'HTTPS', 'TCP', 'UDP', 'TCPSSL'.",
 			},
 			"port": {
 				Type:        schema.TypeInt,
@@ -156,13 +156,13 @@ func resourceKsyunAlbListener() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
-				ValidateFunc: validation.StringInSlice([]string{
-					"TlsCipherPolicy1.0",
-					"TlsCipherPolicy1.1",
-					"TlsCipherPolicy1.2",
-					"TlsCipherPolicy1.2-strict",
-					"TlsCipherPolicy1.2-most-strict-with1.3",
-				}, false),
+				// ValidateFunc: validation.StringInSlice([]string{
+				// 	"TlsCipherPolicy1.0",
+				// 	"TlsCipherPolicy1.1",
+				// 	"TlsCipherPolicy1.2",
+				// 	"TlsCipherPolicy1.2-strict",
+				// 	"TlsCipherPolicy1.2-most-strict-with1.3",
+				// }, false),
 				Description: "TLS cipher policy, valid values:'TlsCipherPolicy1.0','TlsCipherPolicy1.1','TlsCipherPolicy1.2','TlsCipherPolicy1.2-strict','TlsCipherPolicy1.2-most-strict-with1.3'.",
 			},
 			"alb_listener_state": {
@@ -179,8 +179,15 @@ func resourceKsyunAlbListener() *schema.Resource {
 				Description: "The ID of the redirect ALB listener.",
 				Deprecated:  "This parameter is moved to 'default_forward_rule' block.",
 			},
+			"server_group_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The ID of the backend server group.",
+			},
 
 			"session": {
+				// Deprecated:  "This parameter is moved to 'ksyun_alb_backend_server_group' resource.",
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				MinItems:    1,
@@ -214,13 +221,15 @@ func resourceKsyunAlbListener() *schema.Resource {
 								"ImplantCookie",
 								"RewriteCookie",
 							}, false),
-							Description: "The type of cookie, valid values: 'ImplantCookie','RewriteCookie'.",
+							Description:      "The type of cookie, valid values: 'ImplantCookie','RewriteCookie'.",
+							DiffSuppressFunc: unapplicationAbsgChange,
 						},
 						"cookie_name": {
 							Type:     schema.TypeString,
 							Optional: true,
 							// Computed:    true,
-							Description: "The name of cookie.",
+							Description:      "The name of cookie.",
+							DiffSuppressFunc: unapplicationAbsgChange,
 						},
 					},
 				},
@@ -249,11 +258,11 @@ func resourceKsyunAlbListener() *schema.Resource {
 			},
 
 			"default_forward_rule": {
-				Type:         schema.TypeList,
-				MaxItems:     1,
-				AtLeastOneOf: []string{"default_forward_rule"},
-				Optional:     true,
-				Description:  "The default forward rule group.",
+				Type:     schema.TypeList,
+				MaxItems: 1,
+				// AtLeastOneOf: []string{"default_forward_rule"},
+				Optional:    true,
+				Description: "The default forward rule group.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"backend_server_group_id": {
@@ -321,6 +330,12 @@ func resourceKsyunAlbListener() *schema.Resource {
 						},
 					},
 				},
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					if d.Get("default_forward_rule.0.alb_rule_group_id") == "" && d.Id() != "" {
+						return true
+					}
+					return false
+				},
 			},
 
 			"config_content": {
@@ -382,6 +397,9 @@ func resourceKsyunAlbListener() *schema.Resource {
 }
 
 func resourceKsyunAlbListenerCreate(d *schema.ResourceData, meta interface{}) (err error) {
+	if err := checkDefaultForwardRule(d); err != nil {
+		return err
+	}
 	s := AlbListenerService{meta.(*KsyunClient)}
 	err = s.CreateListener(d, resourceKsyunAlbListener())
 	if err != nil {
@@ -420,4 +438,14 @@ func resourceKsyunAlbListenerDelete(d *schema.ResourceData, meta interface{}) (e
 		return fmt.Errorf("error on deleting listener %q, %s", d.Id(), err)
 	}
 	return
+}
+
+func checkDefaultForwardRule(d *schema.ResourceData) error {
+	switch d.Get("protocol").(string) {
+	case "HTTP", "HTTPS":
+		if d.Get("default_forward_rule") == nil || len(d.Get("default_forward_rule").([]interface{})) == 0 {
+			return fmt.Errorf("The 7 layers listener must provide the default forward rule")
+		}
+	}
+	return nil
 }

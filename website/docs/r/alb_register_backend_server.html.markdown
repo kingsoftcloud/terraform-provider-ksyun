@@ -44,6 +44,7 @@ The following arguments are supported:
 * `backend_server_ip` - (Required, ForceNew) The IP of alb backend server.
 * `port` - (Required, ForceNew) The port of alb backend server. Valid Values:1-65535.
 * `direct_connect_gateway_id` - (Optional, ForceNew) The ID of direct connect gateway.
+* `master_slave_type` - (Optional) The type of master-slave backend server. Valid Values: 'Master', 'Slave'.
 * `network_interface_id` - (Optional, ForceNew) The ID of network interface.
 * `weight` - (Optional) The weight of backend service. Valid Values:0-255.
 
