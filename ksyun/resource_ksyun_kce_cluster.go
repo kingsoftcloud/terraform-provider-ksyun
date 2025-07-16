@@ -962,6 +962,16 @@ func resourceKsyunKceCluster() *schema.Resource {
 				},
 				Description: "The ID list of the worker nodes.",
 			},
+			"kube_config": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The configuration for the kubernetes cluster.",
+			},
+			"kube_config_intranet": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The configuration for the private kubernetes cluster.",
+			},
 		},
 	}
 }
@@ -1023,6 +1033,10 @@ func resourceKsyunKceClusterRead(d *schema.ResourceData, meta interface{}) (err 
 		if err != nil {
 			return fmt.Errorf("error on read component in kce cluster: %s", err)
 		}
+	}
+
+	if err = srv.ReadKubeConfigInCluster(d, resourceKsyunKceCluster()); err != nil {
+		return fmt.Errorf("error on read kube_config in kce cluster: %s", err)
 	}
 	return
 }
