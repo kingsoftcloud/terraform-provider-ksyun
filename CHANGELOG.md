@@ -1,3 +1,13 @@
+## 1.20.0 (Jul 17, 2025)
+
+FEATURES:
+
+- - **New Resource:** `ksyun_kce_auth_attachment` 容器集群授权管理
+
+IMPROVEMENTS:
+
+- `ksyun_kce_cluster`: 支持kube_config查看
+
 ## 1.19.4 (Jul 1, 2025)
 
 IMPROVEMENTS:
