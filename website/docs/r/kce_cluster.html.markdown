@@ -417,6 +417,8 @@ In addition to all arguments above, the following attributes are exported:
 
 * `id` - ID of the resource.
 * `cluster_id` - The ID of the cluster.
+* `kube_config_intranet` - The configuration for the private kubernetes cluster.
+* `kube_config` - The configuration for the kubernetes cluster.
 * `master_id_list` - The ID list of the master nodes.
 * `worker_id_list` - The ID list of the worker nodes.
 

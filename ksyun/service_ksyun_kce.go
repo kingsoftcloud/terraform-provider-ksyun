@@ -870,6 +870,122 @@ func (s *KceService) ReadComponentInCluster(d *schema.ResourceData, r *schema.Re
 	return d.Set("component", remoteComponent)
 }
 
+func (s *KceService) ReadKubeConfigInCluster(d *schema.ResourceData, r *schema.Resource) (err error) {
+	// 获取集群Config内容
+	configKeyList := []string{"kube_config", "kube_config_intranet"}
+	for _, key := range configKeyList {
+		ip := true
+		if key == "kube_config_intranet" {
+			ip = false
+		}
+		data, err := s.client.kceconn.DownloadClusterConfig(&map[string]interface{}{
+			"ClusterId": d.Id(),
+			"IsPublic":  ip,
+		})
+		if err != nil {
+			return err
+		}
+
+		cconfig, err := getSdkValue("ClusterConfig", *data)
+		logger.Debug("[%s] %+v %+v %+v", "DownloadClusterConfig", data, err, cconfig)
+		if err != nil {
+			return err
+		}
+		err = d.Set(key, cconfig)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (s *KceService) AddAuthorization(d *schema.ResourceData, r *schema.Resource) (err error) {
+	perms := d.Get("permissions").(*schema.Set)
+	req := make(map[string]interface{})
+	for idx, perm := range perms.List() {
+		prefix := "Permission." + strconv.Itoa(idx) + "."
+
+		for k, v := range perm.(map[string]interface{}) {
+			if k == "region" && helper.IsEmpty(v) {
+				v = s.client.region
+			}
+			kk := helper.Underline2Hump(k)
+			req[prefix+kk] = v
+		}
+
+	}
+	if len(req) > 0 {
+		req["SubUserId.0"] = d.Get("sub_user_id")
+
+		_, err := s.client.kceconn.AddAuthorization(&req)
+		if err != nil {
+			return err
+		}
+		d.SetId(d.Get("sub_user_id").(string))
+	}
+	return nil
+}
+
+func (s *KceService) ModifyAuthorization(d *schema.ResourceData, r *schema.Resource) (err error) {
+	perms := d.Get("permissions").(*schema.Set)
+	req := make(map[string]interface{})
+	for idx, perm := range perms.List() {
+		prefix := "Permission." + strconv.Itoa(idx) + "."
+
+		for k, v := range perm.(map[string]interface{}) {
+			if k == "region" && helper.IsEmpty(v) {
+				v = s.client.region
+			}
+			kk := helper.Underline2Hump(k)
+			req[prefix+kk] = v
+		}
+	}
+	req["SubUserId"] = d.Id()
+
+	_, err = s.client.kceconn.ModifyAuthorization(&req)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *KceService) ReadAndSetKceAuthAttachment(d *schema.ResourceData, r *schema.Resource) (err error) {
+	return resource.Retry(5*time.Minute, func() *resource.RetryError {
+		data, err := s.client.kceconn.DescribeUserAuthorizationList(&map[string]interface{}{
+			"SubUserId": d.Id(),
+		})
+		logger.Debug("[%s] %+v, %+v", "DescribeUserAuthorizationList", data, err)
+		if err != nil {
+			return resource.NonRetryableError(err)
+		}
+		if data == nil {
+			return resource.NonRetryableError(fmt.Errorf("authorization not found"))
+		}
+		//permissionSet := (*data)["PermissionSet"].([]interface{})
+
+		extra := map[string]SdkResponseMapping{
+			"PermissionSet": {
+				Field: "permissions",
+			},
+		}
+		SdkResponseAutoResourceData(d, r, *data, extra)
+		return nil
+	})
+}
+
+func (s *KceService) RemoveKceAuthAttachment(d *schema.ResourceData) (err error) {
+	req := map[string]interface{}{
+		"SubUserId": d.Id(),
+	}
+
+	_, err = s.client.kceconn.DeleteUserAuthorization(&req)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s *KceService) readKceInstanceImages(condition map[string]interface{}) (data []interface{}, err error) {
 	var (
 		resp    *map[string]interface{}

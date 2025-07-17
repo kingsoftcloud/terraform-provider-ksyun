@@ -202,6 +202,7 @@ KCE
 		ksyun_kce_cluster
 		ksyun_kce_cluster_attach_existence
 		ksyun_kce_cluster_attachment
+		ksyun_kce_auth_attachment
 
 KCR
 
@@ -581,9 +582,7 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_bws_associate":                    resourceKsyunBandWidthShareAssociate(),
 			"ksyun_bare_metal":                       resourceKsyunBareMetal(),
 			"ksyun_tag":                              resourceKsyunTag(),
-			"ksyun_kce_cluster":                      resourceKsyunKceCluster(),
-			"ksyun_kce_cluster_attachment":           resourceKsyunKceClusterAttachment(),
-			"ksyun_kce_cluster_attach_existence":     resourceKsyunKceClusterAttachExistence(),
+
 			"ksyun_ks3_bucket":                       resourceKsyunKs3Bucket(),
 			"ksyun_auto_snapshot_policy":             resourceKsyunAutoSnapshotPolicy(),
 			"ksyun_auto_snapshot_volume_association": resourceKsyunAutoSnapshotVolumeAssociation(),
@@ -597,6 +596,12 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_alb_register_backend_server":      resourceKsyunRegisterAlbBackendServer(),
 			"ksyun_alb_listener_associate_acl":       resourceKsyunAlbListenerAssociateAcl(),
 			"ksyun_vpn_gateway_route":                resourceKsyunVpnGatewayRoute(),
+
+			//kce
+			"ksyun_kce_cluster":                  resourceKsyunKceCluster(),
+			"ksyun_kce_cluster_attachment":       resourceKsyunKceClusterAttachment(),
+			"ksyun_kce_cluster_attach_existence": resourceKsyunKceClusterAttachExistence(),
+			"ksyun_kce_auth_attachment":          resourceKsyunKceAuthAttachment(),
 
 			// private dns
 			"ksyun_private_dns_zone":                resourceKsyunPrivateDnsZone(),
