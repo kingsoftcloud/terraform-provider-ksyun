@@ -27,7 +27,6 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
 
 func resourceKsyunDirectConnectTunnel() *schema.Resource {
@@ -47,161 +46,149 @@ func resourceKsyunDirectConnectTunnel() *schema.Resource {
 				ForceNew:    true,
 				Description: "The id of direct connect. It's meaning is the physical port.",
 			},
-			"direct_connect_interface_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The ID of the direct connect interface.",
-			},
 			"vlan_id": {
-				Type:        schema.TypeString,
+				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
 				Description: "The id of vlan in direct connect.",
 			},
 			"route_type": {
-				Type:         schema.TypeInt,
-				Required:     true,
-				ValidateFunc: validation.IntBetween(1, 15000),
-				Description:  "bandwidth value, value range: [1, 15000].",
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+				Description: "bandwidth value, value range: [1, 15000].",
 			},
 			"direct_connect_interface_name": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Required: true,
-				// ValidateFunc: validation.StringInSlice([]string{
-				// 	"PostPaidByPeak",
-				// 	"PostPaidByDay",
-				// 	"PostPaidByTransfer",
-				// }, false),
-				DiffSuppressFunc: chargeSchemaDiffSuppressFunc,
-				Description:      "The charge type of the BWS. Valid values: PostPaidByPeak, PostPaidByDay, PostPaidByTransfer, DailyPaidByTransfer.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The charge type of the BWS. Valid values: PostPaidByPeak, PostPaidByDay, PostPaidByTransfer, DailyPaidByTransfer.",
 			},
 			"direct_connect_interface_account_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     0,
+				Computed:    true,
 				Description: "ID of the project.",
 			},
 			"customer_peer_ip": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     0,
+				Computed:    true,
 				Description: "ID of the project.",
 			},
 			"local_peer_ip": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     0,
+				Computed:    true,
 				Description: "ID of the project.",
 			},
 			"ha_direct_connect_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     0,
+				Computed:    true,
 				Description: "ID of the project.",
 			},
 			"ha_customer_peer_ip": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     0,
+				Computed:    true,
 				Description: "ID of the project.",
 			},
 			"ha_local_peer_ip": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     0,
+				Computed:    true,
 				Description: "ID of the project.",
 			},
 			"bgp_peer": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     0,
+				Computed:    true,
 				Description: "ID of the project.",
 			},
 			"reliability_method": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     0,
+				Computed:    true,
 				Description: "ID of the project.",
 			},
 			"bfd_config_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     0,
+				Computed:    true,
 				Description: "ID of the project.",
 			},
 			"bgp_client_token": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     0,
+				Computed:    true,
 				Description: "ID of the project.",
 			},
 			"enable_ipv6": {
-				Type:        schema.TypeString,
+				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     0,
+				Computed:    true,
 				Description: "ID of the project.",
 			},
 			"customer_ipv6_peer_ip": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     0,
+				Computed:    true,
 				Description: "ID of the project.",
 			},
 			"local_ipv6_peer_ip": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     0,
+				Computed:    true,
 				Description: "ID of the project.",
 			},
 
-			// computed
+			// Computed fields
+
+			"direct_connect_interface_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ID of the direct connect interface.",
+			},
+
 			"ha_direct_connect_interface_name": {
 				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     0,
+				Computed:    true,
 				Description: "ID of the project.",
 			},
 			"ha_direct_connect_interface_id": {
 				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     0,
+				Computed:    true,
 				Description: "ID of the project.",
 			},
 			"account_id": {
 				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     0,
+				Computed:    true,
 				Description: "ID of the project.",
 			},
 			"ha_vlan_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     0,
+				Type:        schema.TypeInt,
+				Computed:    true,
 				Description: "ID of the project.",
 			},
 			"state": {
 				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     0,
+				Computed:    true,
 				Description: "ID of the project.",
 			},
 			"priority": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     0,
+				Type:        schema.TypeInt,
+				Computed:    true,
 				Description: "ID of the project.",
 			},
 			"customer_peer_ipv6": {
 				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     0,
+				Computed:    true,
 				Description: "ID of the project.",
 			},
 			"local_peer_ipv6": {
 				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     0,
+				Computed:    true,
 				Description: "ID of the project.",
 			},
 		},
@@ -209,8 +196,8 @@ func resourceKsyunDirectConnectTunnel() *schema.Resource {
 }
 
 func resourceKsyunDirectConnectTunnelCreate(d *schema.ResourceData, meta interface{}) (err error) {
-	bwsService := BwsService{meta.(*KsyunClient)}
-	err = bwsService.CreateDirectConnectTunnel(d, resourceKsyunDirectConnectTunnel())
+	vpcSrv := VpcService{meta.(*KsyunClient)}
+	err = vpcSrv.CreateDirectConnectTunnel(d, resourceKsyunDirectConnectTunnel())
 	if err != nil {
 		return fmt.Errorf("error on creating DirectConnectTunnel %q, %s", d.Id(), err)
 	}
