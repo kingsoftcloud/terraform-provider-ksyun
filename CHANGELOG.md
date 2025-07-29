@@ -1,3 +1,9 @@
+## 1.20.1 (Jul 29, 2025)
+
+BUGFIX：
+
+- `ksyun_certificate`: 修复public_key末尾换行符引发的diff问题
+
 ## 1.20.0 (Jul 17, 2025)
 
 FEATURES:
