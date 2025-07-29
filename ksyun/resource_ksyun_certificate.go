@@ -51,12 +51,6 @@ func resourceKsyunCertificate() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 				Description: "The Private key of the certificate.",
-				StateFunc: func(v interface{}) string {
-					// Remove newlines from the public key for state consistency
-					s := v.(string)
-
-					return strings.TrimRight(s, "\r\n")
-				},
 			},
 			"public_key": {
 				Type:        schema.TypeString,
