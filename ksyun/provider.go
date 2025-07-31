@@ -66,13 +66,14 @@ VPC
 		ksyun_dnats
 		ksyun_private_dns_records
 		ksyun_private_dns_zones
+		ksyun_direct_connects
 
 	Resource
 		ksyun_vpc
 		ksyun_subnet
 		ksyun_nat
 		ksyun_nat_associate
-        ksyun_nat_instance_bandwidth_limit
+		ksyun_nat_instance_bandwidth_limit
 		ksyun_dnat
 		ksyun_network_acl
 		ksyun_network_acl_entry
@@ -85,6 +86,11 @@ VPC
 		ksyun_private_dns_zone
 		ksyun_private_dns_record
 		ksyun_private_dns_zone_vpc_attachment
+		ksyun_direct_connect_gateway
+		ksyun_direct_connect_gateway_route
+		ksyun_direct_connect_interface
+		ksyun_direct_connect_bfd_config
+		ksyun_dc_interface_associate
 
 VPN
 
@@ -518,6 +524,9 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_iam_users":  dataSourceKsyunIamUsers(),
 			"ksyun_iam_roles":  dataSourceKsyunIamRoles(),
 			"ksyun_iam_groups": dataSourceKsyunIamGroups(),
+
+			// direct connect
+			"ksyun_direct_connects": dataSourceKsyunDirectConnects(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"ksyun_alb":                              resourceKsyunAlb(),
@@ -597,7 +606,7 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_alb_listener_associate_acl":       resourceKsyunAlbListenerAssociateAcl(),
 			"ksyun_vpn_gateway_route":                resourceKsyunVpnGatewayRoute(),
 
-			//kce
+			// kce
 			"ksyun_kce_cluster":                  resourceKsyunKceCluster(),
 			"ksyun_kce_cluster_attachment":       resourceKsyunKceClusterAttachment(),
 			"ksyun_kce_cluster_attach_existence": resourceKsyunKceClusterAttachExistence(),
@@ -638,6 +647,13 @@ func Provider() terraform.ResourceProvider {
 
 			// kpfs
 			"ksyun_kpfs_acl": resourceKsyunKpfsAcl(),
+
+			// direct connect
+			"ksyun_direct_connect_gateway":       resourceKsyunDirectConnectGateway(),
+			"ksyun_direct_connect_gateway_route": resourceKsyunDirectConnectGatewayRoute(),
+			"ksyun_direct_connect_interface":     resourceKsyunDirectConnectInterface(),
+			"ksyun_direct_connect_bfd_config":    resourceKsyunDirectConnectBfdConfig(),
+			"ksyun_dc_interface_associate":       resourceKsyunDCInterfaceAssociate(),
 		},
 		ConfigureFunc: providerConfigure,
 	}
