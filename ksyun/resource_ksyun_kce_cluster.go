@@ -198,6 +198,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/terraform-providers/terraform-provider-ksyun/ksyun/internal/pkg/helper"
+	"github.com/terraform-providers/terraform-provider-ksyun/logger"
 )
 
 const (
@@ -908,6 +909,13 @@ func resourceKsyunKceCluster() *schema.Resource {
 					"If selected, a public SLB and EIP will be created to enable public access to the cluster's API server. " +
 					"Users need to pass the Elastic IP creation pass-through parameter, which should be a JSON-formatted string.",
 			},
+			"expose_public_api_server": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true,
+				Description: "Whether to expose the apiserver to the public network, when cluster type is ManagedCluster, it works.",
+			},
 			"master_config": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -994,6 +1002,14 @@ func resourceKsyunKceClusterCreate(d *schema.ResourceData, meta interface{}) (er
 			return fmt.Errorf("error on install component in kce cluster: %s", err)
 		}
 	}
+
+	if d.HasChange("expose_public_api_server") {
+		err = srv.ModifyPublicApiServer(d, resourceKsyunKceCluster())
+		if err != nil {
+			logger.Info("error on expose public api server in kce cluster: %s", err)
+		}
+	}
+
 	return resourceKsyunKceClusterRead(d, meta)
 }
 
@@ -1015,6 +1031,18 @@ func resourceKsyunKceClusterUpdate(d *schema.ResourceData, meta interface{}) (er
 		err = srv.UpdateCluster(d, resourceKsyunKceCluster())
 		if err != nil {
 			return fmt.Errorf("error on update kce cluster: %s", err)
+		}
+	}
+	if d.HasChange("expose_public_api_server") {
+		err = srv.ModifyPublicApiServer(d, resourceKsyunKceCluster())
+		if err != nil {
+			logger.Info("error on expose public api server in kce cluster: %s", err)
+			vv := d.Get("expose_public_api_server")
+			switch vv.(type) {
+			case bool:
+				vvv := vv.(bool)
+				d.Set("expose_public_api_server", !vvv) // reset the value to false if error occurs
+			}
 		}
 	}
 
