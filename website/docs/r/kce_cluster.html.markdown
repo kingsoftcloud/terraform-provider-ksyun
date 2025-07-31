@@ -202,6 +202,7 @@ The following arguments are supported:
 * `cluster_desc` - (Optional) The description of the cluster.
 * `cluster_manage_mode` - (Optional, ForceNew) The management mode of the master node.
 * `component` - (Optional) The component of the cluster.
+* `expose_public_api_server` - (Optional) Whether to expose the apiserver to the public network, when cluster type is ManagedCluster, it works.
 * `managed_cluster_multi_master` - (Optional) The configuration for the managed cluster multi master. If the cluster_manage_mode is ManagedCluster, this field is **required**.
 * `master_config` - (Optional, ForceNew) The configuration for the master nodes. If the cluster_manage_mode is DedicatedCluster, this field is **required**. **Notes:** work_config block is identified by the **instance_type, subnet_id, security_group_id, role, image_id**. If the unique identification is the same, the instance config block is conflict, and then **cause an error**.If the unique identification is changed, that leads to the cluster **re-creation**.
 * `master_etcd_separate` - (Optional, ForceNew) The deployment method for the Master and Etcd components of the cluster. if set to True, Deploy the Master and Etcd components on dedicated nodes. if set to false, Deploy the Master and Etcd components on shared nodes.

@@ -518,6 +518,16 @@ func (s *KceService) UpdateCluster(d *schema.ResourceData, r *schema.Resource) (
 	return
 }
 
+func (s *KceService) ModifyPublicApiServer(d *schema.ResourceData, r *schema.Resource) (err error) {
+	params := map[string]interface{}{
+		"ClusterId": d.Id(),
+	}
+	params["Expose"] = d.Get("expose_public_api_server")
+
+	_, err = s.client.kceconn.ModifyPublicApiServer(&params)
+	return
+}
+
 func (s *KceService) InstallComponentInCluster(d *schema.ResourceData, r *schema.Resource) (err error) {
 	err = s.checkClusterWorkreAvailable(d.Id(), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -961,7 +971,7 @@ func (s *KceService) ReadAndSetKceAuthAttachment(d *schema.ResourceData, r *sche
 		if data == nil {
 			return resource.NonRetryableError(fmt.Errorf("authorization not found"))
 		}
-		//permissionSet := (*data)["PermissionSet"].([]interface{})
+		// permissionSet := (*data)["PermissionSet"].([]interface{})
 
 		extra := map[string]SdkResponseMapping{
 			"PermissionSet": {
