@@ -1,3 +1,9 @@
+## 1.21.1 (Jul 31, 2025)
+
+IMPROVEMENTS:
+
+- `ksyun_kce_cluster`: 增加`expose_public_api_server`托管集群开启公网访问
+
 ## 1.21.0 (Jul 31, 2025)
 
 FEATURES:
