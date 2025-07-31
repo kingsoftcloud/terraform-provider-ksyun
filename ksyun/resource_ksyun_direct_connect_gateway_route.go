@@ -4,19 +4,46 @@ Provides a DirectConnectGatewayRoute resource.
 Example Usage
 
 ```hcl
-resource "ksyun_bws" "default" {
-  line_id = "5fc2595f-1bfd-481b-bf64-2d08f116d800"
-  charge_type = "PostPaidByPeak"
-  band_width = 12
+
+data "ksyun_direct_connects" "test" {
+  ids        = []
+  name_regex = ".*test.*"
+}
+
+
+resource "ksyun_direct_connect_interface" "test" {
+  direct_connect_id  = data.ksyun_direct_connects.test.direct_connects[0].id
+  route_type         = "STATIC"
+  bgp_peer           = 59019
+  bgp_client_token   = "dadasd"
+  reliability_method = "bfd"
+  enable_ipv6        = true
+  bfd_config_id      = "29e0c675-2cca-4778-b331-884fca06de17"
+  vlan_id            = 111
+
+  direct_connect_interface_name = "tf_direct_connect_test_1"
+}
+
+
+resource "ksyun_direct_connect_gateway" "test" {
+  direct_connect_gateway_name = "tf_direct_connect_gateway_test_1"
+  vpc_id                      = "a38673ae-c9b7-4f8e-b727-b6feb648805b"
+}
+
+resource "ksyun_direct_connect_gateway_route" "test" {
+  direct_connect_gateway_id = ksyun_direct_connect_gateway.test.id
+  destination_cidr_block    = "192.136.0.0/24"
+  next_hop_type             = "Vpc"
+  depends_on                = [ksyun_dc_interface_associate.test]
 }
 ```
 
 Import
 
-BwS can be imported using the id, e.g.
+Route can be imported using the id, e.g.
 
 ```
-$ terraform import ksyun_bws.default 67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
+$ terraform import ksyun_direct_connect_gateway_route.test 67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
 ```
 
 */
@@ -44,42 +71,53 @@ func resourceKsyunDirectConnectGatewayRoute() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "The id of direct connect. It's meaning is the physical port.",
+				Description: "The destination CIDR block of the route. The CIDR block must be in the format of `x.x.x.x/x`.",
 			},
 
 			"next_hop_type": {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "The ID of the direct connect interface.",
+				Description: "The type of the next hop. Valid values: `Vpc`, `DirectConnect`, `Cen`. Default is `Vpc`. If set to `DirectConnect`, the next hop instance ID must be provided.",
 			},
 
 			"direct_connect_gateway_id": {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "The ID of the direct connect interface.",
+				Description: "The ID of the direct connect gateway.",
 			},
 			"priority": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeInt,
+				Optional: true,
+				// ForceNew:    true,
 				Computed:    true,
-				Description: "The id of vlan in direct connect.",
+				Description: "Priority.",
 			},
 			"next_hop_instance": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				ForceNew:    true,
-				Description: "bandwidth value, value range: [1, 15000].",
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					return d.Id() != ""
+				},
+				Description: "The next hop instance ID.",
 			},
 			"enable_ip_v6": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Computed:    true,
-				ForceNew:    true,
+				Type:     schema.TypeBool,
+				Optional: true,
+				Computed: true,
+				// ForceNew:    true,
 				Description: "whether to enable IPv6. Valid values: `true`, `false`. Default is `false`.",
+			},
+			"bgp_status": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					return d.Get("next_hop_type").(string) != "Vpc"
+				},
+				Description: "BGP Status.",
 			},
 
 			// common fields
@@ -103,23 +141,19 @@ func resourceKsyunDirectConnectGatewayRoute() *schema.Resource {
 				Computed:    true,
 				Description: "Direct Connect ID.",
 			},
-			"bgp_status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "BGP Status",
-			},
+
 			"route_type": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Route Type",
+				Description: "Route Type.",
 			},
 		},
 	}
 }
 
 func resourceKsyunDirectConnectGatewayRouteCreate(d *schema.ResourceData, meta interface{}) (err error) {
-	bwsService := BwsService{meta.(*KsyunClient)}
-	err = bwsService.CreateDirectConnectGatewayRoute(d, resourceKsyunDirectConnectGatewayRoute())
+	srv := VpcService{meta.(*KsyunClient)}
+	err = srv.CreateDirectConnectGatewayRoute(d, resourceKsyunDirectConnectGatewayRoute())
 	if err != nil {
 		return fmt.Errorf("error on creating DirectConnectGatewayRoute %q, %s", d.Id(), err)
 	}
@@ -127,8 +161,8 @@ func resourceKsyunDirectConnectGatewayRouteCreate(d *schema.ResourceData, meta i
 }
 
 func resourceKsyunDirectConnectGatewayRouteRead(d *schema.ResourceData, meta interface{}) (err error) {
-	bwsService := BwsService{meta.(*KsyunClient)}
-	err = bwsService.ReadAndSetDirectConnectGatewayRoute(d, resourceKsyunDirectConnectGatewayRoute())
+	srv := VpcService{meta.(*KsyunClient)}
+	err = srv.ReadAndSetDirectConnectGatewayRoute(d, resourceKsyunDirectConnectGatewayRoute())
 	if err != nil {
 		return fmt.Errorf("error on reading DirectConnectGatewayRoute %q, %s", d.Id(), err)
 	}
@@ -136,8 +170,8 @@ func resourceKsyunDirectConnectGatewayRouteRead(d *schema.ResourceData, meta int
 }
 
 func resourceKsyunDirectConnectGatewayRouteUpdate(d *schema.ResourceData, meta interface{}) (err error) {
-	bwsService := BwsService{meta.(*KsyunClient)}
-	err = bwsService.ModifyDirectConnectGatewayRoute(d, resourceKsyunDirectConnectGatewayRoute())
+	srv := VpcService{meta.(*KsyunClient)}
+	err = srv.PublishDirectConnectRoute(d)
 	if err != nil {
 		return fmt.Errorf("error on updating DirectConnectGatewayRoute %q, %s", d.Id(), err)
 	}
@@ -145,8 +179,8 @@ func resourceKsyunDirectConnectGatewayRouteUpdate(d *schema.ResourceData, meta i
 }
 
 func resourceKsyunDirectConnectGatewayRouteDelete(d *schema.ResourceData, meta interface{}) (err error) {
-	bwsService := BwsService{meta.(*KsyunClient)}
-	err = bwsService.RemoveDirectConnectGatewayRoute(d)
+	srv := VpcService{meta.(*KsyunClient)}
+	err = srv.RemoveDirectConnectGatewayRoute(d)
 	if err != nil {
 		return fmt.Errorf("error on deleting DirectConnectGatewayRoute %q, %s", d.Id(), err)
 	}

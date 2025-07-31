@@ -1,3 +1,15 @@
+## 1.20.0 (Jul 31, 2025)
+
+FEATURES:
+
+- - **New Resource:** `ksyun_direct_connect_gateway`:  专线接入边界网关
+- - **New Resource:** `ksyun_direct_connect_gateway_route`: 专线接入边界网关路由
+- - **New Resource:** `ksyun_direct_connect_interface`: 专线接入连接通道
+- - **New Resource:** `ksyun_direct_connect_bfd_config`: 专线接入BFD配置
+- - **New Resource:** `ksyun_dc_interface_associate`: 专线接入连接通道关联边界网关
+
+- - **New Data Source:** `ksyun_direct_connects` 专线接入物理端口查询
+
 ## 1.20.0 (Jul 17, 2025)
 
 FEATURES:
