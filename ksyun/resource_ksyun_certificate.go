@@ -25,6 +25,8 @@ package ksyun
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
@@ -55,6 +57,12 @@ func resourceKsyunCertificate() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 				Description: "The Public key of the certificate.",
+				StateFunc: func(v interface{}) string {
+					// Remove newlines from the public key for state consistency
+					s := v.(string)
+
+					return strings.TrimRight(s, "\r\n")
+				},
 			},
 			"certificate_id": {
 				Type:        schema.TypeString,
@@ -64,6 +72,7 @@ func resourceKsyunCertificate() *schema.Resource {
 		},
 	}
 }
+
 func resourceKsyunCertificateCreate(d *schema.ResourceData, meta interface{}) (err error) {
 	kcmService := KcmService{meta.(*KsyunClient)}
 	err = kcmService.CreateCertificate(d, resourceKsyunCertificate())
