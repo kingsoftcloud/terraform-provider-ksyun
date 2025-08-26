@@ -651,6 +651,8 @@ func (s *VpcService) CreateSubnetCall(d *schema.ResourceData, r *schema.Resource
 		}
 	}
 
+	req["VisitInternet"] = d.Get("visit_internet")
+
 	callback = ApiCall{
 		param:  &req,
 		action: "CreateSubnet",
