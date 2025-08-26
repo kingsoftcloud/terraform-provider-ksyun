@@ -1,3 +1,10 @@
+
+## 1.20.0 (Jul 31, 2025)
+
+IMPROVEMENTS:
+
+- `ksyun_subnet`: 添加visit_internet字段，仅在subnet type 为 Physicaly时生效
+
 ## 1.20.0 (Jul 31, 2025)
 
 FEATURES:
