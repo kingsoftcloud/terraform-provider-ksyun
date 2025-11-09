@@ -2,6 +2,7 @@ package ksyun
 
 import (
 	"github.com/KscSDK/ksc-sdk-go/service/bws"
+	"github.com/KscSDK/ksc-sdk-go/service/clickhouse"
 	"github.com/KscSDK/ksc-sdk-go/service/ebs"
 	"github.com/KscSDK/ksc-sdk-go/service/eip"
 	"github.com/KscSDK/ksc-sdk-go/service/epc"
@@ -56,6 +57,8 @@ type KsyunClient struct {
 	pdnsconn      *pdns.Pdns           `json:"pdnsconn,omitempty"`
 	kcrsconn      *kcrs.Kcrs           `json:"kcrsconn,omitempty"`
 	kpfsconn      *kpfs.Kpfs           `json:"kpfsconn,omitempty"`
+
+	clickhouseconn *clickhouse.Clickhouse `json:"clickhouseconn,omitempty"`
 
 	config *Config
 }
