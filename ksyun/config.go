@@ -2,6 +2,9 @@ package ksyun
 
 import (
 	"fmt"
+	kmr "github.com/kingsoftcloud/sdk-go/v2/ksyun/client/kmr/v20210902"
+	"github.com/kingsoftcloud/sdk-go/v2/ksyun/common"
+	"github.com/kingsoftcloud/sdk-go/v2/ksyun/common/profile"
 	"net"
 	"net/http"
 	"net/url"
@@ -180,4 +183,21 @@ func getKsyunClient(c *Config) *http.Client {
 		Transport: tp,
 	}
 	return httpClient
+}
+
+func (client *KsyunClient) WithKmrClient(do func(*kmr.Client) (interface{}, error)) (interface{}, error) {
+	goSdkMutex.Lock()
+	defer goSdkMutex.Unlock()
+	// Initialize the KMR client if necessary
+	if client.kmrconn == nil {
+		credential := common.NewCredential(client.config.AccessKey, client.config.SecretKey)
+		cpf := profile.NewClientProfile()
+		cpf.HttpProfile.Endpoint = client.config.Endpoint
+		kmrconn, err := kmr.NewClient(credential, client.config.Region, cpf)
+		if err != nil {
+			return nil, fmt.Errorf("unable to initialize the KMR client: %#v", err)
+		}
+		client.kmrconn = kmrconn
+	}
+	return do(client.kmrconn)
 }
