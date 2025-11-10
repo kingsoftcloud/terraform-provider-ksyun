@@ -654,6 +654,9 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_direct_connect_interface":     resourceKsyunDirectConnectInterface(),
 			"ksyun_direct_connect_bfd_config":    resourceKsyunDirectConnectBfdConfig(),
 			"ksyun_dc_interface_associate":       resourceKsyunDCInterfaceAssociate(),
+
+			// monitor
+			"ksyun_monitor_alarm_policy": resourceKsyunMonitorAlarmPolicy(),
 		},
 		ConfigureFunc: providerConfigure,
 	}

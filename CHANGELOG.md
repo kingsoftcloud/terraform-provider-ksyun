@@ -1,3 +1,9 @@
+## 1.21.3 (Nov 10, 2025)
+
+IMPROVEMENTS:
+
+- `ksyun_monitor_policy`: 增加云监控告警策略相关接口
+
 ## 1.21.2 (Aug 26, 2025)
 
 IMPROVEMENTS:
