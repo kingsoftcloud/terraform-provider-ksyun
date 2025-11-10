@@ -143,4 +143,4 @@ require (
 	sourcegraph.com/sqs/pbtypes v0.0.0-20180604144634-d3ebe8f20ae4 // indirect
 )
 
-// replace github.com/KscSDK/ksc-sdk-go => ../../KscSDK/ksc-sdk-go
+ replace github.com/KscSDK/ksc-sdk-go => D:\GoProjects\src\github.com\ksc\ksc-sdk-go
