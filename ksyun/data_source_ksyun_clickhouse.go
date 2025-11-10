@@ -7,16 +7,16 @@ Query Clickhouse instance information
 
 	data "ksyun_clickhouse" "default"{
 
-  		instance_id = "f20bcde7-c428-43f1-9170-364ebd959e9c"
+  		instance_id = "instance_id"
 
-  		product_type = "ClickHouse_Single | ClickHouse"
-  		project_ids = "107147"
-  		tag_id = "32960"
+  		product_type = "product_type"
+  		project_ids = "project_ids"
+  		tag_id = "tag_id"
 
-  		fuzzy_search = "20251105192650"
+  		fuzzy_search = "fuzzy_search"
 
   		offset = 0
-  		limit = 2
+  		limit = 10
 	}
 
 ```
@@ -114,7 +114,7 @@ func dataSourceKsyunClickhouse() *schema.Resource {
 			"output_file": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "File name where to save data source results (after running terraform plan)",
+				Description: "File name where to save data source results (after running terraform plan).",
 			},
 			"total_count": {
 				Type:        schema.TypeInt,
@@ -125,44 +125,44 @@ func dataSourceKsyunClickhouse() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    false,
 				Optional:    true,
-				Description: "ClickHouse instance ID (passed in the instance ID to get the details of the instance, otherwise get the list).",
+				Description: "The ClickHouse instance ID. When provided, returns detailed information for that specific instance; otherwise returns a list of all instances.",
 			},
 			"product_type": {
 				Type:        schema.TypeString,
 				Required:    false,
 				Optional:    true,
-				Description: "Product type of the instance. Options: Single copy (ClickHouse_Single); High availability (ClickHouse).",
+				Description: "The product type of the instance. Valid values: 'ClickHouse_Single' (single replica) or 'ClickHouse' (high availability).",
 			},
 			"tag_id": {
 				Type:        schema.TypeString,
 				Required:    false,
 				Optional:    true,
-				Description: "Query by category based on tag ID.",
+				Description: "Filter instances by tag ID.",
 			},
 			"project_ids": {
 				Type:        schema.TypeString,
 				Required:    false,
 				Optional:    true,
-				Description: "Multiple project IDs are separated by commas.",
+				Description: "Comma-separated list of project IDs to filter instances.",
 			},
 
 			"fuzzy_search": {
 				Type:        schema.TypeString,
 				Required:    false,
 				Optional:    true,
-				Description: "Fuzzy filter by name / VIP / ID",
+				Description: "Fuzzy search filter that matches instance name, VIP, or instance ID.",
 			},
 			"offset": {
 				Type:        schema.TypeInt,
 				Required:    false,
 				Optional:    true,
-				Description: "The default number 0 is the first page.",
+				Description: "The starting offset for pagination. Default is 0 (first page).",
 			},
 			"limit": {
 				Type:        schema.TypeInt,
 				Required:    false,
 				Optional:    true,
-				Description: "Maximum number of records per page. Default is 10.",
+				Description: "The maximum number of records to return per page. Default is 10.",
 			},
 			// 输出字段
 			"instances": {
@@ -194,7 +194,7 @@ func dataSourceKsyunClickhouse() *schema.Resource {
 						"status_name": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Status name in Chinese.",
+							Description: "The display name of the instance status (Chinese).",
 						},
 						"status": {
 							Type:        schema.TypeString,
@@ -204,7 +204,7 @@ func dataSourceKsyunClickhouse() *schema.Resource {
 						"network_type": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Network type (VPC).",
+							Description: "The network type of the instance. Currently supports 'VPC'.",
 						},
 						"vpc_id": {
 							Type:        schema.TypeString,
@@ -244,7 +244,7 @@ func dataSourceKsyunClickhouse() *schema.Resource {
 						"bill_type": {
 							Type:        schema.TypeInt,
 							Computed:    true,
-							Description: "Billing type.",
+							Description: "The billing type of the instance.",
 						},
 						"ebs_size": {
 							Type:        schema.TypeInt,
@@ -329,7 +329,7 @@ func dataSourceKsyunClickhouse() *schema.Resource {
 						"product_what": {
 							Type:        schema.TypeInt,
 							Computed:    true,
-							Description: "Product category.",
+							Description: "The product category identifier.",
 						},
 						"service_end_time": {
 							Type:        schema.TypeString,
@@ -444,7 +444,7 @@ func dataSourceKsyunClickhouse() *schema.Resource {
 						"multiaz": {
 							Type:        schema.TypeInt,
 							Computed:    true,
-							Description: "Multi-AZ configuration.",
+							Description: "Multi-Availability Zone deployment configuration flag.",
 						},
 					},
 				},

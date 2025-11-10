@@ -1,3 +1,9 @@
+## 1.21.3 (Nov 10, 2025)
+
+FEATURES:
+
+- - **New Data Source:** `ksyun_clickhouse` 新增云数据仓库ClickHouse列表/详情查询
+
 ## 1.21.2 (Aug 26, 2025)
 
 IMPROVEMENTS:
