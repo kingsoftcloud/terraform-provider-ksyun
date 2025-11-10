@@ -1,3 +1,11 @@
+## 1.21.3 (November 31, 2025)
+
+FEATURES:
+
+- - **New Resource:** `ksyun_cen`:  云企业网
+
+- - **New Data Source:** `ksyun_cens` 云企业网查询
+
 ## 1.21.2 (Aug 26, 2025)
 
 IMPROVEMENTS:
