@@ -145,6 +145,17 @@ func resourceKsyunSubnet() *schema.Resource {
 				ForceNew:    true,
 				Description: "whether support IPV6 CIDR blocks. <br> NOTES: providing a part of regions now.",
 			},
+
+			"visit_internet": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  true,
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					return d.Get("subnet_type").(string) != "Physical" || d.Id() != ""
+				},
+				Description: "Whether the subnet can access the Internet. Valid, when subnet_type = Physical.",
+			},
+
 			"network_acl_id": {
 				Type:        schema.TypeString,
 				Computed:    true,

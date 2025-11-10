@@ -194,13 +194,15 @@ The following arguments are supported:
 
 * `cluster_name` - (Required) The name of the cluster.
 * `k8s_version` - (Required, ForceNew) The latest three kubernetes version. Current valid values:"v1.25.7", "v1.23.17", "v1.21.3". **Notes:** The version is updated in real time with the K8s official. Therefore, you can view the maintaining strategies in [Kingsoft Cloud K8s Version Strategies](https://docs.ksyun.com/documents/43229?type=3) and get the latest versions.
-* `network_type` - (Required, ForceNew) The network type of the cluster. valid values: 'Flannel', 'Canal'.
+* `network_type` - (Required, ForceNew) The network type of the cluster. valid values: 'Flannel', 'Canal', 'Calico'.
 * `pod_cidr` - (Required, ForceNew) The pod CIDR block.
 * `reserve_subnet_id` - (Required, ForceNew) The ID of the reserve subnet.
 * `service_cidr` - (Required, ForceNew) The service CIDR block.
 * `vpc_id` - (Required, ForceNew) The ID of the VPC.
 * `cluster_desc` - (Optional) The description of the cluster.
 * `cluster_manage_mode` - (Optional, ForceNew) The management mode of the master node.
+* `component` - (Optional) The component of the cluster.
+* `expose_public_api_server` - (Optional) Whether to expose the apiserver to the public network, when cluster type is ManagedCluster, it works.
 * `managed_cluster_multi_master` - (Optional) The configuration for the managed cluster multi master. If the cluster_manage_mode is ManagedCluster, this field is **required**.
 * `master_config` - (Optional, ForceNew) The configuration for the master nodes. If the cluster_manage_mode is DedicatedCluster, this field is **required**. **Notes:** work_config block is identified by the **instance_type, subnet_id, security_group_id, role, image_id**. If the unique identification is the same, the instance config block is conflict, and then **cause an error**.If the unique identification is changed, that leads to the cluster **re-creation**.
 * `master_etcd_separate` - (Optional, ForceNew) The deployment method for the Master and Etcd components of the cluster. if set to True, Deploy the Master and Etcd components on dedicated nodes. if set to false, Deploy the Master and Etcd components on shared nodes.
@@ -213,7 +215,7 @@ The `advanced_setting` object supports the following:
 * `container_log_max_files` - (Optional, ForceNew) Customize the number of log files. The default value is 10.
 * `container_log_max_size` - (Optional, ForceNew) Customize the maximum size of the log file. The default value is 100m.
 * `container_path` - (Optional, ForceNew) The storage path of the container. The default value is /data/container. **Notes:** If this path is specified, the docker_path field will be ignored.
-* `container_runtime` - (Optional, ForceNew) Container Runtime.
+* `container_runtime` - (Optional, ForceNew) Container Runtime. Valid Values: `docker`, `containerd`.
 * `data_disk` - (Optional, ForceNew) The mount setting of data disk. **Notes:** Only impact on the first data disk.
 * `docker_path` - (Optional, ForceNew) The storage path of the container. The default value is /data/docker.
 * `extra_arg` - (Optional, ForceNew) The extra arguments for the kubelet. The format is key=value. For example, --kubelet-extra-args="key1=value1,key2=value2".
@@ -221,6 +223,20 @@ The `advanced_setting` object supports the following:
 * `pre_user_script` - (Optional, ForceNew) A user script encoded in base64, which will be executed on the node **before** the Kubernetes components run. Users need to ensure the script's re-entrant and retry logic. The script and its generated logs can be found in the directory /usr/local/ksyun/kce/pre_userscript.
 * `taints` - (Optional, ForceNew) Taints.
 * `user_script` - (Optional, ForceNew) A user script encoded in base64, which will be executed on the node **after** the Kubernetes components run. Users need to ensure the script's re-entrant and retry logic. The script and its generated logs can be found in the directory /usr/local/ksyun/kce/pre_userscript.
+
+The `component` object supports the following:
+
+* `name` - (Required) The name of the component.
+* `namespace` - (Required) The namespace of the component.
+* `release_name` - (Required) The name of the release.
+* `config` - (Optional) The config of the component.
+* `resources` - (Optional) The resources of the component.
+* `version` - (Optional) The version of the component.
+
+The `config` object supports the following:
+
+* `config_string` - (Optional) The config string of the component.
+* `virtual_kubelet` - (Optional) The config of the virtual kubelet.
 
 The `data_disk` object supports the following:
 
@@ -237,6 +253,16 @@ The `data_disks` object supports the following:
 
 The `extension_network_interface` object supports the following:
 
+
+The `kcilet_heartbeat` object supports the following:
+
+* `failuret_threshold` - (Optional) The failure threshold of the virtual kubelet.
+* `period` - (Optional) The period of the virtual kubelet.
+
+The `limits` object supports the following:
+
+* `cpu` - (Optional) The cpu of the component.
+* `memory` - (Optional) The memory of the component.
 
 The `managed_cluster_multi_master` object supports the following:
 
@@ -263,7 +289,7 @@ The `master_config` object supports the following:
 * `host_name` - (Optional) The hostname of the instance. only effective when image support cloud-init.
 * `iam_role_name` - (Optional) name of iam role.
 * `instance_name` - (Optional, ForceNew) The name of instance, which contains 2-64 characters and only support Chinese, English, numbers.
-* `instance_password` - (Optional, ForceNew) Password to an instance is a string of 8 to 32 characters.
+* `instance_password` - (Optional) Password to an instance is a string of 8 to 32 characters.
 * `instance_status` - (Optional) The state of instance.
 * `keep_image_login` - (Optional) Keep the initial settings of the custom image.
 * `key_id` - (Optional) The certificate id of the instance.
@@ -278,6 +304,29 @@ The `master_config` object supports the following:
 * `tags` - (Optional) the tags of the resource.
 * `user_data` - (Optional) The user data to be specified into this instance. Must be encrypted in base64 format and limited in 16 KB. only effective when image support cloud-init.
 
+The `openapi` object supports the following:
+
+* `access_key` - (Optional) The access key of the virtual kubelet.
+* `aksk_config_map` - (Optional) The aksk config map of the virtual kubelet.
+* `region` - (Optional) The region of the virtual kubelet.
+* `secret_key` - (Optional) The secret key of the virtual kubelet.
+
+The `requests` object supports the following:
+
+* `cpu` - (Optional) The cpu of the component.
+* `memory` - (Optional) The memory of the component.
+
+The `resources` object supports the following:
+
+* `limits` - (Optional) The limits of the component.
+* `requests` - (Optional) The requests of the component.
+
+The `server` object supports the following:
+
+* `listen_port` - (Optional) The port of the virtual kubelet server.
+* `server_cert_file` - (Optional) The server certificate file of the virtual kubelet.
+* `server_key_file` - (Optional) The server key file of the virtual kubelet.
+
 The `system_disk` object supports the following:
 
 * `disk_size` - (Optional) The size of the data disk. value range: [20, 500].
@@ -285,9 +334,48 @@ The `system_disk` object supports the following:
 
 The `taints` object supports the following:
 
+* `effect` - (Required) The effect of the taint. Valid values: NoSchedule, PreferNoSchedule, NoExecute.
+* `key` - (Required) The key of the taint.
+* `value` - (Required) The value of the taint.
+
+The `taints` object supports the following:
+
 * `effect` - (Required, ForceNew) The effect of the taint. Valid values: NoSchedule, PreferNoSchedule, NoExecute.
 * `key` - (Required, ForceNew) The key of the taint.
 * `value` - (Required, ForceNew) The value of the taint.
+
+The `virtual_kubelet` object supports the following:
+
+* `advanced_setting` - (Optional) The advanced settings of the virtual kubelet.
+* `allow_privileged` - (Optional) Whether to allow privileged containers.
+* `anonymous_auth` - (Optional) Whether to enable anonymous authentication.
+* `batch_create_enable` - (Optional) Whether to enable batch creation of pods in the virtual kubelet.
+* `capacity` - (Optional) The capacity of the virtual kubelet.
+* `cluster_dns` - (Optional) The DNS of the virtual kubelet.
+* `cluster_domain` - (Optional) The domain of the virtual kubelet.
+* `cluster_id` - (Optional) The ID of the cluster.
+* `custom_labels` - (Optional) The custom labels of the virtual kubelet.
+* `disable_taint` - (Optional) Whether to disable taint.
+* `enable_node_lease` - (Optional) Whether to enable node lease.
+* `image_cache_enable` - (Optional) Whether to enable image cache in the virtual kubelet.
+* `instance_settings` - (Optional) The instance settings of the virtual kubelet.
+* `kci_pod_deletion_cost` - (Optional) The pod deletion cost of the virtual kubelet.
+* `kcilet_heartbeat` - (Optional) The heartbeat of the virtual kubelet.
+* `kcilet_kubeconfig_path` - (Optional) The kubeconfig path of the virtual kubelet.
+* `kubeconfig` - (Optional) The config string of the virtual kubelet.
+* `log_level` - (Optional) The log level of the virtual kubelet.
+* `metrics_server` - (Optional) The metrics server of the virtual kubelet.
+* `namespace` - (Optional) The namespace of the virtual kubelet.
+* `nodename` - (Optional) The name of the virtual kubelet node.
+* `openapi` - (Optional) The openapi of the virtual kubelet.
+* `pod_sync_bucket_size` - (Optional) The bucket size of pod synchronization in the virtual kubelet.
+* `pod_sync_rate` - (Optional) The rate of pod synchronization in the virtual kubelet.
+* `pod_sync_workers` - (Optional) The number of workers for pod synchronization in the virtual kubelet.
+* `server` - (Optional) The server of the virtual kubelet.
+* `startup_timeout` - (Optional) The startup timeout of the virtual kubelet.
+* `summary_sync_interval` - (Optional) The interval of summary synchronization in the virtual kubelet.
+* `taints` - (Optional) Taints.
+* `version` - (Optional) The version of the virtual kubelet.
 
 The `worker_config` object supports the following:
 
@@ -309,7 +397,7 @@ The `worker_config` object supports the following:
 * `host_name` - (Optional) The hostname of the instance. only effective when image support cloud-init.
 * `iam_role_name` - (Optional) name of iam role.
 * `instance_name` - (Optional, ForceNew) The name of instance, which contains 2-64 characters and only support Chinese, English, numbers.
-* `instance_password` - (Optional, ForceNew) Password to an instance is a string of 8 to 32 characters.
+* `instance_password` - (Optional) Password to an instance is a string of 8 to 32 characters.
 * `instance_status` - (Optional) The state of instance.
 * `keep_image_login` - (Optional) Keep the initial settings of the custom image.
 * `key_id` - (Optional) The certificate id of the instance.
@@ -330,6 +418,8 @@ In addition to all arguments above, the following attributes are exported:
 
 * `id` - ID of the resource.
 * `cluster_id` - The ID of the cluster.
+* `kube_config_intranet` - The configuration for the private kubernetes cluster.
+* `kube_config` - The configuration for the kubernetes cluster.
 * `master_id_list` - The ID list of the master nodes.
 * `worker_id_list` - The ID list of the worker nodes.
 

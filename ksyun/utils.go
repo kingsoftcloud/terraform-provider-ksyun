@@ -56,6 +56,7 @@ func SchemaSetsToFilterMap(d *schema.ResourceData, filters []string, req *map[st
 	}
 	return req
 }
+
 func hashStringArray(arr []string) string {
 	var buf bytes.Buffer
 
@@ -320,6 +321,7 @@ func transformListUnique(v interface{}, k string, t SdkReqTransform, req *map[st
 	}
 	return nil
 }
+
 func TransformerWithFilter(v interface{}, k string, t SdkReqTransform, index int, req *map[string]interface{}) (int, error) {
 	return transformWithFilter(v, k, t, index, req)
 }
@@ -356,7 +358,6 @@ func transformWithFilter(v interface{}, k string, t SdkReqTransform, index int, 
 				} else {
 					(*req)["Filter."+strconv.Itoa(index)+".Name"] = t.mapping
 				}
-
 			}
 			(*req)["Filter."+strconv.Itoa(index)+".Value."+strconv.Itoa(i+1)] = value
 		}
@@ -529,7 +530,6 @@ func requestCreateMapping(d *schema.ResourceData, k string, t SdkReqTransform, i
 			case TransformListFilter:
 				index, err = transformListFilter(v, k, t, index, req)
 			}
-
 		} else {
 			m := extraMapping[k]
 			if m.FieldReqFunc == nil {
@@ -658,7 +658,8 @@ func SdkResponseAutoResourceData(d *schema.ResourceData, resource *schema.Resour
 }
 
 func SdkResponseAutoMapping(resource *schema.Resource, collectField string, item map[string]interface{}, computeItem map[string]interface{},
-	extraMapping map[string]SdkResponseMapping) map[string]interface{} {
+	extraMapping map[string]SdkResponseMapping,
+) map[string]interface{} {
 	var result map[string]interface{}
 	result = make(map[string]interface{})
 	keys := strings.Split(collectField, ".")
@@ -761,7 +762,7 @@ func SdkSliceMapping(d *schema.ResourceData, result interface{}, sdkSliceData Sd
 	data = []map[string]interface{}{}
 
 	if reflect.TypeOf(result).Kind() == reflect.Slice {
-		var length = 0
+		length := 0
 		if v, ok := result.([]map[string]interface{}); ok {
 			length = len(v)
 			for _, v1 := range v {
@@ -926,13 +927,11 @@ func transformerValueOfObj2String(retObj interface{}) {
 				iterObj[k] = strconv.Itoa(v.(int))
 			}
 		}
-
 	}
 }
 
 // IsStructEmpty returns true, if structure is empty
 func IsStructEmpty(raw interface{}, dest interface{}) bool {
-
 	return reflect.DeepEqual(raw, dest)
 }
 
@@ -1073,9 +1072,7 @@ func transformListNWithRecursive(v interface{}, k string, t SdkReqTransform, req
 				m1 := v1.(map[string]interface{})
 				for k2, v2 := range m1 {
 					k3 := getFinalKey(t, k) + "." + strconv.Itoa(index+1) + "." + getFinalKey(t, k2)
-					var (
-						err error
-					)
+					var err error
 					switch v2.(type) {
 					case []interface{}:
 						err = transformListNWithRecursive(v2, k3, t, req)
@@ -1096,8 +1093,75 @@ func transformListNWithRecursive(v interface{}, k string, t SdkReqTransform, req
 				k3 := getFinalKey(t, k) + "." + strconv.Itoa(index+1)
 				(*req)[k3] = v1
 			}
-
 		}
 	}
 	return nil
+}
+
+func transformListNTopWithRecursive(v interface{}, k string, t SdkReqTransform, req *map[string]interface{}, allowDot bool) error {
+	if list, ok := v.([]interface{}); ok {
+		if ok, _, err := transformFieldReqFunc(v, k, t, 0, req); ok {
+			if err != nil {
+				return fmt.Errorf("error on transformListN with transformFieldReqFunc %s", err)
+			}
+			return nil
+		}
+		for index, v1 := range list {
+			switch v1.(type) {
+			case map[string]interface{}:
+				m1 := v1.(map[string]interface{})
+				for k2, v2 := range m1 {
+					var k3 string
+					if allowDot {
+						k3 = getFinalKey(t, k) + "." + strconv.Itoa(index+1) + "." + getFinalKey(t, k2)
+					} else {
+						k3 = getFinalKey(t, k) + "." + getFinalKey(t, k2)
+					}
+					var err error
+					switch v2.(type) {
+					case []interface{}:
+						err = transformListNTopWithRecursive(v2, k3, t, req, false)
+						if err != nil {
+							return err
+						}
+					case map[string]interface{}:
+						_v2 := v2.(map[string]interface{})
+						if err = recursiveMapToTransformListN(_v2, t, req, k3); err != nil {
+							return err
+						}
+					default:
+						(*req)[k3] = v2
+					}
+
+				}
+			default:
+				k3 := getFinalKey(t, k) + "." + strconv.Itoa(index+1)
+				(*req)[k3] = v1
+			}
+		}
+	}
+	return nil
+}
+
+func indirectString(v interface{}) string {
+	if v == nil {
+		return ""
+	}
+	switch v.(type) {
+	case string:
+		return v.(string)
+	case *string:
+		if v1, ok := v.(*string); ok {
+			return *v1
+		}
+	case int:
+		return strconv.Itoa(v.(int))
+	case *int:
+		if v1, ok := v.(*int); ok {
+			return strconv.Itoa(*v1)
+		}
+	default:
+		return fmt.Sprintf("%v", v)
+	}
+	return ""
 }
