@@ -375,6 +375,11 @@ Monitor
 
 	Resource
 		ksyun_monitor_alarm_policy
+
+KMR
+
+	Data Source
+    ksyun_kmr_clusters
 */
 
 package ksyun

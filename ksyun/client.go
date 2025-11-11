@@ -65,7 +65,7 @@ type KsyunClient struct {
 	monitorv4conn  *monitorv4.Monitorv4   `json:"monitor_4_conn,omitempty"`
 	cenconn        *cen.Cen               `json:"cenconn,omitempty"`
 	clickhouseconn *clickhouse.Clickhouse `json:"clickhouseconn,omitempty"`
-	kmrconn       *kmr.Client          `json:"kmrconn,omitempty"`
+	kmrconn        *kmr.Client            `json:"kmrconn,omitempty"`
 
 	config *Config
 }
