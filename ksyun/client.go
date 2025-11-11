@@ -29,6 +29,7 @@ import (
 	"github.com/KscSDK/ksc-sdk-go/service/tag"
 	"github.com/KscSDK/ksc-sdk-go/service/tagv2"
 	"github.com/KscSDK/ksc-sdk-go/service/vpc"
+	klog "github.com/kingsoftcloud/sdk-go/v2/ksyun/client/klog/v20200731"
 	kmr "github.com/kingsoftcloud/sdk-go/v2/ksyun/client/kmr/v20210902" // 别名导入kmr SDK
 	"github.com/ks3sdklib/ksyun-ks3-go-sdk/ks3"
 )
@@ -66,6 +67,7 @@ type KsyunClient struct {
 	cenconn        *cen.Cen               `json:"cenconn,omitempty"`
 	clickhouseconn *clickhouse.Clickhouse `json:"clickhouseconn,omitempty"`
 	kmrconn        *kmr.Client            `json:"kmrconn,omitempty"`
+	klogconn       *klog.Client           `json:"klogconn,omitempty"`
 
 	config *Config
 }

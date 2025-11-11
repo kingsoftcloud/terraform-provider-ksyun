@@ -569,6 +569,8 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_iam_roles":  dataSourceKsyunIamRoles(),
 			"ksyun_iam_groups": dataSourceKsyunIamGroups(),
 
+			// klog
+			"ksyun_klog_projects": dataSourceKsyunKlogProjects(),
 			// direct connect
 			"ksyun_direct_connects": dataSourceKsyunDirectConnects(),
 

@@ -110,6 +110,13 @@ IMPROVEMENTS:
 
 ## 1.18.7 (Apr 16, 2025)
 
+## 1.18.7 (Nov 11, 2025)
+
+FEATURES:
+
+- - **New Resource:** `ksyun_klog_projects` KLOG 项目列表
+
+
 IMPROVEMENTS:
 
 - `ksyun_ks3_bucket`: 新增`tags`字段

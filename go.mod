@@ -3,15 +3,15 @@ module github.com/terraform-providers/terraform-provider-ksyun
 go 1.17
 
 require (
+	github.com/aws/aws-sdk-go v1.55.8
 	github.com/KscSDK/ksc-sdk-go v0.15.0
-	github.com/aws/aws-sdk-go v1.44.320
 	github.com/client9/misspell v0.3.4
 	github.com/fatih/color v1.7.0
 	github.com/golangci/golangci-lint v1.23.7
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/hashicorp/hcl/v2 v2.0.0
 	github.com/hashicorp/terraform-plugin-sdk v1.7.0
-	github.com/kingsoftcloud/sdk-go/v2 v2.2.29
+	github.com/kingsoftcloud/sdk-go/v2 v2.2.32
 	github.com/ks3sdklib/ksyun-ks3-go-sdk v1.2.3
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/pkg/errors v0.9.1
@@ -43,7 +43,7 @@ require (
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gofrs/flock v0.0.0-20190320160742-5135e617513b // indirect
 	github.com/gogo/protobuf v1.2.1 // indirect
-	github.com/golang/protobuf v1.3.2 // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golangci/check v0.0.0-20180506172741-cfe4005ccda2 // indirect
 	github.com/golangci/dupl v0.0.0-20180902072040-3e9179ac440a // indirect
 	github.com/golangci/errcheck v0.0.0-20181223084120-ef45e06d44b6 // indirect
@@ -58,7 +58,7 @@ require (
 	github.com/golangci/prealloc v0.0.0-20180630174525-215b22d4de21 // indirect
 	github.com/golangci/revgrep v0.0.0-20180526074752-d9c87f5ffaf0 // indirect
 	github.com/golangci/unconvert v0.0.0-20180507085042-28b1c447d1f4 // indirect
-	github.com/google/go-cmp v0.3.1 // indirect
+	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/google/uuid v1.1.1 // indirect
 	github.com/googleapis/gax-go/v2 v2.0.5 // indirect
 	github.com/gostaticanalysis/analysisutil v0.0.0-20190318220348-4088753ea4d3 // indirect
@@ -134,6 +134,7 @@ require (
 	google.golang.org/appengine v1.6.1 // indirect
 	google.golang.org/genproto v0.0.0-20190819201941-24fa4b261c55 // indirect
 	google.golang.org/grpc v1.23.0 // indirect
+	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/ini.v1 v1.51.0 // indirect
 	gopkg.in/yaml.v2 v2.2.8 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
