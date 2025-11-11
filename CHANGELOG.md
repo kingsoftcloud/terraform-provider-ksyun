@@ -1,8 +1,15 @@
-## 1.21.3 (Nov 10, 2025)
+## 1.21.4 (Nov 11, 2025)
 
 IMPROVEMENTS:
 
 - `ksyun_monitor_policy`: 增加云监控告警策略相关接口
+## 1.21.3 (November 31, 2025)
+
+FEATURES:
+
+- - **New Resource:** `ksyun_cen`:  云企业网
+
+- - **New Data Source:** `ksyun_cens` 云企业网查询
 
 ## 1.21.2 (Aug 26, 2025)
 

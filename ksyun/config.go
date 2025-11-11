@@ -11,6 +11,7 @@ import (
 	"github.com/KscSDK/ksc-sdk-go/ksc"
 	"github.com/KscSDK/ksc-sdk-go/ksc/utils"
 	"github.com/KscSDK/ksc-sdk-go/service/bws"
+	"github.com/KscSDK/ksc-sdk-go/service/cen"
 	"github.com/KscSDK/ksc-sdk-go/service/ebs"
 	"github.com/KscSDK/ksc-sdk-go/service/eip"
 	"github.com/KscSDK/ksc-sdk-go/service/epc"
@@ -106,6 +107,7 @@ func (c *Config) Client() (*KsyunClient, error) {
 	client.kpfsconn = kpfs.SdkNew(cli, cfg, url)
 	client.monitorconn = monitor.SdkNew(cli, cfg, url)
 	client.monitorv4conn = monitorv4.SdkNew(cli, cfg, url)
+	client.cenconn = cen.SdkNew(cli, cfg, url)
 
 	// 懒加载ks3-client 所以不在此初始
 	return &client, nil

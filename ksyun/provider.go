@@ -150,6 +150,14 @@ ALB
 		ksyun_alb_register_backend_server
 		ksyun_alb_listener_associate_acl
 
+CEN
+
+	Data Source
+		ksyun_cens
+
+	Resource
+		ksyun_cen
+
 SSH key
 
 	Data Source
@@ -531,6 +539,9 @@ func Provider() terraform.ResourceProvider {
 
 			// direct connect
 			"ksyun_direct_connects": dataSourceKsyunDirectConnects(),
+
+			// cen
+			"ksyun_cens": dataSourceKsyunCens(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"ksyun_alb":                              resourceKsyunAlb(),
@@ -661,6 +672,8 @@ func Provider() terraform.ResourceProvider {
 
 			// monitor
 			"ksyun_monitor_alarm_policy": resourceKsyunMonitorAlarmPolicy(),
+			// cen
+			"ksyun_cen": resourceKsyunCen(),
 		},
 		ConfigureFunc: providerConfigure,
 	}

@@ -2,6 +2,7 @@ package ksyun
 
 import (
 	"github.com/KscSDK/ksc-sdk-go/service/bws"
+	"github.com/KscSDK/ksc-sdk-go/service/cen"
 	"github.com/KscSDK/ksc-sdk-go/service/ebs"
 	"github.com/KscSDK/ksc-sdk-go/service/eip"
 	"github.com/KscSDK/ksc-sdk-go/service/epc"
@@ -61,6 +62,9 @@ type KsyunClient struct {
 	monitorconn   *monitor.Monitor     `json:"monitorconn,omitempty"`
 	monitorv4conn *monitorv4.Monitorv4 `json:"monitor_4_conn,omitempty"`
 	config        *Config
+	cenconn       *cen.Cen             `json:"cenconn,omitempty"`
+
+	config *Config
 }
 
 func (client *KsyunClient) GetVpcClient() *vpc.Vpc {
