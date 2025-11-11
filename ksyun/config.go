@@ -2,6 +2,7 @@ package ksyun
 
 import (
 	"fmt"
+	klog "github.com/kingsoftcloud/sdk-go/v2/ksyun/client/klog/v20200731"
 	kmr "github.com/kingsoftcloud/sdk-go/v2/ksyun/client/kmr/v20210902"
 	"github.com/kingsoftcloud/sdk-go/v2/ksyun/common"
 	"github.com/kingsoftcloud/sdk-go/v2/ksyun/common/profile"
@@ -65,6 +66,7 @@ type Config struct {
 // Client will returns a client with connections for all product
 func (c *Config) Client() (*KsyunClient, error) {
 	var client KsyunClient
+	var err error
 	// init ksc client info
 	client.region = c.Region
 	cli := ksc.NewClient(c.AccessKey, c.SecretKey)
@@ -109,6 +111,9 @@ func (c *Config) Client() (*KsyunClient, error) {
 	client.pdnsconn = pdns.SdkNew(cli, cfg, url)
 	client.kcrsconn = kcrs.SdkNew(cli, cfg, url)
 	client.kpfsconn = kpfs.SdkNew(cli, cfg, url)
+	if client.klogconn, err = klogSdkNew(c); err != nil {
+		return nil, err
+	}
 	client.clickhouseconn = clickhouse.SdkNew(cli, cfg, url)
 	client.monitorconn = monitor.SdkNew(cli, cfg, url)
 	client.monitorv4conn = monitorv4.SdkNew(cli, cfg, url)
@@ -191,6 +196,14 @@ func getKsyunClient(c *Config) *http.Client {
 		Transport: tp,
 	}
 	return httpClient
+}
+
+func klogSdkNew(c *Config) (*klog.Client, error) {
+	cpf := profile.NewClientProfile()
+	cpf.HttpProfile.ReqMethod = "POST"
+	cpf.HttpProfile.ReqTimeout = 20
+	cpf.HttpProfile.Endpoint = c.Endpoint
+	return klog.NewClient(common.NewCredential(c.AccessKey, c.SecretKey), c.Region, cpf)
 }
 
 func (client *KsyunClient) WithKmrClient(do func(*kmr.Client) (interface{}, error)) (interface{}, error) {
