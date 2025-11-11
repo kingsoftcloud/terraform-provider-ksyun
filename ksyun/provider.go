@@ -541,6 +541,7 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_dnats":                            dataSourceKsyunDnats(),
 			"ksyun_alb_backend_server_groups":        dataSourceKsyunAlbBackendServerGroups(),
 			"ksyun_vpn_gateway_routes":               dataSourceKsyunVpnGatewayRoutes(),
+			"ksyun_kmr_clusters":                     dataSourceKsyunKmrClusters(),
 
 			// private_dns
 			"ksyun_private_dns_zones":   dataSourceKsyunPrivateDnsZones(),
