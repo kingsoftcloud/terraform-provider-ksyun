@@ -517,6 +517,9 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_iam_users":  dataSourceKsyunIamUsers(),
 			"ksyun_iam_roles":  dataSourceKsyunIamRoles(),
 			"ksyun_iam_groups": dataSourceKsyunIamGroups(),
+
+			// klog
+			"ksyun_klog_projects": dataSourceKsyunKlogProjects(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"ksyun_alb":                              resourceKsyunAlb(),
