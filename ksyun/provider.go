@@ -343,6 +343,10 @@ KPFS
 	Resource
 		ksyun_kpfs_acl
 
+Monitor
+
+	Resource
+		ksyun_monitor_alarm_policy
 */
 
 package ksyun

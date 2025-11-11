@@ -5,37 +5,37 @@ Provides a Monitor Alarm Policy resource.
 
 ```hcl
 
-resource "ksyun_monitor_alarm_policy" "foo" {
-  policy_name        = "tf-test-policy"
-  product_type       = 0
-  policy_type        = 0
-  resource_bind_type = 3
+	resource "ksyun_monitor_alarm_policy" "foo" {
+	  policy_name        = "tf-test-policy"
+	  product_type       = 0
+	  policy_type        = 0
+	  resource_bind_type = 3
 
-  trigger_rules {
-    compare       = ">"
-	effect_bt     = "00:00"
-	effect_et     = "23:59"
-    interval      = 5
-	item_key      = "cpu.utilizition.total"
-    item_name     = "CPU利用率"
-	max_count     = 3
-    method        = "avg"
-    period        = "5m"
-    points        = 2
-    trigger_value = "90"
-    units         = "%"
-  }
+	  trigger_rules {
+	    compare       = ">"
+		effect_bt     = "00:00"
+		effect_et     = "23:59"
+	    interval      = 5
+		item_key      = "cpu.utilizition.total"
+	    item_name     = "CPU利用率"
+		max_count     = 3
+	    method        = "avg"
+	    period        = "5m"
+	    points        = 2
+	    trigger_value = "90"
+	    units         = "%"
+	  }
 
-  instance_ids = []
+	  instance_ids = []
 
-  user_notice {
-    contact_way  = 2
-    contact_flag = 2
-    contact_id   = 4423
-  }
+	  user_notice {
+	    contact_way  = 2
+	    contact_flag = 2
+	    contact_id   = 4423
+	  }
 
-  url_notice = ["https://example.com/webhook"]
-}
+	  url_notice = ["https://example.com/webhook"]
+	}
 
 ```
 
@@ -47,7 +47,6 @@ Monitor Alarm Policy can be imported using the `policy_id`, e.g.
 $ terraform import ksyun_monitor_alarm_policy.foo policy_id
 ```
 */
-
 package ksyun
 
 import (
