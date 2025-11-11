@@ -351,6 +351,10 @@ KPFS
 	Resource
 		ksyun_kpfs_acl
 
+Monitor
+
+	Resource
+		ksyun_monitor_alarm_policy
 */
 
 package ksyun
@@ -666,6 +670,8 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_direct_connect_bfd_config":    resourceKsyunDirectConnectBfdConfig(),
 			"ksyun_dc_interface_associate":       resourceKsyunDCInterfaceAssociate(),
 
+			// monitor
+			"ksyun_monitor_alarm_policy": resourceKsyunMonitorAlarmPolicy(),
 			// cen
 			"ksyun_cen": resourceKsyunCen(),
 		},

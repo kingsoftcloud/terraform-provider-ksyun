@@ -27,6 +27,8 @@ import (
 	"github.com/KscSDK/ksc-sdk-go/service/kpfs"
 	"github.com/KscSDK/ksc-sdk-go/service/krds"
 	"github.com/KscSDK/ksc-sdk-go/service/mongodb"
+	"github.com/KscSDK/ksc-sdk-go/service/monitor"
+	"github.com/KscSDK/ksc-sdk-go/service/monitorv4"
 	"github.com/KscSDK/ksc-sdk-go/service/pdns"
 	"github.com/KscSDK/ksc-sdk-go/service/rabbitmq"
 	"github.com/KscSDK/ksc-sdk-go/service/sks"
@@ -103,6 +105,8 @@ func (c *Config) Client() (*KsyunClient, error) {
 	client.pdnsconn = pdns.SdkNew(cli, cfg, url)
 	client.kcrsconn = kcrs.SdkNew(cli, cfg, url)
 	client.kpfsconn = kpfs.SdkNew(cli, cfg, url)
+	client.monitorconn = monitor.SdkNew(cli, cfg, url)
+	client.monitorv4conn = monitorv4.SdkNew(cli, cfg, url)
 	client.cenconn = cen.SdkNew(cli, cfg, url)
 
 	// 懒加载ks3-client 所以不在此初始
