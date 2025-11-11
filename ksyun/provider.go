@@ -343,6 +343,20 @@ KPFS
 	Resource
 		ksyun_kpfs_acl
 
+KFW
+
+	Data Source
+		ksyun_kfw_instances
+		ksyun_kfw_acls
+		ksyun_kfw_addrbooks
+		ksyun_kfw_service_groups
+
+	Resource
+		ksyun_kfw_instance
+		ksyun_kfw_acl
+
+		ksyun_kfw_addrbook
+		ksyun_kfw_service_group
 */
 
 package ksyun
@@ -520,6 +534,12 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_kcrs_namespaces":       dataSourceKsyunKcrsNamespaces(),
 			"ksyun_kcrs_webhook_triggers": dataSourceKsyunKcrsWebhookTriggers(),
 
+			// kfw
+			"ksyun_kfw_instances":      dataSourceKsyunKfwInstances(),
+			"ksyun_kfw_addrbooks":      dataSourceKsyunKfwAddrbooks(),
+			"ksyun_kfw_acls":           dataSourceKsyunKfwAcls(),
+			"ksyun_kfw_service_groups": dataSourceKsyunKfwServiceGroups(),
+
 			// iam
 			"ksyun_iam_users":  dataSourceKsyunIamUsers(),
 			"ksyun_iam_roles":  dataSourceKsyunIamRoles(),
@@ -654,6 +674,10 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_direct_connect_interface":     resourceKsyunDirectConnectInterface(),
 			"ksyun_direct_connect_bfd_config":    resourceKsyunDirectConnectBfdConfig(),
 			"ksyun_dc_interface_associate":       resourceKsyunDCInterfaceAssociate(),
+			"ksyun_kfw_instance":                 resourceKsyunCfwInstance(),
+			"ksyun_kfw_acl":                      resourceKsyunKfwAcl(),
+			"ksyun_kfw_addrbook":                 resourceKsyunKfwAddrbook(),
+			"ksyun_kfw_service_group":            resourceKsyunKfwServiceGroup(),
 		},
 		ConfigureFunc: providerConfigure,
 	}
