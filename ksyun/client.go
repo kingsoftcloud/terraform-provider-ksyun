@@ -3,6 +3,7 @@ package ksyun
 import (
 	"github.com/KscSDK/ksc-sdk-go/service/bws"
 	"github.com/KscSDK/ksc-sdk-go/service/clickhouse"
+	"github.com/KscSDK/ksc-sdk-go/service/cen"
 	"github.com/KscSDK/ksc-sdk-go/service/ebs"
 	"github.com/KscSDK/ksc-sdk-go/service/eip"
 	"github.com/KscSDK/ksc-sdk-go/service/epc"
@@ -18,6 +19,8 @@ import (
 	"github.com/KscSDK/ksc-sdk-go/service/kpfs"
 	"github.com/KscSDK/ksc-sdk-go/service/krds"
 	"github.com/KscSDK/ksc-sdk-go/service/mongodb"
+	"github.com/KscSDK/ksc-sdk-go/service/monitor"
+	"github.com/KscSDK/ksc-sdk-go/service/monitorv4"
 	"github.com/KscSDK/ksc-sdk-go/service/pdns"
 	"github.com/KscSDK/ksc-sdk-go/service/rabbitmq"
 	"github.com/KscSDK/ksc-sdk-go/service/sks"
@@ -57,7 +60,9 @@ type KsyunClient struct {
 	pdnsconn      *pdns.Pdns           `json:"pdnsconn,omitempty"`
 	kcrsconn      *kcrs.Kcrs           `json:"kcrsconn,omitempty"`
 	kpfsconn      *kpfs.Kpfs           `json:"kpfsconn,omitempty"`
-
+	monitorconn   *monitor.Monitor     `json:"monitorconn,omitempty"`
+	monitorv4conn *monitorv4.Monitorv4 `json:"monitor_4_conn,omitempty"`
+	cenconn       *cen.Cen             `json:"cenconn,omitempty"`
 	clickhouseconn *clickhouse.Clickhouse `json:"clickhouseconn,omitempty"`
 
 	config *Config
@@ -66,6 +71,7 @@ type KsyunClient struct {
 func (client *KsyunClient) GetVpcClient() *vpc.Vpc {
 	return client.vpcconn
 }
+
 func (client *KsyunClient) GetKecClient() *kec.Kec {
 	return client.kecconn
 }
