@@ -11,6 +11,7 @@ import (
 	"github.com/KscSDK/ksc-sdk-go/ksc"
 	"github.com/KscSDK/ksc-sdk-go/ksc/utils"
 	"github.com/KscSDK/ksc-sdk-go/service/bws"
+	"github.com/KscSDK/ksc-sdk-go/service/clickhouse"
 	"github.com/KscSDK/ksc-sdk-go/service/cen"
 	"github.com/KscSDK/ksc-sdk-go/service/ebs"
 	"github.com/KscSDK/ksc-sdk-go/service/eip"
@@ -105,6 +106,7 @@ func (c *Config) Client() (*KsyunClient, error) {
 	client.pdnsconn = pdns.SdkNew(cli, cfg, url)
 	client.kcrsconn = kcrs.SdkNew(cli, cfg, url)
 	client.kpfsconn = kpfs.SdkNew(cli, cfg, url)
+	client.clickhouseconn = clickhouse.SdkNew(cli, cfg, url)
 	client.monitorconn = monitor.SdkNew(cli, cfg, url)
 	client.monitorv4conn = monitorv4.SdkNew(cli, cfg, url)
 	client.cenconn = cen.SdkNew(cli, cfg, url)

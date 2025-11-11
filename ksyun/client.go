@@ -2,6 +2,7 @@ package ksyun
 
 import (
 	"github.com/KscSDK/ksc-sdk-go/service/bws"
+	"github.com/KscSDK/ksc-sdk-go/service/clickhouse"
 	"github.com/KscSDK/ksc-sdk-go/service/cen"
 	"github.com/KscSDK/ksc-sdk-go/service/ebs"
 	"github.com/KscSDK/ksc-sdk-go/service/eip"
@@ -62,6 +63,7 @@ type KsyunClient struct {
 	monitorconn   *monitor.Monitor     `json:"monitorconn,omitempty"`
 	monitorv4conn *monitorv4.Monitorv4 `json:"monitor_4_conn,omitempty"`
 	cenconn       *cen.Cen             `json:"cenconn,omitempty"`
+	clickhouseconn *clickhouse.Clickhouse `json:"clickhouseconn,omitempty"`
 
 	config *Config
 }

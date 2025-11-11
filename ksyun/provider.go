@@ -255,6 +255,11 @@ KRDS
 		ksyun_krds_security_group_rule
 		ksyun_krds_parameter_group
 
+Clickhouse
+
+	Data Source
+		ksyun_clickhouse
+
 SQLServer
 
 	Data Source
@@ -540,6 +545,8 @@ func Provider() terraform.ResourceProvider {
 			// direct connect
 			"ksyun_direct_connects": dataSourceKsyunDirectConnects(),
 
+			// clickhouse
+			"ksyun_clickhouse": dataSourceKsyunClickhouse(),
 			// cen
 			"ksyun_cens": dataSourceKsyunCens(),
 		},
