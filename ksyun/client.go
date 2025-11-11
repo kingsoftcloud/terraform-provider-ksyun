@@ -61,7 +61,6 @@ type KsyunClient struct {
 	kpfsconn      *kpfs.Kpfs           `json:"kpfsconn,omitempty"`
 	monitorconn   *monitor.Monitor     `json:"monitorconn,omitempty"`
 	monitorv4conn *monitorv4.Monitorv4 `json:"monitor_4_conn,omitempty"`
-	config        *Config
 	cenconn       *cen.Cen             `json:"cenconn,omitempty"`
 
 	config *Config
@@ -70,6 +69,7 @@ type KsyunClient struct {
 func (client *KsyunClient) GetVpcClient() *vpc.Vpc {
 	return client.vpcconn
 }
+
 func (client *KsyunClient) GetKecClient() *kec.Kec {
 	return client.kecconn
 }
