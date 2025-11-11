@@ -380,6 +380,11 @@ KMR
 
 	Data Source
     ksyun_kmr_clusters
+
+KLog
+
+	Data Source
+    ksyun_klog_projects
 */
 
 package ksyun

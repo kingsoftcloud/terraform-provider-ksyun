@@ -28,27 +28,27 @@ func dataSourceKsyunKlogProjects() *schema.Resource {
 			"project_name": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The name of project",
+				Description: "The name of project.",
 			},
 			"description": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The description of project",
+				Description: "The description of project.",
 			},
 			"page": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "Page number start from 0",
+				Description: "Page number start from 0.",
 			},
 			"size": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "Page size, 1 - 500",
+				Description: "Page size, 1 - 500.",
 			},
 			"total_count": {
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "Total count of project",
+				Description: "Total count of project.",
 			},
 
 			"output_file": {
@@ -60,69 +60,69 @@ func dataSourceKsyunKlogProjects() *schema.Resource {
 			"projects": {
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Project list",
+				Description: "Project list.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"region": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The region of project",
+							Description: "The region of project.",
 						},
 						"project_name": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The name of project",
+							Description: "The name of project.",
 						},
 						"iam_project_name": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The IAMProjectName of project",
+							Description: "The IAMProjectName of project.",
 						},
 						"iam_project_id": {
 							Type:        schema.TypeInt,
 							Computed:    true,
-							Description: "The IAMProjectId of project",
+							Description: "The IAMProjectId of project.",
 						},
 						"create_time": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "When the project was created",
+							Description: "When the project was created.",
 						},
 						"update_time": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "When the project was updated",
+							Description: "When the project was updated.",
 						},
 						"description": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The description of project",
+							Description: "The description of project.",
 						},
 						"status": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The status of project",
+							Description: "The status of project.",
 						},
 						"log_pool_num": {
 							Type:        schema.TypeInt,
 							Computed:    true,
-							Description: "The log pool count of project",
+							Description: "The log pool count of project.",
 						},
 						"tags": {
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "Tags of project",
+							Description: "Tags of project.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"key": {
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "The key of tag",
+										Description: "The key of tag.",
 									},
 									"value": {
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "The value of tag",
+										Description: "The value of tag.",
 									},
 								},
 							},
