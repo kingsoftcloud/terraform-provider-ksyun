@@ -3,8 +3,8 @@ module github.com/terraform-providers/terraform-provider-ksyun
 go 1.17
 
 require (
-	github.com/KscSDK/ksc-sdk-go v0.9.0
 	github.com/aws/aws-sdk-go v1.55.8
+	github.com/KscSDK/ksc-sdk-go v0.15.0
 	github.com/client9/misspell v0.3.4
 	github.com/fatih/color v1.7.0
 	github.com/golangci/golangci-lint v1.23.7

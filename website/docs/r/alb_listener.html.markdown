@@ -98,7 +98,7 @@ The following arguments are supported:
 
 * `alb_id` - (Required, ForceNew) The ID of the ALB.
 * `port` - (Required, ForceNew) The protocol port of listener.
-* `protocol` - (Required, ForceNew) The protocol of listener. Valid Values: 'HTTP', 'HTTPS'.
+* `protocol` - (Required, ForceNew) The protocol of listener. Valid Values: 'HTTP', 'HTTPS', 'TCP', 'UDP', 'TCPSSL'.
 * `alb_listener_name` - (Optional) The name of the listener.
 * `alb_listener_state` - (Optional) The state of listener.Valid Values:'start', 'stop'.
 * `ca_certificate_id` - (Optional) The ID of Client's CA certificate.
@@ -112,6 +112,7 @@ The following arguments are supported:
 * `method` - (Optional) Forwarding mode of listener. Valid Values:'RoundRobin', 'LeastConnections'.
 * `quic_listener_id` - (Optional) The ID of QUIC listener.
 * `redirect_alb_listener_id` - (Optional, **Deprecated**) This parameter is moved to 'default_forward_rule' block. The ID of the redirect ALB listener.
+* `server_group_id` - (Optional) The ID of the backend server group.
 * `session` - (Optional) Whether keeps session. Specific `session` block, if keeps session.
 * `tls_cipher_policy` - (Optional) TLS cipher policy, valid values:'TlsCipherPolicy1.0','TlsCipherPolicy1.1','TlsCipherPolicy1.2','TlsCipherPolicy1.2-strict','TlsCipherPolicy1.2-most-strict-with1.3'.
 

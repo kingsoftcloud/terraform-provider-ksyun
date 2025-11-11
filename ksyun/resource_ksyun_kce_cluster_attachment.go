@@ -51,7 +51,6 @@ $ terraform import ksyun_kce_cluster_attachment.default 67b91d3c-c363-4f57-b0cd-
 package ksyun
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -98,6 +97,13 @@ func resourceKsyunKceClusterAttachment() *schema.Resource {
 						return m
 					}(),
 				},
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					if k == "worker_config.0.instance_password" {
+						// Suppress the diff for instance_type as it is not modifiable
+						return true
+					}
+					return false
+				},
 			},
 
 			"advanced_setting": {
@@ -127,14 +133,16 @@ func resourceKsyunKceClusterAttachmentCreate(d *schema.ResourceData, meta interf
 	err = s.AddNewInstances(d, resourceKsyunKceClusterAttachment())
 	return resourceKsyunKceClusterAttachmentRead(d, meta)
 }
+
 func resourceKsyunKceClusterAttachmentUpdate(d *schema.ResourceData, meta interface{}) (err error) {
 	// s := KceWorkerService{
 	// 	meta.(*KsyunClient),
 	// }
 	// err = s.UpdateWorker(d, resourceKsyunKceClusterAttachment())
 
-	return errors.New("you can't change anything at now. If you need to change, please move to Ksyun Console")
+	return nil
 }
+
 func resourceKsyunKceClusterAttachmentRead(d *schema.ResourceData, meta interface{}) (err error) {
 	srv := KceWorkerService{meta.(*KsyunClient)}
 	err = srv.readAndSetAttachment(d, resourceKsyunKceClusterAttachment())
@@ -143,6 +151,7 @@ func resourceKsyunKceClusterAttachmentRead(d *schema.ResourceData, meta interfac
 	}
 	return
 }
+
 func resourceKsyunKceClusterAttachmentDelete(d *schema.ResourceData, meta interface{}) (err error) {
 	srv := KceWorkerService{meta.(*KsyunClient)}
 	err = srv.DeleteKceWorker(d, resourceKsyunKceClusterAttachment())

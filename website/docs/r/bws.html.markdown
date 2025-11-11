@@ -26,7 +26,7 @@ resource "ksyun_bws" "default" {
 The following arguments are supported:
 
 * `band_width` - (Required) bandwidth value, value range: [1, 15000].
-* `charge_type` - (Required, ForceNew) The charge type of the BWS.
+* `charge_type` - (Required, ForceNew) The charge type of the BWS. Valid values: PostPaidByPeak, PostPaidByDay, PostPaidByTransfer, DailyPaidByTransfer.
 * `line_id` - (Required, ForceNew) The id of the line.
 * `band_width_share_name` - (Optional) name of the BWS.
 * `project_id` - (Optional) ID of the project.

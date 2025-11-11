@@ -93,6 +93,14 @@ func resourceKsyunAlb() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"public", "internal"}, false),
 				Description:  "The type of the ALB, valid values:'public', 'internal'.",
 			},
+
+			// 2025-06-27
+			"protocol_layers": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The protocol layers of the ALB, valid values: 'L4', 'L7', 'L4-L7'.",
+			},
 			"vpc_id": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -225,8 +233,8 @@ func resourceKsyunAlb() *schema.Resource {
 				Description: "The public IP address.",
 			},
 			"status": {
-				Type: schema.TypeString,
-				// Optional:    true,
+				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
 				Description: "The status of the ALB.",
 			},
