@@ -1,3 +1,10 @@
+## 1.23.0 (Nov 11, 2025)
+
+FEATURES:
+
+- - **New Data Source:** `ksyun_klog_projects` klog 查询
+- - **New Data Source:** `ksyun_kmr_clusters`  kmr 集群列表查询
+
 ## 1.22.0 (Nov 10, 2025)
 
 FEATURES:
@@ -109,6 +116,12 @@ IMPROVEMENTS:
 - `ksyun_kce_cluster` 取消network_type限制，支持calico类型
 
 ## 1.18.7 (Apr 16, 2025)
+
+## 1.18.7 (Nov 11, 2025)
+
+FEATURES:
+
+- - **New Resource:** `ksyun_klog_projects` KLOG 项目列表
 
 IMPROVEMENTS:
 

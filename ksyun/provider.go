@@ -375,6 +375,16 @@ Monitor
 
 	Resource
 		ksyun_monitor_alarm_policy
+
+KMR
+
+	Data Source
+    ksyun_kmr_clusters
+
+KLog
+
+	Data Source
+    ksyun_klog_projects
 */
 
 package ksyun
@@ -541,6 +551,7 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_dnats":                            dataSourceKsyunDnats(),
 			"ksyun_alb_backend_server_groups":        dataSourceKsyunAlbBackendServerGroups(),
 			"ksyun_vpn_gateway_routes":               dataSourceKsyunVpnGatewayRoutes(),
+			"ksyun_kmr_clusters":                     dataSourceKsyunKmrClusters(),
 
 			// private_dns
 			"ksyun_private_dns_zones":   dataSourceKsyunPrivateDnsZones(),
@@ -563,6 +574,8 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_iam_roles":  dataSourceKsyunIamRoles(),
 			"ksyun_iam_groups": dataSourceKsyunIamGroups(),
 
+			// klog
+			"ksyun_klog_projects": dataSourceKsyunKlogProjects(),
 			// direct connect
 			"ksyun_direct_connects": dataSourceKsyunDirectConnects(),
 
@@ -698,11 +711,10 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_direct_connect_bfd_config":    resourceKsyunDirectConnectBfdConfig(),
 			"ksyun_dc_interface_associate":       resourceKsyunDCInterfaceAssociate(),
 
-			"ksyun_kfw_instance":                 resourceKsyunCfwInstance(),
-			"ksyun_kfw_acl":                      resourceKsyunKfwAcl(),
-			"ksyun_kfw_addrbook":                 resourceKsyunKfwAddrbook(),
-			"ksyun_kfw_service_group":            resourceKsyunKfwServiceGroup(),
-
+			"ksyun_kfw_instance":      resourceKsyunCfwInstance(),
+			"ksyun_kfw_acl":           resourceKsyunKfwAcl(),
+			"ksyun_kfw_addrbook":      resourceKsyunKfwAddrbook(),
+			"ksyun_kfw_service_group": resourceKsyunKfwServiceGroup(),
 
 			// monitor
 			"ksyun_monitor_alarm_policy": resourceKsyunMonitorAlarmPolicy(),
