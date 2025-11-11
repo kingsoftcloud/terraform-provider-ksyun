@@ -698,11 +698,10 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_direct_connect_bfd_config":    resourceKsyunDirectConnectBfdConfig(),
 			"ksyun_dc_interface_associate":       resourceKsyunDCInterfaceAssociate(),
 
-			"ksyun_kfw_instance":                 resourceKsyunCfwInstance(),
-			"ksyun_kfw_acl":                      resourceKsyunKfwAcl(),
-			"ksyun_kfw_addrbook":                 resourceKsyunKfwAddrbook(),
-			"ksyun_kfw_service_group":            resourceKsyunKfwServiceGroup(),
-
+			"ksyun_kfw_instance":      resourceKsyunCfwInstance(),
+			"ksyun_kfw_acl":           resourceKsyunKfwAcl(),
+			"ksyun_kfw_addrbook":      resourceKsyunKfwAddrbook(),
+			"ksyun_kfw_service_group": resourceKsyunKfwServiceGroup(),
 
 			// monitor
 			"ksyun_monitor_alarm_policy": resourceKsyunMonitorAlarmPolicy(),
