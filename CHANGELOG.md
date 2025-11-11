@@ -1,3 +1,13 @@
+## 1.22.0 (Nov 10, 2025)
+
+FEATURES:
+
+- - **New Data Source:** `ksyun_clickhouse` 新增云数据仓库ClickHouse列表/详情查询
+- - **New Data Source:** `ksyun_cens` 云企业网查询
+
+- `ksyun_monitor_policy`: 增加云监控告警策略相关接口
+- - **New Resource:** `ksyun_cen`:  云企业网
+
 ## 1.21.2 (Aug 26, 2025)
 
 IMPROVEMENTS:

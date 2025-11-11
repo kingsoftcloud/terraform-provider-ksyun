@@ -150,6 +150,14 @@ ALB
 		ksyun_alb_register_backend_server
 		ksyun_alb_listener_associate_acl
 
+CEN
+
+	Data Source
+		ksyun_cens
+
+	Resource
+		ksyun_cen
+
 SSH key
 
 	Data Source
@@ -246,6 +254,11 @@ KRDS
 		ksyun_krds_security_group
 		ksyun_krds_security_group_rule
 		ksyun_krds_parameter_group
+
+Clickhouse
+
+	Data Source
+		ksyun_clickhouse
 
 SQLServer
 
@@ -357,6 +370,11 @@ KFW
 
 		ksyun_kfw_addrbook
 		ksyun_kfw_service_group
+
+Monitor
+
+	Resource
+		ksyun_monitor_alarm_policy
 */
 
 package ksyun
@@ -547,6 +565,11 @@ func Provider() terraform.ResourceProvider {
 
 			// direct connect
 			"ksyun_direct_connects": dataSourceKsyunDirectConnects(),
+
+			// clickhouse
+			"ksyun_clickhouse": dataSourceKsyunClickhouse(),
+			// cen
+			"ksyun_cens": dataSourceKsyunCens(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"ksyun_alb":                              resourceKsyunAlb(),
@@ -674,10 +697,17 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_direct_connect_interface":     resourceKsyunDirectConnectInterface(),
 			"ksyun_direct_connect_bfd_config":    resourceKsyunDirectConnectBfdConfig(),
 			"ksyun_dc_interface_associate":       resourceKsyunDCInterfaceAssociate(),
+
 			"ksyun_kfw_instance":                 resourceKsyunCfwInstance(),
 			"ksyun_kfw_acl":                      resourceKsyunKfwAcl(),
 			"ksyun_kfw_addrbook":                 resourceKsyunKfwAddrbook(),
 			"ksyun_kfw_service_group":            resourceKsyunKfwServiceGroup(),
+
+
+			// monitor
+			"ksyun_monitor_alarm_policy": resourceKsyunMonitorAlarmPolicy(),
+			// cen
+			"ksyun_cen": resourceKsyunCen(),
 		},
 		ConfigureFunc: providerConfigure,
 	}
