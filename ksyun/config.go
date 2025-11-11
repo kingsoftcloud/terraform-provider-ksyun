@@ -2,6 +2,9 @@ package ksyun
 
 import (
 	"fmt"
+	klog "github.com/kingsoftcloud/sdk-go/v2/ksyun/client/klog/v20200731"
+	"github.com/kingsoftcloud/sdk-go/v2/ksyun/common"
+	"github.com/kingsoftcloud/sdk-go/v2/ksyun/common/profile"
 	"net"
 	"net/http"
 	"net/url"
@@ -58,6 +61,7 @@ type Config struct {
 // Client will returns a client with connections for all product
 func (c *Config) Client() (*KsyunClient, error) {
 	var client KsyunClient
+	var err error
 	// init ksc client info
 	client.region = c.Region
 	cli := ksc.NewClient(c.AccessKey, c.SecretKey)
@@ -102,6 +106,9 @@ func (c *Config) Client() (*KsyunClient, error) {
 	client.pdnsconn = pdns.SdkNew(cli, cfg, url)
 	client.kcrsconn = kcrs.SdkNew(cli, cfg, url)
 	client.kpfsconn = kpfs.SdkNew(cli, cfg, url)
+	if client.klogconn, err = klogSdkNew(c); err != nil {
+		return nil, err
+	}
 
 	// 懒加载ks3-client 所以不在此初始
 	return &client, nil
@@ -180,4 +187,12 @@ func getKsyunClient(c *Config) *http.Client {
 		Transport: tp,
 	}
 	return httpClient
+}
+
+func klogSdkNew(c *Config) (*klog.Client, error) {
+	cpf := profile.NewClientProfile()
+	cpf.HttpProfile.ReqMethod = "POST"
+	cpf.HttpProfile.ReqTimeout = 20
+	cpf.HttpProfile.Endpoint = c.Endpoint
+	return klog.NewClient(common.NewCredential(c.AccessKey, c.SecretKey), c.Region, cpf)
 }

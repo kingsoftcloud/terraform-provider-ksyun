@@ -25,6 +25,7 @@ import (
 	"github.com/KscSDK/ksc-sdk-go/service/tag"
 	"github.com/KscSDK/ksc-sdk-go/service/tagv2"
 	"github.com/KscSDK/ksc-sdk-go/service/vpc"
+	klog "github.com/kingsoftcloud/sdk-go/v2/ksyun/client/klog/v20200731"
 	"github.com/ks3sdklib/ksyun-ks3-go-sdk/ks3"
 )
 
@@ -56,6 +57,7 @@ type KsyunClient struct {
 	pdnsconn      *pdns.Pdns           `json:"pdnsconn,omitempty"`
 	kcrsconn      *kcrs.Kcrs           `json:"kcrsconn,omitempty"`
 	kpfsconn      *kpfs.Kpfs           `json:"kpfsconn,omitempty"`
+	klogconn      *klog.Client         `json:"klogconn,omitempty"`
 
 	config *Config
 }
