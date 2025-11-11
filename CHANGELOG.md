@@ -1,3 +1,10 @@
+## 1.23.0 (Nov 11, 2025)
+
+FEATURES:
+
+- - **New Data Source:** `ksyun_klog_projects` klog 查询
+- - **New Data Source:** `ksyun_kmr_clusters`  kmr 集群列表查询
+
 ## 1.22.0 (Nov 10, 2025)
 
 FEATURES:
@@ -115,7 +122,6 @@ IMPROVEMENTS:
 FEATURES:
 
 - - **New Resource:** `ksyun_klog_projects` KLOG 项目列表
-
 
 IMPROVEMENTS:
 
