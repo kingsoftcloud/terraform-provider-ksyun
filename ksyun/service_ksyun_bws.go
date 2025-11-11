@@ -2,6 +2,7 @@ package ksyun
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -42,9 +43,7 @@ func (s *BwsService) ReadBandWidthShares(condition map[string]interface{}) (data
 }
 
 func (s *BwsService) ReadBandWidthShare(d *schema.ResourceData, bwsId string) (data map[string]interface{}, err error) {
-	var (
-		results []interface{}
-	)
+	var results []interface{}
 	if bwsId == "" {
 		bwsId = d.Id()
 	}
@@ -348,12 +347,18 @@ func (s *BwsService) ReadBandWidthShareAssociate(d *schema.ResourceData, bwsId s
 }
 
 func (s *BwsService) ReadAndSetAssociateBandWidthShare(d *schema.ResourceData, r *schema.Resource) (err error) {
-	data, err := s.ReadBandWidthShareAssociate(d, d.Get("band_width_share_id").(string), d.Get("allocation_id").(string))
-	if err != nil {
-		return err
-	}
-	SdkResponseAutoResourceData(d, r, data, nil)
-	return err
+	return resource.Retry(5*time.Minute, func() *resource.RetryError {
+		data, err := s.ReadBandWidthShareAssociate(d, d.Get("band_width_share_id").(string), d.Get("allocation_id").(string))
+		if err != nil {
+			if strings.Contains(err.Error(), "not associate") {
+				return resource.RetryableError(err)
+			} else {
+				return resource.NonRetryableError(err)
+			}
+		}
+		SdkResponseAutoResourceData(d, r, data, nil)
+		return nil
+	})
 }
 
 func (s *BwsService) AssociateBandWidthShareCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
