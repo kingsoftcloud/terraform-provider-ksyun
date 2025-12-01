@@ -148,6 +148,9 @@ func (s *BareMetalService) ReadAndSetBareMetal(d *schema.ResourceData, r *schema
 						return value
 					},
 				},
+				"RoceCluster": {
+					Field: "roce_cluster",
+				},
 				"Tags": {
 					Field: "tags",
 					FieldRespFunc: func(i interface{}) interface{} {
@@ -294,6 +297,9 @@ func (s *BareMetalService) CreateBareMetalCall(d *schema.ResourceData, resource 
 		},
 		"extension_dns2": {
 			mapping: "ExtensionDNS2",
+		},
+		"roce_cluster": {
+			mapping: "RoceCluster",
 		},
 		"force_re_install": {Ignore: true},
 		"tags":             {Ignore: true},
