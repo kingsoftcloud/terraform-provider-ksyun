@@ -546,6 +546,12 @@ func resourceKsyunBareMetal() *schema.Resource {
 				Description: "The roce cluster id.",
 			},
 
+			"s_roce_cluster": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The s roce cluster id.",
+			},
+
 			"extension_network_interface_id": {
 				Type:        schema.TypeString,
 				Computed:    true,

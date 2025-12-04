@@ -482,6 +482,11 @@ func dataSourceKsyunBareMetals() *schema.Resource {
 							Computed:    true,
 							Description: "The roce cluster id.",
 						},
+						"s_roce_cluster": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The s roce cluster id.",
+						},
 						"roces": {
 							Type:        schema.TypeList,
 							Computed:    true,
