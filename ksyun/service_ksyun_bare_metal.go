@@ -148,6 +148,9 @@ func (s *BareMetalService) ReadAndSetBareMetal(d *schema.ResourceData, r *schema
 						return value
 					},
 				},
+				"RoceCluster": {
+					Field: "roce_cluster",
+				},
 				"Tags": {
 					Field: "tags",
 					FieldRespFunc: func(i interface{}) interface{} {
