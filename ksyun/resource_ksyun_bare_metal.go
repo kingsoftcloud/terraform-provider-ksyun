@@ -540,6 +540,12 @@ func resourceKsyunBareMetal() *schema.Resource {
 				Description: "The name of storage roce network card. Valid Values `eth8x_bond` `storage_bond`.",
 			},
 
+			"roce_cluster": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The roce cluster id.",
+			},
+
 			"extension_network_interface_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
