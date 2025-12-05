@@ -546,7 +546,7 @@ func resourceKsyunBareMetal() *schema.Resource {
 				Description: "The roce cluster id.",
 			},
 
-			"s_roce_cluster": {
+			"storage_roce_cluster": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The s roce cluster id.",
