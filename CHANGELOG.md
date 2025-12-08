@@ -4,6 +4,8 @@ IMPROVEMENTS:
 
 - `ksyun_bare_metal`: 新增`roce_cluster`字段，支持RoCE集群配置
 - `ksyun_bare_metals`: 新增`roce_cluster`字段，支持查询RoCE集群信息
+- `ksyun_bare_metal`: 新增`storage_roce_cluster`字段，支持RoCE集群配置
+- `ksyun_bare_metals`: 新增`storage_roce_cluster`字段，支持查询RoCE集群信息
 
 ## 1.23.0 (Nov 11, 2025)
 
