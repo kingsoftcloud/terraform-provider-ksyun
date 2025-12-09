@@ -92,6 +92,7 @@ The following arguments are supported:
 * `roce_network` - (Optional) The value of roce network that indicates acquiring whether an instance supplied roce network. Valid Options: `Open` and `Close`.
 * `security_agent` - (Optional) The security agent choice of the Bare Metal. Valid Values:'classic','no'. Default is 'no'.
 * `server_ip` - (Optional) The pxe server ip of the Bare Metal.Only effective on modify and host type is COLO.
+* `storage_roce_cluster` - (Optional) The s roce cluster id.
 * `storage_roce_network_card_name` - (Optional) The name of storage roce network card. Valid Values `eth8x_bond` `storage_bond`.
 * `system_file_type` - (Optional) The system disk file type of the Bare Metal.Valid Values:'EXT4','XFS'.Default is 'EXT4'.
 * `system_volume_size` - (Optional) System disk size of cloud disk.
