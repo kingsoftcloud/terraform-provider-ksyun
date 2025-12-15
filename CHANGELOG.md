@@ -1,3 +1,70 @@
+## 1.24.0 (Dec 15, 2025)
+
+IMPROVEMENT:
+
+- `ksyun_kpfs_file_system` 资源，支持创建、删除和导入 KPFS 文件系统
+- `ksyun_kpfs_file_systems` 数据源，用于查询 KPFS 文件系统列表
+- `ksyun_kpfs_clusters` 数据源，用于查询 KPFS 集群信息
+- `ksyun_kpfs_client_install` 数据源，用于获取客户端安装信息
+
+## 1.23.1 (Dec 01, 2025)
+
+IMPROVEMENTS:
+
+- `ksyun_bare_metal`: 新增`roce_cluster`字段，支持RoCE集群配置
+- `ksyun_bare_metals`: 新增`roce_cluster`字段，支持查询RoCE集群信息
+- `ksyun_bare_metal`: 新增`storage_roce_cluster`字段，支持SRoCE集群配置
+- `ksyun_bare_metals`: 新增`storage_roce_cluster`字段，支持查询SRoCE集群信息
+
+## 1.23.0 (Nov 11, 2025)
+
+FEATURES:
+
+- - **New Data Source:** `ksyun_klog_projects` klog 查询
+- - **New Data Source:** `ksyun_kmr_clusters`  kmr 集群列表查询
+
+## 1.22.0 (Nov 10, 2025)
+
+FEATURES:
+
+- - **New Data Source:** `ksyun_clickhouse` 新增云数据仓库ClickHouse列表/详情查询
+- - **New Data Source:** `ksyun_cens` 云企业网查询
+
+- `ksyun_monitor_policy`: 增加云监控告警策略相关接口
+- - **New Resource:** `ksyun_cen`:  云企业网
+
+- `ksyun_kfw`: 新增云防火墙管理
+
+## 1.21.2 (Aug 26, 2025)
+
+IMPROVEMENTS:
+
+- `ksyun_subnet`: 添加visit_internet字段，仅在subnet type 为 Physicaly时生效
+
+## 1.21.1 (Jul 31, 2025)
+
+IMPROVEMENTS:
+
+- `ksyun_kce_cluster`: 增加`expose_public_api_server`托管集群开启公网访问
+
+## 1.21.0 (Jul 31, 2025)
+
+FEATURES:
+
+- - **New Resource:** `ksyun_direct_connect_gateway`:  专线接入边界网关
+- - **New Resource:** `ksyun_direct_connect_gateway_route`: 专线接入边界网关路由
+- - **New Resource:** `ksyun_direct_connect_interface`: 专线接入连接通道
+- - **New Resource:** `ksyun_direct_connect_bfd_config`: 专线接入BFD配置
+- - **New Resource:** `ksyun_dc_interface_associate`: 专线接入连接通道关联边界网关
+
+- - **New Data Source:** `ksyun_direct_connects` 专线接入物理端口查询
+
+## 1.20.2 (Jul 29, 2025)
+
+BUGFIX：
+
+- `ksyun_certificate`: 修复public_key末尾换行符引发的diff问题
+
 ## 1.20.1 (Jul 29, 2025)
 
 BUGFIX：
@@ -67,6 +134,12 @@ IMPROVEMENTS:
 - `ksyun_kce_cluster` 取消network_type限制，支持calico类型
 
 ## 1.18.7 (Apr 16, 2025)
+
+## 1.18.7 (Nov 11, 2025)
+
+FEATURES:
+
+- - **New Resource:** `ksyun_klog_projects` KLOG 项目列表
 
 IMPROVEMENTS:
 
@@ -972,15 +1045,18 @@ DATA SOURCES:
 
 RESOURCES:
 
-- iam user create
-- iam user read
-- iam user delete
-- iam role create
-- iam role read
-- iam role delete
-- iam group create
-- iam group read
-- iam group delete
-- iam policy create
-- iam policy read
-- iam policy delete
+* iam user create
+* iam user read
+* iam user delete
+* iam role create
+* iam role read
+* iam role delete
+* iam group create
+* iam group read
+* iam group delete
+* iam policy create
+* iam policy read
+* iam policy delete
+
+
+

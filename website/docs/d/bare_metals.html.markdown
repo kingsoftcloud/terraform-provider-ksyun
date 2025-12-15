@@ -110,6 +110,7 @@ In addition to all arguments above, the following attributes are exported:
   * `rack_name` - Rack Name.
   * `raid` - The Raid type of the Bare Metal.
   * `releasable_time` - Releasable Time.
+  * `roce_cluster` - The roce cluster id.
   * `roces` - Roces.
     * `gate_way` - Gateway.
     * `ip` - Ip of the roce network.
@@ -118,6 +119,7 @@ In addition to all arguments above, the following attributes are exported:
   * `security_agent` - The security agent of the Bare Metal.
   * `service_end_time` - Servcie end time.
   * `sn` - SN of the Bare Metal.
+  * `storage_roce_cluster` - The s roce cluster id.
   * `support_ebs` - Whether support EBS.
   * `system_volume_size` - System Volume Size.
 * `total_count` - Total number of Bare Metals that satisfy the condition.

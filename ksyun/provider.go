@@ -66,13 +66,14 @@ VPC
 		ksyun_dnats
 		ksyun_private_dns_records
 		ksyun_private_dns_zones
+		ksyun_direct_connects
 
 	Resource
 		ksyun_vpc
 		ksyun_subnet
 		ksyun_nat
 		ksyun_nat_associate
-        ksyun_nat_instance_bandwidth_limit
+		ksyun_nat_instance_bandwidth_limit
 		ksyun_dnat
 		ksyun_network_acl
 		ksyun_network_acl_entry
@@ -85,6 +86,11 @@ VPC
 		ksyun_private_dns_zone
 		ksyun_private_dns_record
 		ksyun_private_dns_zone_vpc_attachment
+		ksyun_direct_connect_gateway
+		ksyun_direct_connect_gateway_route
+		ksyun_direct_connect_interface
+		ksyun_direct_connect_bfd_config
+		ksyun_dc_interface_associate
 
 VPN
 
@@ -143,6 +149,14 @@ ALB
 		ksyun_alb_backend_server_group
 		ksyun_alb_register_backend_server
 		ksyun_alb_listener_associate_acl
+
+CEN
+
+	Data Source
+		ksyun_cens
+
+	Resource
+		ksyun_cen
 
 SSH key
 
@@ -241,6 +255,11 @@ KRDS
 		ksyun_krds_security_group_rule
 		ksyun_krds_parameter_group
 
+Clickhouse
+
+	Data Source
+		ksyun_clickhouse
+
 SQLServer
 
 	Data Source
@@ -334,9 +353,46 @@ IAM
 		ksyun_iam_policy
 		ksyun_iam_relation_policy
 KPFS
-	Resource
-		ksyun_kpfs_acl
 
+	Data Source
+	    ksyun_kpfs_file_systems
+		ksyun_kpfs_clusters
+		ksyun_kpfs_client_install
+
+
+	Resource
+	    ksyun_kpfs_acl
+		ksyun_kpfs_file_system
+
+KFW
+
+	Data Source
+		ksyun_kfw_instances
+		ksyun_kfw_acls
+		ksyun_kfw_addrbooks
+		ksyun_kfw_service_groups
+
+	Resource
+		ksyun_kfw_instance
+		ksyun_kfw_acl
+
+		ksyun_kfw_addrbook
+		ksyun_kfw_service_group
+
+Monitor
+
+	Resource
+		ksyun_monitor_alarm_policy
+
+KMR
+
+	Data Source
+    ksyun_kmr_clusters
+
+KLog
+
+	Data Source
+    ksyun_klog_projects
 */
 
 package ksyun
@@ -503,6 +559,7 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_dnats":                            dataSourceKsyunDnats(),
 			"ksyun_alb_backend_server_groups":        dataSourceKsyunAlbBackendServerGroups(),
 			"ksyun_vpn_gateway_routes":               dataSourceKsyunVpnGatewayRoutes(),
+			"ksyun_kmr_clusters":                     dataSourceKsyunKmrClusters(),
 
 			// private_dns
 			"ksyun_private_dns_zones":   dataSourceKsyunPrivateDnsZones(),
@@ -514,10 +571,30 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_kcrs_namespaces":       dataSourceKsyunKcrsNamespaces(),
 			"ksyun_kcrs_webhook_triggers": dataSourceKsyunKcrsWebhookTriggers(),
 
+			// kfw
+			"ksyun_kfw_instances":      dataSourceKsyunKfwInstances(),
+			"ksyun_kfw_addrbooks":      dataSourceKsyunKfwAddrbooks(),
+			"ksyun_kfw_acls":           dataSourceKsyunKfwAcls(),
+			"ksyun_kfw_service_groups": dataSourceKsyunKfwServiceGroups(),
+
 			// iam
 			"ksyun_iam_users":  dataSourceKsyunIamUsers(),
 			"ksyun_iam_roles":  dataSourceKsyunIamRoles(),
 			"ksyun_iam_groups": dataSourceKsyunIamGroups(),
+
+			//kpfs
+			"ksyun_kpfs_file_systems":   dataSourceKsyunKpfsFileSystems(),
+			"ksyun_kpfs_clusters":       dataSourceKsyunKpfsClusters(),
+			"ksyun_kpfs_client_install": dataSourceKsyunKpfsClientInstall(),
+			// klog
+			"ksyun_klog_projects": dataSourceKsyunKlogProjects(),
+			// direct connect
+			"ksyun_direct_connects": dataSourceKsyunDirectConnects(),
+
+			// clickhouse
+			"ksyun_clickhouse": dataSourceKsyunClickhouse(),
+			// cen
+			"ksyun_cens": dataSourceKsyunCens(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"ksyun_alb":                              resourceKsyunAlb(),
@@ -597,7 +674,7 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_alb_listener_associate_acl":       resourceKsyunAlbListenerAssociateAcl(),
 			"ksyun_vpn_gateway_route":                resourceKsyunVpnGatewayRoute(),
 
-			//kce
+			// kce
 			"ksyun_kce_cluster":                  resourceKsyunKceCluster(),
 			"ksyun_kce_cluster_attachment":       resourceKsyunKceClusterAttachment(),
 			"ksyun_kce_cluster_attach_existence": resourceKsyunKceClusterAttachExistence(),
@@ -637,7 +714,25 @@ func Provider() terraform.ResourceProvider {
 			// "ksyun_lb_listener_associate_backendgroup": resourceKsyunLbListenerAssociateBackendgroup(),
 
 			// kpfs
-			"ksyun_kpfs_acl": resourceKsyunKpfsAcl(),
+			"ksyun_kpfs_acl":         resourceKsyunKpfsAcl(),
+			"ksyun_kpfs_file_system": resourceKsyunKpfsFilesystem(),
+
+			// direct connect
+			"ksyun_direct_connect_gateway":       resourceKsyunDirectConnectGateway(),
+			"ksyun_direct_connect_gateway_route": resourceKsyunDirectConnectGatewayRoute(),
+			"ksyun_direct_connect_interface":     resourceKsyunDirectConnectInterface(),
+			"ksyun_direct_connect_bfd_config":    resourceKsyunDirectConnectBfdConfig(),
+			"ksyun_dc_interface_associate":       resourceKsyunDCInterfaceAssociate(),
+
+			"ksyun_kfw_instance":      resourceKsyunCfwInstance(),
+			"ksyun_kfw_acl":           resourceKsyunKfwAcl(),
+			"ksyun_kfw_addrbook":      resourceKsyunKfwAddrbook(),
+			"ksyun_kfw_service_group": resourceKsyunKfwServiceGroup(),
+
+			// monitor
+			"ksyun_monitor_alarm_policy": resourceKsyunMonitorAlarmPolicy(),
+			// cen
+			"ksyun_cen": resourceKsyunCen(),
 		},
 		ConfigureFunc: providerConfigure,
 	}

@@ -2,6 +2,10 @@ package ksyun
 
 import (
 	"fmt"
+	klog "github.com/kingsoftcloud/sdk-go/v2/ksyun/client/klog/v20200731"
+	kmr "github.com/kingsoftcloud/sdk-go/v2/ksyun/client/kmr/v20210902"
+	"github.com/kingsoftcloud/sdk-go/v2/ksyun/common"
+	"github.com/kingsoftcloud/sdk-go/v2/ksyun/common/profile"
 	"net"
 	"net/http"
 	"net/url"
@@ -11,6 +15,8 @@ import (
 	"github.com/KscSDK/ksc-sdk-go/ksc"
 	"github.com/KscSDK/ksc-sdk-go/ksc/utils"
 	"github.com/KscSDK/ksc-sdk-go/service/bws"
+	"github.com/KscSDK/ksc-sdk-go/service/cen"
+	"github.com/KscSDK/ksc-sdk-go/service/clickhouse"
 	"github.com/KscSDK/ksc-sdk-go/service/ebs"
 	"github.com/KscSDK/ksc-sdk-go/service/eip"
 	"github.com/KscSDK/ksc-sdk-go/service/epc"
@@ -26,6 +32,8 @@ import (
 	"github.com/KscSDK/ksc-sdk-go/service/kpfs"
 	"github.com/KscSDK/ksc-sdk-go/service/krds"
 	"github.com/KscSDK/ksc-sdk-go/service/mongodb"
+	"github.com/KscSDK/ksc-sdk-go/service/monitor"
+	"github.com/KscSDK/ksc-sdk-go/service/monitorv4"
 	"github.com/KscSDK/ksc-sdk-go/service/pdns"
 	"github.com/KscSDK/ksc-sdk-go/service/rabbitmq"
 	"github.com/KscSDK/ksc-sdk-go/service/sks"
@@ -58,6 +66,7 @@ type Config struct {
 // Client will returns a client with connections for all product
 func (c *Config) Client() (*KsyunClient, error) {
 	var client KsyunClient
+	var err error
 	// init ksc client info
 	client.region = c.Region
 	cli := ksc.NewClient(c.AccessKey, c.SecretKey)
@@ -102,6 +111,13 @@ func (c *Config) Client() (*KsyunClient, error) {
 	client.pdnsconn = pdns.SdkNew(cli, cfg, url)
 	client.kcrsconn = kcrs.SdkNew(cli, cfg, url)
 	client.kpfsconn = kpfs.SdkNew(cli, cfg, url)
+	if client.klogconn, err = klogSdkNew(c); err != nil {
+		return nil, err
+	}
+	client.clickhouseconn = clickhouse.SdkNew(cli, cfg, url)
+	client.monitorconn = monitor.SdkNew(cli, cfg, url)
+	client.monitorv4conn = monitorv4.SdkNew(cli, cfg, url)
+	client.cenconn = cen.SdkNew(cli, cfg, url)
 
 	// 懒加载ks3-client 所以不在此初始
 	return &client, nil
@@ -180,4 +196,29 @@ func getKsyunClient(c *Config) *http.Client {
 		Transport: tp,
 	}
 	return httpClient
+}
+
+func klogSdkNew(c *Config) (*klog.Client, error) {
+	cpf := profile.NewClientProfile()
+	cpf.HttpProfile.ReqMethod = "POST"
+	cpf.HttpProfile.ReqTimeout = 20
+	cpf.HttpProfile.Endpoint = c.Endpoint
+	return klog.NewClient(common.NewCredential(c.AccessKey, c.SecretKey), c.Region, cpf)
+}
+
+func (client *KsyunClient) WithKmrClient(do func(*kmr.Client) (interface{}, error)) (interface{}, error) {
+	goSdkMutex.Lock()
+	defer goSdkMutex.Unlock()
+	// Initialize the KMR client if necessary
+	if client.kmrconn == nil {
+		credential := common.NewCredential(client.config.AccessKey, client.config.SecretKey)
+		cpf := profile.NewClientProfile()
+		cpf.HttpProfile.Endpoint = client.config.Endpoint
+		kmrconn, err := kmr.NewClient(credential, client.config.Region, cpf)
+		if err != nil {
+			return nil, fmt.Errorf("unable to initialize the KMR client: %#v", err)
+		}
+		client.kmrconn = kmrconn
+	}
+	return do(client.kmrconn)
 }
