@@ -1,3 +1,12 @@
+## 1.24.0 (Dec 15, 2025)
+
+IMPROVEMENT:
+
+- `ksyun_kpfs_file_system` 资源，支持创建、删除和导入 KPFS 文件系统
+- `ksyun_kpfs_file_systems` 数据源，用于查询 KPFS 文件系统列表
+- `ksyun_kpfs_clusters` 数据源，用于查询 KPFS 集群信息
+- `ksyun_kpfs_client_install` 数据源，用于获取客户端安装信息
+
 ## 1.23.1 (Dec 01, 2025)
 
 IMPROVEMENTS:
@@ -1036,15 +1045,18 @@ DATA SOURCES:
 
 RESOURCES:
 
-- iam user create
-- iam user read
-- iam user delete
-- iam role create
-- iam role read
-- iam role delete
-- iam group create
-- iam group read
-- iam group delete
-- iam policy create
-- iam policy read
-- iam policy delete
+* iam user create
+* iam user read
+* iam user delete
+* iam role create
+* iam role read
+* iam role delete
+* iam group create
+* iam group read
+* iam group delete
+* iam policy create
+* iam policy read
+* iam policy delete
+
+
+
