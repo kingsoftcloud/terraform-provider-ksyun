@@ -333,8 +333,16 @@ IAM
 		ksyun_iam_policy
 		ksyun_iam_relation_policy
 KPFS
+
+	Data Source
+	    ksyun_kpfs_file_systems
+		ksyun_kpfs_clusters
+		ksyun_kpfs_client_install
+
+
 	Resource
-		ksyun_kpfs_acl
+	    ksyun_kpfs_acl
+		ksyun_kpfs_file_system
 
 */
 
@@ -517,6 +525,11 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_iam_users":  dataSourceKsyunIamUsers(),
 			"ksyun_iam_roles":  dataSourceKsyunIamRoles(),
 			"ksyun_iam_groups": dataSourceKsyunIamGroups(),
+
+			//kpfs
+			"ksyun_kpfs_file_systems":   dataSourceKsyunKpfsFileSystems(),
+			"ksyun_kpfs_clusters":       dataSourceKsyunKpfsClusters(),
+			"ksyun_kpfs_client_install": dataSourceKsyunKpfsClientInstall(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"ksyun_alb":                              resourceKsyunAlb(),
@@ -632,7 +645,8 @@ func Provider() terraform.ResourceProvider {
 			// "ksyun_lb_listener_associate_backendgroup": resourceKsyunLbListenerAssociateBackendgroup(),
 
 			// kpfs
-			"ksyun_kpfs_acl": resourceKsyunKpfsAcl(),
+			"ksyun_kpfs_acl":         resourceKsyunKpfsAcl(),
+			"ksyun_kpfs_file_system": resourceKsyunKpfsFilesystem(),
 		},
 		ConfigureFunc: providerConfigure,
 	}
