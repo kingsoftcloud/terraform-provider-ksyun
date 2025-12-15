@@ -67,6 +67,12 @@ func resourceKsyunRegisterAlbBackendServer() *schema.Resource {
 				ConflictsWith: []string{"network_interface_id"},
 				Description:   "The ID of direct connect gateway.",
 			},
+			"master_slave_type": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The type of master-slave backend server. Valid Values: 'Master', 'Slave'.",
+			},
 			"network_interface_id": {
 				Type:          schema.TypeString,
 				Computed:      true,

@@ -88,9 +88,11 @@ The following arguments are supported:
 * `purchase_time` - (Optional, ForceNew) Purchase time. If trial is true, it works. Default: 7.
 * `raid_id` - (Optional) The Raid template id of Bare Metal.Conflict raid. If you don't set raid,raid_id is Required. If you want to use raid_id,you must in user white list.
 * `raid` - (Optional) The Raid type of the Bare Metal. Valid Values:'Raid0','Raid1','Raid5','Raid10','Raid50','SRaid0', 'Jbod'. Conflict raid_id. If you don't set raid_id,raid is Required.
+* `roce_cluster` - (Optional) The roce cluster id.
 * `roce_network` - (Optional) The value of roce network that indicates acquiring whether an instance supplied roce network. Valid Options: `Open` and `Close`.
 * `security_agent` - (Optional) The security agent choice of the Bare Metal. Valid Values:'classic','no'. Default is 'no'.
 * `server_ip` - (Optional) The pxe server ip of the Bare Metal.Only effective on modify and host type is COLO.
+* `storage_roce_cluster` - (Optional) The s roce cluster id.
 * `storage_roce_network_card_name` - (Optional) The name of storage roce network card. Valid Values `eth8x_bond` `storage_bond`.
 * `system_file_type` - (Optional) The system disk file type of the Bare Metal.Valid Values:'EXT4','XFS'.Default is 'EXT4'.
 * `system_volume_size` - (Optional) System disk size of cloud disk.

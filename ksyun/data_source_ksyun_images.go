@@ -17,9 +17,10 @@ package ksyun
 
 import (
 	"fmt"
+	"regexp"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"regexp"
 )
 
 func dataSourceKsyunImages() *schema.Resource {
@@ -175,7 +176,7 @@ func dataSourceKsyunImagesRead(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return fmt.Errorf("error on reading Image list req(%v):%v", req, err)
 	}
-	//logger.Debug("%v", "DescribeImages", resp, err)
+	// logger.Debug("%v", "DescribeImages", resp, err)
 	itemSet, ok := (*resp)["ImagesSet"]
 	if !ok {
 		return fmt.Errorf("error on reading Image set")

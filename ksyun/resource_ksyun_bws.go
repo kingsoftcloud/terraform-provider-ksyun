@@ -63,13 +63,13 @@ func resourceKsyunBandWidthShare() *schema.Resource {
 				Type:     schema.TypeString,
 				ForceNew: true,
 				Required: true,
-				ValidateFunc: validation.StringInSlice([]string{
-					"PostPaidByPeak",
-					"PostPaidByDay",
-					"PostPaidByTransfer",
-				}, false),
+				// ValidateFunc: validation.StringInSlice([]string{
+				// 	"PostPaidByPeak",
+				// 	"PostPaidByDay",
+				// 	"PostPaidByTransfer",
+				// }, false),
 				DiffSuppressFunc: chargeSchemaDiffSuppressFunc,
-				Description:      "The charge type of the BWS.",
+				Description:      "The charge type of the BWS. Valid values: PostPaidByPeak, PostPaidByDay, PostPaidByTransfer, DailyPaidByTransfer.",
 			},
 			"project_id": {
 				Type:        schema.TypeString,
@@ -116,5 +116,4 @@ func resourceKsyunBandWidthShareDelete(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("error on deleting bandWidthShare %q, %s", d.Id(), err)
 	}
 	return err
-
 }

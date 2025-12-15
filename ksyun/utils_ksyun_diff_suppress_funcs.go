@@ -397,6 +397,18 @@ func lbBackendServerDiffSuppressFunc(k, old, new string, d *schema.ResourceData)
 	return false
 }
 
+func lbBackendServerHealthCheckDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bool {
+	if strings.HasPrefix(k, "health_check.") && d.Get("health_check.0.health_protocol") == "TCP" {
+		keyNames := strings.Split(k, ".")
+		keyName := keyNames[len(keyNames)-1]
+		switch keyName {
+		case "health_code", "host_name", "url_path", "http_method":
+			return true
+		}
+	}
+	return false
+}
+
 func volumeDiffSuppressFunc(k, old, new string, d *schema.ResourceData) bool {
 	if d.Id() != "" && d.HasChange("size") && k == "online_resize" {
 		return false

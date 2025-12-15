@@ -50,6 +50,7 @@ The following arguments are supported:
 * `gateway_ip` - (Optional, ForceNew) The IP of gateway.
 * `provided_ipv6_cidr_block` - (Optional, ForceNew) whether support IPV6 CIDR blocks. <br> NOTES: providing a part of regions now.
 * `subnet_name` - (Optional) The name of the subnet.
+* `visit_internet` - (Optional) Whether the subnet can access the Internet. Valid, when subnet_type = Physical.
 
 ## Attributes Reference
 

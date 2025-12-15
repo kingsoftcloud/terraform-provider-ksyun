@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-ksyun/ksyun/internal/pkg/helper"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
 )
 
@@ -319,7 +320,40 @@ func (alb *AlbService) ModifyAlb(d *schema.ResourceData, r *schema.Resource) (er
 		}
 		calls = append(calls, tagsCall)
 	}
+
+	if d.HasChange("protocol_layers") {
+		modifyProtocolLayersCall, err := alb.modifyProtocolLayersCall(d, r)
+		if err != nil {
+			return err
+		}
+		calls = append(calls, modifyProtocolLayersCall)
+	}
 	return ksyunApiCallNew(calls, d, alb.client, true)
+}
+
+func (alb *AlbService) modifyProtocolLayersCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
+	req := map[string]interface{}{}
+	req["AlbId"] = d.Id()
+	if protocolLayers, ok := d.GetOk("protocol_layers"); ok {
+		req["ProtocolLayers"] = protocolLayers
+	} else {
+		req["ProtocolLayers"] = []string{"http", "https"}
+	}
+	callback = ApiCall{
+		param:  &req,
+		action: "ModifyAlbProtocolLayers",
+		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+			conn := client.slbconn
+			logger.Debug(logger.RespFormat, call.action, *(call.param))
+			resp, err = conn.SetLbProtocolLayers(call.param)
+			return resp, err
+		},
+		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+			return nil
+		},
+	}
+	return callback, err
 }
 
 func (alb *AlbService) removeAlbCall(d *schema.ResourceData) (callback ApiCall, err error) {
@@ -641,7 +675,26 @@ func (alb *AlbService) ReadAndSetAlbBackendServerGroup(d *schema.ResourceData, r
 				return resource.NonRetryableError(fmt.Errorf("error on reading ALB %q, %s", d.Id(), callErr))
 			}
 		} else {
-			SdkResponseAutoResourceData(d, r, data, nil)
+
+			extra := map[string]SdkResponseMapping{
+				"Session": {
+					Field: "session",
+					FieldRespFunc: func(i interface{}) interface{} {
+						return []interface{}{
+							i,
+						}
+					},
+				},
+				"HealthCheck": {
+					Field: "health_check",
+					FieldRespFunc: func(i interface{}) interface{} {
+						return []interface{}{
+							i,
+						}
+					},
+				},
+			}
+			SdkResponseAutoResourceData(d, r, data, extra)
 			return nil
 		}
 	})
@@ -665,6 +718,9 @@ func (alb *AlbService) createAlbBackendServerGroupCall(d *schema.ResourceData, r
 		"health_check": {
 			Ignore: true,
 		},
+		"session": {
+			Ignore: true,
+		},
 	}
 	req, err := SdkRequestAutoMapping(d, r, false, transform, nil, SdkReqParameter{
 		onlyTransform: false,
@@ -674,14 +730,26 @@ func (alb *AlbService) createAlbBackendServerGroupCall(d *schema.ResourceData, r
 	}
 
 	if d.HasChanges("health_check") {
-		healthCheckIf := d.Get("health_check")
-		switch healthCheckIf.(type) {
-		case map[string]interface{}:
-			healthCheck := healthCheckIf.(map[string]interface{})
+		if healthCheck, ok := helper.GetSchemaListHeadMap(d, "health_check"); ok {
 			for k, v := range healthCheck {
 				switch v.(type) {
 				case int, string, bool:
-					req[k] = v
+					if !helper.IsEmpty(v) {
+						req[helper.Underline2Hump(k)] = v
+					}
+				}
+			}
+		}
+	}
+
+	if d.HasChanges("session") {
+		if sessionMap, ok := helper.GetSchemaListHeadMap(d, "session"); ok {
+			for k, v := range sessionMap {
+				switch v.(type) {
+				case int, string, bool:
+					if !helper.IsEmpty(v) {
+						req[helper.Underline2Hump(k)] = v
+					}
 				}
 			}
 		}
@@ -715,10 +783,44 @@ func (alb *AlbService) modifyAlbBackendServerGroupCall(d *schema.ResourceData, r
 	transform := map[string]SdkReqTransform{
 		"name":               {},
 		"upstream_keepalive": {},
+		"method":             {},
+
+		"health_check": {
+			Ignore: true,
+		},
+		"session": {
+			Ignore: true,
+		},
 	}
 	req, err := SdkRequestAutoMapping(d, r, true, transform, nil)
 	if err != nil {
 		return callback, err
+	}
+
+	if d.HasChanges("health_check") {
+		if healthCheck, ok := helper.GetSchemaListHeadMap(d, "health_check"); ok {
+			for k, v := range healthCheck {
+				switch v.(type) {
+				case int, string, bool:
+					if !helper.IsEmpty(v) {
+						req[helper.Underline2Hump(k)] = v
+					}
+				}
+			}
+		}
+	}
+
+	if d.HasChanges("session") {
+		if sessionMap, ok := helper.GetSchemaListHeadMap(d, "session"); ok {
+			for k, v := range sessionMap {
+				switch v.(type) {
+				case int, string, bool:
+					if !helper.IsEmpty(v) {
+						req[helper.Underline2Hump(k)] = v
+					}
+				}
+			}
+		}
 	}
 
 	if len(req) > 0 {
