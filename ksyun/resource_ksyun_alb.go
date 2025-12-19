@@ -80,7 +80,6 @@ func resourceKsyunAlb() *schema.Resource {
 				// Optional:     true,
 				// Computed:     true,
 				Required:     true,
-				ForceNew:     true,
 				ValidateFunc: validation.StringInSlice([]string{"standard", "medium", "advanced"}, false),
 				Description:  "The version of the ALB. valid values:'standard', 'medium', 'advanced'.",
 			},
@@ -157,8 +156,8 @@ func resourceKsyunAlb() *schema.Resource {
 			"enable_hpa": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Computed:    true,
-				Description: "Enable hpa.",
+				Default:     true,
+				Description: "Enable hpa. Default is true.",
 			},
 
 			"delete_protection": {

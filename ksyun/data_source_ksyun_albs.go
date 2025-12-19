@@ -104,6 +104,11 @@ func dataSourceKsyunAlbs() *schema.Resource {
 							Computed:    true,
 							Description: "The type of the ALB.",
 						},
+						"enable_hpa": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Enable hpa.",
+						},
 						"vpc_id": {
 							Type:        schema.TypeString,
 							Computed:    true,
