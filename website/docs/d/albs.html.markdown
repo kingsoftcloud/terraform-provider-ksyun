@@ -44,6 +44,7 @@ In addition to all arguments above, the following attributes are exported:
   * `alb_version` - The version of the ALB.
   * `charge_type` - The charge type.
   * `create_time` - The creation time.
+  * `enable_hpa` - Enable hpa.
   * `enabled_log` - whether log is enabled or not.
   * `id` - ID of the ALB.
   * `ip_version` - IP version, 'ipv4' or 'ipv6'.

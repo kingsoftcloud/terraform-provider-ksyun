@@ -1,3 +1,10 @@
+## 1.24.1 (Dec 19, 2025)
+
+BUGFIX：
+
+- `ksyun_kpfs_alb` 修复alb_version更新导致的实例变更问题
+- `ksyun_kpfs_alb` 修复enable_hpa默认值与接口不一致，新增、修改不生效问题
+
 ## 1.24.0 (Dec 15, 2025)
 
 IMPROVEMENT:
