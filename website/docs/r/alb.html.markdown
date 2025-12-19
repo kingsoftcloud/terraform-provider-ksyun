@@ -56,12 +56,12 @@ resource "ksyun_eip_associate" "eip_bind" {
 The following arguments are supported:
 
 * `alb_type` - (Required, ForceNew) The type of the ALB, valid values:'public', 'internal'.
-* `alb_version` - (Required, ForceNew) The version of the ALB. valid values:'standard', 'medium', 'advanced'.
+* `alb_version` - (Required) The version of the ALB. valid values:'standard', 'medium', 'advanced'.
 * `charge_type` - (Required, ForceNew) The charge type, valid values: 'PrePaidByHourUsage'.
 * `vpc_id` - (Required, ForceNew) The ID of the VPC.
 * `alb_name` - (Optional) The name of the ALB.
 * `delete_protection` - (Optional) Whether delete protection is enabled or not. Values: `off` or `on`.
-* `enable_hpa` - (Optional) Enable hpa.
+* `enable_hpa` - (Optional) Enable hpa. Default is true.
 * `enabled_log` - (Optional) Whether log is enabled or not. Specific `klog_info` field when `enabled_log` is true.
 * `enabled_quic` - (Optional, ForceNew) Enable quic.
 * `ip_version` - (Optional, ForceNew) IP version, 'ipv4' or 'ipv6'.

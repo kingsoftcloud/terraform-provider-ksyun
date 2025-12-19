@@ -535,7 +535,14 @@ func (alb *AlbService) checkState(d *schema.ResourceData, albId string, target [
 }
 
 func (alb *AlbService) createAlbCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
-	transform := map[string]SdkReqTransform{}
+	transform := map[string]SdkReqTransform{
+		"enable_hpa": {
+			ValueFunc: func(data *schema.ResourceData) (interface{}, bool) {
+				v, ok := data.GetOkExists("enable_hpa")
+				return v, ok
+			},
+		},
+	}
 	req, err := SdkRequestAutoMapping(d, r, false, transform, nil, SdkReqParameter{
 		onlyTransform: false,
 	})
@@ -607,7 +614,12 @@ func (alb *AlbService) CreateAlb(d *schema.ResourceData, r *schema.Resource) (er
 func (alb *AlbService) modifyAlbCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
 	transform := map[string]SdkReqTransform{
 		"alb_version": {},
-		"enable_hpa":  {},
+		"enable_hpa": {
+			ValueFunc: func(data *schema.ResourceData) (interface{}, bool) {
+				v, ok := data.GetOkExists("enable_hpa")
+				return v, ok
+			},
+		},
 	}
 	req, err := SdkRequestAutoMapping(d, r, false, transform, nil, SdkReqParameter{
 		onlyTransform: true,
