@@ -440,7 +440,7 @@ func (s *KnadService) AssociateKnadCall(d *schema.ResourceData, r *schema.Resour
 	}
 	callback = ApiCall{
 		param:  &req,
-		action: "AssociateIp",
+		action: "InsertEips",
 		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
 			conn := client.knadconn
 			logger.Debug(logger.RespFormat, call.action, *(call.param))
