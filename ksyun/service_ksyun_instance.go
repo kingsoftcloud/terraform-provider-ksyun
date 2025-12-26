@@ -564,6 +564,14 @@ func (s *KecService) modifyKecInstance(d *schema.ResourceData, resource *schema.
 		}
 		callbacks = append(callbacks, rebootCall)
 	}
+
+	// 处理 data_disks 变更
+	dataDiskCalls, err := s.modifyKecInstanceDataDisks(d)
+	if err != nil {
+		return err
+	}
+	callbacks = append(callbacks, dataDiskCalls...)
+
 	return ksyunApiCallNew(callbacks, d, s.client, true)
 }
 
@@ -1833,4 +1841,111 @@ func (s *KecService) isInstanceDemotionConfig(oldType, newType string) bool {
 		}
 	}
 	return true
+}
+
+// modifyKecInstanceDataDisks 处理 data_disks 的变更
+// 当磁盘类型或大小发生变化时，调用 EBS SDK 的 ModifyVolumeType 方法
+func (s *KecService) modifyKecInstanceDataDisks(d *schema.ResourceData) (callbacks []ApiCall, err error) {
+	if !d.HasChange("data_disks") {
+		return callbacks, nil
+	}
+
+	oldDataDisksIf, newDataDisksIf := d.GetChange("data_disks")
+	oldDataDisks := oldDataDisksIf.([]interface{})
+	newDataDisks := newDataDisksIf.([]interface{})
+
+	// 构建 oldDiskId -> {disk_type, disk_size} 的映射
+	oldDiskInfoMap := make(map[string]map[string]interface{})
+	for _, oldDisk := range oldDataDisks {
+		oldDiskMap := oldDisk.(map[string]interface{})
+		if diskIdRaw, ok := oldDiskMap["disk_id"]; ok && diskIdRaw != nil {
+			diskId := diskIdRaw.(string)
+			if diskId != "" {
+				oldDiskInfoMap[diskId] = map[string]interface{}{
+					"disk_type": oldDiskMap["disk_type"],
+					"disk_size": oldDiskMap["disk_size"],
+				}
+			}
+		}
+	}
+
+	// 遍历新配置，找出需要修改的磁盘
+	for _, newDisk := range newDataDisks {
+		newDiskMap := newDisk.(map[string]interface{})
+
+		// 获取 disk_id，可能为 nil 或空字符串
+		var diskId string
+		if diskIdRaw, ok := newDiskMap["disk_id"]; ok && diskIdRaw != nil {
+			diskId = diskIdRaw.(string)
+		}
+
+		if diskId == "" {
+			continue // 跳过没有 disk_id 的新磁盘（新创建的）
+		}
+
+		oldDisk, exists := oldDiskInfoMap[diskId]
+		if !exists {
+			// 磁盘是新添加的或者在旧配置中不存在
+			continue
+		}
+
+		// 获取新的磁盘类型和大小
+		newDiskType := ""
+		if dt, ok := newDiskMap["disk_type"]; ok && dt != nil {
+			newDiskType = dt.(string)
+		}
+
+		newDiskSize := 0
+		if ds, ok := newDiskMap["disk_size"]; ok && ds != nil {
+			// 处理不同类型的 size
+			switch v := ds.(type) {
+			case int:
+				newDiskSize = v
+			case int64:
+				newDiskSize = int(v)
+			case float64:
+				newDiskSize = int(v)
+			}
+		}
+
+		// 获取旧的磁盘类型和大小
+		oldDiskType := ""
+		if dt, ok := oldDisk["disk_type"]; ok && dt != nil {
+			oldDiskType = dt.(string)
+		}
+
+		// 检查类型或大小是否发生变化
+		if newDiskType != "" && (newDiskType != oldDiskType) {
+			// 创建 ModifyVolumeType 的调用
+			call := s.createModifyVolumeTypeCall(diskId, newDiskType, newDiskSize)
+			callbacks = append(callbacks, call)
+		}
+	}
+
+	return callbacks, nil
+}
+
+// createModifyVolumeTypeCall 创建修改磁盘类型的 ApiCall
+func (s *KecService) createModifyVolumeTypeCall(diskId, diskType string, diskSize int) ApiCall {
+	return ApiCall{
+		param: &map[string]interface{}{
+			"VolumeId":                       diskId,
+			"PerformanceLevelVolumeCategory": diskType,
+			"PerformanceVolumeSize":          diskSize,
+		},
+		action: "ModifyVolumeType",
+		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+			conn := client.ebsconn
+			logger.Debug(logger.RespFormat, call.action, *(call.param))
+			resp, err = conn.ModifyVolumeType(call.param)
+			return resp, err
+		},
+		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+			// 等待磁盘状态变为可用
+			ebsService := EbsService{client: client}
+			_, err = ebsService.checkVolumeState(d, (*call.param)["VolumeId"].(string), []string{"available", "in-use"}, d.Timeout(schema.TimeoutUpdate))
+			return err
+		},
+	}
 }

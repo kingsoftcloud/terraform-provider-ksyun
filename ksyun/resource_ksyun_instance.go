@@ -150,7 +150,7 @@ func instanceConfig() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Optional: true,
 						Computed: true,
-						ForceNew: true,
+						ForceNew: false,
 						ValidateFunc: validation.StringInSlice([]string{
 							"SSD3.0",
 							"EHDD",
@@ -166,7 +166,7 @@ func instanceConfig() map[string]*schema.Schema {
 						Type:         schema.TypeInt,
 						Optional:     true,
 						Computed:     true,
-						ForceNew:     true,
+						ForceNew:     false,
 						ValidateFunc: validation.IntBetween(10, 16000),
 						Description:  "Data disk size. value range: [10, 16000].",
 					},
