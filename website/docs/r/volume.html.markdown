@@ -44,7 +44,7 @@ The following arguments are supported:
 * `tags` - (Optional) the tags of the resource.
 * `volume_desc` - (Optional) The description of the EBS volume.
 * `volume_name` - (Optional) The name of the EBS volume.
-* `volume_type` - (Optional, ForceNew) The type of the EBS volume. Valid values:ESSD_PL0/ESSD_PL1/ESSD_PL2/ESSD_PL3/SSD3.0/EHDD, default is `SSD3.0`.
+* `volume_type` - (Optional) The type of the EBS volume. Valid values:ESSD_PL0/ESSD_PL1/ESSD_PL2/ESSD_PL3/SSD3.0/EHDD, default is `SSD3.0`.
 
 ## Attributes Reference
 
