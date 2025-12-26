@@ -330,27 +330,60 @@ func (s *EbsService) ModifyVolume(d *schema.ResourceData, r *schema.Resource) (e
 
 	// a := d.HasChange("project_id")
 	// b := d.HasChange("volume_desc")
+	if d.HasChange("volume_type") {
+		volumeTypeCall, err := s.ModifyVolumeTypeCall(d, r)
+		if err != nil {
+			return err
+		}
+		return ksyunApiCallNew([]ApiCall{volumeTypeCall}, d, s.client, false)
+	} else {
+		projectCall, err := s.ModifyVolumeProjectCall(d, r)
+		if err != nil {
+			return err
+		}
+		infoCall, err := s.ModifyVolumeInfoCall(d, r)
+		if err != nil {
+			return err
+		}
 
-	projectCall, err := s.ModifyVolumeProjectCall(d, r)
-	if err != nil {
-		return err
-	}
-	infoCall, err := s.ModifyVolumeInfoCall(d, r)
-	if err != nil {
-		return err
+		call, err := s.ModifyVolumeResizeCall(d, r)
+		if err != nil {
+			return err
+		}
+
+		tagsService := TagService{client: s.client}
+		tagsCall, err := tagsService.ReplaceResourcesTagsWithResourceCall(d, r, "volume", true, false)
+		if err != nil {
+			return err
+		}
+		return ksyunApiCallNew([]ApiCall{projectCall, infoCall, call, tagsCall}, d, s.client, true)
 	}
 
-	call, err := s.ModifyVolumeResizeCall(d, r)
-	if err != nil {
-		return err
+}
+
+func (s *EbsService) ModifyVolumeTypeCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
+	// 构建请求参数
+	req := map[string]interface{}{
+		"VolumeId":                       d.Id(),
+		"PerformanceLevelVolumeCategory": d.Get("volume_type"),
+		"PerformanceVolumeSize":          d.Get("size"),
 	}
 
-	tagsService := TagService{client: s.client}
-	tagsCall, err := tagsService.ReplaceResourcesTagsWithResourceCall(d, r, "volume", true, false)
-	if err != nil {
-		return err
+	callback = ApiCall{
+		param:  &req,
+		action: "ModifyVolumeType",
+		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+			conn := client.ebsconn
+			logger.Debug(logger.RespFormat, call.action, *(call.param))
+			resp, err = conn.ModifyVolumeType(call.param) // 调用SDK方法
+			return resp, err
+		},
+		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+			return err
+		},
 	}
-	return ksyunApiCallNew([]ApiCall{projectCall, infoCall, call, tagsCall}, d, s.client, true)
+	return callback, err
 }
 
 func (s *EbsService) RemoveVolumeCall(d *schema.ResourceData) (callback ApiCall, err error) {
