@@ -82,9 +82,9 @@ The `data_disk` object supports the following:
 The `data_disks` object supports the following:
 
 * `delete_with_instance` - (Optional, ForceNew) Delete this data disk when the instance is destroyed. It only works on EBS disk.
-* `disk_size` - (Optional, ForceNew) Data disk size. value range: [10, 16000].
+* `disk_size` - (Optional) Data disk size. value range: [10, 16000].
 * `disk_snapshot_id` - (Optional, ForceNew) When the cloud disk opens, the snapshot id is entered.
-* `disk_type` - (Optional, ForceNew) Data disk type.
+* `disk_type` - (Optional) Data disk type.
 
 The `extension_network_interface` object supports the following:
 
