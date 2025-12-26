@@ -63,7 +63,7 @@ func resourceKsyunVolume() *schema.Resource {
 			"volume_type": {
 				Type:     schema.TypeString,
 				Optional: true,
-				ForceNew: true,
+				ForceNew: false,
 				ValidateFunc: validation.StringInSlice([]string{
 					// "SSD2.0",
 					// "SSD3.0",
