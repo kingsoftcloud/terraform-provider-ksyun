@@ -1,9 +1,17 @@
-## 1.24.2 (Dec 29, 2025)
+## 1.24.5 (Dec 29, 2025)
 BUGFIX：
 
 - `ksyun_kpfs_file_system` 修改说明
 - `ksyun_kpfs_clusters` 修改说明
 - `ksyun_kpfs_client_install` 修改说明
+
+## 1.24.2 ~ 1.24.4 (Dec 19, 2025)
+
+IMPROVEMENTS：
+
+- `ksyun_volume` 增加数据盘变更
+- `ksyun_instance` 增加数据盘变更
+
 
 ## 1.24.1 (Dec 19, 2025)
 
