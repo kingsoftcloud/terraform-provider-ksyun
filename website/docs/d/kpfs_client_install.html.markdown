@@ -4,12 +4,12 @@ layout: "ksyun"
 page_title: "ksyun: ksyun_kpfs_client_install"
 sidebar_current: "docs-ksyun-datasource-kpfs_client_install"
 description: |-
-  This data source provides a list of kpfs fileSystem resources according to their fileSystem ID, name.
+  Query KPFS client installation package information and mount IP by file system ID.
 ---
 
 # ksyun_kpfs_client_install
 
-This data source provides a list of kpfs fileSystem resources according to their fileSystem ID, name.
+Query KPFS client installation package information and mount IP by file system ID.
 
 #
 
