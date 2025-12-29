@@ -1,5 +1,5 @@
 /*
-This data source provides a list of kpfs fileSystem resources according to their fileSystem ID, name.
+Query available storage cluster information by UID.
 
 # Example Usage
 

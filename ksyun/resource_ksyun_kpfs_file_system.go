@@ -1,5 +1,5 @@
 /*
-Provides a kpfs acl rule resource.
+Create a kpfs file system.
 
 # Example Usage
 

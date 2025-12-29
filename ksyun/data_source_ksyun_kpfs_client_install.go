@@ -1,5 +1,5 @@
 /*
-This data source provides a list of kpfs fileSystem resources according to their fileSystem ID, name.
+Query KPFS client installation package information and mount IP by file system ID.
 
 # Example Usage
 
