@@ -4,12 +4,12 @@ layout: "ksyun"
 page_title: "ksyun: ksyun_kpfs_file_system"
 sidebar_current: "docs-ksyun-resource-kpfs_file_system"
 description: |-
-  Provides a kpfs acl rule resource.
+  Create a kpfs file system.
 ---
 
 # ksyun_kpfs_file_system
 
-Provides a kpfs acl rule resource.
+Create a kpfs file system.
 
 #
 
