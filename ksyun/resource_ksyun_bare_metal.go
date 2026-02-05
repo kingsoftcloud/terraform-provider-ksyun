@@ -489,7 +489,7 @@ func resourceKsyunBareMetal() *schema.Resource {
 			"timed_regularization": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Trial timed conversion to regular status, when charge_type is `Trial`. Valid Values: `support`, `unsupported`.",
+				Description: "Trial timed conversion to regular status, when charge_type is `Trial`. Valid Values: `support`, `unsupport`.",
 			},
 			"tags": tagsSchema(),
 
