@@ -110,6 +110,7 @@ In addition to all arguments above, the following attributes are exported:
   * `rack_name` - Rack Name.
   * `raid` - The Raid type of the Bare Metal.
   * `releasable_time` - Releasable Time.
+  * `roce_cluster` - The roce cluster id.
   * `roces` - Roces.
     * `gate_way` - Gateway.
     * `ip` - Ip of the roce network.

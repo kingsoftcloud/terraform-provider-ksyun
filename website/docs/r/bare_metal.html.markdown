@@ -88,6 +88,7 @@ The following arguments are supported:
 * `purchase_time` - (Optional, ForceNew) Purchase time. If trial is true, it works. Default: 7.
 * `raid_id` - (Optional) The Raid template id of Bare Metal.Conflict raid. If you don't set raid,raid_id is Required. If you want to use raid_id,you must in user white list.
 * `raid` - (Optional) The Raid type of the Bare Metal. Valid Values:'Raid0','Raid1','Raid5','Raid10','Raid50','SRaid0', 'Jbod'. Conflict raid_id. If you don't set raid_id,raid is Required.
+* `roce_cluster` - (Optional) The roce cluster id.
 * `roce_network` - (Optional) The value of roce network that indicates acquiring whether an instance supplied roce network. Valid Options: `Open` and `Close`.
 * `security_agent` - (Optional) The security agent choice of the Bare Metal. Valid Values:'classic','no'. Default is 'no'.
 * `server_ip` - (Optional) The pxe server ip of the Bare Metal.Only effective on modify and host type is COLO.
@@ -96,7 +97,7 @@ The following arguments are supported:
 * `system_volume_size` - (Optional) System disk size of cloud disk.
 * `system_volume_type` - (Optional) System disk type of cloud disk.
 * `tags` - (Optional) the tags of the resource.
-* `timed_regularization` - (Optional) Trial timed conversion to regular status, when charge_type is `Trial`. Valid Values: `support`, `unsupported`.
+* `timed_regularization` - (Optional) Trial timed conversion to regular status, when charge_type is `Trial`. Valid Values: `support`, `unsupport`.
 * `trial` - (Optional) Trial this epc instance.
 * `use_hot_standby` - (Optional) Whether use hot standy. Valid Values: `support`, `unsupport` and `onlyHotStandby`.
 * `zone_id` - (Optional) The zone id, when creating pdns, is required.
