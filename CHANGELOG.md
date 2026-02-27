@@ -1,3 +1,9 @@
+## 1.24.7 (Feb 27, 2026)
+
+IMPROVEMENTS：
+
+- `ksyun_alb_register_backend_server` update documents
+
 ## 1.24.5 (Dec 29, 2025)
 BUGFIX：
 
