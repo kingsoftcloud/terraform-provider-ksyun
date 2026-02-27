@@ -60,9 +60,9 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-resource can be imported using the id, e.g.
+Resource can be imported using the id​ (note: specifically the **BackendServerId**, not the InstanceId), e.g.
 
 ```
-$ terraform import ksyun_alb_register_backend_server.default 67b91d3c-c363-4f57-b0cd-xxxxxxxxxxxx
+$ terraform import ksyun_alb_register_backend_server.default $BackendServerId
 ```
 
