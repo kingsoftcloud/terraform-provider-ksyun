@@ -1,3 +1,10 @@
+## 1.24.8 (Mar 03, 2026)
+
+BUGFIX：
+
+- `ksyun_instance`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_volume`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+
 ## 1.24.7 (Feb 27, 2026)
 
 IMPROVEMENTS：
