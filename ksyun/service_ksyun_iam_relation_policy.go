@@ -284,6 +284,13 @@ func (s *IamRelationPolicyService) ReadAndSetIamRelationPolicy(d *schema.Resourc
 
 	var data []interface{}
 	data, err = s.ReadRelationPolicy(relationType, name, policyName)
+	if err != nil {
+		return err
+	}
+	if len(data) == 0 {
+		d.SetId("")
+		return nil
+	}
 	SdkResponseAutoResourceData(d, r, data, nil)
 
 	return

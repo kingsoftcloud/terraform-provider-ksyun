@@ -1,3 +1,16 @@
+## 1.24.8 (Mar 3, 2026)
+
+BUGFIX:
+
+- `ksyun_iam_user`: 修复资源在控制台被删除后，Read 接口直接报错导致 workspace 损坏的问题，现在会正确清除 state
+- `ksyun_iam_role`: 修复资源在控制台被删除后，Read 接口直接报错导致 workspace 损坏的问题，现在会正确清除 state
+- `ksyun_iam_group`: 修复资源在控制台被删除后，Read 接口直接报错导致 workspace 损坏的问题，现在会正确清除 state
+- `ksyun_iam_policy`: 修复资源在控制台被删除后，Read 接口直接报错导致 workspace 损坏的问题，现在会正确清除 state
+- `ksyun_iam_relation_policy`: 修复策略绑定关系在控制台解除后，Read 接口未清除 state 的静默漏洞
+- `ksyun_tag_v2`: 修复标签在控制台被删除后，Read 接口直接报错导致 workspace 损坏的问题，现在会正确清除 state
+- `ksyun_tag_v2_attachment`: 修复标签绑定关系在控制台解除后，Read 接口直接报错导致 workspace 损坏的问题，现在会正确清除 state
+- `ksyun_tag`: 修复标签在控制台被删除后，Read 接口未清除 state 的静默漏洞
+
 ## 1.24.7 (Feb 27, 2026)
 
 IMPROVEMENTS：

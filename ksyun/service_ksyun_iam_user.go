@@ -65,6 +65,13 @@ func (s *IamUserService) ReadAndSetIamUser(d *schema.ResourceData, r *schema.Res
 
 	var data []interface{}
 	data, err = s.ReadUser(params)
+	if err != nil {
+		if isExpectError(err, []string{"UserNoSuchEntity"}) {
+			d.SetId("")
+			return nil
+		}
+		return err
+	}
 	SdkResponseAutoResourceData(d, r, data, nil)
 
 	return
