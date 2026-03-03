@@ -139,7 +139,7 @@ func (s *BareMetalService) ReadAndSetBareMetal(d *schema.ResourceData, r *schema
 					Field: "extension_dns1",
 				},
 				"ExtensionDNS2": {
-					Field: "extension_dns1",
+					Field: "extension_dns2",
 				},
 				"ExtensionSecurityGroupSet": {
 					Field: "extension_security_group_ids",
