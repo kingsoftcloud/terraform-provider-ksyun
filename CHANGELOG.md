@@ -5,6 +5,21 @@ BUGFIX：
 - `ksyun_instance`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
 - `ksyun_volume`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
 
+## 1.25.0 (Mar 02, 2026)
+BUGFIX：
+
+- `ksyun_kpfs_file_system` 资源已被外部删除，从 state 中移除
+
+## 1.25.1 (Mar 03, 2026)
+BUGFIX：
+
+- `ksyun_ssh_key` 资源已被外部删除，从 state 中移除
+
+## 1.25.0 (Mar 02, 2026)
+BUGFIX：
+
+- `ksyun_bare_metal` 资源已被外部删除，从 state 中移除
+
 ## 1.24.2 (Dec 29, 2025)
 BUGFIX：
 
