@@ -68,8 +68,17 @@ func (s *SksService) ReadKey(d *schema.ResourceData, keyId string) (data map[str
 
 func (s *SksService) ReadAndSetKey(d *schema.ResourceData, r *schema.Resource) (err error) {
 	data, err := s.ReadKey(d, "")
+	if err != nil {
+		if notFoundError(err) {
+			//资源已被外部删除，从 state 中移除
+			d.SetId("")
+			return nil
+		}
+		return err
+	}
 	SdkResponseAutoResourceData(d, r, data, nil)
-	return err
+	return nil
+
 }
 
 func (s *SksService) ReadAndSetKeys(d *schema.ResourceData, r *schema.Resource) (err error) {

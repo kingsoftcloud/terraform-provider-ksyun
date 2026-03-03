@@ -1,7 +1,13 @@
-## 1.24.8 (Mar 3, 2026)
+## 1.25.0 (Mar 03, 2026)
 
-BUGFIX:
+BUGFIX：
 
+- `resource_ksyun_ks3_bucket` 修复logging配置通过外部删除后，未在state中移除的问题
+- `ksyun_instance`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_volume`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_kpfs_file_system` 资源已被外部删除，从 state 中移除
+- `ksyun_ssh_key` 资源已被外部删除，从 state 中移除
+- `ksyun_bare_metal` 资源已被外部删除，从 state 中移除
 - `ksyun_iam_user`: 修复资源在控制台被删除后，Read 接口直接报错导致 workspace 损坏的问题，现在会正确清除 state
 - `ksyun_iam_role`: 修复资源在控制台被删除后，Read 接口直接报错导致 workspace 损坏的问题，现在会正确清除 state
 - `ksyun_iam_group`: 修复资源在控制台被删除后，Read 接口直接报错导致 workspace 损坏的问题，现在会正确清除 state

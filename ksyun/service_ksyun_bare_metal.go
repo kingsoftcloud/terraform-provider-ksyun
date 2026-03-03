@@ -83,11 +83,14 @@ func (s *BareMetalService) ReadAndSetBareMetal(d *schema.ResourceData, r *schema
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
 		data, callErr := s.ReadBareMetal(d, "", false)
 		if callErr != nil {
-			if !d.IsNewResource() {
-				return resource.NonRetryableError(callErr)
-			}
+			//if !d.IsNewResource() {
+			//	return resource.NonRetryableError(callErr)
+			//}
 			if notFoundError(callErr) {
-				return resource.RetryableError(callErr)
+				//资源已被外部删除，从 state 中移除
+				d.SetId("")
+				return nil
+				//return resource.RetryableError(callErr)
 			} else {
 				return resource.NonRetryableError(fmt.Errorf("error on  reading address %q, %s", d.Id(), callErr))
 			}
@@ -136,7 +139,7 @@ func (s *BareMetalService) ReadAndSetBareMetal(d *schema.ResourceData, r *schema
 					Field: "extension_dns1",
 				},
 				"ExtensionDNS2": {
-					Field: "extension_dns1",
+					Field: "extension_dns2",
 				},
 				"ExtensionSecurityGroupSet": {
 					Field: "extension_security_group_ids",
