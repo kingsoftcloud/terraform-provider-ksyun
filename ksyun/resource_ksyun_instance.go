@@ -249,7 +249,7 @@ func instanceConfig() map[string]*schema.Schema {
 
 		"charge_type": {
 			Type:     schema.TypeString,
-			ForceNew: true,
+			ForceNew: false,
 			Required: true,
 			ValidateFunc: validation.StringInSlice([]string{
 				"Daily",
@@ -414,6 +414,15 @@ func instanceConfig() map[string]*schema.Schema {
 			// ForceNew:         true,
 			DiffSuppressFunc: kecImportDiffSuppress,
 			Description:      "Whether to create EBS volumes from snapshots in the custom image, default is false.",
+		},
+
+		// SyncDataDiskChargeType: 修改实例计费方式时是否同时转换数据盘的计费方式
+		"sync_data_disk_charge_type": {
+			Type:             schema.TypeBool,
+			Optional:         true,
+			Default:          false,
+			DiffSuppressFunc: kecImportDiffSuppress,
+			Description:      "Whether to change the charge type of data disks together when modifying instance charge type, default is false.",
 		},
 	}
 }

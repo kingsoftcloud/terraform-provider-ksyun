@@ -351,12 +351,17 @@ func (s *EbsService) ModifyVolume(d *schema.ResourceData, r *schema.Resource) (e
 			return err
 		}
 
+		chargeTypeCall, err := s.ModifyVolumeChargeTypeCall(d, r)
+		if err != nil {
+			return err
+		}
+
 		tagsService := TagService{client: s.client}
 		tagsCall, err := tagsService.ReplaceResourcesTagsWithResourceCall(d, r, "volume", true, false)
 		if err != nil {
 			return err
 		}
-		return ksyunApiCallNew([]ApiCall{projectCall, infoCall, call, tagsCall}, d, s.client, true)
+		return ksyunApiCallNew([]ApiCall{projectCall, infoCall, call, chargeTypeCall, tagsCall}, d, s.client, true)
 	}
 
 }
@@ -376,6 +381,44 @@ func (s *EbsService) ModifyVolumeTypeCall(d *schema.ResourceData, r *schema.Reso
 			conn := client.ebsconn
 			logger.Debug(logger.RespFormat, call.action, *(call.param))
 			resp, err = conn.ModifyVolumeType(call.param) // 调用SDK方法
+			return resp, err
+		},
+		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+			return err
+		},
+	}
+	return callback, err
+}
+
+func (s *EbsService) ModifyVolumeChargeTypeCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
+	// 判断 charge_type 是否变化，无变化则不调用接口
+	if !d.HasChange("charge_type") {
+		return
+	}
+	// 计费方式映射
+	billTypeMap := map[string]int{
+		"Daily":                   5,
+		"HourlyInstantSettlement": 87,
+	}
+	chargeType := d.Get("charge_type").(string)
+	billType, ok := billTypeMap[chargeType]
+	if !ok {
+		return callback, fmt.Errorf("unsupported charge_type: %s", chargeType)
+	}
+	// 构建请求参数
+	req := map[string]interface{}{
+		"VolumeId.1": d.Id(),
+		"BillType":   billType,
+	}
+
+	callback = ApiCall{
+		param:  &req,
+		action: "ModifyDiskChargeType",
+		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+			conn := client.ebsconn
+			logger.Debug(logger.RespFormat, call.action, *(call.param))
+			resp, err = conn.ModifyDiskChargeType(call.param)
 			return resp, err
 		},
 		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {

@@ -72,6 +72,9 @@ func kecImportDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
 		if k == "auto_create_ebs" {
 			return true
 		}
+		if k == "sync_data_disk_charge_type" {
+			return true
+		}
 	}
 	if (k == "keep_image_login" || k == "key_id") && d.Id() != "" && !d.HasChange("image_id") {
 		return true
