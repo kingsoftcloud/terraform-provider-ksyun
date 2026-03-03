@@ -98,7 +98,7 @@ The following arguments are supported:
 * `system_volume_size` - (Optional) System disk size of cloud disk.
 * `system_volume_type` - (Optional) System disk type of cloud disk.
 * `tags` - (Optional) the tags of the resource.
-* `timed_regularization` - (Optional) Trial timed conversion to regular status, when charge_type is `Trial`. Valid Values: `support`, `unsupported`.
+* `timed_regularization` - (Optional) Trial timed conversion to regular status, when charge_type is `Trial`. Valid Values: `support`, `unsupport`.
 * `trial` - (Optional) Trial this epc instance.
 * `use_hot_standby` - (Optional) Whether use hot standy. Valid Values: `support`, `unsupport` and `onlyHotStandby`.
 * `zone_id` - (Optional) The zone id, when creating pdns, is required.
