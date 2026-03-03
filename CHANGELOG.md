@@ -16,6 +16,18 @@ BUGFIX：
 - `ksyun_tag_v2`: 修复标签在控制台被删除后，Read 接口直接报错导致 workspace 损坏的问题，现在会正确清除 state
 - `ksyun_tag_v2_attachment`: 修复标签绑定关系在控制台解除后，Read 接口直接报错导致 workspace 损坏的问题，现在会正确清除 state
 - `ksyun_tag`: 修复标签在控制台被删除后，Read 接口未清除 state 的静默漏洞
+- `ksyun_snapshot`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_volume_attach`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_auto_snapshot_policy`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_auto_snapshot_volume_association`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_data_guard_group`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_kec_network_interface_attachment`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_scaling_group`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_scaling_configuration`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_scaling_instance`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_scaling_notification`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_scaling_policy`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_scaling_scheduled_task`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
 
 ## 1.24.7 (Feb 27, 2026)
 

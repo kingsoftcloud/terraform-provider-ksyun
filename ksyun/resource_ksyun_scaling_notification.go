@@ -155,6 +155,10 @@ func resourceKsyunScalingNotificationRead(d *schema.ResourceData, meta interface
 	logger.Debug(logger.ReqFormat, action, req)
 	resp, err := conn.DescribeScalingNotification(&req)
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("error on reading ScalingNotification %q, %s", d.Id(), err)
 	}
 	if resp != nil {

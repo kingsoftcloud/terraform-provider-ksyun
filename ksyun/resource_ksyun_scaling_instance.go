@@ -193,6 +193,10 @@ func resourceKsyunScalingInstanceRead(d *schema.ResourceData, meta interface{}) 
 	logger.Debug(logger.ReqFormat, action, req)
 	resp, err := conn.DescribeScalingInstance(&req)
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("error on reading ScalingInstance %q, %s", d.Id(), err)
 	}
 	if resp != nil {

@@ -129,6 +129,10 @@ func resourceKsyunSnapshotRead(d *schema.ResourceData, meta interface{}) (err er
 	snapshotService := SnapshotService{meta.(*KsyunClient)}
 	err = snapshotService.ReadAndSetSnapshot(d, resourceKsyunSnapshot())
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("error on reading snapshot %q, %s", d.Id(), err)
 	}
 	return err
