@@ -55,6 +55,13 @@ func (s *TagV1Service) ReadAndSetTag(d *schema.ResourceData, r *schema.Resource)
 
 	var data []interface{}
 	data, err = s.ReadTags(params)
+	if err != nil {
+		return err
+	}
+	if len(data) == 0 {
+		d.SetId("")
+		return nil
+	}
 	SdkResponseAutoResourceData(d, r, data, nil)
 
 	return

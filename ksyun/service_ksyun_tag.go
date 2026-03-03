@@ -343,10 +343,10 @@ func (s *TagService) tagAttachResourceWithCall(d *schema.ResourceData, r *schema
 			}
 			readErr := s.ReadAndSetTagAttachment(d, nil)
 			if readErr != nil {
-				if notFoundError(readErr) {
-					return resource.RetryableError(readErr)
-				}
 				return resource.NonRetryableError(readErr)
+			}
+			if d.Id() == "" {
+				return resource.RetryableError(fmt.Errorf("tag attachment for resource %s not found yet, will retry", rsId))
 			}
 			return nil
 		})
@@ -435,7 +435,8 @@ func (s *TagService) ReadAndSetTag(d *schema.ResourceData, r *schema.Resource) e
 		data = v.(map[string]interface{})
 	}
 	if len(data) == 0 {
-		return fmt.Errorf("tag %s:%s is not exist ", key, value)
+		d.SetId("")
+		return nil
 	}
 	extra := map[string]SdkResponseMapping{
 		"Id": {
@@ -486,7 +487,8 @@ func (s *TagService) ReadAndSetTagAttachment(d *schema.ResourceData, r *schema.R
 
 exit:
 	if !found {
-		return fmt.Errorf("the attachment between tag and resource %s is not exist", rsId)
+		d.SetId("")
+		return nil
 	}
 	return nil
 }

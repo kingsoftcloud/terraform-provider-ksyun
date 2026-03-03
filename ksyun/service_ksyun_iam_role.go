@@ -65,6 +65,13 @@ func (s *IamRoleService) ReadAndSetIamRole(d *schema.ResourceData, r *schema.Res
 
 	var data []interface{}
 	data, err = s.ReadRole(params)
+	if err != nil {
+		if isExpectError(err, []string{"RoleNoSuchEntity"}) {
+			d.SetId("")
+			return nil
+		}
+		return err
+	}
 	SdkResponseAutoResourceData(d, r, data, nil)
 
 	return

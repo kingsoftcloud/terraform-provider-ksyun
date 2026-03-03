@@ -140,6 +140,17 @@ func (s *IamPolicyService) ReadAndSetIamPolicy(d *schema.ResourceData, r *schema
 
 	var data []interface{}
 	data, err = s.ReadPolicy(params)
+	if err != nil {
+		if isExpectError(err, []string{"PolicyNoSuchEntity"}) {
+			d.SetId("")
+			return nil
+		}
+		return err
+	}
+	if len(data) == 0 {
+		d.SetId("")
+		return nil
+	}
 	SdkResponseAutoResourceData(d, r, data, nil)
 
 	return

@@ -65,6 +65,13 @@ func (s *IamGroupService) ReadAndSetIamGroup(d *schema.ResourceData, r *schema.R
 
 	var data []interface{}
 	data, err = s.ReadGroup(params)
+	if err != nil {
+		if isExpectError(err, []string{"GroupNoSuchEntity"}) {
+			d.SetId("")
+			return nil
+		}
+		return err
+	}
 	SdkResponseAutoResourceData(d, r, data, nil)
 
 	return
