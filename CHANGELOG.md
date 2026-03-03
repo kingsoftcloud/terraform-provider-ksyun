@@ -1,3 +1,9 @@
+## 1.24.3 (Mar 03, 2026)
+
+BUGFIX：
+
+- `resource_ksyun_ks3_bucket` 修复logging配置通过外部删除后，未在state中移除的问题
+
 ## 1.24.2 (Dec 29, 2025)
 BUGFIX：
 
