@@ -1,3 +1,9 @@
+
+## 1.25.0 (Mar 02, 2026)
+BUGFIX：
+
+- `ksyun_kpfs_file_system` 资源已被外部删除，从 state 中移除
+
 ## 1.25.1 (Mar 03, 2026)
 BUGFIX：
 
