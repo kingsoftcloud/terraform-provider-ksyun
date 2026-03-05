@@ -221,6 +221,10 @@ func resourceKsyunScalingScheduledTaskRead(d *schema.ResourceData, meta interfac
 	logger.Debug(logger.ReqFormat, action, req)
 	resp, err := conn.DescribeScheduledTask(&req)
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("error on reading ScalingScheduledTask %q, %s", d.Id(), err)
 	}
 	if resp != nil {

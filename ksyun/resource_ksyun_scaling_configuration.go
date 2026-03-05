@@ -344,6 +344,10 @@ func resourceKsyunScalingConfigurationRead(d *schema.ResourceData, meta interfac
 	logger.Debug(logger.ReqFormat, action, readScalingConfiguration)
 	resp, err := conn.DescribeScalingConfiguration(&readScalingConfiguration)
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("error on reading ScalingConfiguration %q, %s", d.Id(), err)
 	}
 	if resp != nil {
