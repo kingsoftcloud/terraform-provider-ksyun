@@ -99,14 +99,17 @@ func resourceKsyunDataGuardGroupRead(d *schema.ResourceData, meta interface{}) e
 	logger.Debug(logger.ReqFormat, action, reqParameters)
 
 	sdkResponse, err := dataGuardSrv.describeDataGuardGroup(reqParameters)
-	if err != nil || len(sdkResponse) < 1 {
+	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("while query snapshot policy have encountered an error detail: %s", err)
 	}
 
 	if len(sdkResponse) < 1 {
-		return fmt.Errorf("the data guard group doesn't exsit from ksyun. data_guard_id: %s, data_guard_name: %s "+
-			"\n This resource has been deleted on ksyun. you can delete local resource in ./.terraform.tfstate",
-			d.Get("data_guard_id"), d.Get("data_guard_name"))
+		d.SetId("")
+		return nil
 	}
 
 	result := sdkResponse[0].(map[string]interface{})
