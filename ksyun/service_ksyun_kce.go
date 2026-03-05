@@ -142,10 +142,10 @@ func formatKceInstancePara(nodeConfig map[string]interface{}) (para string) {
 			for _, diskSrc := range v.([]interface{}) {
 				disk := diskSrc.(map[string]interface{})
 				if disk["disk_type"] != nil {
-					paraMap["System.DiskType"] = disk["disk_type"]
+					paraMap["SystemDisk.DiskType"] = disk["disk_type"]
 				}
 				if disk["disk_size"] != nil {
-					paraMap["System.DiskSize"] = disk["disk_size"]
+					paraMap["SystemDisk.DiskSize"] = disk["disk_size"]
 				}
 			}
 			break
