@@ -75,6 +75,8 @@ func resourceKsyunVolume() *schema.Resource {
 					"ESSD_PL1",
 					"ESSD_PL2",
 					"ESSD_PL3",
+					"ESSD_Entry",
+					"ESSD_AutoPL",
 				}, false),
 				Default:     "SSD3.0",
 				Description: "The type of the EBS volume. Valid values:ESSD_PL0/ESSD_PL1/ESSD_PL2/ESSD_PL3/SSD3.0/EHDD, default is `SSD3.0`.",

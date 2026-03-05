@@ -259,28 +259,6 @@ func (s *KecService) readKecInstance(d *schema.ResourceData, instanceId string, 
 		"InstanceId.1": instanceId,
 	}
 
-getProjectLabel:
-	if allProject {
-		err = addProjectInfoAll(d, &req, s.client)
-		if err != nil {
-			if network.IsReadConnectionReset(err) && retryCount > 0 {
-				retryCount--
-				goto getProjectLabel
-			}
-			return data, err
-		}
-	} else {
-		err = addProjectInfo(d, &req, s.client)
-		if err != nil {
-			if network.IsReadConnectionReset(err) && retryCount > 0 {
-				retryCount--
-				goto getProjectLabel
-			}
-			return data, err
-		}
-	}
-
-	// reset retry count
 	retryCount = 3
 readInstanceLabel:
 	kecInstanceResults, err = s.readKecInstances(req)
