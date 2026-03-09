@@ -34,6 +34,9 @@ BUGFIX：
 - `ksyun_scaling_notification`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
 - `ksyun_scaling_policy`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
 - `ksyun_scaling_scheduled_task`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_kcrs`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_kce`: 修复读取接口在资源不存在时未正确处理notFoundError的问题 
+- `ksyun_kce_worker`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
 
 ## 1.24.7 (Feb 27, 2026)
 
