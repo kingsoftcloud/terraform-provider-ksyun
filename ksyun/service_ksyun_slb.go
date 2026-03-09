@@ -156,11 +156,12 @@ func (s *SlbService) ReadAndSetLoadBalancer(d *schema.ResourceData, r *schema.Re
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
 		data, callErr := s.ReadLoadBalancer(d, "")
 		if callErr != nil {
-			if !d.IsNewResource() {
-				return resource.NonRetryableError(callErr)
-			}
+			// if !d.IsNewResource() {
+			// 	return resource.NonRetryableError(callErr)
+			// }
 			if notFoundError(callErr) {
-				return resource.RetryableError(callErr)
+				d.SetId("")
+				return nil
 			} else {
 				return resource.NonRetryableError(fmt.Errorf("error on  reading lb %q, %s", d.Id(), callErr))
 			}
@@ -496,6 +497,10 @@ func (s *SlbService) ReadListener(d *schema.ResourceData, listenerId string) (da
 func (s *SlbService) ReadAndSetListener(d *schema.ResourceData, r *schema.Resource) (err error) {
 	data, err := s.ReadListener(d, "")
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 
@@ -916,6 +921,10 @@ func (s *SlbService) ReadLoadHealthCheck(d *schema.ResourceData, healthCheckId s
 func (s *SlbService) ReadAndSetHealCheck(d *schema.ResourceData, r *schema.Resource) (err error) {
 	data, err := s.ReadLoadHealthCheck(d, "")
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 	SdkResponseAutoResourceData(d, r, data, nil)
@@ -1193,6 +1202,10 @@ func (s *SlbService) ReadLbRule(d *schema.ResourceData, lbRuleId string) (data m
 func (s *SlbService) ReadAndSetLbRule(d *schema.ResourceData, r *schema.Resource) (err error) {
 	data, err := s.ReadLbRule(d, "")
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 	hostname, _ := getSdkValue("HealthCheck.HostName", data)
@@ -1453,6 +1466,10 @@ func (s *SlbService) ReadHostHeader(d *schema.ResourceData, hostHeaderId string)
 func (s *SlbService) ReadAndSetHostHeader(d *schema.ResourceData, r *schema.Resource) (err error) {
 	data, err := s.ReadHostHeader(d, "")
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 	listenerId := data["ListenerId"].(string)
@@ -1769,6 +1786,10 @@ exit:
 func (s *SlbService) ReadAndSetLoadBalancerAcl(d *schema.ResourceData, r *schema.Resource) (err error) {
 	data, err := s.ReadLoadBalancerAcl(d, "")
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 	SdkResponseAutoResourceData(d, r, data, nil)
@@ -2377,6 +2398,10 @@ func (s *SlbService) ReadRealServer(d *schema.ResourceData, registerId string) (
 func (s *SlbService) ReadAndSetRealServer(d *schema.ResourceData, r *schema.Resource) (err error) {
 	data, err := s.ReadRealServer(d, "")
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 	listenerId := data["ListenerId"].(string)
@@ -2601,6 +2626,10 @@ func (s *SlbService) ReadBackendServerGroup(d *schema.ResourceData, backendServe
 func (s *SlbService) ReadAndSetBackendServerGroup(d *schema.ResourceData, r *schema.Resource) (err error) {
 	data, err := s.ReadBackendServerGroup(d, "")
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 	SdkResponseAutoResourceData(d, r, data, nil)
@@ -2873,6 +2902,10 @@ func (s *SlbService) ReadBackendServer(d *schema.ResourceData, registerId string
 func (s *SlbService) ReadAndSetBackendServer(d *schema.ResourceData, r *schema.Resource) (err error) {
 	data, err := s.ReadBackendServer(d, "")
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 	SdkResponseAutoResourceData(d, r, data, nil)

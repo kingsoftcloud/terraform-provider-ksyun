@@ -1,3 +1,18 @@
+## 1.25.2 (Mar 09, 2026)
+BUGFIX：
+
+- `ksyun_alb`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_alb_listener`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_alb_listener_cert_group`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_alb_rule_group`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_bws`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_cen`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_dns`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_eip`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_slb`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_vpc`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_vpc_direct_connect`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+
 ## 1.25.1 (March 05, 2026)
 
 BUGFIX：
