@@ -73,6 +73,9 @@ func kecImportDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
 			return true
 		}
 		if k == "sync_data_disk_charge_type" {
+			if d.HasChange("charge_type") {
+				return false
+			}
 			return true
 		}
 	}
