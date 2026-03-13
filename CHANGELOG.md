@@ -1,3 +1,9 @@
+## 1.25.2 (March 13, 2026)
+
+BUGFIX：
+
+- `ksyun_bare_metal` 新增参数
+
 ## 1.25.1 (March 05, 2026)
 
 BUGFIX：
