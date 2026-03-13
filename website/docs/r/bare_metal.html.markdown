@@ -54,6 +54,7 @@ The following arguments are supported:
 * `cloud_monitor_agent` - (Optional) The cloud monitor agent choice of the Bare Metal.Valid Values:'classic','no'.Default is 'no'.
 * `computer_name` - (Optional) The computer name of the Bare Metal.
 * `container_agent` - (Optional) Whether to support KCE cluster, valid values: 'supported', 'unsupported'.
+* `custom_install_config` - (Optional) The custom install config for bare metal.
 * `data_disk_catalogue_suffix` - (Optional) The data disk catalogue suffix of the Bare Metal.Valid Values:'NoSuffix','NaturalNumber','NaturalNumberFromZero'.Default is 'NaturalNumber'.
 * `data_disk_catalogue` - (Optional) The data disk catalogue of the Bare Metal.Valid Values:'/DATA/disk','/data'.Default is '/DATA/disk'.
 * `data_disk_mount` - (Optional) Whether mount for data disk. Valid Values: `support` `unsupport`.
@@ -103,6 +104,11 @@ The following arguments are supported:
 * `use_hot_standby` - (Optional) Whether use hot standy. Valid Values: `support`, `unsupport` and `onlyHotStandby`.
 * `zone_id` - (Optional) The zone id, when creating pdns, is required.
 * `zone_type` - (Optional) The zone type, when creating pdns, is required.
+
+The `custom_install_config` object supports the following:
+
+* `key` - (Required) The custom install config key.
+* `value` - (Required) The custom install config values list.
 
 The `hot_standby` object supports the following:
 

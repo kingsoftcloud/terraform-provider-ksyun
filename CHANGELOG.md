@@ -1,3 +1,9 @@
+## 1.25.2 (March 13, 2026)
+
+IMPROVEMENTS：
+
+- `ksyun_bare_metal` 新增`custom_install_config`字段，支持自定义装机系统参数
+
 ## 1.25.1 (March 05, 2026)
 
 BUGFIX：
