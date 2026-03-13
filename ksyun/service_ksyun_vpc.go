@@ -312,6 +312,10 @@ func (s *VpcService) ReadVpc(d *schema.ResourceData, vpcId string) (data map[str
 func (s *VpcService) ReadAndSetVpc(d *schema.ResourceData, r *schema.Resource) (err error) {
 	data, err := s.ReadVpc(d, "")
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 	SdkResponseAutoResourceData(d, r, data, nil)
@@ -553,6 +557,10 @@ func (s *VpcService) ReadSubnet(d *schema.ResourceData, subnetId string) (data m
 func (s *VpcService) ReadAndSetSubnet(d *schema.ResourceData, r *schema.Resource) (err error) {
 	data, err := s.ReadSubnet(d, "")
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 	extra := map[string]SdkResponseMapping{
@@ -814,6 +822,10 @@ func (s *VpcService) ReadRoute(d *schema.ResourceData, subnetId string) (data ma
 func (s *VpcService) ReadAndSetRoute(d *schema.ResourceData, r *schema.Resource) (err error) {
 	data, err := s.ReadRoute(d, "")
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 	SdkResponseAutoResourceData(d, r, data, nil)
@@ -1065,11 +1077,12 @@ func (s *VpcService) ReadAndSetNat(d *schema.ResourceData, r *schema.Resource) (
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
 		data, callErr := s.ReadNat(d, "")
 		if callErr != nil {
-			if !d.IsNewResource() {
-				return resource.NonRetryableError(callErr)
-			}
+			// if !d.IsNewResource() {
+			// 	return resource.NonRetryableError(callErr)
+			// }
 			if notFoundError(callErr) {
-				return resource.RetryableError(callErr)
+				d.SetId("")
+				return nil
 			} else {
 				return resource.NonRetryableError(fmt.Errorf("error on  reading nat %q, %s", d.Id(), callErr))
 			}
@@ -1838,6 +1851,10 @@ func (s *VpcService) ReadAndSetNetworkAcls(d *schema.ResourceData, r *schema.Res
 func (s *VpcService) ReadAndSetNetworkAcl(d *schema.ResourceData, r *schema.Resource) (err error) {
 	data, err := s.ReadNetworkAcl(d, "")
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 	extra := map[string]SdkResponseMapping{
@@ -2549,6 +2566,10 @@ func (s *VpcService) ReadAndSetSecurityGroups(d *schema.ResourceData, r *schema.
 func (s *VpcService) ReadAndSetSecurityGroup(d *schema.ResourceData, r *schema.Resource) (err error) {
 	data, err := s.ReadSecurityGroup(d, "")
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 	extra := map[string]SdkResponseMapping{
@@ -3209,11 +3230,12 @@ func (s *VpcService) ReadAndSetVpnGateway(d *schema.ResourceData, r *schema.Reso
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
 		data, callErr := s.ReadVpnGateway(d, "")
 		if callErr != nil {
-			if !d.IsNewResource() {
-				return resource.NonRetryableError(callErr)
-			}
+			// if !d.IsNewResource() {
+			// 	return resource.NonRetryableError(callErr)
+			// }
 			if notFoundError(callErr) {
-				return resource.RetryableError(callErr)
+				d.SetId("")
+				return nil
 			} else {
 				return resource.NonRetryableError(callErr)
 			}
@@ -3435,6 +3457,10 @@ func (s *VpcService) ReadVpnCustomerGateway(d *schema.ResourceData, vpnCustomerG
 func (s *VpcService) ReadAndSetVpnCustomerGateway(d *schema.ResourceData, r *schema.Resource) (err error) {
 	data, err := s.ReadVpnCustomerGateway(d, "")
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 	SdkResponseAutoResourceData(d, r, data, nil)
@@ -3641,6 +3667,10 @@ func (s *VpcService) ReadVpnTunnel(d *schema.ResourceData, vpnTunnelId string) (
 func (s *VpcService) ReadAndSetVpnTunnel(d *schema.ResourceData, r *schema.Resource) (err error) {
 	data, err := s.ReadVpnTunnel(d, "")
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 	extra := map[string]SdkResponseMapping{
