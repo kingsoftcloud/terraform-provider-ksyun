@@ -169,7 +169,7 @@ func resourceKsyunBareMetal() *schema.Resource {
 			"security_group_ids": {
 				Type:     schema.TypeSet,
 				MinItems: 1,
-				MaxItems: 3,
+				MaxItems: 5,
 				Required: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
@@ -561,6 +561,27 @@ func resourceKsyunBareMetal() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "ID of the primary network interface.",
+			},
+			"custom_install_config": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "The custom install config for bare metal.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The custom install config key.",
+						},
+						"value": {
+							Type:        schema.TypeList,
+							Required:    true,
+							MinItems:    1,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: "The custom install config values list.",
+						},
+					},
+				},
 			},
 		},
 	}

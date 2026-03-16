@@ -88,11 +88,12 @@ func (s *DnsService) ReadAndSetPrivateDnsZone(d *schema.ResourceData, r *schema.
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
 		data, callErr := s.ReadPrivateDnsZone(d, d.Id())
 		if callErr != nil {
-			if !d.IsNewResource() {
-				return resource.NonRetryableError(callErr)
-			}
+			// if !d.IsNewResource() {
+			// 	return resource.NonRetryableError(callErr)
+			// }
 			if notFoundError(callErr) {
-				return resource.RetryableError(callErr)
+				d.SetId("")
+				return nil
 			} else {
 				return resource.NonRetryableError(fmt.Errorf("error on reading PrivateDnsZone %q, %s", d.Id(), callErr))
 			}
@@ -518,11 +519,12 @@ func (s *DnsService) ReadAndSetPrivateDnsRecord(d *schema.ResourceData, r *schem
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
 		data, callErr := s.ReadPrivateDnsRecord(d, "")
 		if callErr != nil {
-			if !d.IsNewResource() {
-				return resource.NonRetryableError(callErr)
-			}
+			// if !d.IsNewResource() {
+			// 	return resource.NonRetryableError(callErr)
+			// }
 			if notFoundError(callErr) {
-				return resource.NonRetryableError(callErr)
+				d.SetId("")
+				return nil
 			} else {
 				return resource.RetryableError(fmt.Errorf("error on reading PrivateDnsRecord %q, %s", d.Id(), callErr))
 			}
@@ -637,6 +639,10 @@ func (s *DnsService) ReadAndSetZoneVpcAttachment(d *schema.ResourceData, r *sche
 
 	vpcSet, err := s.ReadZoneVpcAttachment(d)
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 

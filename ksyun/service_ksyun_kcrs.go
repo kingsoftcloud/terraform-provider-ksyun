@@ -701,7 +701,8 @@ func (s *KcrsService) ReadAndSetInternalEndpoint(d *schema.ResourceData, r *sche
 				return resource.NonRetryableError(callErr)
 			}
 			if notFoundError(callErr) {
-				return resource.RetryableError(callErr)
+				d.SetId("")
+				return nil
 			} else {
 				return resource.NonRetryableError(fmt.Errorf("error on reading kcrs instance %q, %s", d.Id(), callErr))
 			}
@@ -734,7 +735,8 @@ func (s *KcrsService) ReadAndSetInternalEndpoint(d *schema.ResourceData, r *sche
 				resp, err = conn.DescribeInternalEndpointDns(&params)
 				if err != nil {
 					if notFoundError(err) {
-						return resource.NonRetryableError(err)
+						d.SetId("")
+						return nil
 					}
 					return resource.RetryableError(err)
 				}
@@ -765,7 +767,15 @@ func (s *KcrsService) ReadAndSetKcrsTokens(d *schema.ResourceData, r *schema.Res
 
 	data, err := s.readKcrsInstanceTokens(req)
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
+	}
+	if len(data) <= 0 {
+		d.SetId("")
+		return nil
 	}
 
 	return mergeDataSourcesResp(d, r, ksyunDataSource{
@@ -792,7 +802,15 @@ func (s *KcrsService) ReadAndSetKcrsNamespaces(d *schema.ResourceData, r *schema
 
 	data, err := s.ReadKcrsNamespaces(req)
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
+	}
+	if len(data) <= 0 {
+		d.SetId("")
+		return nil
 	}
 
 	return mergeDataSourcesResp(d, r, ksyunDataSource{
@@ -820,7 +838,15 @@ func (s *KcrsService) ReadAndSetKcrsWebhookTriggers(d *schema.ResourceData, r *s
 
 	data, err := s.ReadKcrsWebhookTriggers(req)
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
+	}
+	if len(data) <= 0 {
+		d.SetId("")
+		return nil
 	}
 
 	for _, dd := range data {
@@ -867,7 +893,15 @@ func (s *KcrsService) ReadAndSetKcrsInstances(d *schema.ResourceData, r *schema.
 
 	data, err := s.ReadKcrsInstances(req)
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
+	}
+	if len(data) <= 0 {
+		d.SetId("")
+		return nil
 	}
 
 	return mergeDataSourcesResp(d, r, ksyunDataSource{
@@ -887,7 +921,8 @@ func (s *KcrsService) ReadAndSetKcrsInstance(d *schema.ResourceData, r *schema.R
 				return resource.NonRetryableError(callErr)
 			}
 			if notFoundError(callErr) {
-				return resource.RetryableError(callErr)
+				d.SetId("")
+				return nil
 			} else {
 				return resource.NonRetryableError(fmt.Errorf("error on reading kcrs instance %q, %s", d.Id(), callErr))
 			}
@@ -955,7 +990,8 @@ func (s *KcrsService) ReadAndSetKcrsInstanceToken(d *schema.ResourceData, r *sch
 				return resource.NonRetryableError(callErr)
 			}
 			if notFoundError(callErr) {
-				return resource.RetryableError(callErr)
+				d.SetId("")
+				return nil
 			} else {
 				return resource.NonRetryableError(fmt.Errorf("error on reading kcrs instance %q, %s", d.Id(), callErr))
 			}
@@ -975,7 +1011,8 @@ func (s *KcrsService) ReadAndSetKcrsNamespace(d *schema.ResourceData, r *schema.
 				return resource.NonRetryableError(callErr)
 			}
 			if notFoundError(callErr) {
-				return resource.RetryableError(callErr)
+				d.SetId("")
+				return nil
 			} else {
 				return resource.NonRetryableError(fmt.Errorf("error on reading kcrs namespace %q, %s", d.Id(), callErr))
 			}
@@ -1069,7 +1106,8 @@ func (s *KcrsService) ReadAndSetWebhookTrigger(d *schema.ResourceData, r *schema
 				return resource.NonRetryableError(callErr)
 			}
 			if notFoundError(callErr) {
-				return resource.RetryableError(callErr)
+				d.SetId("")
+				return nil
 			} else {
 				return resource.NonRetryableError(fmt.Errorf("error on reading kcrs namespace %q, %s", d.Id(), callErr))
 			}
