@@ -1,3 +1,10 @@
+
+## 1.25.3 (March 16, 2026)
+
+IMPROVEMENTS：
+
+- `ksyun_bare_metal` 新增`custom_install_config`字段，支持自定义装机系统参数
+
 ## 1.25.2 (Mar 09, 2026)
 BUGFIX：
 
@@ -13,11 +20,6 @@ BUGFIX：
 - `ksyun_vpc`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
 - `ksyun_vpc_direct_connect`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
 
-## 1.25.2 (March 13, 2026)
-
-IMPROVEMENTS：
-
-- `ksyun_bare_metal` 新增`custom_install_config`字段，支持自定义装机系统参数
 
 ## 1.25.1 (March 05, 2026)
 
