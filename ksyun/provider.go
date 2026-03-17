@@ -334,9 +334,11 @@ KNAD
 
 	Data Source
 		ksyun_knads
+		ksyun_perknads
 
 	Resource
 		ksyun_knad
+		ksyun_perknad
 		ksyun_knad_associate
 
 IAM
@@ -556,6 +558,7 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_krds_parameter_group":             dataSourceKsyunKrdsParameterGroup(),
 			"ksyun_auto_snapshot_volume_association": dataSourceKsyunAutoSnapshotVolumeAssociation(),
 			"ksyun_knads":                            dataSourceKsyunKnads(),
+			"ksyun_perknads":                         dataSourceKsyunPerKnads(),
 			"ksyun_dnats":                            dataSourceKsyunDnats(),
 			"ksyun_alb_backend_server_groups":        dataSourceKsyunAlbBackendServerGroups(),
 			"ksyun_vpn_gateway_routes":               dataSourceKsyunVpnGatewayRoutes(),
@@ -666,6 +669,7 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_data_guard_group":                 resourceKsyunDataGuardGroup(),
 			"ksyun_krds_parameter_group":             resourceKsyunKrdsParameterGroup(),
 			"ksyun_knad":                             resourceKsyunKnad(),
+			"ksyun_perknad":                          resourceKsyunPerKnad(),
 			"ksyun_knad_associate":                   resourceKsyunKnadAssociate(),
 			"ksyun_nat_instance_bandwidth_limit":     resourceKsyunNatInstanceBandwidthLimit(),
 			"ksyun_dnat":                             resourceKsyunDnat(),
