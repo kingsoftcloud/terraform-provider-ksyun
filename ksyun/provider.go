@@ -334,9 +334,11 @@ KNAD
 
 	Data Source
 		ksyun_knads
+		ksyun_perknads
 
 	Resource
 		ksyun_knad
+		ksyun_perknad
 		ksyun_knad_associate
 
 IAM
