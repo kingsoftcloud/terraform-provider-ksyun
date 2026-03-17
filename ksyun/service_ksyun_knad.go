@@ -83,11 +83,9 @@ func (s *KnadService) ReadAndSetKnad(d *schema.ResourceData, r *schema.Resource)
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
 		data, callErr := s.ReadKnad(d, "")
 		if callErr != nil {
-			if !d.IsNewResource() {
-				return resource.NonRetryableError(callErr)
-			}
 			if notFoundError(callErr) {
-				return resource.RetryableError(callErr)
+				d.SetId("")
+				return nil
 			} else {
 				return resource.NonRetryableError(fmt.Errorf("error on  reading knad %q, %s", d.Id(), callErr))
 			}
@@ -440,7 +438,7 @@ func (s *KnadService) AssociateKnadCall(d *schema.ResourceData, r *schema.Resour
 	}
 	callback = ApiCall{
 		param:  &req,
-		action: "InsertEips",
+		action: "AssociateIp",
 		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
 			conn := client.knadconn
 			logger.Debug(logger.RespFormat, call.action, *(call.param))
