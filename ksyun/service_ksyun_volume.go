@@ -54,17 +54,6 @@ func (s *EbsService) ReadVolume(d *schema.ResourceData, volumeId string, allProj
 	req := map[string]interface{}{
 		"VolumeId.1": volumeId,
 	}
-	if allProject {
-		err = addProjectInfoAll(d, &req, s.client)
-		if err != nil {
-			return data, err
-		}
-	} else {
-		err = addProjectInfo(d, &req, s.client)
-		if err != nil {
-			return data, err
-		}
-	}
 
 	results, err = s.ReadVolumes(req)
 	if err != nil {
