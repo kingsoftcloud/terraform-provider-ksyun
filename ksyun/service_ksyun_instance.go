@@ -550,6 +550,13 @@ func (s *KecService) modifyKecInstance(d *schema.ResourceData, resource *schema.
 	}
 	callbacks = append(callbacks, dataDiskCalls...)
 
+	// 处理 charge_type 变更
+	chargeTypeCall, err := s.modifyKecInstanceChargeTypeCall(d, resource)
+	if err != nil {
+		return err
+	}
+	callbacks = append(callbacks, chargeTypeCall)
+
 	return ksyunApiCallNew(callbacks, d, s.client, true)
 }
 
@@ -1926,4 +1933,38 @@ func (s *KecService) createModifyVolumeTypeCall(diskId, diskType string, diskSiz
 			return err
 		},
 	}
+}
+
+// modifyKecInstanceChargeTypeCall 修改实例计费方式
+func (s *KecService) modifyKecInstanceChargeTypeCall(d *schema.ResourceData, resource *schema.Resource) (callback ApiCall, err error) {
+	// 判断 charge_type 是否变化，无变化则不调用接口
+	if !d.HasChange("charge_type") {
+		return
+	}
+	// 获取计费方式
+	chargeType := d.Get("charge_type").(string)
+	// 获取是否同时转换数据盘的配置
+	syncDataDiskChargeType := d.Get("sync_data_disk_charge_type").(bool)
+	// 构建请求参数
+	req := map[string]interface{}{
+		"InstanceId.1":     d.Id(),
+		"TargetChargeType": chargeType,
+		"IncludeDataDisks": syncDataDiskChargeType,
+	}
+
+	callback = ApiCall{
+		param:  &req,
+		action: "ModifyInstanceChargeType",
+		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+			conn := client.kecconn
+			logger.Debug(logger.RespFormat, call.action, *(call.param))
+			resp, err = conn.ModifyInstanceChargeType(call.param)
+			return resp, err
+		},
+		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+			return err
+		},
+	}
+	return callback, err
 }
