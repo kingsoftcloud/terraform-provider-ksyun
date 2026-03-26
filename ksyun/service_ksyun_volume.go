@@ -108,14 +108,14 @@ func (s *EbsService) ReadAndSetVolume(d *schema.ResourceData, r *schema.Resource
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
 		data, callErr := s.ReadVolume(d, "", false)
 		if callErr != nil {
+			if notFoundError(callErr) {
+				d.SetId("")
+				return nil
+			}
 			if !d.IsNewResource() {
 				return resource.NonRetryableError(callErr)
 			}
-			if notFoundError(callErr) {
-				return resource.RetryableError(callErr)
-			} else {
-				return resource.NonRetryableError(fmt.Errorf("error on  reading volume %q, %s", d.Id(), callErr))
-			}
+			return resource.NonRetryableError(fmt.Errorf("error on  reading volume %q, %s", d.Id(), callErr))
 		} else {
 			extra := chargeExtraForVpc(data)
 			extra["Tags"] = SdkResponseMapping{

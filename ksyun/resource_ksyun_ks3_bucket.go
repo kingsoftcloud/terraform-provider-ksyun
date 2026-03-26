@@ -508,12 +508,12 @@ func resourceKsyunKs3BucketRead(d *schema.ResourceData, meta interface{}) error 
 		return WrapErrorf(err, DefaultErrorMsg, d.Id(), "GetBucketLogging", KsyunKs3GoSdk)
 	}
 	addDebug("GetBucketLogging", raw, requestInfo, request)
+	lgs := make([]map[string]interface{}, 0)
 	logging, _ := raw.(ks3.GetBucketLoggingResult)
 
 	if &logging != nil {
 		enable := logging.LoggingEnabled
 		if &enable != nil && len(enable.TargetBucket) > 0 {
-			lgs := make([]map[string]interface{}, 0)
 			tb := logging.LoggingEnabled.TargetBucket
 			tp := logging.LoggingEnabled.TargetPrefix
 			if tb != "" || tp != "" {
@@ -522,10 +522,11 @@ func resourceKsyunKs3BucketRead(d *schema.ResourceData, meta interface{}) error 
 					"target_prefix": tp,
 				})
 			}
-			if err := d.Set("logging", lgs); err != nil {
-				return WrapError(err)
-			}
 		}
+	}
+
+	if err := d.Set("logging", lgs); err != nil {
+		return WrapError(err)
 	}
 
 	// Read the lifecycle rule configuration

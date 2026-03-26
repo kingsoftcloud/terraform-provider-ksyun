@@ -313,6 +313,10 @@ func (s *KpfsService) ReadKpfsFileSystemOne(d *schema.ResourceData, r *schema.Re
 		return err
 	}
 	logger.Debug(logger.RespFormat, "ReadKpfsFs", "ReadKpfsFs", data)
+	if len(data) == 0 {
+		d.SetId("")
+		return
+	}
 	SdkResponseAutoResourceData(d, r, data, nil)
 	return
 }

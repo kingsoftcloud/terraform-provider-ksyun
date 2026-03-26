@@ -61,6 +61,10 @@ func (s *VpcService) createDirectConnectInterfaceCall(d *schema.ResourceData, r 
 func (s *VpcService) ReadAndSetDirectConnectInterface(d *schema.ResourceData, r *schema.Resource) (err error) {
 	resp, err := s.readDirectConnectInterface(d, "")
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 	SdkResponseAutoResourceData(d, r, resp, nil)
@@ -482,6 +486,10 @@ func (s *VpcService) modifyDirectConnectGatewayCall(d *schema.ResourceData, r *s
 func (s *VpcService) ReadAndSetDirectConnectGateway(d *schema.ResourceData, r *schema.Resource) (err error) {
 	resp, err := s.readDirectConnectGateway(d, "")
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 	SdkResponseAutoResourceData(d, r, resp, nil)
@@ -673,6 +681,10 @@ func (s *VpcService) deleteDirectConnectGatewayRouteCall(d *schema.ResourceData)
 func (s *VpcService) ReadAndSetDirectConnectGatewayRoute(d *schema.ResourceData, r *schema.Resource) (err error) {
 	resp, err := s.readDirectConnectGatewayRoute(d, "")
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 	SdkResponseAutoResourceData(d, r, resp, nil)
@@ -907,6 +919,10 @@ func (s *VpcService) createDirectConnectBfdConfigCall(d *schema.ResourceData, r 
 func (s *VpcService) ReadAndSetDirectConnectBfdConfig(d *schema.ResourceData, r *schema.Resource) (err error) {
 	resp, err := s.readDirectConnectBfdConfig(d, "")
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 	SdkResponseAutoResourceData(d, r, resp, nil)

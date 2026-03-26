@@ -250,6 +250,10 @@ func resourceKsyunScalingPolicyRead(d *schema.ResourceData, meta interface{}) er
 	logger.Debug(logger.ReqFormat, action, req)
 	resp, err := conn.DescribeScalingPolicy(&req)
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("error on reading ScalingPolicy %q, %s", d.Id(), err)
 	}
 	if resp != nil {

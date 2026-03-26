@@ -61,6 +61,10 @@ func resourceKsyunKecNetworkInterfaceAttachmentRead(d *schema.ResourceData, meta
 	kecService := KecService{meta.(*KsyunClient)}
 	err = kecService.readAndSetNetworkInterfaceAttachment(d, resourceKsyunKecNetworkInterfaceAttachment())
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("error on reading network interface attachement %q, %s", d.Id(), err)
 	}
 	return err

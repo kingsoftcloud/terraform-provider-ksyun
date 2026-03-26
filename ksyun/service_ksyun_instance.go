@@ -23,14 +23,14 @@ func (s *KecService) readAndSetKecInstance(d *schema.ResourceData, r *schema.Res
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
 		data, callErr := s.readKecInstance(d, "", false)
 		if callErr != nil {
+			if notFoundError(callErr) {
+				d.SetId("")
+				return nil
+			}
 			if !d.IsNewResource() {
 				return resource.NonRetryableError(callErr)
 			}
-			if notFoundError(callErr) {
-				return resource.RetryableError(callErr)
-			} else {
-				return resource.NonRetryableError(fmt.Errorf("error on  reading instane %q, %s", d.Id(), callErr))
-			}
+			return resource.NonRetryableError(fmt.Errorf("error on  reading instane %q, %s", d.Id(), callErr))
 		} else {
 			// InstanceConfigure
 			SdkResponseAutoResourceData(d, r, data["InstanceConfigure"], nil)
@@ -259,28 +259,6 @@ func (s *KecService) readKecInstance(d *schema.ResourceData, instanceId string, 
 		"InstanceId.1": instanceId,
 	}
 
-getProjectLabel:
-	if allProject {
-		err = addProjectInfoAll(d, &req, s.client)
-		if err != nil {
-			if network.IsReadConnectionReset(err) && retryCount > 0 {
-				retryCount--
-				goto getProjectLabel
-			}
-			return data, err
-		}
-	} else {
-		err = addProjectInfo(d, &req, s.client)
-		if err != nil {
-			if network.IsReadConnectionReset(err) && retryCount > 0 {
-				retryCount--
-				goto getProjectLabel
-			}
-			return data, err
-		}
-	}
-
-	// reset retry count
 	retryCount = 3
 readInstanceLabel:
 	kecInstanceResults, err = s.readKecInstances(req)

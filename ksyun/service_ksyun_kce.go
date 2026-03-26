@@ -50,7 +50,7 @@ func (s *KceService) readKceClusters(condition map[string]interface{}) (data []i
 		if err != nil {
 			return data, err
 		}
-		data = clusterResults.([]interface{})
+		data, _ = clusterResults.([]interface{})
 		// logger.Debug("kce list", "123", data)
 		return data, err
 	})
@@ -73,7 +73,15 @@ func (s *KceService) ReadAndSetKceClusters(d *schema.ResourceData, r *schema.Res
 	}
 	data, err := s.readKceClusters(req)
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
+	}
+	if len(data) <= 0 {
+		d.SetId("")
+		return nil
 	}
 
 	return mergeDataSourcesResp(d, r, ksyunDataSource{
@@ -142,10 +150,10 @@ func formatKceInstancePara(nodeConfig map[string]interface{}) (para string) {
 			for _, diskSrc := range v.([]interface{}) {
 				disk := diskSrc.(map[string]interface{})
 				if disk["disk_type"] != nil {
-					paraMap["System.DiskType"] = disk["disk_type"]
+					paraMap["SystemDisk.DiskType"] = disk["disk_type"]
 				}
 				if disk["disk_size"] != nil {
-					paraMap["System.DiskSize"] = disk["disk_size"]
+					paraMap["SystemDisk.DiskSize"] = disk["disk_size"]
 				}
 			}
 			break
@@ -805,15 +813,20 @@ func (s *KceService) ReadAndSetKceCluster(d *schema.ResourceData, r *schema.Reso
 		})
 		// logger.Debug("[%s] %+v, %+v", "DescribeCluster", data, err)
 		if err != nil {
+			if notFoundError(err) {
+				d.SetId("")
+				return nil
+			}
 			return resource.NonRetryableError(err)
 		}
 		if data == nil {
 			return resource.NonRetryableError(fmt.Errorf("cluster not found"))
 		}
-		clusterSet := (*data)["ClusterSet"].([]interface{})
+		clusterSet, _ := (*data)["ClusterSet"].([]interface{})
 
 		if len(clusterSet) <= 0 {
-			return resource.NonRetryableError(fmt.Errorf("cluster not found"))
+			d.SetId("")
+			return nil
 		}
 		clusterInfo := clusterSet[0].(map[string]interface{})
 
@@ -966,12 +979,20 @@ func (s *KceService) ReadAndSetKceAuthAttachment(d *schema.ResourceData, r *sche
 		})
 		logger.Debug("[%s] %+v, %+v", "DescribeUserAuthorizationList", data, err)
 		if err != nil {
+			if notFoundError(err) {
+				d.SetId("")
+				return nil
+			}
 			return resource.NonRetryableError(err)
 		}
 		if data == nil {
 			return resource.NonRetryableError(fmt.Errorf("authorization not found"))
 		}
-		// permissionSet := (*data)["PermissionSet"].([]interface{})
+		permissionSet, _ := (*data)["PermissionSet"].([]interface{})
+		if len(permissionSet) <= 0 {
+			d.SetId("")
+			return nil
+		}
 
 		extra := map[string]SdkResponseMapping{
 			"PermissionSet": {
@@ -1021,7 +1042,7 @@ func (s *KceService) readKceInstanceImages(condition map[string]interface{}) (da
 	if err != nil {
 		return data, err
 	}
-	data = results.([]interface{})
+	data, _ = results.([]interface{})
 	return data, err
 	// })
 }
@@ -1029,6 +1050,17 @@ func (s *KceService) readKceInstanceImages(condition map[string]interface{}) (da
 func (s *KceService) ReadAndSetKceInstanceImages(d *schema.ResourceData, r *schema.Resource) (err error) {
 	var data []interface{}
 	data, err = s.readKceInstanceImages(nil)
+	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
+		return err
+	}
+	if len(data) <= 0 {
+		d.SetId("")
+		return nil
+	}
 	return mergeDataSourcesResp(d, r, ksyunDataSource{
 		collection:  data,
 		idFiled:     "ImageId",

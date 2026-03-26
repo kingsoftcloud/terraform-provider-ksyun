@@ -83,11 +83,14 @@ func (s *BareMetalService) ReadAndSetBareMetal(d *schema.ResourceData, r *schema
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
 		data, callErr := s.ReadBareMetal(d, "", false)
 		if callErr != nil {
-			if !d.IsNewResource() {
-				return resource.NonRetryableError(callErr)
-			}
+			//if !d.IsNewResource() {
+			//	return resource.NonRetryableError(callErr)
+			//}
 			if notFoundError(callErr) {
-				return resource.RetryableError(callErr)
+				//资源已被外部删除，从 state 中移除
+				d.SetId("")
+				return nil
+				//return resource.RetryableError(callErr)
 			} else {
 				return resource.NonRetryableError(fmt.Errorf("error on  reading address %q, %s", d.Id(), callErr))
 			}
@@ -136,7 +139,7 @@ func (s *BareMetalService) ReadAndSetBareMetal(d *schema.ResourceData, r *schema
 					Field: "extension_dns1",
 				},
 				"ExtensionDNS2": {
-					Field: "extension_dns1",
+					Field: "extension_dns2",
 				},
 				"ExtensionSecurityGroupSet": {
 					Field: "extension_security_group_ids",
@@ -306,6 +309,17 @@ func (s *BareMetalService) CreateBareMetalCall(d *schema.ResourceData, resource 
 		},
 		"force_re_install": {Ignore: true},
 		"tags":             {Ignore: true},
+		"custom_install_config": {
+			FieldReqFunc: func(item interface{}, field string, mappings map[string]string, index int, k string, req *map[string]interface{}) (int, error) {
+				if list, ok := item.([]interface{}); ok {
+					err := transformListNWithRecursive(list, "CustomInstallConfig", SdkReqTransform{}, req)
+					if err != nil {
+						return index, err
+					}
+				}
+				return index, nil
+			},
+		},
 	}
 	req, err := SdkRequestAutoMapping(d, resource, false, transform, nil, SdkReqParameter{
 		onlyTransform: false,
@@ -614,8 +628,23 @@ func (s *BareMetalService) ReinstallBareMetalCall(d *schema.ResourceData, resour
 		_transform := make(map[string]SdkReqTransform)
 		for k, v := range resource.Schema {
 			if _, ok := transform[k]; !ok && !v.ForceNew {
-				_transform[k] = SdkReqTransform{
-					forceUpdateParam: true,
+				if k == "custom_install_config" {
+					_transform[k] = SdkReqTransform{
+						forceUpdateParam: true,
+						FieldReqFunc: func(item interface{}, field string, mappings map[string]string, index int, k string, req *map[string]interface{}) (int, error) {
+							if list, ok := item.([]interface{}); ok {
+								err := transformListNWithRecursive(list, "CustomInstallConfig", SdkReqTransform{}, req)
+								if err != nil {
+									return index, err
+								}
+							}
+							return index, nil
+						},
+					}
+				} else {
+					_transform[k] = SdkReqTransform{
+						forceUpdateParam: true,
+					}
 				}
 			}
 		}

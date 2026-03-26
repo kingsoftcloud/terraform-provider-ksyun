@@ -111,8 +111,16 @@ func resourceKsyunAutoSnapshotPolicyRead(d *schema.ResourceData, meta interface{
 	logger.Debug(logger.ReqFormat, action, reqParameters)
 
 	sdkResponse, err := snapshotSrv.querySnapshotPolicyByID(reqParameters)
-	if err != nil || len(sdkResponse) < 1 {
+	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("while query snapshot policy have encountered an error detail: %s", err)
+	}
+	if len(sdkResponse) < 1 {
+		d.SetId("")
+		return nil
 	}
 
 	result := sdkResponse[0].(map[string]interface{})

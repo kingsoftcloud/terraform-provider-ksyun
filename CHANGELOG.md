@@ -1,3 +1,71 @@
+## 1.25.5 (March 26, 2026)
+
+IMPROVEMENTS：
+
+- `ksyun_instance` 支持变更计费类型
+
+## 1.25.3 (March 16, 2026)
+
+IMPROVEMENTS：
+
+- `ksyun_bare_metal` 新增`custom_install_config`字段，支持自定义装机系统参数
+
+## 1.25.2 (Mar 09, 2026)
+BUGFIX：
+
+- `ksyun_alb`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_alb_listener`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_alb_listener_cert_group`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_alb_rule_group`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_bws`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_cen`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_dns`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_eip`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_slb`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_vpc`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_vpc_direct_connect`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+
+
+## 1.25.1 (March 05, 2026)
+
+BUGFIX：
+
+- `service_ksyun_kce` 修复创建集群或者新增节点时，系统盘参数命名错误的问题
+
+## 1.25.0 (Mar 03, 2026)
+
+BUGFIX：
+
+- `resource_ksyun_ks3_bucket` 修复logging配置通过外部删除后，未在state中移除的问题
+- `ksyun_instance`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_volume`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_kpfs_file_system` 资源已被外部删除，从 state 中移除
+- `ksyun_ssh_key` 资源已被外部删除，从 state 中移除
+- `ksyun_bare_metal` 资源已被外部删除，从 state 中移除
+- `ksyun_iam_user`: 修复资源在控制台被删除后，Read 接口直接报错导致 workspace 损坏的问题，现在会正确清除 state
+- `ksyun_iam_role`: 修复资源在控制台被删除后，Read 接口直接报错导致 workspace 损坏的问题，现在会正确清除 state
+- `ksyun_iam_group`: 修复资源在控制台被删除后，Read 接口直接报错导致 workspace 损坏的问题，现在会正确清除 state
+- `ksyun_iam_policy`: 修复资源在控制台被删除后，Read 接口直接报错导致 workspace 损坏的问题，现在会正确清除 state
+- `ksyun_iam_relation_policy`: 修复策略绑定关系在控制台解除后，Read 接口未清除 state 的静默漏洞
+- `ksyun_tag_v2`: 修复标签在控制台被删除后，Read 接口直接报错导致 workspace 损坏的问题，现在会正确清除 state
+- `ksyun_tag_v2_attachment`: 修复标签绑定关系在控制台解除后，Read 接口直接报错导致 workspace 损坏的问题，现在会正确清除 state
+- `ksyun_tag`: 修复标签在控制台被删除后，Read 接口未清除 state 的静默漏洞
+- `ksyun_snapshot`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_volume_attach`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_auto_snapshot_policy`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_auto_snapshot_volume_association`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_data_guard_group`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_kec_network_interface_attachment`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_scaling_group`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_scaling_configuration`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_scaling_instance`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_scaling_notification`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_scaling_policy`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_scaling_scheduled_task`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_kcrs`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_kce`: 修复读取接口在资源不存在时未正确处理notFoundError的问题 
+- `ksyun_kce_worker`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+
 ## 1.24.7 (Feb 27, 2026)
 
 IMPROVEMENTS：

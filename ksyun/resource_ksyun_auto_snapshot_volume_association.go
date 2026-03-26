@@ -92,6 +92,10 @@ func resourceKsyunAutoSnapshotVolumeAssociationRead(d *schema.ResourceData, meta
 
 	sdkResponse, err := SnapshotSrv.readAutoSnapshotPolicyVolumeAssociationById(volumeId)
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 

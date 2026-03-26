@@ -123,6 +123,10 @@ func resourceKsyunVolumeAttachRead(d *schema.ResourceData, meta interface{}) (er
 	ebsService := EbsService{meta.(*KsyunClient)}
 	err = ebsService.ReadAndSetVolumeAttach(d, resourceKsyunVolumeAttach())
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("error on reading volume attach %q, %s", d.Id(), err)
 	}
 	return err
