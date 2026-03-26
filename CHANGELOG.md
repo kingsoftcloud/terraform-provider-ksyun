@@ -1,3 +1,8 @@
+## 1.25.4 (March 16, 2026)
+
+IMPROVEMENTS：
+
+- `ksyun_instance` 支持变更计费类型
 
 ## 1.25.3 (March 16, 2026)
 
