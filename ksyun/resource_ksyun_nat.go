@@ -114,7 +114,7 @@ func resourceKsyunNat() *schema.Resource {
 
 			"charge_type": {
 				Type:     schema.TypeString,
-				ForceNew: true,
+				ForceNew: false,
 				Optional: true,
 				Default:  "DailyPaidByTransfer",
 				ValidateFunc: validation.StringInSlice([]string{
@@ -130,7 +130,6 @@ func resourceKsyunNat() *schema.Resource {
 
 			"purchase_time": {
 				Type:             schema.TypeInt,
-				ForceNew:         true,
 				Optional:         true,
 				ValidateFunc:     validation.IntBetween(0, 36),
 				DiffSuppressFunc: purchaseTimeDiffSuppressFunc,

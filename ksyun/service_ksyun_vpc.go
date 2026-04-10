@@ -1176,6 +1176,47 @@ func (s *VpcService) ModifyNatCall(d *schema.ResourceData, r *schema.Resource) (
 	return callback, err
 }
 
+// modifyNatGatewayBillingCall 修改NAT网关计费方式
+func (s *VpcService) modifyNatGatewayBillingCall(d *schema.ResourceData, _ *schema.Resource) (callback ApiCall, err error) {
+	// 判断 charge_type 是否变化，无变化则不调用接口
+	if !d.HasChange("charge_type") {
+		return
+	}
+	// 获取计费方式
+	chargeType := d.Get("charge_type").(string)
+	// 构建请求参数
+	req := map[string]interface{}{
+		"InstanceType": "nat",
+		"InstanceId":   d.Id(),
+		"ChargeType":   chargeType,
+	}
+	// 只有包年包月时才传入 Duration 值，从 purchase_time 获取
+	if chargeType == "Monthly" {
+		duration := d.Get("purchase_time").(int)
+		if duration > 0 {
+			req["Duration"] = duration
+		} else {
+			req["Duration"] = 1 // 默认 1 个月
+		}
+	}
+
+	callback = ApiCall{
+		param:  &req,
+		action: "ModifyNatGatewayBilling",
+		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
+			conn := client.vpcconn
+			logger.Debug(logger.RespFormat, call.action, *(call.param))
+			resp, err = conn.ModifyNatGatewayBilling(call.param)
+			return resp, err
+		},
+		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
+			logger.Debug(logger.RespFormat, call.action, *(call.param), *resp)
+			return err
+		},
+	}
+	return callback, err
+}
+
 func (s *VpcService) ModifyNatIpCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
 	req := map[string]interface{}{}
 
@@ -1300,6 +1341,13 @@ func (s *VpcService) ModifyNat(d *schema.ResourceData, r *schema.Resource) (err 
 		return err
 	}
 	apiProcess.PutCalls(tagsCall)
+
+	billingCall, err := s.modifyNatGatewayBillingCall(d, r)
+	if err != nil {
+		return err
+	}
+	apiProcess.PutCalls(billingCall)
+
 	return apiProcess.Run()
 }
 
