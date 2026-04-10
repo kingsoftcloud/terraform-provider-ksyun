@@ -130,6 +130,7 @@ func resourceKsyunNat() *schema.Resource {
 
 			"purchase_time": {
 				Type:             schema.TypeInt,
+				ForceNew:         true,
 				Optional:         true,
 				ValidateFunc:     validation.IntBetween(0, 36),
 				DiffSuppressFunc: purchaseTimeDiffSuppressFunc,
