@@ -1190,15 +1190,6 @@ func (s *VpcService) modifyNatGatewayBillingCall(d *schema.ResourceData, _ *sche
 		"InstanceId":   d.Id(),
 		"ChargeType":   chargeType,
 	}
-	// 只有包年包月时才传入 Duration 值，从 purchase_time 获取
-	if chargeType == "Monthly" {
-		duration := d.Get("purchase_time").(int)
-		if duration > 0 {
-			req["Duration"] = duration
-		} else {
-			req["Duration"] = 1 // 默认 1 个月
-		}
-	}
 
 	callback = ApiCall{
 		param:  &req,
