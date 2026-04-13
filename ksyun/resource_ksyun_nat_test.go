@@ -142,11 +142,11 @@ func testAccCheckNatDestroy(s *terraform.State) error {
 
 const testAccNatConfig = `
 resource "ksyun_vpc" "test" {
-  vpc_name = "ksyun-vpc-tf"
+  vpc_name = "ksyun-vpc-tf-test"
   cidr_block = "10.0.0.0/16"
 }
 resource "ksyun_nat" "foo" {
-  nat_name = "ksyun-nat-tf"
+  nat_name = "ksyun-nat-tf-test"
   nat_mode = "Vpc"
   nat_type = "public"
   band_width = 1
@@ -161,7 +161,7 @@ resource "ksyun_vpc" "test" {
  cidr_block = "10.0.0.0/16"
 }
 resource "ksyun_nat" "foo" {
- nat_name = "ksyun-nat-tf-update"
+ nat_name = "ksyun-nat-tf-test-update"
  nat_mode = "Vpc"
  nat_type = "public"
  band_width = 1
