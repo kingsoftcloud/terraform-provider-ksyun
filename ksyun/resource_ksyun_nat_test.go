@@ -150,7 +150,7 @@ resource "ksyun_nat" "foo" {
   nat_mode = "Vpc"
   nat_type = "public"
   band_width = 1
-  charge_type = "DailyPaidByTransfer"
+  charge_type = "Peak"
   vpc_id = "${ksyun_vpc.test.id}"
 }
 `
@@ -165,7 +165,7 @@ resource "ksyun_nat" "foo" {
  nat_mode = "Vpc"
  nat_type = "public"
  band_width = 1
- charge_type = "DailyPaidByTransfer"
+ charge_type = "Daily"
  vpc_id = "${ksyun_vpc.test.id}"
 }
 `
