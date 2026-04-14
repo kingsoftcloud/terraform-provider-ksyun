@@ -123,9 +123,11 @@ func resourceKsyunNat() *schema.Resource {
 					"Daily",
 					"PostPaidByAdvanced95Peak",
 					"DailyPaidByTransfer",
+					"TrafficMonthly",
+					"HourlyInstantSettlement",
 				}, false),
 				DiffSuppressFunc: chargeSchemaDiffSuppressFunc,
-				Description:      "charge type, valid values: 'Monthly', 'Peak', 'Daily', 'PostPaidByAdvanced95Peak', 'DailyPaidByTransfer'. Default is DailyPaidByTransfer.",
+				Description:      "charge type, valid values: 'Monthly', 'Peak', 'Daily', 'PostPaidByAdvanced95Peak', 'DailyPaidByTransfer', 'TrafficMonthly', 'HourlyInstantSettlement'. Default is DailyPaidByTransfer.",
 			},
 
 			"purchase_time": {
