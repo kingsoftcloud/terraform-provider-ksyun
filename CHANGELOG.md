@@ -1,3 +1,9 @@
+## 1.25.5 (April 13, 2026)
+
+IMPROVEMENTS：
+
+- `ksyun_nat` 支持变更计费类型
+
 ## 1.25.5 (March 26, 2026)
 
 IMPROVEMENTS：
