@@ -68,11 +68,8 @@ resource "ksyun_instance" "foo" {
 
 The following arguments are supported:
 
-* `charge_type` - (Required, ForceNew) charge type of the instance.
-* `image_id` - (Required) The ID for the image to use for the instance.
-* `security_group_id` - (Required) Security Group to associate with.
-* `subnet_id` - (Required) The ID of subnet. the instance will use the subnet in the current region.
 * `auto_create_ebs` - (Optional) Whether to create EBS volumes from snapshots in the custom image, default is false.
+* `charge_type` - (Optional) charge type of the instance.
 * `data_disk_gb` - (Optional) The size of the local SSD disk.
 * `data_disks` - (Optional) The list of data disks created with instance.
 * `data_guard_id` - (Optional) Add instance being created to a disaster tolerance group. It will be quit the disaster tolerance group, if this field change to null.
@@ -82,6 +79,7 @@ The following arguments are supported:
 * `force_reinstall_system` - (Optional) Indicate whether to reinstall system.
 * `host_name` - (Optional) The hostname of the instance. only effective when image support cloud-init.
 * `iam_role_name` - (Optional) name of iam role.
+* `image_id` - (Optional) The ID for the image to use for the instance.
 * `instance_name` - (Optional) The name of instance, which contains 2-64 characters and only support Chinese, English, numbers.
 * `instance_password` - (Optional) Password to an instance is a string of 8 to 32 characters.
 * `instance_status` - (Optional) The state of instance.
@@ -89,10 +87,14 @@ The following arguments are supported:
 * `keep_image_login` - (Optional) Keep the initial settings of the custom image.
 * `key_id` - (Optional) The certificate id of the instance.
 * `local_volume_snapshot_id` - (Optional, ForceNew) When the local data disk opens, the snapshot id is entered.
+* `model_id` - (Optional, ForceNew) The ID of the instance model (launch template). Mutually exclusive with image_id.
 * `private_ip_address` - (Optional) Instance private IP address can be specified when you creating new instance.
 * `project_id` - (Optional) The project instance belongs to.
 * `purchase_time` - (Optional, ForceNew) The duration that you will buy the resource.
+* `security_group_id` - (Optional) Security Group to associate with.
 * `sriov_net_support` - (Optional, ForceNew) whether support networking enhancement.
+* `subnet_id` - (Optional) The ID of subnet. the instance will use the subnet in the current region.
+* `sync_data_disk_charge_type` - (Optional) Whether to change the charge type of data disks together when modifying instance charge type, default is false.
 * `sync_tag` - (Optional) Indicate whether to sync tags to instance.
 * `system_disk` - (Optional) System disk parameters.
 * `tags` - (Optional) the tags of the resource.
