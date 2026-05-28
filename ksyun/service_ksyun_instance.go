@@ -609,6 +609,21 @@ func transKecInstanceParams(d *schema.ResourceData, resource *schema.Resource) (
 }
 
 func (s *KecService) createKecInstanceCommon(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
+	// When model_id is provided, skip other required parameter validation
+	if _, ok := d.GetOk("model_id"); !ok {
+		if _, ok := d.GetOk("image_id"); !ok {
+			return callback, fmt.Errorf("one of image_id or model_id must be specified")
+		}
+		if _, ok := d.GetOk("subnet_id"); !ok {
+			return callback, fmt.Errorf("subnet_id is required when model_id is not specified")
+		}
+		if _, ok := d.GetOk("charge_type"); !ok {
+			return callback, fmt.Errorf("charge_type is required when model_id is not specified")
+		}
+		if _, ok := d.GetOk("security_group_id"); !ok {
+			return callback, fmt.Errorf("security_group_id is required when model_id is not specified")
+		}
+	}
 	// transform := map[string]SdkReqTransform{
 	//	"key_id": {
 	//		Type: TransformWithN,
