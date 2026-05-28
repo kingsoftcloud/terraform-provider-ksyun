@@ -36,7 +36,7 @@ resource "ksyun_volume" "default" {
 The following arguments are supported:
 
 * `availability_zone` - (Required, ForceNew) The availability zone in which the EBS volume resides.
-* `charge_type` - (Required, ForceNew) The billing mode of the EBS volume. Valid values: 'HourlyInstantSettlement', 'Daily'.
+* `charge_type` - (Required) The billing mode of the EBS volume. Valid values: 'HourlyInstantSettlement', 'Daily'.
 * `online_resize` - (Optional) Specifies whether to expand the capacity of the EBS volume online, default is true.
 * `project_id` - (Optional) The ID of the project.
 * `size` - (Optional) The capacity of the EBS volume, in GB. Value range: [10, 32000], Default is 10.

@@ -78,7 +78,7 @@ func instanceConfig() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"image_id": {
 			Type:        schema.TypeString,
-			Required:    true,
+			Optional:    true,
 			Description: "The ID for the image to use for the instance.",
 		},
 		"instance_status": {
@@ -204,7 +204,7 @@ func instanceConfig() map[string]*schema.Schema {
 		},
 		"subnet_id": {
 			Type:        schema.TypeString,
-			Required:    true,
+			Optional:    true,
 			Description: "The ID of subnet. the instance will use the subnet in the current region.",
 		},
 		"extension_network_interface": {
@@ -259,7 +259,7 @@ func instanceConfig() map[string]*schema.Schema {
 		"charge_type": {
 			Type:     schema.TypeString,
 			ForceNew: false,
-			Required: true,
+			Optional: true,
 			ValidateFunc: validation.StringInSlice([]string{
 				"Daily",
 				"HourlyInstantSettlement",
@@ -277,7 +277,7 @@ func instanceConfig() map[string]*schema.Schema {
 		"security_group_id": {
 			Type:        schema.TypeSet,
 			Elem:        &schema.Schema{Type: schema.TypeString},
-			Required:    true,
+			Optional:    true,
 			Set:         schema.HashString,
 			MinItems:    1,
 			Description: "Security Group to associate with.",
@@ -450,7 +450,18 @@ func resourceKsyunInstance() *schema.Resource {
 			Update: schema.DefaultTimeout(20 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
-		Schema: instanceConfig(),
+		Schema: func() map[string]*schema.Schema {
+			s := instanceConfig()
+			s["image_id"].ConflictsWith = []string{"model_id"}
+			s["model_id"] = &schema.Schema{
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"image_id"},
+				Description:   "The ID of the instance model (launch template). Mutually exclusive with image_id.",
+			}
+			return s
+		}(),
 	}
 }
 

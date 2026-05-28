@@ -179,6 +179,7 @@ Instance(KEC)
 
 	Resource
 		ksyun_instance
+		ksyun_instance_model
 		ksyun_kec_network_interface_attachment
 		ksyun_auto_snapshot_policy
 		ksyun_auto_snapshot_volume_association
@@ -616,6 +617,7 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_vpc":                              resourceKsyunVpc(),
 			"ksyun_subnet":                           resourceKsyunSubnet(),
 			"ksyun_instance":                         resourceKsyunInstance(),
+			"ksyun_instance_model":                   resourceKsyunInstanceModel(),
 			"ksyun_sqlserver":                        resourceKsyunSqlServer(),
 			"ksyun_kec_network_interface":            resourceKsyunKecNetworkInterface(),
 			"ksyun_kec_network_interface_attachment": resourceKsyunKecNetworkInterfaceAttachment(),
