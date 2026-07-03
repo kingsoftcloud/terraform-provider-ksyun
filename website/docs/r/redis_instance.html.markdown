@@ -111,17 +111,23 @@ The following arguments are supported:
 * `backup_time_zone` - (Optional) Auto backup time zone. Example: "03:00-04:00".
 * `bill_type` - (Optional, ForceNew) Valid values are 1 (Monthly), 5(Daily), 87(HourlyInstantSettlement).
 * `delete_directly` - (Optional) Default is `false`, deleted instance will remain in the recycle bin. Setting the value to `true`, instance is permanently deleted without being recycled.
+* `duration_unit` - (Optional, ForceNew) Duration unit. Valid values: MONTH, YEAR. Default is MONTH.
 * `duration` - (Optional, ForceNew) Only meaningful if bill_type is 1, Valid values:{1~36}.
 * `iam_project_id` - (Optional) The project instance belongs to.
 * `mode` - (Optional, ForceNew) The KVStore instance system architecture required by the user. Valid values:  1(cluster),2(single),3(SelfDefineCluster).
 * `net_type` - (Optional) The network type. Valid values: 2(vpc).
+* `package_code` - (Optional, ForceNew) Package code of the Redis instance.
 * `parameters` - (Optional) Set of parameters needs to be set after instance was launched. Available parameters can refer to the  docs https://docs.ksyun.com/documents/1018.
 * `pass_word` - (Optional) The password of the  instance.The password is a string of 8 to 30 characters and must contain uppercase letters, lowercase letters, and numbers.
+* `port` - (Optional, ForceNew) The port of the Redis instance. Default is 6379. Valid range: 1024-65535.
 * `prepare_az_name` - (Optional, ForceNew) assign standby instance area.
-* `protocol` - (Optional, ForceNew) Engine version. Supported values: 2.8, 4.0 and 5.0.
+* `product_type` - (Optional, ForceNew) Product type of the Redis instance.
+* `protocol` - (Optional, ForceNew) Engine version. Supported values: 4.0, 5.0, 6.0, 7.0.
+* `replica_num` - (Optional, ForceNew) The number of replicas. Default is 1.
 * `reset_all_parameters` - (Optional) whether reset all parameters.
 * `rr_az_name` - (Optional, ForceNew) assign read only instance area.
 * `security_group_id` - (Optional) The id of security group.
+* `separation` - (Optional, ForceNew) Read-write separation switch. 0 means off, 1 means on. Default is 0.
 * `shard_num` - (Optional) shard number.
 * `shard_size` - (Optional) each shard mem size GB.
 * `slave_num` - (Optional, ForceNew) The readonly node num required by the user. Valid values: {0-7}.
@@ -141,7 +147,6 @@ In addition to all arguments above, the following attributes are exported:
 * `iam_project_name` - project name.
 * `order_type` - order type.
 * `order_use` - order use.
-* `port` - port.
 * `product_id` - project id.
 * `service_begin_time` - service begin time.
 * `service_end_time` - service end time.

@@ -120,17 +120,19 @@ func resourceMongodbSecurityRuleRead(d *schema.ResourceData, meta interface{}) (
 		if err != nil {
 			return fmt.Errorf("error on read instance security rule: %s", err)
 		}
-		if cidrs != "" {
-			err = d.Set("cidrs", cidrs)
+		if cidrs == "" {
+			d.SetId("")
+			return nil
 		}
+		err = d.Set("cidrs", cidrs)
 	} else {
 		cidrs, err = readMongodbSecurityGroupCidrs(d, meta, "cidr", d.Get("instance_id").(string))
 		if err != nil {
 			return fmt.Errorf("error on read instance security rule: %s", err)
 		}
 		if cidrs == "" {
-			return fmt.Errorf("can not read cidr [%s] from mongodb instance [%s]", d.Get("cidr"),
-				d.Get("instance_id").(string))
+			d.SetId("")
+			return nil
 		}
 		err = d.Set("cidr", cidrs)
 	}
