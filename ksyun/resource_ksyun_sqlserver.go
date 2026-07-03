@@ -64,7 +64,7 @@ func resourceKsyunSqlServer() *schema.Resource {
 			"engine_version": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "db engine version only support 2008r2,2012,2016",
+				Description: "db engine version only support 2012sp4,2014sp2,2016sp2,2017",
 			},
 			"region": {
 				Type:     schema.TypeString,
@@ -179,8 +179,14 @@ func resourceKsyunSqlServerCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	if resp != nil {
-		bodyData := (*resp)["Data"].(map[string]interface{})
-		instances := bodyData["Instances"].([]interface{})
+		bodyData, dataOk := (*resp)["Data"].(map[string]interface{})
+		if !dataOk {
+			return fmt.Errorf("error on creating Instance(sqlserver): response body missing Data")
+		}
+		instances, instancesOk := bodyData["Instances"].([]interface{})
+		if !instancesOk || len(instances) == 0 {
+			return fmt.Errorf("error on creating Instance(sqlserver): response body missing Instances")
+		}
 		sqlserverInstance := instances[0].(map[string]interface{})
 		instanceId := sqlserverInstance["DBInstanceIdentifier"].(string)
 		logger.DebugInfo(" DBInstanceIdentifier : %v", instanceId)
@@ -212,8 +218,14 @@ func sqlserverInstanceStateRefreshForCreate(client *sqlserver.Sqlserver, instanc
 		if err != nil {
 			return nil, "", err
 		}
-		bodyData := (*resp)["Data"].(map[string]interface{})
-		instances := bodyData["Instances"].([]interface{})
+		bodyData, dataOk := (*resp)["Data"].(map[string]interface{})
+		if !dataOk {
+			return nil, tCreatingStatus, nil
+		}
+		instances, instancesOk := bodyData["Instances"].([]interface{})
+		if !instancesOk || len(instances) == 0 {
+			return nil, tCreatingStatus, nil
+		}
 		sqlserverInstance := instances[0].(map[string]interface{})
 		state := sqlserverInstance["DBInstanceStatus"].(string)
 
@@ -230,14 +242,23 @@ func resourceKsyunSqlServerRead(d *schema.ResourceData, meta interface{}) error 
 	resp, err := conn.DescribeDBInstances(&req)
 	logger.Debug(logger.AllFormat, action, req, *resp, err)
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("error on reading Instance(sqlserver) %q, %s", d.Id(), err)
 	}
 
 	bodyData, dataOk := (*resp)["Data"].(map[string]interface{})
 	if !dataOk {
-		return fmt.Errorf("error on reading Instance(sqlserver) body %q, %+v", d.Id(), (*resp)["Error"])
+		d.SetId("")
+		return nil
 	}
-	instances := bodyData["Instances"].([]interface{})
+	instances, instancesOk := bodyData["Instances"].([]interface{})
+	if !instancesOk || len(instances) == 0 {
+		d.SetId("")
+		return nil
+	}
 
 	sqlserverIds := make([]string, len(instances))
 	sqlserverMap := make([]map[string]interface{}, len(instances))
@@ -315,8 +336,14 @@ func resourceKsyunSqlServerDelete(d *schema.ResourceData, meta interface{}) erro
 			}
 		}
 
-		bodyData := (*desResp)["Data"].(map[string]interface{})
-		instances := bodyData["Instances"].([]interface{})
+		bodyData, dataOk := (*desResp)["Data"].(map[string]interface{})
+		if !dataOk {
+			return nil
+		}
+		instances, instancesOk := bodyData["Instances"].([]interface{})
+		if !instancesOk || len(instances) == 0 {
+			return nil
+		}
 		sqlserverInstance := instances[0].(map[string]interface{})
 		state := sqlserverInstance["DBInstanceStatus"].(string)
 

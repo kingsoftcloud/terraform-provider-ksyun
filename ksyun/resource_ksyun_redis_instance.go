@@ -193,6 +193,13 @@ func resourceRedisInstance() *schema.Resource {
 				},
 				Description: "Only meaningful if bill_type is 1, Valid values:{1~36}.",
 			},
+			"duration_unit": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Default:     "MONTH",
+				Description: "Duration unit. Valid values: MONTH, YEAR. Default is MONTH.",
+			},
 			"pass_word": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -208,13 +215,15 @@ func resourceRedisInstance() *schema.Resource {
 			"protocol": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 				ForceNew: true,
 				ValidateFunc: validation.StringInSlice([]string{
 					"4.0",
 					"5.0",
 					"6.0",
+					"7.0",
 				}, false),
-				Description: "Engine version. Supported values: 2.8, 4.0 and 5.0.",
+				Description: "Engine version. Supported values: 4.0, 5.0, 6.0, 7.0.",
 			},
 			"backup_time_zone": {
 				Type:        schema.TypeString,
@@ -320,8 +329,10 @@ func resourceRedisInstance() *schema.Resource {
 			},
 			"port": {
 				Type:        schema.TypeInt,
+				Optional:    true,
 				Computed:    true,
-				Description: "port.",
+				ForceNew:    true,
+				Description: "The port of the Redis instance. Default is 6379. Valid range: 1024-65535.",
 			},
 			"vip": {
 				Type:        schema.TypeString,
@@ -395,6 +406,35 @@ func resourceRedisInstance() *schema.Resource {
 			},
 
 			"tags": tagsSchema(),
+			"product_type": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "Product type of the Redis instance.",
+			},
+			"replica_num": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The number of replicas. Default is 1.",
+			},
+			"separation": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ForceNew:     true,
+				Default:      0,
+				ValidateFunc: validation.IntInSlice([]int{0, 1}),
+				Description:  "Read-write separation switch. 0 means off, 1 means on. Default is 0.",
+			},
+			"package_code": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "Package code of the Redis instance.",
+			},
 		},
 	}
 }
@@ -418,24 +458,18 @@ func resourceRedisInstanceCreate(d *schema.ResourceData, meta interface{}) error
 		"delete_directly":      {Ignore: true},
 		"parameters":           {Ignore: true},
 		"security_group_id":    {Ignore: true},
+		"product_type":         {mapping: "ProductType"},
+		"replica_num":          {mapping: "ReplicaNum"},
+		"separation":           {mapping: "Separation"},
+		"package_code":         {mapping: "PackageCode"},
+		"duration_unit":        {mapping: "DurationUnit"},
 		"protocol": {ValueFunc: func(d *schema.ResourceData) (interface{}, bool) {
 			v, ok := d.GetOk("protocol")
 			if ok {
 				return v, ok
-			} else {
-				mode := d.Get("mode").(int)
-				switch mode {
-				case 1:
-					_ = d.Set("protocol", "4.0")
-					return "4.0", true
-				case 2:
-					_ = d.Set("protocol", "4.0")
-					return "4.0", true
-				default:
-					_ = d.Set("protocol", "4.0")
-					return "4.0", true
-				}
 			}
+			_ = d.Set("protocol", "4.0")
+			return "4.0", true
 		}},
 	}
 	// generate req
@@ -617,9 +651,14 @@ func resourceRedisInstanceRead(d *schema.ResourceData, meta interface{}) error {
 
 	resp, err = describeRedisInstance(d, meta, "")
 	if err != nil {
+		if validateRedisSgExists(err) {
+			d.SetId("")
+			return nil
+		}
 		return fmt.Errorf("error on reading instance %q, %s", d.Id(), err)
 	}
-	if item, ok = (*resp)["Data"].(map[string]interface{}); !ok {
+	if item, ok = (*resp)["Data"].(map[string]interface{}); !ok || len(item) == 0 {
+		d.SetId("")
 		return nil
 	}
 	// merge some field
@@ -644,6 +683,21 @@ func resourceRedisInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	extra["size"] = SdkResponseMapping{
 		Field: "capacity",
+	}
+	extra["productType"] = SdkResponseMapping{
+		Field: "product_type",
+	}
+	extra["replicaNum"] = SdkResponseMapping{
+		Field: "replica_num",
+	}
+	extra["separation"] = SdkResponseMapping{
+		Field: "separation",
+	}
+	extra["packageCode"] = SdkResponseMapping{
+		Field: "package_code",
+	}
+	extra["durationUnit"] = SdkResponseMapping{
+		Field: "duration_unit",
 	}
 
 	if _, ok := d.GetOk("tags"); ok {

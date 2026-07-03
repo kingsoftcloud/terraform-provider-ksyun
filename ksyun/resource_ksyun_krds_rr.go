@@ -175,6 +175,9 @@ func resourceKsyunKrdsRrRead(d *schema.ResourceData, meta interface{}) (err erro
 	if err != nil {
 		return fmt.Errorf("error on reading rr instance , error is %s", err)
 	}
+	if d.Id() == "" {
+		return nil
+	}
 	err = readAndSetKrdsInstanceParameters(d, meta)
 	if err != nil {
 		return fmt.Errorf("error on reading rr instance , error is %s", err)

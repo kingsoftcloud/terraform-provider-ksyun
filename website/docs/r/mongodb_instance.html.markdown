@@ -42,7 +42,7 @@ The following arguments are supported:
 * `vnet_id` - (Required, ForceNew) The id of subnet linked to the instance.
 * `vpc_id` - (Required, ForceNew) The id of VPC linked to the instance.
 * `cidrs` - (Optional) network cidr.
-* `db_version` - (Optional, ForceNew) The version of instance engine, and support `3.2`, `3.6`, `4.0`, default is `3.2`.
+* `db_version` - (Optional, ForceNew) The version of instance engine, and support `3.6`, `4.0`, `1.2`, `5.0`, `6.0`, `8.0`, default is `3.6`.
 * `duration` - (Optional, ForceNew) The duration of instance use, if `pay_type` is `byMonth`, the duration is required.
 * `iam_project_id` - (Optional) The project id of instance belong, if not defined `iam_project_id`, the instance will use `0`.
 * `instance_account` - (Optional, ForceNew) The administrator name of instance, if not defined `instance_account`, the instance will use `root`.

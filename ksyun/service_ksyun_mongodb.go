@@ -107,7 +107,7 @@ func readMongodbInstance(d *schema.ResourceData, meta interface{}, instanceId st
 	}
 	mongoDBInstanceResult, err = getSdkValue("MongoDBInstanceResult", *resp)
 	if err != nil {
-		return data, err
+		return data, nil
 	}
 	data = mongoDBInstanceResult.(map[string]interface{})
 	if v, ok := data["InstanceType"]; ok && v.(string) == "Cluster" {
@@ -579,7 +579,15 @@ func readMongodbInstanceCommon(d *schema.ResourceData, meta interface{}, r *sche
 	)
 	data, err := readMongodbInstance(d, meta, "")
 	if err != nil {
+		if canNotFoundMongodbError(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
+	}
+	if len(data) == 0 {
+		d.SetId("")
+		return nil
 	}
 	mappings, err := readMongodbSupportAzMappings(meta)
 	if err != nil {
@@ -637,7 +645,14 @@ func canNotFoundMongodbError(err error) bool {
 	if ksyunError, ok := err.(awserr.RequestFailure); ok && ksyunError.StatusCode() == 404 {
 		return true
 	}
-	if strings.Contains(strings.ToLower(err.Error()), "not found") {
+	lowerErr := strings.ToLower(err.Error())
+	if strings.Contains(lowerErr, "not found") {
+		return true
+	}
+	if strings.Contains(lowerErr, "notfound") {
+		return true
+	}
+	if strings.Contains(lowerErr, "实例不存在") {
 		return true
 	}
 	return false
@@ -750,7 +765,8 @@ func readMongodbShardInstanceNode(d *schema.ResourceData, meta interface{}) (dat
 		}
 	}
 	if !exist {
-		return data, extra, fmt.Errorf("mongodb shard instance node %s not found", d.Get("node_id"))
+		d.SetId("")
+		return data, extra, nil
 	}
 	return data, extra, err
 }

@@ -377,6 +377,13 @@ func resourceKsyunKrds() *schema.Resource {
 				Description: "Set it to true to make some parameter efficient when modifying them. Default to false.",
 			},
 
+			"vcpus": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The number of vCPUs for the DB instance. If not specified, defaults to half of the memory size.",
+			},
 			"tags": tagsSchema(),
 		},
 	}
@@ -413,6 +420,9 @@ func resourceKsyunKrdsRead(d *schema.ResourceData, meta interface{}) (err error)
 	err = readAndSetKrdsInstance(d, meta, false)
 	if err != nil {
 		return fmt.Errorf("error on reading instance , error is %s", err)
+	}
+	if d.Id() == "" {
+		return nil
 	}
 	err = readAndSetKrdsInstanceParameters(d, meta)
 	if err != nil {

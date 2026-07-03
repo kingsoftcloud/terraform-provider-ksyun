@@ -265,6 +265,10 @@ func resourceRedisSecurityGroupRead(d *schema.ResourceData, meta interface{}) er
 	)
 	resp, err = readRedisSecurityGroup(d, meta, "")
 	if err != nil {
+		if validateRedisSgExists(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 	extra := make(map[string]SdkResponseMapping)

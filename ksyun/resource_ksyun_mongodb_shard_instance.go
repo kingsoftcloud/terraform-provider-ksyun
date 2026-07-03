@@ -64,10 +64,13 @@ func resourceKsyunMongodbShardInstance() *schema.Resource {
 			Type:     schema.TypeString,
 			Optional: true,
 			ValidateFunc: validation.StringInSlice([]string{
-				"3.2",
 				"3.6",
+				"1.2",
+				"5.0",
+				"6.0",
+				"8.0",
 			}, false),
-			Default:  "3.2",
+			Default:  "3.6",
 			ForceNew: true,
 		},
 		"node_num": {
