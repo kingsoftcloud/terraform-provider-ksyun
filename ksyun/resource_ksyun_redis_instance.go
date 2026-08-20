@@ -431,6 +431,7 @@ func resourceRedisInstance() *schema.Resource {
 			"package_code": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				ForceNew:    true,
 				Description: "Package code of the Redis instance.",
 			},

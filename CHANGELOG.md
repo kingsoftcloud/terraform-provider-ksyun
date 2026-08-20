@@ -1,3 +1,33 @@
+## 1.25.8 (July 01, 2026)
+
+BUGFIX：
+
+- `ksyun_krds`: 修复资源被外部删除后 Read 返回 error 的问题，现在正确清除 state
+- `ksyun_krds_rr`: 修复资源被外部删除后 Read 未正确处理 notFoundError 的问题
+- `ksyun_krds_parameter_group`: 修复资源被外部删除后 Read 返回 error 的问题，现在正确清除 state
+- `data_source_ksyun_krds_parameter_group`: 修复查询结果为空时返回 error 的问题，现在正确返回空结果集
+- `ksyun_sqlserver`: 修复资源被外部删除后 Read 返回 error 或 panic 的问题，现在正确清除 state
+- `ksyun_sqlserver`: 修复 Create/Delete StateRefresh 中类型断言未做安全检查导致潜在 panic 的问题
+- `ksyun_redis_instance`: 修复资源被外部删除后 Read 返回 error 的问题，现在正确清除 state
+- `ksyun_redis_instance_node`: 修复资源被外部删除后 Read 返回 error 的问题，现在正确清除 state
+- `ksyun_redis_security_group`: 修复资源被外部删除后 Read 返回 error 的问题，现在正确清除 state
+- `ksyun_redis_security_group_rule`: 修复资源被外部删除后 Read 返回 error 的问题，现在正确清除 state
+- `ksyun_redis_security_group_allocate`: 修复资源被外部删除后 Read 返回 error 的问题，现在正确清除 state
+- `ksyun_mongodb_instance`: 修复资源被外部删除后 Read 返回 error 的问题，现在正确清除 state
+- `ksyun_mongodb_security_rule`: 修复资源被外部删除后 Read 返回 error 的问题，现在正确清除 state
+- `ksyun_mongodb_shard_instance_node`: 修复资源被外部删除后 Read 返回 error 的问题，现在正确清除 state
+- `ksyun_mongodb_instance`: 扩展 notFoundError 识别范围，支持 "notfound" 和 "实例不存在"
+
+IMPROVEMENTS：
+
+- `ksyun_krds`: 新增 `vcpus` 可选字段，支持创建时指定 CPU 数量
+- `ksyun_redis_instance`: 新增 `duration_unit`、`product_type`、`replica_num`、`separation`、`package_code` 可选字段
+- `ksyun_redis_instance`: `port` 字段改为 Optional + ForceNew，支持创建时自定义端口
+- `ksyun_redis_instance`: `protocol` 字段新增 `7.0` 版本支持，改为 Computed
+- `ksyun_mongodb_instance`: `engine_version` 字段新增 `1.2`、`5.0`、`6.0`、`8.0` 版本支持，默认值从 `3.2` 更新为 `3.6`，移除已下线的 `3.2`
+- `ksyun_mongodb_shard_instance`: `engine_version` 字段新增 `1.2`、`5.0`、`6.0`、`8.0` 版本支持，默认值从 `3.2` 更新为 `3.6`，移除已下线的 `3.2`
+- `ksyun_sqlserver`: `engine_version` schema description 更新为实际支持的版本 `2012sp4,2014sp2,2016sp2,2017`
+
 ## 1.25.5 (April 13, 2026)
 
 IMPROVEMENTS：
