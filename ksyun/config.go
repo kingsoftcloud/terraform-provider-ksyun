@@ -35,6 +35,7 @@ import (
 	"github.com/KscSDK/ksc-sdk-go/service/monitor"
 	"github.com/KscSDK/ksc-sdk-go/service/monitorv4"
 	"github.com/KscSDK/ksc-sdk-go/service/pdns"
+	"github.com/KscSDK/ksc-sdk-go/service/postgresql"
 	"github.com/KscSDK/ksc-sdk-go/service/rabbitmq"
 	"github.com/KscSDK/ksc-sdk-go/service/sks"
 	"github.com/KscSDK/ksc-sdk-go/service/slb"
@@ -93,6 +94,7 @@ func (c *Config) Client() (*KsyunClient, error) {
 	client.kecconn = kec.SdkNew(cli, cfg, url)
 	client.sqlserverconn = sqlserver.SdkNew(cli, cfg, url)
 	client.krdsconn = krds.SdkNew(cli, cfg, url)
+	client.postgresqlconn = postgresql.SdkNew(cli, cfg, url)
 	client.kcmconn = kcm.SdkNew(cli, cfg, url)
 	client.sksconn = sks.SdkNew(cli, cfg, url)
 	client.kcsv1conn = kcsv1.SdkNew(cli, cfg, url)
