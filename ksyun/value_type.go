@@ -23,7 +23,8 @@ const (
 )
 
 const (
-	ResourceKrdsParameterGroup = "krds_parameters_group"
+	ResourceKrdsParameterGroup       = "krds_parameters_group"
+	ResourcePostgresqlParameterGroup = "postgresql_parameters_group"
 )
 
 const (
