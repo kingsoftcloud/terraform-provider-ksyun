@@ -256,6 +256,20 @@ KRDS
 		ksyun_krds_security_group_rule
 		ksyun_krds_parameter_group
 
+PostgreSQL
+
+	Data Source
+		ksyun_postgresql
+		ksyun_postgresql_security_groups
+		ksyun_postgresql_parameter_group
+
+	Resource
+		ksyun_postgresql
+		ksyun_postgresql_rr
+		ksyun_postgresql_security_group
+		ksyun_postgresql_security_group_rule
+		ksyun_postgresql_parameter_group
+
 Clickhouse
 
 	Data Source
@@ -522,6 +536,8 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_sqlservers":                       dataSourceKsyunSqlServer(),
 			"ksyun_krds":                             dataSourceKsyunKrds(),
 			"ksyun_krds_security_groups":             dataSourceKsyunKrdsSecurityGroup(),
+			"ksyun_postgresql":                       dataSourceKsyunPostgresql(),
+			"ksyun_postgresql_security_groups":       dataSourceKsyunPostgresqlSecurityGroup(),
 			"ksyun_ks3_buckets":                      dataSourceKsyunKs3Buckets(),
 			"ksyun_certificates":                     dataSourceKsyunCertificates(),
 			"ksyun_ssh_keys":                         dataSourceKsyunSSHKeys(),
@@ -557,6 +573,7 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_auto_snapshot_policy":             dataSourceKsyunAutoSnapshotPolicy(),
 			"ksyun_data_guard_group":                 dataSourceKsyunDataGuardGroup(),
 			"ksyun_krds_parameter_group":             dataSourceKsyunKrdsParameterGroup(),
+			"ksyun_postgresql_parameter_group":       dataSourceKsyunPostgresqlParameterGroup(),
 			"ksyun_auto_snapshot_volume_association": dataSourceKsyunAutoSnapshotVolumeAssociation(),
 			"ksyun_knads":                            dataSourceKsyunKnads(),
 			"ksyun_perknads":                         dataSourceKsyunPerKnads(),
@@ -625,6 +642,10 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_krds_rr":                          resourceKsyunKrdsRr(),
 			"ksyun_krds_security_group":              resourceKsyunKrdsSecurityGroup(),
 			"ksyun_krds_security_group_rule":         resourceKsyunKrdsSecurityGroupRule(),
+			"ksyun_postgresql":                       resourceKsyunPostgresql(),
+			"ksyun_postgresql_rr":                    resourceKsyunPostgresqlRr(),
+			"ksyun_postgresql_security_group":        resourceKsyunPostgresqlSecurityGroup(),
+			"ksyun_postgresql_security_group_rule":   resourceKsyunPostgresqlSecurityGroupRule(),
 			"ksyun_certificate":                      resourceKsyunCertificate(),
 			"ksyun_ssh_key":                          resourceKsyunSSHKey(),
 			"ksyun_redis_instance":                   resourceRedisInstance(),
@@ -670,6 +691,7 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_auto_snapshot_volume_association": resourceKsyunAutoSnapshotVolumeAssociation(),
 			"ksyun_data_guard_group":                 resourceKsyunDataGuardGroup(),
 			"ksyun_krds_parameter_group":             resourceKsyunKrdsParameterGroup(),
+			"ksyun_postgresql_parameter_group":       resourceKsyunPostgresqlParameterGroup(),
 			"ksyun_knad":                             resourceKsyunKnad(),
 			"ksyun_perknad":                          resourceKsyunPerKnad(),
 			"ksyun_knad_associate":                   resourceKsyunKnadAssociate(),

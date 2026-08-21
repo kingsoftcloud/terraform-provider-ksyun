@@ -1,3 +1,20 @@
+## 1.25.9 (August 19, 2026)
+
+NOTES：
+
+- postgresql: 新增 PostgreSQL 系列资源与数据源，共 5 个 resource 与 3 个 data source。
+
+IMPROVEMENTS：
+
+- `ksyun_postgresql`: 新增 PostgreSQL 高可用实例资源，支持创建（`CreateDBInstance`）、查询（`DescribeDBInstances`）、修改规格/版本/可用区/EIP/参数（`ModifyDBInstance`、`ModifyDBInstanceSpec`、`UpdateDBInstanceVersion`、`ModifyDBInstanceAvailabilityZone`、`AllocateDBInstanceEip`、`ReleaseDBInstanceEip`、`ModifyDBParameterGroup`、`RebootDBInstance`）、删除（`DeleteDBInstance`）。`db_instance_type` 取值 `HRDS_PG`，`engine_version` 支持 `10|11|12.5|13|14|15|17`，支持 `vcpus` 入参。
+- `ksyun_postgresql_rr`: 新增 PostgreSQL 只读副本资源，调用 `CreateDBInstanceReadReplica` 创建，挂载于主实例下，更新复用 `ModifyDBInstance`/`ModifyDBInstanceSpec`/`ModifyDBParameterGroup` 等（只读跳过版本与可用区变更），`db_instance_type` 取值 `RR_PG`。
+- `ksyun_postgresql_security_group`: 新增 PostgreSQL 安全组资源，对应 `CreateSecurityGroup`/`DescribeSecurityGroup`/`ModifySecurityGroup`/`DeleteSecurityGroup`。
+- `ksyun_postgresql_security_group_rule`: 新增 PostgreSQL 安全组规则资源，通过 `ModifySecurityGroupRule`（Attach/Delete）管理规则，复合 ID 为 `security_group_id:protocol`。
+- `ksyun_postgresql_parameter_group`: 新增 PostgreSQL 参数组资源，对应 `CreateDBParameterGroup`/`DescribeDBParameterGroup`/`ModifyDBParameterGroup`/`DeleteDBParameterGroup`，`engine_version` 支持 `10|11|12.5|13|14|15|17`。
+- `data_source_ksyun_postgresql`: 新增数据源，支持按实例 ID 查详情或列举实例（`DescribeDBInstances`）。
+- `data_source_ksyun_postgresql_security_groups`: 新增数据源，查询安全组列表（`DescribeSecurityGroup`）。
+- `data_source_ksyun_postgresql_parameter_group`: 新增数据源，查询参数组列表或单条（`DescribeDBParameterGroup`）。
+
 ## 1.25.8 (July 01, 2026)
 
 BUGFIX：
