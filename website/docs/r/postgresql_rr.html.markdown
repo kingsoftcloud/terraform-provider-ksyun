@@ -4,12 +4,12 @@ layout: "ksyun"
 page_title: "ksyun: ksyun_postgresql_rr"
 sidebar_current: "docs-ksyun-resource-postgresql_rr"
 description: |-
-  Provides an PostgreSQL Read Only instance resource. A DB read only instance is an isolated database environment in the cloud.
+  Provides a PostgreSQL Read Only instance resource. A DB read only instance is an isolated database environment in the cloud.
 ---
 
 # ksyun_postgresql_rr
 
-Provides an PostgreSQL Read Only instance resource. A DB read only instance is an isolated database environment in the cloud.
+Provides a PostgreSQL Read Only instance resource. A DB read only instance is an isolated database environment in the cloud.
 
 #
 
@@ -39,7 +39,7 @@ resource "ksyun_postgresql_rr" "my_postgresql_rr" {
 
 The following arguments are supported:
 
-* `db_instance_class` - (Required) this value regex db.ram.d{1,3}|db.disk.d{1,5}, db.ram is postgresql random access memory size, db.disk is disk size.
+* `db_instance_class` - (Required) this value regex db.ram.d{1,3}|db.disk.d{1,5}, db.ram is PostgreSQL random access memory size, db.disk is disk size.
 * `db_instance_identifier` - (Required, ForceNew) passes in the instance ID of the PostgreSQL highly available instance. A PostgreSQL highly available instance can have at most three read-only instances.
 * `db_instance_name` - (Required) instance name.
 * `availability_zone_1` - (Optional, ForceNew) zone 1.

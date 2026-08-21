@@ -1,5 +1,5 @@
 /*
-Provides an PostgreSQL Read Only instance resource. A DB read only instance is an isolated database environment in the cloud.
+Provides a PostgreSQL Read Only instance resource. A DB read only instance is an isolated database environment in the cloud.
 
 # Example Usage
 

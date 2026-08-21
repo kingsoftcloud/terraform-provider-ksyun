@@ -117,8 +117,8 @@ resource "ksyun_subnet" "foo" {
 resource "ksyun_postgresql_parameter_group" "dpg_with_parameters" {
   name  = "tf_krdpg_on_hcl_with"
   description    = "acceptance-test"
-  engine = "mysql"
-  engine_version = "5.5"
+  engine = "postgresql"
+  engine_version = "15"
   parameters {
 	name = "auto_increment_increment"
 	value = "8"
@@ -139,9 +139,9 @@ resource "ksyun_postgresql_parameter_group" "dpg_with_parameters" {
 resource "ksyun_postgresql" "rds_terraform_3"{
   db_instance_class= "db.ram.1|db.disk.15"
   db_instance_name = "terraform_1"
-  db_instance_type = "HRDS"
-  engine = "mysql"
-  engine_version = "5.5"
+  db_instance_type = "HRDS_PG"
+  engine = "postgresql"
+  engine_version = "15"
   master_user_name = "admin"
   master_user_password = "123qweASD123"
   vpc_id = "${ksyun_vpc.default.id}"
@@ -199,9 +199,9 @@ resource "ksyun_subnet" "foo" {
 resource "ksyun_postgresql" "rds_terraform_3"{
   db_instance_class= "db.ram.1|db.disk.15"
   db_instance_name = "terraform_1"
-  db_instance_type = "HRDS"
-  engine = "mysql"
-  engine_version = "5.5"
+  db_instance_type = "HRDS_PG"
+  engine = "postgresql"
+  engine_version = "15"
   master_user_name = "admin"
   master_user_password = "123qweASD123"
   vpc_id = "${ksyun_vpc.default.id}"

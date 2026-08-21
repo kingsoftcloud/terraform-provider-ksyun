@@ -4,12 +4,12 @@ layout: "ksyun"
 page_title: "ksyun: ksyun_postgresql_security_groups"
 sidebar_current: "docs-ksyun-datasource-postgresql_security_groups"
 description: |-
-  Query PostgreSQL security group information
+  Query ksyun postgresql security group information
 ---
 
 # ksyun_postgresql_security_groups
 
-Query PostgreSQL security group information
+Query ksyun postgresql security group information
 
 #
 

@@ -1,5 +1,5 @@
 /*
-Provides an PostgreSQL instance resource. A DB instance is an isolated database environment in the cloud. A DB instance can contain multiple user-created databases.
+Provides a PostgreSQL instance resource. A DB instance is an isolated database environment in the cloud. A DB instance can contain multiple user-created databases.
 
 # Example Usage
 

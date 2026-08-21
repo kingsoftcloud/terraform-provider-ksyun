@@ -4,12 +4,12 @@ layout: "ksyun"
 page_title: "ksyun: ksyun_postgresql_parameter_group"
 sidebar_current: "docs-ksyun-resource-postgresql_parameter_group"
 description: |-
-  Provides a postgresql parameter template groups.
+  Provides a PostgreSQL parameter template group.
 ---
 
 # ksyun_postgresql_parameter_group
 
-Provides a postgresql parameter template groups.
+Provides a PostgreSQL parameter template group.
 
 #
 

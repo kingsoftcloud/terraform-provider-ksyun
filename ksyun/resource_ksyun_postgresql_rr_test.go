@@ -122,9 +122,9 @@ resource "ksyun_subnet" "foo" {
 resource "ksyun_postgresql" "houbin_terraform_777"{
   db_instance_class= "db.ram.2|db.disk.50"
   db_instance_name = "houbin_terraform_1-n"
-  db_instance_type = "HRDS"
-  engine = "mysql"
-  engine_version = "5.5"
+  db_instance_type = "HRDS_PG"
+  engine = "postgresql"
+  engine_version = "15"
   master_user_name = "admin"
   master_user_password = "123qweASD123"
   vpc_id = "${ksyun_vpc.default.id}"

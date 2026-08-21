@@ -43,8 +43,8 @@ provider "ksyun" {
 resource "ksyun_postgresql_parameter_group" "dpg_with_parameters" {
   name  = "tf_krdpg_on_hcl_with"
   description    = "acceptance-test"
-  engine = "mysql"
-  engine_version = "5.7"
+  engine = "postgresql"
+  engine_version = "15"
 parameters {
 	    	name = "auto_increment_increment"
 	    	value = "8"
@@ -77,8 +77,8 @@ provider "ksyun" {
 resource "ksyun_postgresql_parameter_group" "dpg_with_parameters" {
   name  = "tf_krdpg_on_hcl_with"
   description    = "acceptance-test"
-  engine = "mysql"
-  engine_version = "5.7"
+  engine = "postgresql"
+  engine_version = "15"
 parameters {
 	    	name = "auto_increment_increment"
 	    	value = "8"

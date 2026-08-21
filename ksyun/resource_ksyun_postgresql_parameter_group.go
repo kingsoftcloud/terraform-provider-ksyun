@@ -1,5 +1,5 @@
 /*
-Provides a postgresql parameter template groups.
+Provides a PostgreSQL parameter template group.
 
 # Example Usage
 

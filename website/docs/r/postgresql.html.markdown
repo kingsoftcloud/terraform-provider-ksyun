@@ -4,19 +4,19 @@ layout: "ksyun"
 page_title: "ksyun: ksyun_postgresql"
 sidebar_current: "docs-ksyun-resource-postgresql"
 description: |-
-  Provides an PostgreSQL instance resource. A DB instance is an isolated database environment in the cloud. A DB instance can contain multiple user-created databases.
+  Provides a PostgreSQL instance resource. A DB instance is an isolated database environment in the cloud. A DB instance can contain multiple user-created databases.
 ---
 
 # ksyun_postgresql
 
-Provides an PostgreSQL instance resource. A DB instance is an isolated database environment in the cloud. A DB instance can contain multiple user-created databases.
+Provides a PostgreSQL instance resource. A DB instance is an isolated database environment in the cloud. A DB instance can contain multiple user-created databases.
 
 #
 
 ## Example Usage
 
 ```hcl
-# Create a PostgreSQL MySQL instance
+# Create a PostgreSQL instance
 
 provider "ksyun" {
   region     = "cn-shanghai-3"
@@ -77,7 +77,7 @@ resource "ksyun_postgresql" "my_postgresql_xx" {
   port                  = 5432
 }
 
-# Create a PostgreSQL MySQL instance with specific parameters
+# Create a PostgreSQL instance with specific parameters
 
 provider "ksyun" {
   region     = "cn-shanghai-3"
