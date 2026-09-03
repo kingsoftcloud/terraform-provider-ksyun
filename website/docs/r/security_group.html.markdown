@@ -38,6 +38,7 @@ The `security_group_entries` object supports the following:
 * `description` - (Optional) The description of the entry.
 * `icmp_code` - (Optional) ICMP code.The required if protocol type is 'icmp'.
 * `icmp_type` - (Optional) ICMP type.The required if protocol type is 'icmp'.
+* `policy` - (Optional) The policy of the entry, valid values:'Accept', 'Drop'.
 * `port_range_from` - (Optional) Port rule start port for TCP or UDP protocol.The required if protocol type is 'tcp' or 'udp'.
 * `port_range_to` - (Optional) Port rule end port for TCP or UDP protocol.The required if protocol type is 'tcp' or 'udp'.
 

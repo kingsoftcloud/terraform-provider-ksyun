@@ -45,6 +45,8 @@ The following arguments are supported:
 |                | HourlyInstantSettlement | Pay-as-you-go (hourly instant settlement) | 
 |                | PostPaidByHour | Pay-as-you-go (hourly billing, monthly settlement) | 
 |                | PostpaidByTime | Settlement by times |.
+* `address` - (Optional, ForceNew) Address. IP address allocation request.
+* `eip_pool_id` - (Optional, ForceNew) EipPoolId. EIP Address Pool ID.
 * `line_id` - (Optional, ForceNew) The id of the line.
 * `project_id` - (Optional) The id of the project.
 * `purchase_time` - (Optional, ForceNew) Purchase time. If charge_type is Monthly or PrePaidByMonth, this is Required.
@@ -61,6 +63,7 @@ In addition to all arguments above, the following attributes are exported:
 * `instance_id` - the ID of the EIP.
 * `instance_type` - The instance type to bind with the EIP.
 * `internet_gateway_id` - InternetGateway ID.
+* `ip_version` - the IP Version of the EIP.
 * `is_band_width_share` - BWS EIP.
 * `network_interface_id` - NetworkInterface ID.
 * `public_ip` - The Elastic IP address.

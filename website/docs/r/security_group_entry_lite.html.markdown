@@ -35,6 +35,7 @@ The following arguments are supported:
 * `description` - (Optional) The description of the entry.
 * `icmp_code` - (Optional, ForceNew) ICMP code.The required if protocol type is 'icmp'.
 * `icmp_type` - (Optional, ForceNew) ICMP type.The required if protocol type is 'icmp'.
+* `policy` - (Optional, ForceNew) The policy of the entry, valid values:'Accept', 'Drop'.
 * `port_range_from` - (Optional, ForceNew) Port rule start port for TCP or UDP protocol.The required if protocol type is 'tcp' or 'udp'.
 * `port_range_to` - (Optional, ForceNew) Port rule end port for TCP or UDP protocol.The required if protocol type is 'tcp' or 'udp'.
 
