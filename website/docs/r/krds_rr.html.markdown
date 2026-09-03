@@ -52,6 +52,7 @@ The following arguments are supported:
 * `project_id` - (Optional) project ID.
 * `security_group_id` - (Optional) proprietary security group id for krds.
 * `tags` - (Optional) the tags of the resource.
+* `vcpus` - (Optional, ForceNew) The number of vCPUs for the DB instance. If not specified, defaults to half of the memory size.
 * `vip` - (Optional) virtual IP.
 
 The `parameters` object supports the following:

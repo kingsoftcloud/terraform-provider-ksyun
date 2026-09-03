@@ -111,7 +111,7 @@ func resourceKsyunVolume() *schema.Resource {
 
 			"charge_type": {
 				Type:     schema.TypeString,
-				ForceNew: true,
+				ForceNew: false,
 				Required: true,
 				ValidateFunc: validation.StringInSlice([]string{
 					"HourlyInstantSettlement",

@@ -203,6 +203,10 @@ func (s *MonitorService) ReadAlarmPolicy(condition map[string]interface{}) (data
 	logger.Debug(logger.ReqFormat, action, condition)
 	resp, err = conn.DescribeAlarmPolicy(&condition)
 	if err != nil {
+		// 2026.03.05 - 修复：识别资源不存在的错误，返回空数据而非 error
+		if notFoundError(err) {
+			return nil, nil
+		}
 		return data, err
 	}
 

@@ -114,6 +114,9 @@ func resourceMongodbShardInstanceNodeRead(d *schema.ResourceData, meta interface
 	if err != nil {
 		return fmt.Errorf("read shard instance node error %s ", err)
 	}
+	if d.Id() == "" {
+		return nil
+	}
 	SdkResponseAutoResourceData(d, resourceKsyunMongodbShardInstanceNode(), v, extra)
 	return err
 }

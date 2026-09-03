@@ -227,6 +227,10 @@ func (s *AlbRuleGroup) ReadAndSetRuleGroups(d *schema.ResourceData, r *schema.Re
 func (s *AlbRuleGroup) ReadAndSetRuleGroup(d *schema.ResourceData, r *schema.Resource) (err error) {
 	data, err := s.readRuleGroup(d, "")
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 

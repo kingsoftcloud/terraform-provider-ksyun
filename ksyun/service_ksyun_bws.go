@@ -76,11 +76,12 @@ func (s *BwsService) ReadAndSetBandWidthShare(d *schema.ResourceData, r *schema.
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
 		data, callErr := s.ReadBandWidthShare(d, "")
 		if callErr != nil {
-			if !d.IsNewResource() {
-				return resource.NonRetryableError(callErr)
-			}
+			// if !d.IsNewResource() {
+			// 	return resource.NonRetryableError(callErr)
+			// }
 			if notFoundError(callErr) {
-				return resource.RetryableError(callErr)
+				d.SetId("")
+				return nil
 			} else {
 				return resource.NonRetryableError(fmt.Errorf("error on  reading bandWidthShare %q, %s", d.Id(), callErr))
 			}

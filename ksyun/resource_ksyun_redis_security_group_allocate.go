@@ -103,6 +103,12 @@ func resourceRedisSecurityGroupAllocateDelete(d *schema.ResourceData, meta inter
 
 func resourceRedisSecurityGroupAllocateRead(d *schema.ResourceData, meta interface{}) error {
 	data, err := readRedisSecurityGroupAllocate(d, meta, d.Get("security_group_id").(string))
+	if err != nil {
+		if validateRedisSgExists(err) {
+			d.SetId("")
+			return nil
+		}
+	}
 	extra := make(map[string]SdkResponseMapping)
 	if checkMultipleExist("cache_ids", d) {
 		if err != nil {
@@ -114,8 +120,8 @@ func resourceRedisSecurityGroupAllocateRead(d *schema.ResourceData, meta interfa
 		}
 	} else {
 		if !checkValueInSliceMap(data["list"].([]interface{}), "id", d.Get("cache_id")) {
-			return fmt.Errorf("can not read cache_id [%s] from securityGroup [%s]", d.Get("cache_id"),
-				d.Get("security_group_id").(string))
+			d.SetId("")
+			return nil
 		}
 		extra["list"] = SdkResponseMapping{
 			Field: "cache_id",

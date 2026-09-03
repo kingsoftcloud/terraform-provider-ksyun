@@ -290,11 +290,19 @@ func resourceRedisInstanceNodeRead(d *schema.ResourceData, meta interface{}) err
 	)
 	_, err = readRedisInstanceNodeCluster(d, meta)
 	if err != nil {
+		if validateRedisSgExists(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 
 	resp, err = readRedisInstanceNode(d, meta)
 	if err != nil {
+		if validateRedisSgExists(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 	SdkResponseAutoResourceData(d, resourceRedisInstanceNode(), *resp, nil)

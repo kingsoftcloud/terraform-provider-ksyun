@@ -468,11 +468,12 @@ func (alb *AlbService) ReadAndSetAlb(d *schema.ResourceData, r *schema.Resource)
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
 		data, callErr := alb.readAlb(d, "", true)
 		if callErr != nil {
-			if !d.IsNewResource() {
-				return resource.NonRetryableError(callErr)
-			}
+			//if !d.IsNewResource() {
+			//	return resource.NonRetryableError(callErr)
+			//}
 			if notFoundError(callErr) {
-				return resource.RetryableError(callErr)
+				d.SetId("")
+				return nil
 			} else {
 				return resource.NonRetryableError(fmt.Errorf("error on reading ALB %q, %s", d.Id(), callErr))
 			}
@@ -678,11 +679,12 @@ func (alb *AlbService) ReadAndSetAlbBackendServerGroup(d *schema.ResourceData, r
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
 		data, callErr := alb.readAlbBackendServerGroup(d, "")
 		if callErr != nil {
-			if !d.IsNewResource() {
-				return resource.NonRetryableError(callErr)
-			}
+			//if !d.IsNewResource() {
+			//	return resource.NonRetryableError(callErr)
+			//}
 			if notFoundError(callErr) {
-				return resource.RetryableError(callErr)
+				d.SetId("")
+				return nil
 			} else {
 				return resource.NonRetryableError(fmt.Errorf("error on reading ALB %q, %s", d.Id(), callErr))
 			}
@@ -1074,6 +1076,10 @@ func (alb *AlbService) ReadAlbBackendServer(d *schema.ResourceData, backendServe
 func (alb *AlbService) ReadAndSetAlbBackendServer(d *schema.ResourceData, r *schema.Resource) (err error) {
 	data, err := alb.ReadAlbBackendServer(d, "")
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 	SdkResponseAutoResourceData(d, r, data, nil)

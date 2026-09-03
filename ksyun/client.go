@@ -22,6 +22,7 @@ import (
 	"github.com/KscSDK/ksc-sdk-go/service/monitor"
 	"github.com/KscSDK/ksc-sdk-go/service/monitorv4"
 	"github.com/KscSDK/ksc-sdk-go/service/pdns"
+	"github.com/KscSDK/ksc-sdk-go/service/postgresql"
 	"github.com/KscSDK/ksc-sdk-go/service/rabbitmq"
 	"github.com/KscSDK/ksc-sdk-go/service/sks"
 	"github.com/KscSDK/ksc-sdk-go/service/slb"
@@ -43,6 +44,7 @@ type KsyunClient struct {
 	kecconn        *kec.Kec               `json:"kecconn,omitempty"`
 	sqlserverconn  *sqlserver.Sqlserver   `json:"sqlserverconn,omitempty"`
 	krdsconn       *krds.Krds             `json:"krdsconn,omitempty"`
+	postgresqlconn *postgresql.Postgresql `json:"postgresqlconn,omitempty"`
 	kcmconn        *kcm.Kcm               `json:"kcmconn,omitempty"`
 	sksconn        *sks.Sks               `json:"sksconn,omitempty"`
 	kcsv1conn      *kcsv1.Kcsv1           `json:"kcsv_1_conn,omitempty"`

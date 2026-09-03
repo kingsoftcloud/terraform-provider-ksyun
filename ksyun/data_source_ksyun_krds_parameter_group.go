@@ -25,8 +25,6 @@ Query ksyun krds parameter group information
 package ksyun
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
 )
@@ -142,7 +140,19 @@ func dataSourceKsyunKrdsParameterGroupRead(d *schema.ResourceData, meta interfac
 		}
 	}
 	if len(sdkResponse) == 0 {
-		return fmt.Errorf("the current available zone not exsits any krds parameter group")
+		return mergeDataSourcesResp(d, r, ksyunDataSource{
+			collection:  sdkResponse,
+			idFiled:     "DBParameterGroupId",
+			targetField: "db_parameter_groups",
+			extra: map[string]SdkResponseMapping{
+				"DBParameterGroupId": {
+					Field: "db_parameter_group_id",
+				},
+				"DBParameterGroupName": {
+					Field: "db_parameter_group_name",
+				},
+			},
+		})
 	}
 
 	if isById {

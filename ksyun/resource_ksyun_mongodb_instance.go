@@ -68,12 +68,15 @@ func resourceKsyunMongodbInstance() *schema.Resource {
 				ForceNew: true,
 				// set stable value before api support query
 				ValidateFunc: validation.StringInSlice([]string{
-					"3.2",
 					"3.6",
 					"4.0",
+					"1.2",
+					"5.0",
+					"6.0",
+					"8.0",
 				}, false),
-				Default:     "3.2",
-				Description: "The version of instance engine, and support `3.2`, `3.6`, `4.0`, default is `3.2`.",
+				Default:     "3.6",
+				Description: "The version of instance engine, and support `3.6`, `4.0`, `1.2`, `5.0`, `6.0`, `8.0`, default is `3.6`.",
 			},
 			"instance_class": {
 				Type:     schema.TypeString,

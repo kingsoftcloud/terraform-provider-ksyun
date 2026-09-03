@@ -66,7 +66,10 @@ func (s *CenService) ReadCen(d *schema.ResourceData, cenId string) (data map[str
 func (s *CenService) ReadAndSetCen(d *schema.ResourceData, r *schema.Resource) (err error) {
 	data, err := s.ReadCen(d, "")
 	if err != nil {
-		return err
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 	}
 	SdkResponseAutoResourceData(d, r, data, nil)
 	return err

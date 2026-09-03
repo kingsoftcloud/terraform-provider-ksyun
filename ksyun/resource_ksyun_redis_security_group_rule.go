@@ -1,7 +1,6 @@
 package ksyun
 
 import (
-	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
@@ -92,6 +91,10 @@ func resourceRedisSecurityGroupRuleDelete(d *schema.ResourceData, meta interface
 	)
 	resp, err = readRedisSecurityGroup(d, meta, d.Get("security_group_id").(string))
 	if err != nil {
+		if validateRedisSgExists(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 	current := make(map[string]string)
@@ -154,6 +157,10 @@ func resourceRedisSecurityGroupRuleRead(d *schema.ResourceData, meta interface{}
 	)
 	resp, err = readRedisSecurityGroup(d, meta, d.Get("security_group_id").(string))
 	if err != nil {
+		if validateRedisSgExists(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 	data := (*resp)["Data"].(map[string]interface{})
@@ -167,8 +174,8 @@ func resourceRedisSecurityGroupRuleRead(d *schema.ResourceData, meta interface{}
 		}
 	} else {
 		if !checkValueInSliceMap(data["rules"].([]interface{}), "cidr", d.Get("rule")) {
-			return fmt.Errorf("can not read rule [%s] from securityGroup [%s]", d.Get("rule"),
-				d.Get("security_group_id").(string))
+			d.SetId("")
+			return nil
 		}
 		extra["rules"] = SdkResponseMapping{
 			Field: "rule",

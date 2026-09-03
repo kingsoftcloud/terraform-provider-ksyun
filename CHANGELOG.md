@@ -12,9 +12,86 @@ IMPROVEMENTS：
 
 ## 1.25.2 (March 13, 2026)
 
+## 1.25.9 (August 19, 2026)
+
+NOTES：
+
+- postgresql: 新增 PostgreSQL 系列资源与数据源，共 5 个 resource 与 3 个 data source。
+
+IMPROVEMENTS：
+
+- `ksyun_postgresql`: 新增 PostgreSQL 高可用实例资源，支持创建（`CreateDBInstance`）、查询（`DescribeDBInstances`）、修改规格/版本/可用区/EIP/参数（`ModifyDBInstance`、`ModifyDBInstanceSpec`、`UpdateDBInstanceVersion`、`ModifyDBInstanceAvailabilityZone`、`AllocateDBInstanceEip`、`ReleaseDBInstanceEip`、`ModifyDBParameterGroup`、`RebootDBInstance`）、删除（`DeleteDBInstance`）。`db_instance_type` 取值 `HRDS_PG`，`engine_version` 支持 `10|11|12.5|13|14|15|17`，支持 `vcpus` 入参。
+- `ksyun_postgresql_rr`: 新增 PostgreSQL 只读副本资源，调用 `CreateDBInstanceReadReplica` 创建，挂载于主实例下，更新复用 `ModifyDBInstance`/`ModifyDBInstanceSpec`/`ModifyDBParameterGroup` 等（只读跳过版本与可用区变更），`db_instance_type` 取值 `RR_PG`。
+- `ksyun_postgresql_security_group`: 新增 PostgreSQL 安全组资源，对应 `CreateSecurityGroup`/`DescribeSecurityGroup`/`ModifySecurityGroup`/`DeleteSecurityGroup`。
+- `ksyun_postgresql_security_group_rule`: 新增 PostgreSQL 安全组规则资源，通过 `ModifySecurityGroupRule`（Attach/Delete）管理规则，复合 ID 为 `security_group_id:protocol`。
+- `ksyun_postgresql_parameter_group`: 新增 PostgreSQL 参数组资源，对应 `CreateDBParameterGroup`/`DescribeDBParameterGroup`/`ModifyDBParameterGroup`/`DeleteDBParameterGroup`，`engine_version` 支持 `10|11|12.5|13|14|15|17`。
+- `data_source_ksyun_postgresql`: 新增数据源，支持按实例 ID 查详情或列举实例（`DescribeDBInstances`）。
+- `data_source_ksyun_postgresql_security_groups`: 新增数据源，查询安全组列表（`DescribeSecurityGroup`）。
+- `data_source_ksyun_postgresql_parameter_group`: 新增数据源，查询参数组列表或单条（`DescribeDBParameterGroup`）。
+
+## 1.25.8 (July 01, 2026)
+
+BUGFIX：
+
+- `ksyun_krds`: 修复资源被外部删除后 Read 返回 error 的问题，现在正确清除 state
+- `ksyun_krds_rr`: 修复资源被外部删除后 Read 未正确处理 notFoundError 的问题
+- `ksyun_krds_parameter_group`: 修复资源被外部删除后 Read 返回 error 的问题，现在正确清除 state
+- `data_source_ksyun_krds_parameter_group`: 修复查询结果为空时返回 error 的问题，现在正确返回空结果集
+- `ksyun_sqlserver`: 修复资源被外部删除后 Read 返回 error 或 panic 的问题，现在正确清除 state
+- `ksyun_sqlserver`: 修复 Create/Delete StateRefresh 中类型断言未做安全检查导致潜在 panic 的问题
+- `ksyun_redis_instance`: 修复资源被外部删除后 Read 返回 error 的问题，现在正确清除 state
+- `ksyun_redis_instance_node`: 修复资源被外部删除后 Read 返回 error 的问题，现在正确清除 state
+- `ksyun_redis_security_group`: 修复资源被外部删除后 Read 返回 error 的问题，现在正确清除 state
+- `ksyun_redis_security_group_rule`: 修复资源被外部删除后 Read 返回 error 的问题，现在正确清除 state
+- `ksyun_redis_security_group_allocate`: 修复资源被外部删除后 Read 返回 error 的问题，现在正确清除 state
+- `ksyun_mongodb_instance`: 修复资源被外部删除后 Read 返回 error 的问题，现在正确清除 state
+- `ksyun_mongodb_security_rule`: 修复资源被外部删除后 Read 返回 error 的问题，现在正确清除 state
+- `ksyun_mongodb_shard_instance_node`: 修复资源被外部删除后 Read 返回 error 的问题，现在正确清除 state
+- `ksyun_mongodb_instance`: 扩展 notFoundError 识别范围，支持 "notfound" 和 "实例不存在"
+
+IMPROVEMENTS：
+
+- `ksyun_krds`: 新增 `vcpus` 可选字段，支持创建时指定 CPU 数量
+- `ksyun_redis_instance`: 新增 `duration_unit`、`product_type`、`replica_num`、`separation`、`package_code` 可选字段
+- `ksyun_redis_instance`: `port` 字段改为 Optional + ForceNew，支持创建时自定义端口
+- `ksyun_redis_instance`: `protocol` 字段新增 `7.0` 版本支持，改为 Computed
+- `ksyun_mongodb_instance`: `engine_version` 字段新增 `1.2`、`5.0`、`6.0`、`8.0` 版本支持，默认值从 `3.2` 更新为 `3.6`，移除已下线的 `3.2`
+- `ksyun_mongodb_shard_instance`: `engine_version` 字段新增 `1.2`、`5.0`、`6.0`、`8.0` 版本支持，默认值从 `3.2` 更新为 `3.6`，移除已下线的 `3.2`
+- `ksyun_sqlserver`: `engine_version` schema description 更新为实际支持的版本 `2012sp4,2014sp2,2016sp2,2017`
+
+## 1.25.5 (April 13, 2026)
+
+IMPROVEMENTS：
+
+- `ksyun_nat` 支持变更计费类型
+
+## 1.25.5 (March 26, 2026)
+
+IMPROVEMENTS：
+
+- `ksyun_instance` 支持变更计费类型
+
+## 1.25.3 (March 16, 2026)
+
 IMPROVEMENTS：
 
 - `ksyun_bare_metal` 新增`custom_install_config`字段，支持自定义装机系统参数
+
+## 1.25.2 (Mar 09, 2026)
+BUGFIX：
+
+- `ksyun_alb`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_alb_listener`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_alb_listener_cert_group`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_alb_rule_group`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_bws`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_cen`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_dns`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_eip`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_slb`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_vpc`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_vpc_direct_connect`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+
 
 ## 1.25.1 (March 05, 2026)
 
@@ -52,6 +129,9 @@ BUGFIX：
 - `ksyun_scaling_notification`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
 - `ksyun_scaling_policy`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
 - `ksyun_scaling_scheduled_task`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_kcrs`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
+- `ksyun_kce`: 修复读取接口在资源不存在时未正确处理notFoundError的问题 
+- `ksyun_kce_worker`: 修复读取接口在资源不存在时未正确处理notFoundError的问题
 
 ## 1.24.7 (Feb 27, 2026)
 

@@ -75,11 +75,12 @@ func (s *EipService) ReadAndSetAddress(d *schema.ResourceData, r *schema.Resourc
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
 		data, callErr := s.ReadAddress(d, "")
 		if callErr != nil {
-			if !d.IsNewResource() {
-				return resource.NonRetryableError(callErr)
-			}
+			// if !d.IsNewResource() {
+			// 	return resource.NonRetryableError(callErr)
+			// }
 			if notFoundError(callErr) {
-				return resource.RetryableError(callErr)
+				d.SetId("")
+				return nil
 			} else {
 				return resource.NonRetryableError(fmt.Errorf("error on  reading address %q, %s", d.Id(), callErr))
 			}

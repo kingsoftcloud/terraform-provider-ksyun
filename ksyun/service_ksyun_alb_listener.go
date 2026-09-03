@@ -180,6 +180,10 @@ func (s *AlbListenerService) readListener(d *schema.ResourceData, listenerId str
 func (s *AlbListenerService) ReadAndSetListener(d *schema.ResourceData, r *schema.Resource) (err error) {
 	data, err := s.readListener(d, "")
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 

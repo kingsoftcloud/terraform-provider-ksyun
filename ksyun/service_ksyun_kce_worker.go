@@ -559,14 +559,18 @@ func (s *KceWorkerService) ReadAndSetWorker(d *schema.ResourceData, r *schema.Re
 		"Filter.1.Value.1": instanceId, // d.Get("instance_id"),
 	})
 	if err != nil {
-		return
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
+		return err
 	}
 	instanceSetSrc := (*data)["InstanceSet"]
-	if instanceSetSrc == nil {
+	instanceSet, _ := instanceSetSrc.([]interface{})
+	if len(instanceSet) <= 0 {
 		d.SetId("")
-		return
+		return nil
 	}
-	instanceSet := instanceSetSrc.([]interface{})
 	instanceInfo := instanceSet[0].(map[string]interface{})
 	logger.Debug("ReadAndSetWorker", "ReadAndSetWorker", instanceInfo)
 

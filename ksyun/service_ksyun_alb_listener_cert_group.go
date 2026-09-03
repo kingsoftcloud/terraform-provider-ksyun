@@ -159,6 +159,10 @@ func (s *AlbListenerCertGroupService) ReadAndSetCertGroup(d *schema.ResourceData
 	var data map[string]interface{}
 	data, err = s.readCertGroup(d, "")
 	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 	extra := map[string]SdkResponseMapping{
