@@ -120,6 +120,16 @@ func resourceKsyunSecurityGroupEntry() *schema.Resource {
 				Computed:    true,
 				Description: "The ID of the entry.",
 			},
+			"policy": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					"Accept",
+					"Drop",
+				}, false),
+				Description: "The policy of the entry, valid values:'Accept', 'Drop'.",
+			},
 		},
 	}
 }

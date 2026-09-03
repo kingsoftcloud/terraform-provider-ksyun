@@ -1,3 +1,15 @@
+## 1.26.1 (Sep 04, 2026)
+
+IMPROVEMENTS：
+- `ksyun_security_group_entry_lite` 新增`policy`字段，支持创建安全组规则选择访问权限
+- `ksyun_security_group_entry` 新增`policy`字段，支持创建安全组规则选择访问权限
+- `ksyun_eip` 新增`address`字段，支持创建EIP指定ip申请
+- `ksyun_eip` 新增`eip_pool_id`字段，支持创建EIP指定EIP地址池ID
+- `ksyun_eip` 新增返回`ip_version`字段，返回对应EIP资源的ip_version信息
+- `ksyun_lines` 新增`ip_version`字段，用户过滤ip_version对应的线路类型
+- **New Data Source:** `ksyun_vpc_ipv6_addresses` VPC侧IPv6公网 查询
+- **New Resource:** `ksyun_vpc_ipv6_addresses`  VPC侧IPv6公网
+
 ## 1.25.2 (March 13, 2026)
 
 IMPROVEMENTS：

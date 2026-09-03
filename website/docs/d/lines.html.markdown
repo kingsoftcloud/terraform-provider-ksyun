@@ -27,6 +27,7 @@ data "ksyun_lines" "default" {
 The following arguments are supported:
 
 * `ids` - (Optional) A list of lines, all the lines belong to this region will be retrieved if the ID is `""`.
+* `ip_version` - (Optional) Ip Version.default ipv4, valid value: 'ipv6', 'ipv4', 'all'.
 * `line_name` - (Optional) Name of the line.
 * `output_file` - (Optional) File name where to save data source results (after running `terraform plan`).
 

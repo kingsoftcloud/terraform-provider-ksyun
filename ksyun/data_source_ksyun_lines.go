@@ -16,6 +16,7 @@ package ksyun
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 )
 
 func dataSourceKsyunLines() *schema.Resource {
@@ -46,6 +47,16 @@ func dataSourceKsyunLines() *schema.Resource {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Total number of lines that satisfy the condition.",
+			},
+			"ip_version": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					"ipv6",
+					"ipv4",
+					"all",
+				}, false),
+				Description: "Ip Version.default ipv4, valid value: 'ipv6', 'ipv4', 'all'.",
 			},
 
 			"lines": {
