@@ -99,6 +99,19 @@ func resourceKsyunEip() *schema.Resource {
 				ValidateFunc:     validation.IntBetween(0, 36),
 				Description:      "Purchase time. If charge_type is Monthly or PrePaidByMonth, this is Required.",
 			},
+			"address": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Address. IP address allocation request.",
+			},
+
+			"eip_pool_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "EipPoolId. EIP Address Pool ID.",
+			},
 			"project_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -112,6 +125,11 @@ func resourceKsyunEip() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "the ID of the EIP.",
+			},
+			"ip_version": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "the IP Version of the EIP.",
 			},
 			"state": {
 				Type:        schema.TypeString,

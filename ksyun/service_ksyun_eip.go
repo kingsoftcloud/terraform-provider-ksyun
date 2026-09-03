@@ -425,17 +425,25 @@ func (s *EipService) RemoveAddressAssociate(d *schema.ResourceData) (err error) 
 	return ksyunApiCallNew([]ApiCall{call}, d, s.client, true)
 }
 
-func (s *EipService) ReadLines() (data []interface{}, err error) {
+func (s *EipService) ReadLines(condition map[string]interface{}) (data []interface{}, err error) {
+
 	var (
 		resp    *map[string]interface{}
 		results interface{}
 	)
 	conn := s.client.eipconn
 	action := "GetLines"
-	logger.Debug(logger.ReqFormat, action, nil)
-	resp, err = conn.GetLines(nil)
-	if err != nil {
-		return data, err
+	logger.Debug(logger.ReqFormat, action, condition)
+	if condition == nil {
+		resp, err = conn.GetLines(nil)
+		if err != nil {
+			return data, err
+		}
+	} else {
+		resp, err = conn.GetLines(&condition)
+		if err != nil {
+			return data, err
+		}
 	}
 
 	results, err = getSdkValue("LineSet", *resp)
@@ -447,10 +455,16 @@ func (s *EipService) ReadLines() (data []interface{}, err error) {
 }
 
 func (s *EipService) ReadAndSetLines(d *schema.ResourceData, r *schema.Resource) (err error) {
-	data, err := s.ReadLines()
+	req, err := mergeDataSourcesReq(d, r, nil)
 	if err != nil {
 		return err
 	}
+
+	data, err := s.ReadLines(req)
+	if err != nil {
+		return err
+	}
+
 	var newData []interface{}
 	if name, ok := d.GetOk("line_name"); ok {
 		for _, line := range data {

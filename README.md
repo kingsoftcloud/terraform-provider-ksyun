@@ -341,6 +341,7 @@ _例：官网openapi里主机创建的接口里，可以同时创建eip和主机
 | 子网已用IP       | Not_Support | ksyun_subnet\_allocated\_ip\_addresses | vpc     |
 | 子网可用IP       | Not_Support | ksyun_subnet\_available\_addresses     | vpc     |
 | 虚拟私有网络       | ksyun_vpc | ksyun_vpcs                             | vpc     |
+| 虚拟私有网络IPv6公网IP       | ksyun_vpc_ipv6_address | ksyun_vpc_ipv6_addresses                             | vpc     |
 | 登录SSHKEY     | ksyun_ssh\_key | ksyun_ssh\_keys                        | sks     |
 | 标签管理         | ksyun_tag | ksyun_tags                             | tag     |
 | KS3          | ksyun_ks3_bucket | ksyun_ks3_buckets                      | ks3     |
