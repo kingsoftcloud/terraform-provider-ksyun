@@ -404,7 +404,7 @@ func resourceKsyunPostgresqlCreate(d *schema.ResourceData, meta interface{}) (er
 	client := meta.(*KsyunClient)
 	if d.HasChange("tags") {
 		tagService := TagService{client}
-		tagCall, err := tagService.ReplaceResourcesTagsWithResourceCall(d, resourceKsyunPostgresql(), "postgresql", false, true)
+		tagCall, err := tagService.ReplaceResourcesTagsWithResourceCall(d, resourceKsyunPostgresql(), "postgresql-instance", false, true)
 		if err != nil {
 			return err
 		}
@@ -442,7 +442,7 @@ func resourceKsyunPostgresqlUpdate(d *schema.ResourceData, meta interface{}) (er
 	client := meta.(*KsyunClient)
 	if d.HasChange("tags") {
 		tagService := TagService{client}
-		tagCall, err := tagService.ReplaceResourcesTagsWithResourceCall(d, resourceKsyunPostgresql(), "postgresql", false, true)
+		tagCall, err := tagService.ReplaceResourcesTagsWithResourceCall(d, resourceKsyunPostgresql(), "postgresql-instance", false, true)
 		if err != nil {
 			return err
 		}

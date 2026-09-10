@@ -1,3 +1,10 @@
+## 1.26.2 (Sep 10, 2026)
+
+BUGFIX：
+
+- `ksyun_postgresql`: 修复创建/更新 tags 时传入 tag 服务的 `ResourceType` 取值错误（`postgresql` → `postgresql-instance`）
+- `ksyun_postgresql_rr`: 修复只读副本创建/更新 tags 时同样的 `ResourceType` 取值错误问题。
+
 ## 1.26.1 (Sep 04, 2026)
 
 IMPROVEMENTS：
