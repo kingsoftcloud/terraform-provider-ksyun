@@ -116,7 +116,7 @@ func readAndSetPostgresqlInstance(d *schema.ResourceData, meta interface{}, isRR
 		},
 	}
 	if _, ok := d.GetOk("tags"); ok {
-		err = mergeTagsData(d, &data, meta.(*KsyunClient), "postgresql")
+		err = mergeTagsData(d, &data, meta.(*KsyunClient), "postgresql-instance")
 		if err != nil {
 			return fmt.Errorf("reading tags error: %s", err)
 		}
