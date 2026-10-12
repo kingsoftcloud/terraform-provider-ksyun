@@ -410,6 +410,13 @@ KLog
 
 	Data Source
     ksyun_klog_projects
+
+KES
+
+	Data Source
+    ksyun_kes_clusters
+    ksyun_kes_cluster
+    ksyun_kes_instance_groups
 */
 
 package ksyun
@@ -610,6 +617,10 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_kpfs_client_install": dataSourceKsyunKpfsClientInstall(),
 			// klog
 			"ksyun_klog_projects": dataSourceKsyunKlogProjects(),
+			// kes
+			"ksyun_kes_clusters":        dataSourceKsyunKesClusters(),
+			"ksyun_kes_cluster":         dataSourceKsyunKesCluster(),
+			"ksyun_kes_instance_groups": dataSourceKsyunKesInstanceGroups(),
 			// direct connect
 			"ksyun_direct_connects": dataSourceKsyunDirectConnects(),
 

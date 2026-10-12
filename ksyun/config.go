@@ -4,6 +4,7 @@ import (
 	"fmt"
 	klog "github.com/kingsoftcloud/sdk-go/v2/ksyun/client/klog/v20200731"
 	kmr "github.com/kingsoftcloud/sdk-go/v2/ksyun/client/kmr/v20210902"
+	kes "github.com/kingsoftcloud/sdk-go/v2/ksyun/client/kes/v20201215"
 	"github.com/kingsoftcloud/sdk-go/v2/ksyun/common"
 	"github.com/kingsoftcloud/sdk-go/v2/ksyun/common/profile"
 	"net"
@@ -223,4 +224,21 @@ func (client *KsyunClient) WithKmrClient(do func(*kmr.Client) (interface{}, erro
 		client.kmrconn = kmrconn
 	}
 	return do(client.kmrconn)
+}
+
+func (client *KsyunClient) WithKesClient(do func(*kes.Client) (interface{}, error)) (interface{}, error) {
+	goSdkMutex.Lock()
+	defer goSdkMutex.Unlock()
+	// Initialize the KES client if necessary
+	if client.kesconn == nil {
+		credential := common.NewCredential(client.config.AccessKey, client.config.SecretKey)
+		cpf := profile.NewClientProfile()
+		cpf.HttpProfile.Endpoint = client.config.Endpoint
+		kesconn, err := kes.NewClient(credential, client.config.Region, cpf)
+		if err != nil {
+			return nil, fmt.Errorf("unable to initialize the KES client: %#v", err)
+		}
+		client.kesconn = kesconn
+	}
+	return do(client.kesconn)
 }
