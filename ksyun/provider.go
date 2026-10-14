@@ -417,6 +417,10 @@ KES
     ksyun_kes_clusters
     ksyun_kes_cluster
     ksyun_kes_instance_groups
+
+	Resource
+    ksyun_kes_cluster
+    ksyun_kes_cluster_vector
 */
 
 package ksyun
@@ -757,6 +761,10 @@ func Provider() terraform.ResourceProvider {
 			// kpfs
 			"ksyun_kpfs_acl":         resourceKsyunKpfsAcl(),
 			"ksyun_kpfs_file_system": resourceKsyunKpfsFilesystem(),
+
+			// kes
+			"ksyun_kes_cluster":        resourceKsyunKesCluster(),
+			"ksyun_kes_cluster_vector": resourceKsyunKesClusterVector(),
 
 			// direct connect
 			"ksyun_direct_connect_gateway":       resourceKsyunDirectConnectGateway(),
