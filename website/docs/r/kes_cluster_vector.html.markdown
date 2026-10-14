@@ -1,5 +1,5 @@
 ---
-subcategory: "KES"
+subcategory: "KES8"
 layout: "ksyun"
 page_title: "ksyun: ksyun_kes_cluster_vector"
 sidebar_current: "docs-ksyun-resource-kes_cluster_vector"

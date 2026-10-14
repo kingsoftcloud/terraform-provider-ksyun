@@ -420,6 +420,10 @@ KES
 
 	Resource
     ksyun_kes_cluster
+
+KES8
+
+	Resource
     ksyun_kes_cluster_vector
 */
 
