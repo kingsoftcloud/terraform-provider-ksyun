@@ -1,9 +1,12 @@
 package ksyun
 
 import (
+	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	kes "github.com/kingsoftcloud/sdk-go/v2/ksyun/client/kes/v20201215"
 	"github.com/mitchellh/mapstructure"
+	"github.com/terraform-providers/terraform-provider-ksyun/logger"
 )
 
 type KesService struct {
@@ -257,4 +260,124 @@ func (s *KesService) ReadAndSetInstanceGroups(d *schema.ResourceData, r *schema.
 		targetField: "instance_groups",
 		extra:       map[string]SdkResponseMapping{},
 	})
+}
+
+// ptrString returns a pointer to the given string. The KES LaunchCluster SDK
+// request uses pointer fields, and the project has no generic string->*string
+// helper (only the reverse derefPointerFields).
+func ptrString(s string) *string { return &s }
+
+// ptrInt returns a pointer to the given int.
+func ptrInt(i int) *int { return &i }
+
+// ptrBool returns a pointer to the given bool.
+func ptrBool(b bool) *bool { return &b }
+
+// CreateCluster launches a KES cluster (v20201215 standard / KES7) and reads
+// the result back into the resource state.
+func (s *KesService) CreateCluster(d *schema.ResourceData, r *schema.Resource) (err error) {
+	kesReq := kes.NewLaunchClusterRequest()
+	kesReq.ClusterName = ptrString(d.Get("cluster_name").(string))
+	kesReq.MainVersion = ptrString(d.Get("main_version").(string))
+	kesReq.Scenario = ptrString(d.Get("scenario").(string))
+	kesReq.AvailabilityZone = ptrString(d.Get("availability_zone").(string))
+	kesReq.ChargeType = ptrString(d.Get("charge_type").(string))
+	kesReq.PurchaseTime = ptrInt(d.Get("purchase_time").(int))
+	kesReq.ProjectId = ptrInt(d.Get("project_id").(int))
+	kesReq.VpcDomainId = ptrString(d.Get("vpc_domain_id").(string))
+	kesReq.VpcSubnetId = ptrString(d.Get("vpc_subnet_id").(string))
+	if v := d.Get("vpc_epc_subnet_id").(string); v != "" {
+		kesReq.VpcEpcSubnetId = ptrString(v)
+	}
+	if v := d.Get("security_group_id").(string); v != "" {
+		kesReq.SecurityGroupId = ptrString(v)
+	}
+
+	// build instance groups from the schema list
+	igRaw := d.Get("instance_groups").([]interface{})
+	igList := make([]*kes.LaunchClusterInstanceGroups, 0, len(igRaw))
+	for _, raw := range igRaw {
+		if raw == nil {
+			continue
+		}
+		m := raw.(map[string]interface{})
+		g := &kes.LaunchClusterInstanceGroups{}
+		if v, ok := m["instance_group_type"].(string); ok && v != "" {
+			g.InstanceGroupType = ptrString(v)
+		}
+		if v, ok := m["instance_type"].(string); ok && v != "" {
+			g.InstanceType = ptrString(v)
+		}
+		if v, ok := m["resource_type"].(string); ok && v != "" {
+			g.ResourceType = ptrString(v)
+		}
+		g.InstanceCount = ptrInt(m["instance_count"].(int))
+		if v, ok := m["multi_instance_count"].(int); ok && v > 0 {
+			g.MultiInstanceCount = ptrInt(v)
+		}
+		if v, ok := m["raid_type"].(string); ok && v != "" {
+			g.RaidType = ptrString(v)
+		}
+		if v, ok := m["volume_type"].(string); ok && v != "" {
+			g.VolumeType = ptrString(v)
+		}
+		g.VolumeSize = ptrInt(m["volume_size"].(int))
+		g.VolumeCount = ptrInt(m["volume_count"].(int))
+		g.SystemDiskType = ptrString(m["system_disk_type"].(string))
+		g.SystemDiskSize = ptrInt(m["system_disk_size"].(int))
+		igList = append(igList, g)
+	}
+	kesReq.InstanceGroups = igList
+
+	logger.Debug(logger.ReqFormat, "LaunchCluster", kesReq)
+	respInterface, err := s.client.WithKesClient(func(conn *kes.Client) (interface{}, error) {
+		return conn.LaunchClusterSend(kesReq)
+	})
+	if err != nil {
+		return fmt.Errorf("error on creating KES cluster: %s", err)
+	}
+	resp := respInterface.(*kes.LaunchClusterResponse)
+	if resp.ClusterId == nil || *resp.ClusterId == "" {
+		return fmt.Errorf("KES cluster was created but no ClusterId was returned")
+	}
+	d.SetId(*resp.ClusterId)
+	return s.ReadAndSetClusterResource(d, r)
+}
+
+// ReadAndSetClusterResource reads a single KES cluster by id and writes it
+// into the resource state. Missing clusters are removed from state.
+func (s *KesService) ReadAndSetClusterResource(d *schema.ResourceData, r *schema.Resource) (err error) {
+	req := map[string]interface{}{"ClusterId": d.Id()}
+	_, data, err := s.ReadCluster(req)
+	if err != nil {
+		if notFoundError(err) {
+			d.SetId("")
+			return nil
+		}
+		return fmt.Errorf("error on reading KES cluster %s: %s", d.Id(), err)
+	}
+	if len(data) == 0 {
+		d.SetId("")
+		return nil
+	}
+	// The DescribeCluster API only returns a partial instance_groups shape
+	// (InstanceGroupType/InstanceType/ResourceType/VolumeSize/VolumeType) and
+	// omits InstanceCount and the optional disk fields that are Required/ForceNew
+	// in the schema. Overwriting instance_groups from this partial response would
+	// zero out instance_count in state and trigger a perpetual diff (ForceNew).
+	// Since every instance_groups field is ForceNew, drift on it can only ever
+	// result in a destructive recreate, so we intentionally preserve the
+	// config-provided values and only refresh the top-level Computed fields.
+	m := data[0].(map[string]interface{})
+	delete(m, "instance_groups")
+	SdkResponseAutoResourceData(d, r, m, nil)
+	return nil
+}
+
+// DeleteCluster is a no-op: the KES SDK does not provide a DeleteCluster API.
+// The cluster must be deleted manually in the Ksyun console. terraform destroy
+// only removes the resource from Terraform state.
+func (s *KesService) DeleteCluster(d *schema.ResourceData, meta interface{}) (err error) {
+	d.SetId("")
+	return nil
 }
