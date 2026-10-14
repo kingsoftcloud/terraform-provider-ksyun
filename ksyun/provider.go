@@ -420,6 +420,15 @@ KES
 
 	Resource
     ksyun_kes_cluster
+
+KES8
+
+	Data Source
+    ksyun_kes_cluster_vector
+    ksyun_kes_clusters_vector
+    ksyun_kes_instance_groups_vector
+
+	Resource
     ksyun_kes_cluster_vector
 */
 
@@ -625,6 +634,10 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_kes_clusters":        dataSourceKsyunKesClusters(),
 			"ksyun_kes_cluster":         dataSourceKsyunKesCluster(),
 			"ksyun_kes_instance_groups": dataSourceKsyunKesInstanceGroups(),
+			// kes vector (KES8)
+			"ksyun_kes_cluster_vector":         dataSourceKsyunKesClusterVector(),
+			"ksyun_kes_clusters_vector":        dataSourceKsyunKesClustersVector(),
+			"ksyun_kes_instance_groups_vector": dataSourceKsyunKesInstanceGroupsVector(),
 			// direct connect
 			"ksyun_direct_connects": dataSourceKsyunDirectConnects(),
 
