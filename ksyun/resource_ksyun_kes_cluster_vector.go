@@ -1,6 +1,5 @@
 /*
-Create a KES vector cluster (KES8, 8.x/9.x) via the shared kmr/2021-09-02
-LaunchCluster backend switched into KES mode by ClusterType="KES".
+Create a KES vector cluster (KES8, 8.x/9.x) via the shared kmr/2021-09-02 LaunchCluster backend switched into KES mode by ClusterType="KES".
 
 KES8 clusters run Elasticsearch 8.x / 9.x and require Xpack credentials. The
 authoritative creation path (confirmed by a Ksyun console capture + a production
