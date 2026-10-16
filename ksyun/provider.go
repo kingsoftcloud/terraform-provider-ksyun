@@ -410,6 +410,26 @@ KLog
 
 	Data Source
     ksyun_klog_projects
+
+KES
+
+	Data Source
+    ksyun_kes_clusters
+    ksyun_kes_cluster
+    ksyun_kes_instance_groups
+
+	Resource
+    ksyun_kes_cluster
+
+KES8
+
+	Data Source
+    ksyun_kes_cluster_vector
+    ksyun_kes_clusters_vector
+    ksyun_kes_instance_groups_vector
+
+	Resource
+    ksyun_kes_cluster_vector
 */
 
 package ksyun
@@ -610,6 +630,14 @@ func Provider() terraform.ResourceProvider {
 			"ksyun_kpfs_client_install": dataSourceKsyunKpfsClientInstall(),
 			// klog
 			"ksyun_klog_projects": dataSourceKsyunKlogProjects(),
+			// kes
+			"ksyun_kes_clusters":        dataSourceKsyunKesClusters(),
+			"ksyun_kes_cluster":         dataSourceKsyunKesCluster(),
+			"ksyun_kes_instance_groups": dataSourceKsyunKesInstanceGroups(),
+			// kes vector (KES8)
+			"ksyun_kes_cluster_vector":         dataSourceKsyunKesClusterVector(),
+			"ksyun_kes_clusters_vector":        dataSourceKsyunKesClustersVector(),
+			"ksyun_kes_instance_groups_vector": dataSourceKsyunKesInstanceGroupsVector(),
 			// direct connect
 			"ksyun_direct_connects": dataSourceKsyunDirectConnects(),
 
@@ -746,6 +774,10 @@ func Provider() terraform.ResourceProvider {
 			// kpfs
 			"ksyun_kpfs_acl":         resourceKsyunKpfsAcl(),
 			"ksyun_kpfs_file_system": resourceKsyunKpfsFilesystem(),
+
+			// kes
+			"ksyun_kes_cluster":        resourceKsyunKesCluster(),
+			"ksyun_kes_cluster_vector": resourceKsyunKesClusterVector(),
 
 			// direct connect
 			"ksyun_direct_connect_gateway":       resourceKsyunDirectConnectGateway(),
