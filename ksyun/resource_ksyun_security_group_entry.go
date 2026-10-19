@@ -123,6 +123,7 @@ func resourceKsyunSecurityGroupEntry() *schema.Resource {
 			"policy": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 				ForceNew: true,
 				ValidateFunc: validation.StringInSlice([]string{
 					"Accept",

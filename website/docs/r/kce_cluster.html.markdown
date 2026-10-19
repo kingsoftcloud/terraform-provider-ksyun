@@ -271,14 +271,11 @@ The `managed_cluster_multi_master` object supports the following:
 
 The `master_config` object supports the following:
 
-* `charge_type` - (Required, ForceNew) charge type of the instance.
 * `count` - (Required, ForceNew) The number of master nodes. The count of master nodes must be 3 or 5.
-* `image_id` - (Required, ForceNew) The ID for the image to use for the instance.
 * `instance_type` - (Required, ForceNew) The type of instance to start. <br> - NOTE: it's may trigger this instance to power off, if instance type will be demotion.
-* `security_group_id` - (Required, ForceNew) Security Group to associate with.
-* `subnet_id` - (Required, ForceNew) The ID of subnet. the instance will use the subnet in the current region.
 * `advanced_setting` - (Optional, ForceNew) Advanced settings.
 * `auto_create_ebs` - (Optional) Whether to create EBS volumes from snapshots in the custom image, default is false.
+* `charge_type` - (Optional, ForceNew) charge type of the instance.
 * `data_disk_gb` - (Optional) The size of the local SSD disk.
 * `data_disks` - (Optional) The list of data disks created with instance.
 * `data_guard_id` - (Optional) Add instance being created to a disaster tolerance group. It will be quit the disaster tolerance group, if this field change to null.
@@ -288,6 +285,7 @@ The `master_config` object supports the following:
 * `force_reinstall_system` - (Optional) Indicate whether to reinstall system.
 * `host_name` - (Optional) The hostname of the instance. only effective when image support cloud-init.
 * `iam_role_name` - (Optional) name of iam role.
+* `image_id` - (Optional, ForceNew) The ID for the image to use for the instance.
 * `instance_name` - (Optional, ForceNew) The name of instance, which contains 2-64 characters and only support Chinese, English, numbers.
 * `instance_password` - (Optional) Password to an instance is a string of 8 to 32 characters.
 * `instance_status` - (Optional) The state of instance.
@@ -298,7 +296,10 @@ The `master_config` object supports the following:
 * `project_id` - (Optional) The project instance belongs to.
 * `purchase_time` - (Optional, ForceNew) The duration that you will buy the resource.
 * `role` - (Optional) 
+* `security_group_id` - (Optional, ForceNew) Security Group to associate with.
 * `sriov_net_support` - (Optional, ForceNew) whether support networking enhancement.
+* `subnet_id` - (Optional, ForceNew) The ID of subnet. the instance will use the subnet in the current region.
+* `sync_data_disk_charge_type` - (Optional) Whether to change the charge type of data disks together when modifying instance charge type, default is false.
 * `sync_tag` - (Optional) Indicate whether to sync tags to instance.
 * `system_disk` - (Optional) System disk parameters.
 * `tags` - (Optional) the tags of the resource.
@@ -379,14 +380,11 @@ The `virtual_kubelet` object supports the following:
 
 The `worker_config` object supports the following:
 
-* `charge_type` - (Required, ForceNew) charge type of the instance.
 * `count` - (Required, ForceNew) The number of worker nodes.
-* `image_id` - (Required, ForceNew) The ID for the image to use for the instance.
 * `instance_type` - (Required, ForceNew) The type of instance to start. <br> - NOTE: it's may trigger this instance to power off, if instance type will be demotion.
-* `security_group_id` - (Required, ForceNew) Security Group to associate with.
-* `subnet_id` - (Required, ForceNew) The ID of subnet. the instance will use the subnet in the current region.
 * `advanced_setting` - (Optional, ForceNew) Advanced settings.
 * `auto_create_ebs` - (Optional) Whether to create EBS volumes from snapshots in the custom image, default is false.
+* `charge_type` - (Optional, ForceNew) charge type of the instance.
 * `data_disk_gb` - (Optional) The size of the local SSD disk.
 * `data_disks` - (Optional) The list of data disks created with instance.
 * `data_guard_id` - (Optional) Add instance being created to a disaster tolerance group. It will be quit the disaster tolerance group, if this field change to null.
@@ -396,6 +394,7 @@ The `worker_config` object supports the following:
 * `force_reinstall_system` - (Optional) Indicate whether to reinstall system.
 * `host_name` - (Optional) The hostname of the instance. only effective when image support cloud-init.
 * `iam_role_name` - (Optional) name of iam role.
+* `image_id` - (Optional, ForceNew) The ID for the image to use for the instance.
 * `instance_name` - (Optional, ForceNew) The name of instance, which contains 2-64 characters and only support Chinese, English, numbers.
 * `instance_password` - (Optional) Password to an instance is a string of 8 to 32 characters.
 * `instance_status` - (Optional) The state of instance.
@@ -406,7 +405,10 @@ The `worker_config` object supports the following:
 * `project_id` - (Optional) The project instance belongs to.
 * `purchase_time` - (Optional, ForceNew) The duration that you will buy the resource.
 * `role` - (Optional) The role of instance. Valid values: Worker.
+* `security_group_id` - (Optional, ForceNew) Security Group to associate with.
 * `sriov_net_support` - (Optional, ForceNew) whether support networking enhancement.
+* `subnet_id` - (Optional, ForceNew) The ID of subnet. the instance will use the subnet in the current region.
+* `sync_data_disk_charge_type` - (Optional) Whether to change the charge type of data disks together when modifying instance charge type, default is false.
 * `sync_tag` - (Optional) Indicate whether to sync tags to instance.
 * `system_disk` - (Optional) System disk parameters.
 * `tags` - (Optional) the tags of the resource.

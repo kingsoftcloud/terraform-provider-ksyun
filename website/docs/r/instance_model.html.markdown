@@ -116,7 +116,7 @@ The following arguments are supported:
 The `data_disks` object supports the following:
 
 * `delete_with_instance` - (Optional, ForceNew) Whether to delete the data disk when the instance is deleted.
-* `disk_size` - (Optional, ForceNew) Data disk size. Value range: [10, 65536].
+* `disk_size` - (Optional, ForceNew) Data disk size. Value range: [1, 65536].
 * `disk_snapshot_id` - (Optional, ForceNew) Snapshot ID for creating data disk.
 * `disk_type` - (Optional, ForceNew) Data disk type.
 * `snapshot_name` - (Optional, ForceNew) Snapshot name for creating data disk.
