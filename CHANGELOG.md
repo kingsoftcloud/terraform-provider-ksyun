@@ -1,3 +1,9 @@
+## 1.26.3 (Oct 19, 2026)
+
+BUGFIX：
+
+- `ksyun_security_group_entry`: 修复`policy`不传递问题
+
 ## 1.26.2 (Sep 10, 2026)
 
 BUGFIX：
