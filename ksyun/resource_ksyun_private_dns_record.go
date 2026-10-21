@@ -62,11 +62,10 @@ func resourceKsyunPrivateDnsRecord() *schema.Resource {
 			},
 
 			"type": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				DiffSuppressFunc: pdnsZoneRecordDiffSuppressFunc,
-				Description:      "Record type. Valid values: \"A\", \"AAAA\", \"CNAME\", \"MX\", \"TXT\", \"SRV\".",
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Record type. Valid values: \"A\", \"AAAA\", \"CNAME\", \"MX\", \"TXT\", \"SRV\".",
 			},
 
 			"record_value": {
