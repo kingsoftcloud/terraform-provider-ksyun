@@ -60,6 +60,31 @@ func kmrEndpointFor(endpoint string) string {
 	return "kmr." + endpoint
 }
 
+// kesVectorKmrHeaders builds the custom headers for the kmr/2021-09-02
+// LaunchCluster call.
+//
+// X-Ksc-Source is the product switch of the shared kmr Oasis app, not a
+// decoration: KES8 is implemented by reusing the KMR framework, and Oasis
+// routes on this header. oasis/api/__init__.py:82-85 sets product='kes' when
+// source=='KES', and the @openapi decorator (:484) treats every source in
+// kmr/kes/khbase/... as an internal console call and skips complete_params.
+//
+// Skipping complete_params is exactly what KES8 needs. That function
+// unconditionally does params.setdefault('cluster_type', product.upper()), so
+// without the header the body's ClusterType="KES" is overwritten with 'KMR'
+// and gringotts is queried as ('KMR', 'ElasticSearch'), which returns no
+// versions at all -> "main_version must be in [] for ElasticSearch". With the
+// header the body's own cluster_type='kes' survives the setdefault and
+// gringotts answers with the real 8.x/9.x version list.
+//
+// The value must be "kes", not "kmr": Oasis resolves
+// PRODUCT_GROUP_ID_MAP[self.product.upper()] (conf/charge_conf.py) to look up
+// InstanceType, and KES instance types (ES.I3.2C4G, ...) do not exist in the
+// KMR product group -> "'InstanceType' not found".
+func kesVectorKmrHeaders() map[string]string {
+	return map[string]string{"X-Ksc-Source": "kes"}
+}
+
 // kesVectorSendResult carries the two non-error return values of SendV2 out of
 // the WithKesClient closure (which can only return a single interface{}).
 type kesVectorSendResult struct {
@@ -166,6 +191,12 @@ func (s *KesVectorService) CreateVectorCluster(d *schema.ResourceData, r *schema
 	// The provider's single endpoint is the KES host; the kmr/2021-09-02 action
 	// is served by the kmr host, so override the request domain explicitly.
 	req.SetDomain(kmrEndpointFor(s.client.config.Endpoint))
+
+	// X-Ksc-Source switches Oasis into its inner-api branch; see
+	// kesVectorKmrHeaders for why KES8 depends on it. The SDK applies custom
+	// headers before v4 signing (ksyun/common/client.go), so the header is
+	// covered by the signature and needs no extra wiring.
+	req.SetHeaders(kesVectorKmrHeaders())
 
 	// ClusterType="KES" switches the shared kmr backend into KES8 mode.
 	req.ClusterType = ptrString("KES")
