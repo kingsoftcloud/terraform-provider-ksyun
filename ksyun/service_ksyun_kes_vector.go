@@ -487,6 +487,11 @@ func normalizeVectorClusterMap(cluster interface{}, tags []struct {
 	// drop the partial/raw nested collections so config values are preserved.
 	delete(m, "InstanceGroups")
 	delete(m, "Tags")
+	// The API returns MainVersion with an "OpenSource-" prefix; store the bare
+	// version so it matches the (StateFunc-normalised) configuration value.
+	if v, ok := m["MainVersion"].(string); ok {
+		m["MainVersion"] = strings.TrimPrefix(v, kesMainVersionPrefix)
+	}
 	// expand tags into snake_case sub-maps consumed by the nested schema.
 	tagInterfaces := make([]interface{}, 0, len(tags))
 	for _, tag := range tags {
