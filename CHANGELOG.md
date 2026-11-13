@@ -1,3 +1,9 @@
+## 1.27.0 (Nov 13, 2026)
+
+BUGFIX：
+
+- `ksyun_private_dns_record`: 修复解析纪录修改逻辑问题
+
 ## 1.26.9 (Oct 21, 2026)
 
 BUGFIX：
