@@ -293,28 +293,38 @@ func (s *DnsService) createZoneRecordWithCall(d *schema.ResourceData, r *schema.
 }
 
 func (s *DnsService) modifyZoneRecordWithCall(d *schema.ResourceData, r *schema.Resource) (callback ApiCall, err error) {
-	trans := map[string]SdkReqTransform{
-		"record_ttl": {},
-	}
-	params, err := SdkRequestAutoMapping(d, r, true, trans, nil)
-	if err != nil {
-		return callback, err
-	}
-
-	if params == nil || len(params) < 1 {
-		return callback, err
-	}
 	fullId := DisassembleIds(d.Id())
-	params["RecordId"] = fullId[1]
-	params["ZoneId"] = fullId[0]
+	recordId := fullId[1]
+	zoneId := fullId[0]
+
+	// ModifyZoneRecords is a POST action with a JSON body. Unlike the flat
+	// CreateZoneRecord/DeleteZoneRecord requests, RecordValue/Priority/Weight/Port
+	// are nested in RecordDataSet. A record maps to a single RecordDataSet entry
+	// (one-to-one), so the full record spec is sent on every update.
+	// record_ttl/record_value/priority/weight/port are all updatable; for non
+	// SRV/MX types priority/weight/port are meaningless and kept at 0, and their
+	// diffs are suppressed by pdnsZoneRecordDiffSuppressFunc so they stay stable.
+	req := map[string]interface{}{
+		"RecordId":  recordId,
+		"ZoneId":    zoneId,
+		"RecordTtl": d.Get("record_ttl").(int),
+		"RecordDataSet": []interface{}{
+			map[string]interface{}{
+				"RecordValue": d.Get("record_value").(string),
+				"Priority":    d.Get("priority").(int),
+				"Weight":      d.Get("weight").(int),
+				"Port":        d.Get("port").(int),
+			},
+		},
+	}
 
 	callback = ApiCall{
-		param:  &params,
-		action: "ModifyZoneRecord",
+		param:  &req,
+		action: "ModifyZoneRecords",
 		executeCall: func(d *schema.ResourceData, client *KsyunClient, call ApiCall) (resp *map[string]interface{}, err error) {
 			conn := client.pdnsconn
 			logger.Debug(logger.RespFormat, call.action, *(call.param))
-			resp, err = conn.ModifyZoneRecord(call.param)
+			resp, err = conn.ModifyZoneRecords(call.param)
 			return resp, err
 		},
 		afterCall: func(d *schema.ResourceData, client *KsyunClient, resp *map[string]interface{}, call ApiCall) (err error) {
@@ -529,22 +539,32 @@ func (s *DnsService) ReadAndSetPrivateDnsRecord(d *schema.ResourceData, r *schem
 				return resource.RetryableError(fmt.Errorf("error on reading PrivateDnsRecord %q, %s", d.Id(), callErr))
 			}
 		} else {
-			recordValueFunc := func(i interface{}) interface{} {
-				var r map[string]interface{}
-				switch i.(type) {
-				case map[string]interface{}:
-					r = i.(map[string]interface{})
-				}
-				v, _ := getSdkValue("RecordDataSet.0.RecordValue", r)
-				if v == nil {
-					return ""
-				}
-				return v
-			}
 			SdkResponseAutoResourceData(d, r, data, nil)
 
-			rValue := recordValueFunc(data)
-			_ = d.Set("record_value", rValue)
+			// record_value/priority/weight/port are nested in RecordDataSet (one
+			// entry per record), which SdkResponseAutoResourceData cannot map to
+			// the flat schema fields, so set them manually from RecordDataSet.0.
+			// The response is JSON decoded, so numeric fields are float64; d.Set
+			// coerces float64 to int for the TypeInt fields (same as record_ttl).
+			recordDataSetField := func(field string) interface{} {
+				v, _ := getSdkValue("RecordDataSet.0."+field, data)
+				return v
+			}
+
+			if v := recordDataSetField("RecordValue"); v != nil {
+				_ = d.Set("record_value", v)
+			} else {
+				_ = d.Set("record_value", "")
+			}
+			if v := recordDataSetField("Priority"); v != nil {
+				_ = d.Set("priority", v)
+			}
+			if v := recordDataSetField("Weight"); v != nil {
+				_ = d.Set("weight", v)
+			}
+			if v := recordDataSetField("Port"); v != nil {
+				_ = d.Set("port", v)
+			}
 
 			return nil
 		}

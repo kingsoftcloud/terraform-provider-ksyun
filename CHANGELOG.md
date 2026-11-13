@@ -1,11 +1,13 @@
-## 1.26.10 (Nov 12, 2026)
+## 1.27.0 (Nov 13, 2026)
 
 BUGFIX：
 
+- `ksyun_private_dns_record`: 修复解析纪录修改逻辑问题
 - `ksyun_kes_cluster`、`ksyun_kes_cluster_vector`: 修复 `main_version` 与 API 返回的 `OpenSource-` 前缀不一致导致的永久 `ForceNew` diff（每次 plan 都会销毁重建集群），配置值与 state 值均归一化为裸版本号
 - `ksyun_kes_cluster`、`ksyun_kes_cluster_vector`: 为 `charge_type`（含 `instance_groups` 内的 `charge_type`）增加 `Monthly`/`Daily`/`HourlyInstantSettlement` 白名单校验，不再等到 apply 阶段才报 `'ChargeType' invalid, got <value>.`
 - `ksyun_kes_cluster`: `purchase_time` 由 `Required` 改为 `Optional`，仅在大于 0 时下发，兼容按量付费（`Daily`）场景
 - `ksyun_kes_cluster_vector`: 创建请求补回 `X-Ksc-Source: kes` 请求头。KES8 复用 KMR 的 Oasis 框架，该头是产品路由开关：不带时 Oasis 走对外 open API 分支并把 `ClusterType` 改写为 `KMR`，用 `('KMR','ElasticSearch')` 查询集群版本返回空列表，报 `main_version must be in [] for ElasticSearch`；带上后请求走 inner API 分支，body 中的 `ClusterType="KES"` 原样透传，版本校验通过。取值必须是 `kes` 而非 `kmr`，否则实例规格 `ES.I3.2C4G` 在 KMR 产品组中不存在，报 `'InstanceType' not found`
+
 
 ## 1.26.9 (Oct 21, 2026)
 
