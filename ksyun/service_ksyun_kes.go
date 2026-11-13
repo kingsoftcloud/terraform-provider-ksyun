@@ -2,6 +2,7 @@ package ksyun
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	kes "github.com/kingsoftcloud/sdk-go/v2/ksyun/client/kes/v20201215"
@@ -267,6 +268,32 @@ func (s *KesService) ReadAndSetInstanceGroups(d *schema.ResourceData, r *schema.
 // helper (only the reverse derefPointerFields).
 func ptrString(s string) *string { return &s }
 
+// kesMainVersionPrefix is prepended by the KES API to every MainVersion it
+// returns (e.g. "OpenSource-7.4.2"), while users write the bare version in
+// configuration. mainVersionStateFunc normalises both sides so the value never
+// drifts.
+const kesMainVersionPrefix = "OpenSource-"
+
+// mainVersionStateFunc normalises a KES main_version to its bare form (e.g.
+// "OpenSource-7.4.2" -> "7.4.2"). It is wired into the main_version schema's
+// StateFunc on both KES resources so that:
+//   - a config value written with the API prefix converges with the API
+//     response instead of producing a permanent ForceNew diff;
+//   - the value sent to the API (d.Get) is always the bare version the backend
+//     accepts, regardless of how the user wrote it.
+func mainVersionStateFunc(v interface{}) string {
+	s, _ := v.(string)
+	return strings.TrimPrefix(s, kesMainVersionPrefix)
+}
+
+// kesChargeTypes is the closed set of charge_type values the KES backend
+// accepts, taken from the Oasis syntax table
+// (oasis/utils/validation/syntax.py: LAUNCH_CLUSTER_SYNTAX.charge_type).
+// Oasis rewrites HourlyInstantSettlement to Minutely before forwarding to the
+// billing platform, so all three are valid inputs; anything else is rejected
+// with "'ChargeType' invalid, got <value>." only at apply time.
+var kesChargeTypes = []string{"Monthly", "Daily", "HourlyInstantSettlement"}
+
 // ptrInt returns a pointer to the given int.
 func ptrInt(i int) *int { return &i }
 
@@ -282,7 +309,11 @@ func (s *KesService) CreateCluster(d *schema.ResourceData, r *schema.Resource) (
 	kesReq.Scenario = ptrString(d.Get("scenario").(string))
 	kesReq.AvailabilityZone = ptrString(d.Get("availability_zone").(string))
 	kesReq.ChargeType = ptrString(d.Get("charge_type").(string))
-	kesReq.PurchaseTime = ptrInt(d.Get("purchase_time").(int))
+	// PurchaseTime is Optional: the backend rejects an explicit 0 but accepts the
+	// field being absent, so only send it when the user supplied a positive value.
+	if v := d.Get("purchase_time").(int); v > 0 {
+		kesReq.PurchaseTime = ptrInt(v)
+	}
 	kesReq.ProjectId = ptrInt(d.Get("project_id").(int))
 	kesReq.VpcDomainId = ptrString(d.Get("vpc_domain_id").(string))
 	kesReq.VpcSubnetId = ptrString(d.Get("vpc_subnet_id").(string))
@@ -370,6 +401,11 @@ func (s *KesService) ReadAndSetClusterResource(d *schema.ResourceData, r *schema
 	// config-provided values and only refresh the top-level Computed fields.
 	m := data[0].(map[string]interface{})
 	delete(m, "instance_groups")
+	// The API returns MainVersion with an "OpenSource-" prefix; store the bare
+	// version so it matches the (StateFunc-normalised) configuration value.
+	if v, ok := m["MainVersion"].(string); ok {
+		m["MainVersion"] = strings.TrimPrefix(v, kesMainVersionPrefix)
+	}
 	SdkResponseAutoResourceData(d, r, m, nil)
 	return nil
 }

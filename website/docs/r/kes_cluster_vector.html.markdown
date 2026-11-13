@@ -96,10 +96,10 @@ resource "ksyun_kes_cluster_vector" "example" {
 
 The following arguments are supported:
 
-* `charge_type` - (Required, ForceNew) The charge type of the KES vector cluster, e.g. Monthly/Minutely.
+* `charge_type` - (Required, ForceNew) The charge type of the KES vector cluster, e.g. Monthly/Daily/HourlyInstantSettlement.
 * `cluster_name` - (Required, ForceNew) The name of the KES vector cluster.
 * `instance_groups` - (Required, ForceNew) The instance groups of the KES vector cluster. Placement (availability_zone/vpc_subnet_id/vpc_id) and the per-group index/charge_type are set per group.
-* `main_version` - (Required, ForceNew) The main version of the KES vector cluster, e.g. 8.19.13/9.x. Xpack credentials are required for any 8.x or 9.x cluster.
+* `main_version` - (Required, ForceNew) The main version of the KES vector cluster, e.g. 8.19.13/9.x. An optional OpenSource- prefix is accepted and normalised away. Xpack credentials are required for any 8.x or 9.x cluster.
 * `project_id` - (Required, ForceNew) The project id of the KES vector cluster.
 * `scenario` - (Required, ForceNew) The scenario of the KES vector cluster, e.g. General.
 * `vpc_domain_id` - (Required, ForceNew) The VPC domain id of the KES vector cluster.
@@ -129,7 +129,7 @@ The `instance_groups` object supports the following:
 * `volume_size` - (Required) The volume size (GB) of the instance group.
 * `volume_type` - (Required) The volume type of the instance group, e.g. SSD3.0.
 * `availability_zone_index` - (Optional) The availability zone index of the instance group.
-* `charge_type` - (Optional) The charge type of the instance group, e.g. Monthly/Minutely.
+* `charge_type` - (Optional) The charge type of the instance group, e.g. Monthly/Daily/HourlyInstantSettlement.
 * `instance_group_index` - (Optional) The index of the instance group.
 * `instance_type_code` - (Optional) The instance type code of the instance group, e.g. ES.X6.4C8G.
 * `multi_instance_count` - (Optional) The multi instance count of the instance group.
