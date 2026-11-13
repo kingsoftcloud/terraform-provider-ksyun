@@ -59,15 +59,15 @@ resource "ksyun_kes_cluster" "example" {
 The following arguments are supported:
 
 * `availability_zone` - (Required, ForceNew) The availability zone of the KES cluster.
-* `charge_type` - (Required, ForceNew) The charge type of the KES cluster.
+* `charge_type` - (Required, ForceNew) The charge type of the KES cluster, e.g. Monthly/Daily/HourlyInstantSettlement.
 * `cluster_name` - (Required, ForceNew) The name of the KES cluster.
 * `instance_groups` - (Required, ForceNew) The instance groups of the KES cluster.
-* `main_version` - (Required, ForceNew) The main version of the KES cluster, e.g. 7.10.0/7.4.2/6.8.4/5.6.16.
+* `main_version` - (Required, ForceNew) The main version of the KES cluster, e.g. 7.10.0/7.4.2/6.8.4/5.6.16. An optional OpenSource- prefix is accepted and normalised away.
 * `project_id` - (Required, ForceNew) The project id of the KES cluster.
-* `purchase_time` - (Required, ForceNew) The purchase time of the KES cluster.
 * `scenario` - (Required, ForceNew) The scenario of the KES cluster.
 * `vpc_domain_id` - (Required, ForceNew) The VPC domain id of the KES cluster.
 * `vpc_subnet_id` - (Required, ForceNew) The VPC subnet id of the KES cluster.
+* `purchase_time` - (Optional, ForceNew) The purchase time of the KES cluster. Required when charge_type is Monthly, ignored for Daily.
 * `security_group_id` - (Optional, ForceNew) The security group id of the KES cluster.
 * `vpc_epc_subnet_id` - (Optional, ForceNew) The VPC EPC subnet id of the KES cluster.
 
