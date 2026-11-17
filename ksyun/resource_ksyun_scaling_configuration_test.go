@@ -2,6 +2,7 @@ package ksyun
 
 import (
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"testing"
@@ -59,6 +60,37 @@ func TestAccKsyunScalingConfiguration_update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckScalingConfigurationExists("ksyun_scaling_configuration.foo", &val),
 					testAccCheckScalingConfigurationAttributes(&val),
+				),
+			},
+		},
+	})
+}
+
+func TestAccKsyunScalingConfiguration_essd(t *testing.T) {
+	var val map[string]interface{}
+	r := acctest.RandInt()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+		},
+
+		IDRefreshName: "ksyun_scaling_configuration.foo",
+		Providers:     testAccProviders,
+		CheckDestroy:  testAccCheckScalingConfigurationDestroy,
+
+		Steps: []resource.TestStep{
+			{
+				Config: testAccScalingConfigurationConfigEssd(r),
+
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckScalingConfigurationExists("ksyun_scaling_configuration.foo", &val),
+					resource.TestCheckResourceAttr(
+						"ksyun_scaling_configuration.foo", "system_disk_type", "ESSD_SYSTEM_PL1"),
+					resource.TestCheckResourceAttr(
+						"ksyun_scaling_configuration.foo", "data_disks.0.disk_type", "ESSD_PL1"),
+					resource.TestCheckResourceAttr(
+						"ksyun_scaling_configuration.foo", "data_disks.0.disk_size", "50"),
 				),
 			},
 		},
@@ -154,3 +186,21 @@ resource "ksyun_scaling_configuration" "foo" {
   password = "Aa123456"
 }
 `
+
+func testAccScalingConfigurationConfigEssd(r int) string {
+	return fmt.Sprintf(`
+resource "ksyun_scaling_configuration" "foo" {
+  scaling_configuration_name = "tf-essd-test-%d"
+  image_id                   = "IMG-5465174a-6d71-4770-b8e1-917a0dd92466"
+  instance_type              = "S6.2B"
+  password                   = "Aa123456"
+  system_disk_type           = "ESSD_SYSTEM_PL1"
+  system_disk_size           = 50
+
+  data_disks {
+    disk_type = "ESSD_PL1"
+    disk_size = 50
+  }
+}
+`, r)
+}

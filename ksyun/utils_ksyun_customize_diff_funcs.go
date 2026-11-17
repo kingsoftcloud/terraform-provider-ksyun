@@ -45,6 +45,36 @@ func kecNetworkInterfaceCustomizeDiff(d *schema.ResourceDiff, meta interface{}) 
 	return err
 }
 
+func scalingConfigurationCustomizeDiff(d *schema.ResourceDiff, meta interface{}) (err error) {
+	for _, v := range d.Get("data_disks").([]interface{}) {
+		m, ok := v.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		diskType, _ := m["disk_type"].(string)
+		size, _ := m["disk_size"].(int)
+		if size == 0 {
+			continue
+		}
+		r, ok := kecDataDiskSizeRangeMap[diskType]
+		if !ok {
+			// disk_type not set (computed): fall back to the global envelope of all disk types.
+			if size < 10 || size > 65536 {
+				return fmt.Errorf(
+					"the disk_size of data_disks must be in range [10, 65536] when disk_type is not set, got: %d",
+					size)
+			}
+			continue
+		}
+		if size < r[0] || size > r[1] {
+			return fmt.Errorf(
+				"the disk_size of data_disks with disk_type %q must be in range [%d, %d], got: %d",
+				diskType, r[0], r[1], size)
+		}
+	}
+	return err
+}
+
 func networkAclEntryCustomizeDiff(d *schema.ResourceDiff, meta interface{}) (err error) {
 	if d.HasChange("network_acl_entries") {
 		m := make(map[string]interface{})

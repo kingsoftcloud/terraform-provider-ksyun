@@ -35,10 +35,11 @@ import (
 
 func resourceKsyunScalingConfiguration() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceKsyunScalingConfigurationCreate,
-		Read:   resourceKsyunScalingConfigurationRead,
-		Delete: resourceKsyunScalingConfigurationDelete,
-		Update: resourceKsyunScalingConfigurationUpdate,
+		Create:        resourceKsyunScalingConfigurationCreate,
+		Read:          resourceKsyunScalingConfigurationRead,
+		Delete:        resourceKsyunScalingConfigurationDelete,
+		Update:        resourceKsyunScalingConfigurationUpdate,
+		CustomizeDiff: scalingConfigurationCustomizeDiff,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -81,7 +82,7 @@ func resourceKsyunScalingConfiguration() *schema.Resource {
 				Computed:     true,
 				Optional:     true,
 				ValidateFunc: validateKecSystemDiskType,
-				Description:  "The system disk type of the desired ScalingConfiguration.Valid Values:'Local_SSD', 'SSD3.0', 'EHDD'.",
+				Description:  "The system disk type of the desired ScalingConfiguration.Valid Values:'Local_SSD', 'SSD3.0', 'EHDD', 'ESSD_SYSTEM_PL0', 'ESSD_SYSTEM_PL1', 'ESSD_SYSTEM_PL2'.",
 			},
 
 			"system_disk_size": {
@@ -90,6 +91,13 @@ func resourceKsyunScalingConfiguration() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validateKecSystemDiskSize,
 				Description:  "The system disk size of the desired ScalingConfiguration.",
+			},
+
+			"system_disk_resize_type": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice([]string{"offline", "online"}, false),
+				Description:  "The resize type of the desired system disk when scaling.Valid Values: 'offline', 'online'.",
 			},
 
 			"data_disk_gb": {
@@ -111,20 +119,26 @@ func resourceKsyunScalingConfiguration() *schema.Resource {
 							Optional:     true,
 							Computed:     true,
 							ValidateFunc: validateKecDataDiskType,
-							Description:  "The EBS Data Disk Type of the desired data_disk.Valid Values: 'SSD3.0', 'EHDD'.",
+							Description:  "The EBS Data Disk Type of the desired data_disk.Valid Values: 'SSD3.0', 'EHDD', 'ESSD_PL0', 'ESSD_PL1', 'ESSD_PL2'.",
 						},
 						"disk_size": {
-							Type:         schema.TypeInt,
-							Optional:     true,
-							Computed:     true,
-							ValidateFunc: validateKecDataDiskSize,
-							Description:  "The EBS Data Disk Size of the desired data_disk.",
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Computed:    true,
+							Description: "The EBS Data Disk Size of the desired data_disk. Valid range by disk_type: 'SSD3.0'/'EHDD': [10, 65536]; 'ESSD_PL0'/'ESSD_PL1': [20, 65536]; 'ESSD_PL2': [461, 65536].",
 						},
 						"delete_with_instance": {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Computed:    true,
 							Description: "The Flag with delete EBS Data Disk when KEC Instance destroy.",
+						},
+						"snapshot_id": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							ForceNew:    true,
+							Description: "The Snapshot ID of the desired data disk. If set, the data disk will be created from this snapshot. Note: ModifyScalingConfiguration does not support changing snapshot_id, so any change forces a new resource.",
 						},
 					},
 				},
@@ -153,6 +167,34 @@ func resourceKsyunScalingConfiguration() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				Description: "The Flag with image login set of the desired ScalingConfiguration.",
+			},
+
+			"tag": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Description: "A list of instance tags.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The key of the tag.",
+						},
+						"value": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The value of the tag.",
+						},
+					},
+				},
+			},
+
+			"sync_tag": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Whether to sync the instance tags to EBS data disks.",
 			},
 
 			"instance_name": {
@@ -230,8 +272,9 @@ func resourceKsyunScalingConfiguration() *schema.Resource {
 
 			"charge_type": {
 				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
-				Description: "Charge type.",
+				Description: "The charge type of the instance, e.g. 'HourlyInstantSettlement' (pay-as-you-go).",
 			},
 
 			"cpu": {
@@ -266,14 +309,22 @@ func resourceKsyunScalingConfigurationExtra(d *schema.ResourceData, forceGet boo
 	var r map[string]SdkReqTransform
 
 	r = map[string]SdkReqTransform{
-		"instance_type":    {Type: TransformWithN},
-		"key_id":           {Type: TransformWithN},
-		"system_disk_type": {mapping: "SystemDisk.DiskType"},
-		"system_disk_size": {mapping: "SystemDisk.DiskSize"},
+		"instance_type":           {Type: TransformWithN},
+		"key_id":                  {Type: TransformWithN},
+		"system_disk_type":        {mapping: "SystemDisk.DiskType"},
+		"system_disk_size":        {mapping: "SystemDisk.DiskSize"},
+		"system_disk_resize_type": {mapping: "SystemDisk.ResizeType"},
 		"data_disks": {mappings: map[string]string{
-			"data_disks": "DataDisk",
-			"disk_size":  "Size",
-			"disk_type":  "Type",
+			"data_disks":           "DataDisk",
+			"disk_size":            "Size",
+			"disk_type":            "Type",
+			"delete_with_instance": "DeleteWithInstance",
+			"snapshot_id":          "SnapshotId",
+		}, Type: TransformListN},
+		"tag": {mappings: map[string]string{
+			"tag":   "Tag",
+			"key":   "Key",
+			"value": "Value",
 		}, Type: TransformListN},
 	}
 	extra = SdkRequestAutoExtra(r, d, forceGet)
@@ -336,10 +387,9 @@ func resourceKsyunScalingConfigurationRead(d *schema.ResourceData, meta interfac
 
 	readScalingConfiguration := make(map[string]interface{})
 	readScalingConfiguration["ScalingConfigurationId.1"] = d.Id()
-	projectErr := addProjectInfo(d, &readScalingConfiguration, client)
-	if projectErr != nil {
-		return projectErr
-	}
+	// 不注入 ProjectId 过滤：按 ScalingConfigurationId 查询本身即可命中，
+	// 注入全账号项目列表会触发服务端 ProjectId.N 参数配额上限（ParameterQuotaOutProjectId），
+	// 且配置落在默认项目(0)时会被非 0 项目过滤查空，导致 Read 误报资源不存在。
 	action := "DescribeScalingConfiguration"
 	logger.Debug(logger.ReqFormat, action, readScalingConfiguration)
 	resp, err := conn.DescribeScalingConfiguration(&readScalingConfiguration)

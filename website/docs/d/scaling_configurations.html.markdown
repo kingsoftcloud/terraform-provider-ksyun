@@ -50,6 +50,7 @@ In addition to all arguments above, the following attributes are exported:
     * `delete_with_instance` - The Flag with delete EBS Data Disk when KEC Instance destroy.
     * `disk_size` - The EBS Data Disk Size of the desired data_disk.
     * `disk_type` - The EBS Data Disk Type of the desired data_disk.
+    * `snapshot_id` - The Snapshot ID of the desired data disk. If set, the data disk will be created from this snapshot.
   * `gpu` - The GPU core size the desired ScalingConfiguration.
   * `image_id` - The System Image Id of the desired ScalingConfiguration.
   * `instance_name_suffix` - The kec instance name suffix of the desired ScalingConfiguration.
