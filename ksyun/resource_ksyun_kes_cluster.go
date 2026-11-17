@@ -58,6 +58,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
 )
 
@@ -77,10 +78,16 @@ func resourceKsyunKesCluster() *schema.Resource {
 				Description: "The name of the KES cluster.",
 			},
 			"main_version": {
-				Type:        schema.TypeString,
-				ForceNew:    true,
-				Required:    true,
-				Description: "The main version of the KES cluster, e.g. 7.10.0/7.4.2/6.8.4/5.6.16.",
+				Type:     schema.TypeString,
+				ForceNew: true,
+				Required: true,
+				// The KES API always returns MainVersion with an "OpenSource-"
+				// prefix (e.g. "OpenSource-7.4.2") while users write the bare
+				// version. Normalising the configured value keeps it identical to
+				// the value read back from the API; without it, main_version is a
+				// permanent ForceNew diff and every plan destroys the cluster.
+				StateFunc:   mainVersionStateFunc,
+				Description: "The main version of the KES cluster, e.g. 7.10.0/7.4.2/6.8.4/5.6.16. An optional OpenSource- prefix is accepted and normalised away.",
 			},
 			"scenario": {
 				Type:        schema.TypeString,
@@ -95,16 +102,17 @@ func resourceKsyunKesCluster() *schema.Resource {
 				Description: "The availability zone of the KES cluster.",
 			},
 			"charge_type": {
-				Type:        schema.TypeString,
-				ForceNew:    true,
-				Required:    true,
-				Description: "The charge type of the KES cluster.",
+				Type:         schema.TypeString,
+				ForceNew:     true,
+				Required:     true,
+				Description:  "The charge type of the KES cluster, e.g. Monthly/Daily/HourlyInstantSettlement.",
+				ValidateFunc: validation.StringInSlice(kesChargeTypes, false),
 			},
 			"purchase_time": {
 				Type:        schema.TypeInt,
 				ForceNew:    true,
-				Required:    true,
-				Description: "The purchase time of the KES cluster.",
+				Optional:    true,
+				Description: "The purchase time of the KES cluster. Required when charge_type is Monthly, ignored for Daily.",
 			},
 			"project_id": {
 				Type:        schema.TypeInt,

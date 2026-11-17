@@ -96,6 +96,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/terraform-providers/terraform-provider-ksyun/logger"
 )
 
@@ -115,10 +116,15 @@ func resourceKsyunKesClusterVector() *schema.Resource {
 				Description: "The name of the KES vector cluster.",
 			},
 			"main_version": {
-				Type:        schema.TypeString,
-				ForceNew:    true,
-				Required:    true,
-				Description: "The main version of the KES vector cluster, e.g. 8.19.13/9.x. Xpack credentials are required for any 8.x or 9.x cluster.",
+				Type:     schema.TypeString,
+				ForceNew: true,
+				Required: true,
+				// See resource_ksyun_kes_cluster.go: the API returns MainVersion
+				// prefixed with "OpenSource-", so the configured value is
+				// normalised to the same bare form to avoid a permanent
+				// ForceNew diff.
+				StateFunc:   mainVersionStateFunc,
+				Description: "The main version of the KES vector cluster, e.g. 8.19.13/9.x. An optional OpenSource- prefix is accepted and normalised away. Xpack credentials are required for any 8.x or 9.x cluster.",
 			},
 			"distribution": {
 				Type:        schema.TypeString,
@@ -134,10 +140,11 @@ func resourceKsyunKesClusterVector() *schema.Resource {
 				Description: "The scenario of the KES vector cluster, e.g. General.",
 			},
 			"charge_type": {
-				Type:        schema.TypeString,
-				ForceNew:    true,
-				Required:    true,
-				Description: "The charge type of the KES vector cluster, e.g. Monthly/Minutely.",
+				Type:         schema.TypeString,
+				ForceNew:     true,
+				Required:     true,
+				Description:  "The charge type of the KES vector cluster, e.g. Monthly/Daily/HourlyInstantSettlement.",
+				ValidateFunc: validation.StringInSlice(kesChargeTypes, false),
 			},
 			"project_id": {
 				Type:        schema.TypeInt,
@@ -282,9 +289,10 @@ func resourceKsyunKesClusterVector() *schema.Resource {
 							Description: "The VPC subnet id of the instance group.",
 						},
 						"charge_type": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The charge type of the instance group, e.g. Monthly/Minutely.",
+							Type:         schema.TypeString,
+							Optional:     true,
+							Description:  "The charge type of the instance group, e.g. Monthly/Daily/HourlyInstantSettlement.",
+							ValidateFunc: validation.StringInSlice(kesChargeTypes, false),
 						},
 						"volume_type": {
 							Type:        schema.TypeString,

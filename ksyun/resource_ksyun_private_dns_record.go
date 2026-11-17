@@ -71,7 +71,6 @@ func resourceKsyunPrivateDnsRecord() *schema.Resource {
 			"record_value": {
 				Type:     schema.TypeString,
 				Required: true,
-				ForceNew: true,
 				Description: "Record value, such as IP: 192.168.10.2," +
 					" CNAME: cname.ksyun.com, and MX: mail.ksyun.com..",
 			},
@@ -80,7 +79,6 @@ func resourceKsyunPrivateDnsRecord() *schema.Resource {
 				Type:             schema.TypeInt,
 				Computed:         true,
 				Optional:         true,
-				ForceNew:         true,
 				Description:      "Record priority. Value range: [SRV|0~65535], [MX|1~100]. Required, when type is `SRV` or `MX`.",
 				DiffSuppressFunc: pdnsZoneRecordDiffSuppressFunc,
 				ValidateFunc:     validation.IntBetween(0, 65535),
@@ -88,7 +86,6 @@ func resourceKsyunPrivateDnsRecord() *schema.Resource {
 			"weight": {
 				Type:             schema.TypeInt,
 				Computed:         true,
-				ForceNew:         true,
 				Description:      "Record weight. Value range: 0~65535. Required, when type is `SRV`.",
 				Optional:         true,
 				DiffSuppressFunc: pdnsZoneRecordDiffSuppressFunc,
@@ -97,7 +94,6 @@ func resourceKsyunPrivateDnsRecord() *schema.Resource {
 			"port": {
 				Type:             schema.TypeInt,
 				Optional:         true,
-				ForceNew:         true,
 				Computed:         true,
 				Description:      "The port of record in which is associated with domain or ip. Required, when type is `SRV`.",
 				DiffSuppressFunc: pdnsZoneRecordDiffSuppressFunc,
