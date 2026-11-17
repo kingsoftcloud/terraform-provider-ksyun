@@ -265,6 +265,11 @@ func transformWithN(v interface{}, k string, t SdkReqTransform, req *map[string]
 }
 
 func transformListN(v interface{}, k string, t SdkReqTransform, req *map[string]interface{}) error {
+	// schema.TypeSet 的 d.Get 返回 *schema.Set 而非 []interface{}，
+	// 需先转 List，否则类型断言失败会导致整个字段静默丢失（如 tag → Tag.N）
+	if set, ok := v.(*schema.Set); ok {
+		v = set.List()
+	}
 	if list, ok := v.([]interface{}); ok {
 		if ok, _, err := transformFieldReqFunc(v, k, t, 0, req); ok {
 			if err != nil {

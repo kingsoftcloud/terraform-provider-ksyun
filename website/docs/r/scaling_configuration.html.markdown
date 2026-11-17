@@ -32,6 +32,7 @@ The following arguments are supported:
 * `address_band_width` - (Optional) The EIP BandWidth.
 * `address_project_id` - (Optional) The Project ID of EIP.
 * `band_width_share_id` - (Optional) The ID of BandWidthShare.
+* `charge_type` - (Optional) The charge type of the instance, e.g. `HourlyInstantSettlement` (pay-as-you-go).
 * `data_disk_gb` - (Optional) The Local Volume GB size of the desired ScalingConfiguration.
 * `data_disks` - (Optional) A list of data disks.
 * `instance_name_suffix` - (Optional) The kec instance name suffix of the desired ScalingConfiguration.
@@ -46,15 +47,24 @@ The following arguments are supported:
 * `password` - (Optional) Password.
 * `project_id` - (Optional) The Project Id of the desired ScalingConfiguration belong to.
 * `scaling_configuration_name` - (Optional) The Name of the desired ScalingConfiguration.
+* `sync_tag` - (Optional) Whether to sync the instance tags to EBS data disks.
+* `system_disk_resize_type` - (Optional) The resize type of the desired system disk when scaling. Valid Values: `offline`, `online`.
 * `system_disk_size` - (Optional) The system disk size of the desired ScalingConfiguration.
-* `system_disk_type` - (Optional) The system disk type of the desired ScalingConfiguration.Valid Values:'Local_SSD', 'SSD3.0', 'EHDD'.
+* `system_disk_type` - (Optional) The system disk type of the desired ScalingConfiguration. Valid Values: `Local_SSD`, `SSD3.0`, `EHDD`, `ESSD_SYSTEM_PL0`, `ESSD_SYSTEM_PL1`, `ESSD_SYSTEM_PL2`.
+* `tag` - (Optional) A list of instance tags.
 * `user_data` - (Optional) The user data of the desired ScalingConfiguration.
 
 The `data_disks` object supports the following:
 
 * `delete_with_instance` - (Optional) The Flag with delete EBS Data Disk when KEC Instance destroy.
-* `disk_size` - (Optional) The EBS Data Disk Size of the desired data_disk.
-* `disk_type` - (Optional) The EBS Data Disk Type of the desired data_disk.Valid Values: 'SSD3.0', 'EHDD'.
+* `disk_size` - (Optional) The EBS Data Disk Size of the desired data_disk. Valid range by `disk_type`: `SSD3.0`/`EHDD`: [10, 65536]; `ESSD_PL0`/`ESSD_PL1`: [20, 65536]; `ESSD_PL2`: [461, 65536].
+* `disk_type` - (Optional) The EBS Data Disk Type of the desired data_disk. Valid Values: `SSD3.0`, `EHDD`, `ESSD_PL0`, `ESSD_PL1`, `ESSD_PL2`.
+* `snapshot_id` - (Optional) The Snapshot ID of the desired data disk. If set, the data disk will be created from this snapshot.
+
+The `tag` object supports the following:
+
+* `key` - (Required) The key of the tag.
+* `value` - (Required) The value of the tag.
 
 ## Attributes Reference
 
