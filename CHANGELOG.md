@@ -1,3 +1,10 @@
+## 1.26.10 (Nov 17, 2026)
+
+IMPROVEMENTS：
+
+- `ksyun_scaling_configuration`: 启动配置云盘类型支持 ESSD——系统盘新增 `ESSD_SYSTEM_PL0/PL1/PL2`，数据盘新增 `ESSD_PL0/PL1/PL2`，适配 4.0/x9 等新一代机型；数据盘容量按盘型校验（`SSD3.0`/`EHDD`：[10, 65536]；`ESSD_PL0`/`ESSD_PL1`：[20, 65536]；`ESSD_PL2`：[461, 65536]）
+- `ksyun_scaling_configuration`: 补齐 OpenAPI 参数——新增 `system_disk_resize_type`（offline/online）、`data_disks.snapshot_id`（快照建盘）、`tag`/`sync_tag`（实例标签及 EBS 同步），`charge_type` 开放为可写
+
 ## 1.26.9 (Oct 21, 2026)
 
 BUGFIX：

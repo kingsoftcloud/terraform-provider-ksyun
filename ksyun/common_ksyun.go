@@ -198,9 +198,17 @@ func getProjectInfo(input *map[string]interface{}, client *KsyunClient, key ...s
 		}
 		if l != nil {
 			if l1, ok := l.([]interface{}); ok {
-				for i, pj := range l1 {
-					index := fmt.Sprintf("%v.%d", hump, i+1)
-					(*input)[index] = pj.(map[string]interface{})["ProjectId"]
+				index := 0
+				for _, pj := range l1 {
+					pid := pj.(map[string]interface{})["ProjectId"]
+					// 默认项目(ProjectId=0)不能作为查询过滤参数下发，
+					// 服务端会拒绝并返回 ParameterQuotaOutProjectId；
+					// 全部为 0 时不下发 ProjectId，Describe 按全项目查询即可命中。
+					if fmt.Sprintf("%v", pid) == "0" {
+						continue
+					}
+					index++
+					(*input)[fmt.Sprintf("%v.%d", hump, index)] = pid
 				}
 			}
 		}

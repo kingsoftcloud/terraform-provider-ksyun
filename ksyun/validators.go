@@ -147,7 +147,8 @@ func validateNatChargeType(v interface{}, k string) (ws []string, errors []error
 
 func validateKecSystemDiskType(v interface{}, k string) (ws []string, errors []error) {
 	value := v.(string)
-	if value != "Local_SSD" && value != "SSD3.0" && value != "EHDD" {
+	if value != "Local_SSD" && value != "SSD3.0" && value != "EHDD" &&
+		value != "ESSD_SYSTEM_PL0" && value != "ESSD_SYSTEM_PL1" && value != "ESSD_SYSTEM_PL2" {
 		errors = append(errors, fmt.Errorf(
 			"%q must contain a valid System Disk Type and control by price system, got error parsing: %s", k, value))
 	}
@@ -165,20 +166,23 @@ func validateKecSystemDiskSize(v interface{}, k string) (ws []string, errors []e
 
 func validateKecDataDiskType(v interface{}, k string) (ws []string, errors []error) {
 	value := v.(string)
-	if value != "SSD3.0" && value != "EHDD" {
+	if value != "SSD3.0" && value != "EHDD" &&
+		value != "ESSD_PL0" && value != "ESSD_PL1" && value != "ESSD_PL2" {
 		errors = append(errors, fmt.Errorf(
 			"%q must contain a valid Data Disk Type and control by price system, got error parsing: %s", k, value))
 	}
 	return
 }
 
-func validateKecDataDiskSize(v interface{}, k string) (ws []string, errors []error) {
-	value := v.(int)
-	if value < 10 || value > 16000 {
-		errors = append(errors, fmt.Errorf(
-			"%q must contain a valid Data Disk Size and control by price system, got error parsing: %d", k, value))
-	}
-	return
+// kecDataDiskSizeRangeMap defines the valid data disk size range (GiB) for each data disk type.
+// The per-type [min, max] check requires cross-field validation (see scalingConfigurationCustomizeDiff),
+// since the single-field ValidateFunc of disk_size cannot access the disk_type of the same data_disks entry.
+var kecDataDiskSizeRangeMap = map[string][2]int{
+	"SSD3.0":   {10, 65536},
+	"EHDD":     {10, 65536},
+	"ESSD_PL0": {20, 65536},
+	"ESSD_PL1": {20, 65536},
+	"ESSD_PL2": {461, 65536},
 }
 
 func validateKecInstanceAgent(v interface{}, k string) (ws []string, errors []error) {

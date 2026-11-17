@@ -206,6 +206,11 @@ func dataSourceKsyunScalingConfigurations() *schema.Resource {
 										Computed:    true,
 										Description: "The Flag with delete EBS Data Disk when KEC Instance destroy.",
 									},
+									"snapshot_id": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The Snapshot ID of the desired data disk. If set, the data disk will be created from this snapshot.",
+									},
 								},
 							},
 						},
@@ -340,6 +345,7 @@ func scalingConfigurationSpecialMapping() map[string]SdkResponseMapping {
 					r["delete_with_instance"] = d["deleteWithInstance"]
 					r["disk_size"] = d["size"]
 					r["disk_type"] = d["type"]
+					r["snapshot_id"] = d["snapshotId"]
 					result = append(result, r)
 				}
 			}
@@ -370,6 +376,10 @@ func scalingConfigurationSpecialMapping() map[string]SdkResponseMapping {
 
 		},
 	}
+	// 回填标签与同步标记，使 resource 的 plan 具备真实漂移检测能力；
+	// data source 嵌套 schema 暂无 tag/sync_tag 字段，此处映射对其无副作用（未知字段会被跳过）
+	specialMapping["TagSet"] = SdkResponseMapping{Field: "tag"}
+	specialMapping["SyncTag"] = SdkResponseMapping{Field: "sync_tag"}
 	return specialMapping
 }
 
