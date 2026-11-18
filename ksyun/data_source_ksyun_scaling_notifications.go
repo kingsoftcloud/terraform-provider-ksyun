@@ -102,7 +102,10 @@ func dataSourceKsyunScalingNotificationsRead(d *schema.ResourceData, meta interf
 	if (*resp)["ScalingNotificationSet"] == nil {
 		return nil
 	}
-	l := (*resp)["ScalingNotificationSet"].([]interface{})
+	l, ok := (*resp)["ScalingNotificationSet"].([]interface{})
+	if !ok {
+		return nil
+	}
 
 	merageResultDirect(&result, l)
 

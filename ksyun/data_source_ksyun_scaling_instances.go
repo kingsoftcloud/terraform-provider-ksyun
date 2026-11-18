@@ -144,7 +144,10 @@ func dataSourceKsyunScalingInstancesRead(d *schema.ResourceData, meta interface{
 		if err != nil {
 			return fmt.Errorf("error on reading ScalingInstance list req(%v):%v", req, err)
 		}
-		l := (*resp)["ScalingInstanceSet"].([]interface{})
+		l, ok := (*resp)["ScalingInstanceSet"].([]interface{})
+		if !ok {
+			break
+		}
 		all = append(all, l...)
 		if len(l) < limit {
 			break
