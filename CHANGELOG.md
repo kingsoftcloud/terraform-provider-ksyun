@@ -1,3 +1,9 @@
+## 1.27.2 (Nov 18, 2026)
+
+BUGFIX：
+
+- `ksyun_scaling_configurations`、`ksyun_scaling_activities`、`ksyun_scaling_groups`、`ksyun_scaling_instances`、`ksyun_scaling_notifications`、`ksyun_scaling_policies`、`ksyun_scaling_scheduled_tasks`: 修复查询启动配置等列表无匹配结果时，服务端返回的集合字段为 null（或缺省）导致 `interface conversion: interface {} is nil, not []interface {}` panic 的问题；列表强转统一改为 comma-ok 断言，查询无结果时正常返回空列表
+
 ## 1.27.1 (Nov 17, 2026)
 
 IMPROVEMENTS：

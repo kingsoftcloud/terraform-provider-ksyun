@@ -189,7 +189,10 @@ func dataSourceKsyunScalingPoliciesRead(d *schema.ResourceData, meta interface{}
 		if err != nil {
 			return fmt.Errorf("error on reading ScalingPolicy list req(%v):%v", req, err)
 		}
-		l := (*resp)["ScalingPolicySet"].([]interface{})
+		l, ok := (*resp)["ScalingPolicySet"].([]interface{})
+		if !ok {
+			break
+		}
 		all = append(all, l...)
 		if len(l) < limit {
 			break

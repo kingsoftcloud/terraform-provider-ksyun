@@ -298,7 +298,10 @@ func dataSourceKsyunScalingConfigurationsRead(d *schema.ResourceData, meta inter
 		if err != nil {
 			return fmt.Errorf("error on reading ScalingConfiguration list req(%v):%v", readScalingConfiguration, err)
 		}
-		l := (*resp)["ScalingConfigurationSet"].([]interface{})
+		l, ok := (*resp)["ScalingConfigurationSet"].([]interface{})
+		if !ok {
+			break
+		}
 		allScalingConfigurations = append(allScalingConfigurations, l...)
 		if len(l) < limit {
 			break
