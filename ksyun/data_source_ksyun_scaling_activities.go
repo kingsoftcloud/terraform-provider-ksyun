@@ -148,7 +148,10 @@ func dataSourceKsyunScalingActivitiesRead(d *schema.ResourceData, meta interface
 		if err != nil {
 			return fmt.Errorf("error on reading ScalingActivity list req(%v):%v", req, err)
 		}
-		l := (*resp)["ScalingActivitySet"].([]interface{})
+		l, ok := (*resp)["ScalingActivitySet"].([]interface{})
+		if !ok {
+			break
+		}
 		all = append(all, l...)
 		if len(l) < limit {
 			break

@@ -256,7 +256,10 @@ func dataSourceKsyunScalingGroupsRead(d *schema.ResourceData, meta interface{}) 
 		if err != nil {
 			return fmt.Errorf("error on reading ScalingGroup list req(%v):%v", req, err)
 		}
-		l := (*resp)["ScalingGroupSet"].([]interface{})
+		l, ok := (*resp)["ScalingGroupSet"].([]interface{})
+		if !ok {
+			break
+		}
 		all = append(all, l...)
 		if len(l) < limit {
 			break

@@ -189,7 +189,10 @@ func dataSourceKsyunScalingScheduledTasksRead(d *schema.ResourceData, meta inter
 		if err != nil {
 			return fmt.Errorf("error on reading ScalingScheduledTask list req(%v):%v", req, err)
 		}
-		l := (*resp)["ScalingScheduleTaskSet"].([]interface{})
+		l, ok := (*resp)["ScalingScheduleTaskSet"].([]interface{})
+		if !ok {
+			break
+		}
 		all = append(all, l...)
 		if len(l) < limit {
 			break
